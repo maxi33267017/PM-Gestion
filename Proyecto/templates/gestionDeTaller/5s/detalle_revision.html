@@ -1,0 +1,324 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+    :root {
+        --primary-gradient: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        --success-gradient: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+        --warning-gradient: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+        --danger-gradient: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+        --info-gradient: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+        --dark-gradient: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        --card-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        --hover-shadow: 0 15px 40px rgba(0,0,0,0.15);
+        --border-radius: 20px;
+        --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .revision-header {
+        background: var(--dark-gradient);
+        color: white;
+        padding: 3rem 2rem;
+        border-radius: var(--border-radius);
+        margin-bottom: 2.5rem;
+        box-shadow: var(--card-shadow);
+        position: relative;
+        overflow: hidden;
+    }
+    .revision-header::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="dots" width="20" height="20" patternUnits="userSpaceOnUse"><circle cx="10" cy="10" r="1" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23dots)"/></svg>');
+        pointer-events: none;
+    }
+    .revision-header h1 {
+        margin: 0;
+        font-weight: 800;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        font-size: 3rem;
+        position: relative;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+    .header-actions {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+    .header-btn {
+        border-radius: 25px;
+        padding: 0.8rem 1.5rem;
+        font-weight: 600;
+        transition: var(--transition);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-size: 0.9rem;
+        border: none;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        text-decoration: none;
+        color: white;
+    }
+    .header-btn.primary { background: var(--info-gradient); }
+    .header-btn.primary:hover { background: var(--info-gradient); transform: translateY(-2px); box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4); }
+    .header-btn.secondary { background: var(--dark-gradient); }
+    .header-btn.secondary:hover { background: var(--dark-gradient); transform: translateY(-2px); box-shadow: 0 6px 20px rgba(44, 62, 80, 0.4); }
+    .messages-container { margin-bottom: 2rem; }
+    .custom-alert { border-radius: var(--border-radius); padding: 1.5rem; margin-bottom: 1rem; border: none; box-shadow: 0 5px 20px rgba(0,0,0,0.1); position: relative; overflow: hidden; font-weight: 500; }
+    .custom-alert.success { background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%); color: #155724; border-left: 4px solid #28a745; }
+    .custom-alert.error { background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%); color: #721c24; border-left: 4px solid #dc3545; }
+    .custom-alert.warning { background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%); color: #856404; border-left: 4px solid #ffc107; }
+    .custom-alert.info { background: linear-gradient(135deg, #d1ecf1 0%, #bee5eb 100%); color: #0c5460; border-left: 4px solid #17a2b8; }
+    .info-card, .evidence-card, .s5-card, .action-card { background: white; border-radius: var(--border-radius); box-shadow: var(--card-shadow); overflow: hidden; border: 1px solid #e9ecef; margin-bottom: 2rem; }
+    .info-card-header, .evidence-header, .action-header { background: var(--dark-gradient); color: white; padding: 1.2rem 1.5rem; position: relative; overflow: hidden; }
+    .info-card-header h5, .evidence-header h5, .action-header h5 { margin: 0; font-weight: 700; font-size: 1.2rem; position: relative; z-index: 1; display: flex; align-items: center; gap: 0.8rem; }
+    .info-body { padding: 2rem; }
+    .info-row { margin-bottom: 1.2rem; }
+    .progress { height: 25px !important; border-radius: 15px; background: #e9ecef; overflow: hidden; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1); }
+    .progress-bar { border-radius: 15px; font-weight: 700; font-size: 0.8rem; display: flex; align-items: center; justify-content: center; text-shadow: 1px 1px 2px rgba(0,0,0,0.3); transition: var(--transition); }
+    .progress-bar.bg-success { background: var(--success-gradient) !important; }
+    .progress-bar.bg-warning { background: var(--warning-gradient) !important; }
+    .progress-bar.bg-danger { background: var(--danger-gradient) !important; }
+    .badge { border-radius: 20px; padding: 0.5rem 1rem; font-weight: 600; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.5px; border: none; color: white; }
+    .badge.bg-success { background: var(--success-gradient) !important; }
+    .badge.bg-warning { background: var(--warning-gradient) !important; }
+    .badge.bg-danger { background: var(--danger-gradient) !important; }
+    .s5-card { margin-bottom: 2rem; }
+    .s5-header { padding: 1.2rem 1.5rem; color: white; position: relative; overflow: hidden; }
+    .s5-header.seiri { background: var(--info-gradient); }
+    .s5-header.seiton { background: var(--success-gradient); }
+    .s5-header.seiso { background: var(--primary-gradient); }
+    .s5-header.seiketsu { background: var(--warning-gradient); }
+    .s5-header.shitsuke { background: var(--danger-gradient); }
+    .s5-header h5 { margin: 0; font-weight: 700; font-size: 1.1rem; position: relative; z-index: 1; display: flex; align-items: center; gap: 0.8rem; }
+    .s5-body { padding: 1.5rem; }
+    .evidence-img { border-radius: 15px; box-shadow: 0 4px 15px rgba(44,62,80,0.08); object-fit: cover; width: 100%; max-height: 250px; }
+    .action-btn { border-radius: 20px; padding: 0.5rem 1rem; font-weight: 600; transition: var(--transition); text-transform: uppercase; letter-spacing: 0.5px; font-size: 0.8rem; border: none; box-shadow: 0 4px 15px rgba(0,0,0,0.1); text-decoration: none; display: flex; align-items: center; gap: 0.3rem; color: white; }
+    .action-btn.info { background: var(--info-gradient); }
+    .action-btn.info:hover { background: var(--info-gradient); transform: translateY(-2px); box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4); }
+    .action-btn.warning { background: var(--warning-gradient); }
+    .action-btn.warning:hover { background: var(--warning-gradient); transform: translateY(-2px); box-shadow: 0 6px 20px rgba(243, 156, 18, 0.4); }
+    .action-btn.success { background: var(--success-gradient); }
+    .action-btn.success:hover { background: var(--success-gradient); transform: translateY(-2px); box-shadow: 0 6px 20px rgba(39, 174, 96, 0.4); }
+    .no-records { padding: 3rem 2rem; text-align: center; color: #6c757d; background: #f8f9fa; }
+    .no-records i { font-size: 3rem; margin-bottom: 1rem; opacity: 0.5; }
+    @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+    .revision-header, .info-card, .evidence-card, .s5-card, .action-card { animation: fadeInUp 0.6s ease-out; }
+    .info-card { animation-delay: 0.1s; }
+    .evidence-card { animation-delay: 0.2s; }
+    .s5-card { animation-delay: 0.3s; }
+    .action-card { animation-delay: 0.4s; }
+    @media (max-width: 768px) {
+        .revision-header { padding: 2rem 1.5rem; text-align: center; }
+        .revision-header h1 { font-size: 2rem; flex-direction: column; gap: 0.5rem; }
+        .header-actions { justify-content: center; margin-top: 1rem; }
+        .header-btn { padding: 0.7rem 1.2rem; font-size: 0.85rem; }
+        .info-body { padding: 1.2rem; }
+        .s5-body { padding: 1rem; }
+    }
+</style>
+<main class="container-fluid mt-4">
+    <!-- Header mejorado -->
+    <div class="revision-header d-flex justify-content-between align-items-center">
+        <h1><i class="bi bi-clipboard-check"></i> Detalle de Revisión 5S</h1>
+        <div class="header-actions">
+            <a href="{% url 'gestionDeTaller:lista_planes_accion_5s' %}" class="header-btn primary">
+                <i class="bi bi-list-task"></i> Ver Todos los Planes de Acción
+            </a>
+            <a href="{% url 'gestionDeTaller:lista_revisiones_5s' %}" class="header-btn secondary">
+                <i class="bi bi-arrow-left"></i> Volver a Revisiones
+            </a>
+        </div>
+    </div>
+    <!-- Mensajes -->
+    {% if messages %}
+    <div class="messages-container">
+        {% for message in messages %}
+        <div class="custom-alert {{ message.tags }}">
+            <i class="bi bi-{% if message.tags == 'success' %}check-circle{% elif message.tags == 'error' %}exclamation-triangle{% elif message.tags == 'warning' %}exclamation-triangle{% else %}info-circle{% endif %}"></i>
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    <!-- Información General -->
+    <div class="info-card">
+        <div class="info-card-header">
+            <h5><i class="bi bi-info-circle"></i> Información General</h5>
+        </div>
+        <div class="info-body">
+            <div class="row info-row">
+                <div class="col-md-4"><strong><i class="bi bi-building"></i> Sucursal:</strong> {{ revision.sucursal }}</div>
+                <div class="col-md-4"><strong><i class="bi bi-person"></i> Evaluador:</strong> {{ revision.evaluador.get_nombre_completo }}</div>
+                <div class="col-md-4"><strong><i class="bi bi-calendar-date"></i> Fecha de Revisión:</strong> {{ revision.fecha_revision|date:"d/m/Y" }}</div>
+            </div>
+            <div class="row info-row">
+                <div class="col-md-4"><strong><i class="bi bi-calendar-event"></i> Próxima Revisión:</strong> {{ revision.fecha_proxima|date:"d/m/Y" }}</div>
+                <div class="col-md-8">
+                    <strong><i class="bi bi-speedometer2"></i> Puntuación Total:</strong>
+                    <div class="progress mt-2">
+                        <div class="progress-bar {% if revision.porcentaje_conformidad >= 90 %}bg-success{% elif revision.porcentaje_conformidad >= 75 %}bg-warning{% else %}bg-danger{% endif %}" 
+                             role="progressbar" 
+                             style="width: {{ revision.porcentaje_conformidad }}%;" 
+                             aria-valuenow="{{ revision.porcentaje_conformidad }}" 
+                             aria-valuemin="0" 
+                             aria-valuemax="100">
+                            {{ revision.porcentaje_conformidad }}%
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Evidencias Fotográficas -->
+    {% if revision.evidencias %}
+    <div class="evidence-card">
+        <div class="evidence-header">
+            <h5><i class="bi bi-camera"></i> Evidencias Fotográficas</h5>
+        </div>
+        <div class="info-body">
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <img src="{{ revision.evidencias.url }}" class="evidence-img" alt="Evidencia">
+                    <a href="{{ revision.evidencias.url }}" target="_blank" class="action-btn info w-100 mt-2">
+                        <i class="bi bi-image"></i> Ver Imagen Completa
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    <!-- Resultados por Categoría -->
+    <div class="row">
+        <!-- Seiri (Clasificar) -->
+        <div class="col-md-6 mb-4">
+            <div class="s5-card">
+                <div class="s5-header seiri"><h5><i class="bi bi-sort-down"></i> Seiri (Clasificar)</h5></div>
+                <div class="s5-body">
+                    <div class="mb-3"><label class="form-label">Bancos de Trabajo:</label>
+                        <div class="progress"><div class="progress-bar {% if revision.bancos_trabajo == 'CONFORME' %}bg-success{% else %}bg-danger{% endif %}" role="progressbar" style="width: 100%;">{{ revision.get_bancos_trabajo_display }}</div></div></div>
+                    <div class="mb-3"><label class="form-label">Herramientas Funcionales:</label>
+                        <div class="progress"><div class="progress-bar {% if revision.herramientas_funcionales == 'CONFORME' %}bg-success{% else %}bg-danger{% endif %}" role="progressbar" style="width: 100%;">{{ revision.get_herramientas_funcionales_display }}</div></div></div>
+                    <div class="mb-3"><label class="form-label">Piezas Organizadas:</label>
+                        <div class="progress"><div class="progress-bar {% if revision.piezas_organizadas == 'CONFORME' %}bg-success{% else %}bg-danger{% endif %}" role="progressbar" style="width: 100%;">{{ revision.get_piezas_organizadas_display }}</div></div></div>
+                </div>
+            </div>
+        </div>
+        <!-- Seiton (Ordenar) -->
+        <div class="col-md-6 mb-4">
+            <div class="s5-card">
+                <div class="s5-header seiton"><h5><i class="bi bi-grid-3x3"></i> Seiton (Ordenar)</h5></div>
+                <div class="s5-body">
+                    <div class="mb-3"><label class="form-label">Herramientas Devueltas:</label>
+                        <div class="progress"><div class="progress-bar {% if revision.herramientas_devueltas == 'CONFORME' %}bg-success{% else %}bg-danger{% endif %}" role="progressbar" style="width: 100%;">{{ revision.get_herramientas_devueltas_display }}</div></div></div>
+                    <div class="mb-3"><label class="form-label">Box Limpios:</label>
+                        <div class="progress"><div class="progress-bar {% if revision.box_limpios == 'CONFORME' %}bg-success{% else %}bg-danger{% endif %}" role="progressbar" style="width: 100%;">{{ revision.get_box_limpios_display }}</div></div></div>
+                    <div class="mb-3"><label class="form-label">Sala Garantía:</label>
+                        <div class="progress"><div class="progress-bar {% if revision.sala_garantia == 'CONFORME' %}bg-success{% else %}bg-danger{% endif %}" role="progressbar" style="width: 100%;">{{ revision.get_sala_garantia_display }}</div></div></div>
+                </div>
+            </div>
+        </div>
+        <!-- Seiso (Limpiar) -->
+        <div class="col-md-6 mb-4">
+            <div class="s5-card">
+                <div class="s5-header seiso"><h5><i class="bi bi-brush"></i> Seiso (Limpiar)</h5></div>
+                <div class="s5-body">
+                    <div class="mb-3"><label class="form-label">Piso Limpio:</label>
+                        <div class="progress"><div class="progress-bar {% if revision.piso_limpio == 'CONFORME' %}bg-success{% else %}bg-danger{% endif %}" role="progressbar" style="width: 100%;">{{ revision.get_piso_limpio_display }}</div></div></div>
+                    <div class="mb-3"><label class="form-label">Instrumentos Limpios:</label>
+                        <div class="progress"><div class="progress-bar {% if revision.instrumentos_limpios == 'CONFORME' %}bg-success{% else %}bg-danger{% endif %}" role="progressbar" style="width: 100%;">{{ revision.get_instrumentos_limpios_display }}</div></div></div>
+                    <div class="mb-3"><label class="form-label">Paredes Limpias:</label>
+                        <div class="progress"><div class="progress-bar {% if revision.paredes_limpias == 'CONFORME' %}bg-success{% else %}bg-danger{% endif %}" role="progressbar" style="width: 100%;">{{ revision.get_paredes_limpias_display }}</div></div></div>
+                </div>
+            </div>
+        </div>
+        <!-- Seiketsu (Estandarizar) -->
+        <div class="col-md-6 mb-4">
+            <div class="s5-card">
+                <div class="s5-header seiketsu"><h5><i class="bi bi-award"></i> Seiketsu (Estandarizar)</h5></div>
+                <div class="s5-body">
+                    <div class="mb-3"><label class="form-label">Personal Uniformado:</label>
+                        <div class="progress"><div class="progress-bar {% if revision.personal_uniformado == 'CONFORME' %}bg-success{% else %}bg-danger{% endif %}" role="progressbar" style="width: 100%;">{{ revision.get_personal_uniformado_display }}</div></div></div>
+                    <div class="mb-3"><label class="form-label">EPP Usado:</label>
+                        <div class="progress"><div class="progress-bar {% if revision.epp_usado == 'CONFORME' %}bg-success{% else %}bg-danger{% endif %}" role="progressbar" style="width: 100%;">{{ revision.get_epp_usado_display }}</div></div></div>
+                    <div class="mb-3"><label class="form-label">Herramientas Calibradas:</label>
+                        <div class="progress"><div class="progress-bar {% if revision.herramientas_calibradas == 'CONFORME' %}bg-success{% else %}bg-danger{% endif %}" role="progressbar" style="width: 100%;">{{ revision.get_herramientas_calibradas_display }}</div></div></div>
+                </div>
+            </div>
+        </div>
+        <!-- Shitsuke (Disciplina) -->
+        <div class="col-md-6 mb-4">
+            <div class="s5-card">
+                <div class="s5-header shitsuke"><h5><i class="bi bi-lightning"></i> Shitsuke (Disciplina)</h5></div>
+                <div class="s5-body">
+                    <div class="mb-3"><label class="form-label">Residuos Gestionados:</label>
+                        <div class="progress"><div class="progress-bar {% if revision.residuos_gestionados == 'CONFORME' %}bg-success{% else %}bg-danger{% endif %}" role="progressbar" style="width: 100%;">{{ revision.get_residuos_gestionados_display }}</div></div></div>
+                    <div class="mb-3"><label class="form-label">Documentación Actualizada:</label>
+                        <div class="progress"><div class="progress-bar {% if revision.documentacion_actualizada == 'CONFORME' %}bg-success{% else %}bg-danger{% endif %}" role="progressbar" style="width: 100%;">{{ revision.get_documentacion_actualizada_display }}</div></div></div>
+                    <div class="mb-3"><label class="form-label">Procedimientos Seguidos:</label>
+                        <div class="progress"><div class="progress-bar {% if revision.procedimientos_seguidos == 'CONFORME' %}bg-success{% else %}bg-danger{% endif %}" role="progressbar" style="width: 100%;">{{ revision.get_procedimientos_seguidos_display }}</div></div></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Planes de Acción -->
+    <div class="action-card">
+        <div class="action-header d-flex justify-content-between align-items-center">
+            <h5><i class="bi bi-clipboard-list"></i> Planes de Acción</h5>
+            <a href="{% url 'gestionDeTaller:crear_plan_accion_5s' revision.id %}" class="action-btn success">
+                <i class="bi bi-plus-circle"></i> Nuevo Plan de Acción
+            </a>
+        </div>
+        <div class="info-body">
+            {% if revision.planes_accion.exists %}
+            <div class="table-responsive">
+                <table class="table plans-table">
+                    <thead>
+                        <tr>
+                            <th><i class="bi bi-exclamation-triangle me-2"></i>Item No Conforme</th>
+                            <th><i class="bi bi-lightbulb me-2"></i>Acción Correctiva</th>
+                            <th><i class="bi bi-person-check me-2"></i>Responsable</th>
+                            <th><i class="bi bi-calendar-event me-2"></i>Fecha Límite</th>
+                            <th><i class="bi bi-flag me-2"></i>Estado</th>
+                            <th><i class="bi bi-gear me-2"></i>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for plan in revision.planes_accion.all %}
+                        <tr>
+                            <td>{{ plan.item_no_conforme }}</td>
+                            <td>{{ plan.accion_correctiva }}</td>
+                            <td>{{ plan.responsable.get_nombre_completo }}</td>
+                            <td>{{ plan.fecha_limite|date:"d/m/Y" }}</td>
+                            <td>
+                                <span class="badge {% if plan.estado == 'COMPLETADO' %}bg-success{% elif plan.estado == 'EN_PROCESO' %}bg-warning{% else %}bg-danger{% endif %}">
+                                    {{ plan.get_estado_display }}
+                                </span>
+                            </td>
+                            <td>
+                                <a href="{% url 'gestionDeTaller:detalle_plan_accion_5s' plan.id %}" class="action-btn info">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="no-records">
+                <i class="bi bi-inbox"></i>
+                <p>No hay planes de acción registrados.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</main>
+{% endblock %}

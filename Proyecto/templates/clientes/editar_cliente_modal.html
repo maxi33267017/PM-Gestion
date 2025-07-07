@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<main>
+    <div class="div_formulario_editar_cliente form-group">
+        <h1 class="titulo_formulario_editar_cliente">{{cliente.razon_social}}</h1>
+        <hr>
+        <form class="formulario_editar_cliente" method="POST" action="{% url 'editar_cliente' cliente_id=cliente.id %}">
+            {% csrf_token %}
+            <label for="razon_social">Razón Social:</label>
+            <input class="form-control" type="text" id="razon_social" name="razon_social" value="{{cliente.razon_social}}" required><br>
+            
+            <label for="cuit">Cuit:</label>
+            <input class="form-control" type="text" id="cuit" name="cuit" value="{{cliente.cuit}}"><br>
+
+            <label for="domicilio">Domicilio:</label>
+            <input class="form-control" type="text" id="domicilio" name="domicilio" value="{{cliente.domicilio}}"><br>
+       
+            <label for="email">Email:</label>
+            <input class="form-control" type="text" id="email" name="email" value="{{cliente.email}}" required><br>
+    
+            <label for="telefono">Teléfono:</label>
+            <input class="form-control" type="text" id="telefono" name="telefono" value="{{cliente.telefono}}" required><br>
+    
+            <label for="ciudad">Ciudad:</label>
+            <input class="form-control" type="text" id="ciudad" value="{{cliente.ciudad}}" name="ciudad" required><br>
+
+            <label for="provincia">Provincia:</label>
+                <select id="provincia" name="provincia" required>
+                    <option value="" disabled selected>Selecciona una provincia</option>
+                    <option>Tierra del Fuego</option>
+                    <option>Chubut</option>
+                    <option>Santa Cruz</option>
+                    <option>Rio Negro</option>
+                    <option>Neuquen</option>
+                    <option>La Pampa</option>
+                    <option>Buenos Aires</option>
+                    <option>Mendoza</option>
+                    <option>Cordoba</option>
+                    <option>Santa Fe</option>
+                </select><br><br>
+            <input  class="boton_guardar_cliente_en_editar_cliente" type="submit" value="Guardar">
+        </form>
+    </div>
+</main>
+{% endblock %}

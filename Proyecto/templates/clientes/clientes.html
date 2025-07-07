@@ -1,0 +1,805 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+    /* Variables CSS para consistencia */
+    :root {
+        --primary-gradient: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        --secondary-gradient: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        --success-gradient: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        --warning-gradient: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        --danger-gradient: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+        --dark-gradient: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        --light-gradient: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        --card-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        --hover-shadow: 0 15px 40px rgba(0,0,0,0.15);
+        --border-radius: 20px;
+        --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Header mejorado */
+    .clientes-header {
+        background: var(--dark-gradient);
+        color: white;
+        padding: 3rem 2rem;
+        border-radius: var(--border-radius);
+        margin-bottom: 2.5rem;
+        box-shadow: var(--card-shadow);
+        position: relative;
+        overflow: hidden;
+        text-align: center;
+    }
+    
+    .clientes-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="dots" width="20" height="20" patternUnits="userSpaceOnUse"><circle cx="10" cy="10" r="1" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23dots)"/></svg>');
+        pointer-events: none;
+    }
+    
+    .clientes-header h1 {
+        margin: 0;
+        font-weight: 800;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        font-size: 3rem;
+        position: relative;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 1rem;
+    }
+    
+    .clientes-header .subtitle {
+        font-size: 1.2rem;
+        opacity: 0.9;
+        margin-top: 1rem;
+        position: relative;
+        z-index: 1;
+    }
+
+    /* Estadísticas */
+    .stats-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(125px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2.5rem;
+    }
+    
+    .stat-card {
+        background: white;
+        border-radius: var(--border-radius);
+        padding: 1rem;
+        box-shadow: var(--card-shadow);
+        text-align: center;
+        transition: var(--transition);
+        border: 1px solid #e9ecef;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 5px;
+        height: 100%;
+        background: var(--dark-gradient);
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-8px);
+        box-shadow: var(--hover-shadow);
+        border-color: #2c3e50;
+    }
+    
+    .stat-icon {
+        width: 35px;
+        height: 35px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 0.5rem;
+        background: var(--dark-gradient);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    
+    .stat-icon i {
+        font-size: 1rem;
+        color: white;
+    }
+    
+    .stat-number {
+        font-size: 1.25rem;
+        font-weight: 800;
+        color: #2c3e50;
+        margin-bottom: 0.25rem;
+    }
+    
+    .stat-label {
+        font-size: 0.75rem;
+        color: #6c757d;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    /* Contenedor principal */
+    .clientes-container {
+        background: white;
+        border-radius: var(--border-radius);
+        box-shadow: var(--card-shadow);
+        overflow: hidden;
+        border: 1px solid #e9ecef;
+    }
+    
+    .clientes-container-header {
+        background: var(--dark-gradient);
+        color: white;
+        padding: 2rem;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .clientes-container-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="header-dots" width="20" height="20" patternUnits="userSpaceOnUse"><circle cx="10" cy="10" r="1" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23header-dots)"/></svg>');
+        pointer-events: none;
+    }
+    
+    .clientes-container-header h2 {
+        margin: 0;
+        font-weight: 700;
+        font-size: 1.5rem;
+        position: relative;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        gap: 0.8rem;
+    }
+
+    /* Mejoras en la tabla */
+    .table-responsive {
+        border-radius: 0 0 var(--border-radius) var(--border-radius);
+        overflow: hidden;
+    }
+    
+    .table {
+        margin-bottom: 0;
+        border: none;
+        border-radius: 0 0 var(--border-radius) var(--border-radius);
+        overflow: hidden;
+    }
+    
+    .table-dark {
+        background: var(--dark-gradient);
+        border: none;
+    }
+    
+    .table th {
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 1.5rem 1rem;
+        border: none;
+        font-size: 0.9rem;
+        position: relative;
+        z-index: 1;
+        background: var(--dark-gradient) !important;
+        color: white !important;
+    }
+    
+    .table td {
+        padding: 1.2rem 1rem;
+        vertical-align: middle;
+        border: none;
+        border-bottom: 1px solid #f0f0f0;
+        font-weight: 500;
+    }
+    
+    .table tbody tr {
+        transition: var(--transition);
+        cursor: pointer;
+    }
+    
+    .table tbody tr:hover {
+        background: rgba(44, 62, 80, 0.05);
+        transform: scale(1.01);
+    }
+    
+    .table tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    /* Botón mejorado */
+    .btn-add-cliente {
+        background: var(--dark-gradient);
+        color: white;
+        border: none;
+        border-radius: 25px;
+        padding: 1rem 2rem;
+        font-weight: 600;
+        transition: var(--transition);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-size: 0.95rem;
+        margin-bottom: 2rem;
+        min-width: 200px;
+        white-space: nowrap;
+    }
+    
+    .btn-add-cliente:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+        color: white;
+        background: var(--dark-gradient);
+    }
+
+    /* DataTables personalizado */
+    .dataTables_wrapper {
+        padding: 2rem;
+    }
+    
+    .dataTables_filter input {
+        border-radius: 25px;
+        border: 2px solid #e9ecef;
+        padding: 0.8rem 1.2rem;
+        transition: var(--transition);
+    }
+    
+    .dataTables_filter input:focus {
+        border-color: #2c3e50;
+        box-shadow: 0 0 0 0.2rem rgba(44, 62, 80, 0.25);
+        outline: none;
+    }
+    
+    .dataTables_length select {
+        border-radius: 12px;
+        border: 2px solid #e9ecef;
+        padding: 0.5rem 1rem;
+        transition: var(--transition);
+    }
+    
+    .dataTables_length select:focus {
+        border-color: #2c3e50;
+        box-shadow: 0 0 0 0.2rem rgba(44, 62, 80, 0.25);
+        outline: none;
+    }
+    
+    .dataTables_info {
+        font-weight: 500;
+        color: #6c757d;
+        margin-top: 1rem;
+        text-align: center;
+    }
+
+    /* Animaciones */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .clientes-header, .stats-container, .clientes-container {
+        animation: fadeInUp 0.6s ease-out;
+    }
+    
+    .stat-card:nth-child(1) { animation-delay: 0.1s; }
+    .stat-card:nth-child(2) { animation-delay: 0.2s; }
+    .stat-card:nth-child(3) { animation-delay: 0.3s; }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .clientes-header {
+            padding: 2rem 1.5rem;
+        }
+        
+        .clientes-header h1 {
+            font-size: 2rem;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .stats-container {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.8rem;
+        }
+        
+        .stat-card {
+            padding: 0.8rem;
+        }
+        
+        .stat-icon {
+            width: 30px;
+            height: 30px;
+        }
+        
+        .stat-icon i {
+            font-size: 0.8rem;
+        }
+        
+        .stat-number {
+            font-size: 1rem;
+        }
+        
+        .stat-label {
+            font-size: 0.7rem;
+        }
+        
+        .table th, .table td {
+            padding: 1rem 0.5rem;
+            font-size: 0.9rem;
+        }
+        
+        .dataTables_wrapper {
+            padding: 1rem;
+        }
+    }
+
+    /* Estilos para offcanvas mejorado */
+    .offcanvas {
+        border-radius: 0 var(--border-radius) var(--border-radius) 0;
+        box-shadow: var(--hover-shadow);
+    }
+    
+    .offcanvas-header {
+        background: var(--dark-gradient);
+        color: white;
+        border-bottom: none;
+        padding: 1.5rem 2rem;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .offcanvas-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="offcanvas-dots" width="20" height="20" patternUnits="userSpaceOnUse"><circle cx="10" cy="10" r="1" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23offcanvas-dots)"/></svg>');
+        pointer-events: none;
+    }
+    
+    .offcanvas-title {
+        font-weight: 700;
+        font-size: 1.3rem;
+        position: relative;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        gap: 0.8rem;
+        margin: 0;
+    }
+    
+    .offcanvas-header .btn-close {
+        filter: invert(1);
+        opacity: 0.8;
+        transition: var(--transition);
+        position: relative;
+        z-index: 1;
+    }
+    
+    .offcanvas-header .btn-close:hover {
+        opacity: 1;
+        transform: scale(1.1);
+    }
+    
+    .offcanvas-body {
+        padding: 2rem;
+        background: #f8f9fa;
+        overflow-y: auto;
+    }
+
+    /* Estilos para formularios en offcanvas */
+    .offcanvas-body form {
+        background: white;
+        padding: 2rem;
+        border-radius: 15px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+    }
+    
+    .offcanvas-body .form-group {
+        margin-bottom: 1.5rem;
+    }
+    
+    .offcanvas-body label {
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 0.5rem;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .offcanvas-body input,
+    .offcanvas-body select,
+    .offcanvas-body textarea {
+        border-radius: 12px;
+        border: 2px solid #e9ecef;
+        padding: 0.8rem 1rem;
+        transition: var(--transition);
+        font-size: 0.95rem;
+        background: #f8f9fa;
+    }
+    
+    .offcanvas-body input:focus,
+    .offcanvas-body select:focus,
+    .offcanvas-body textarea:focus {
+        border-color: #2c3e50;
+        box-shadow: 0 0 0 0.2rem rgba(44, 62, 80, 0.25);
+        outline: none;
+        background: white;
+    }
+
+    /* Botones de offcanvas mejorados */
+    .offcanvas-body .btn {
+        border-radius: 25px;
+        padding: 0.8rem 1.5rem;
+        font-weight: 600;
+        transition: var(--transition);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-size: 0.9rem;
+        border: none;
+        margin-right: 1rem;
+        margin-bottom: 1rem;
+    }
+    
+    .offcanvas-body .btn-secondary {
+        background: #6c757d;
+        color: white;
+        box-shadow: 0 4px 15px rgba(108, 117, 125, 0.3);
+    }
+    
+    .offcanvas-body .btn-secondary:hover {
+        background: #5a6268;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(108, 117, 125, 0.4);
+        color: white;
+    }
+    
+    .offcanvas-body .btn-primary {
+        background: var(--dark-gradient);
+        color: white;
+        box-shadow: 0 4px 15px rgba(44, 62, 80, 0.3);
+    }
+    
+    .offcanvas-body .btn-primary:hover {
+        background: var(--dark-gradient);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(44, 62, 80, 0.4);
+        color: white;
+    }
+
+    /* Mejoras para scroll en offcanvas */
+    .offcanvas-body::-webkit-scrollbar {
+        width: 8px;
+    }
+    
+    .offcanvas-body::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 10px;
+    }
+    
+    .offcanvas-body::-webkit-scrollbar-thumb {
+        background: var(--dark-gradient);
+        border-radius: 10px;
+    }
+    
+    .offcanvas-body::-webkit-scrollbar-thumb:hover {
+        background: linear-gradient(135deg, #34495e 0%, #2c3e50 100%);
+    }
+
+    /* Responsive para offcanvas */
+    @media (max-width: 768px) {
+        .offcanvas {
+            width: 100% !important;
+        }
+        
+        .offcanvas-body {
+            padding: 1.5rem;
+        }
+        
+        .offcanvas-header {
+            padding: 1rem 1.5rem;
+        }
+        
+        .offcanvas-title {
+            font-size: 1.1rem;
+        }
+        
+        .offcanvas-body form {
+            padding: 1.5rem;
+        }
+        
+        .offcanvas-body input,
+        .offcanvas-body select,
+        .offcanvas-body textarea {
+            padding: 0.7rem 0.8rem;
+            font-size: 0.9rem;
+        }
+        
+        .offcanvas-body .btn {
+            padding: 0.7rem 1.2rem;
+            font-size: 0.85rem;
+            width: 100%;
+            margin-right: 0;
+        }
+    }
+</style>
+
+<main class="container-fluid mt-4">
+    <!-- Header mejorado -->
+    <div class="clientes-header">
+        <h1>
+            <i class="fas fa-users"></i>
+            Clientes
+        </h1>
+        <div class="subtitle">
+            Gestión y administración de todos los clientes
+        </div>
+    </div>
+
+    <!-- Estadísticas -->
+    <div class="stats-container">
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-users"></i>
+            </div>
+            <div class="stat-number">{{ clientes.count }}</div>
+            <div class="stat-label">Total de Clientes</div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-building"></i>
+            </div>
+            <div class="stat-number">
+                {% with empresas=clientes|length %}
+                    {{ empresas|floatformat:0 }}
+                {% endwith %}
+            </div>
+            <div class="stat-label">Empresas</div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-user"></i>
+            </div>
+            <div class="stat-number">
+                {% if clientes.count > 0 %}
+                    {{ clientes.count|floatformat:0 }}
+                {% else %}
+                    0
+                {% endif %}
+            </div>
+            <div class="stat-label">Clientes Activos</div>
+        </div>
+    </div>
+
+    <!-- Botón para abrir el offcanvas -->
+    <button id="abrirOffcanvasBtn" class="btn btn-add-cliente" data-bs-toggle="offcanvas" href="#offcanvasFormulario">
+        <i class="bi bi-plus-lg me-2"></i> Agregar Cliente
+    </button>
+
+    <!-- Contenedor de la tabla -->
+    <div class="clientes-container">
+        <div class="clientes-container-header">
+            <h2>
+                <i class="fas fa-list"></i>
+                Lista de Clientes
+            </h2>
+        </div>
+        
+        <div class="table-responsive">
+            <table id="tablaClientes" class="table table-hover" style="width: 100%">
+                <thead class="table-dark">
+                    <tr>
+                        <th><i class="fas fa-building me-2"></i>Razón Social</th>
+                        <th><i class="fas fa-envelope me-2"></i>Email</th>
+                        <th><i class="fas fa-phone me-2"></i>Teléfono</th>
+                        <th><i class="fas fa-map-marker-alt me-2"></i>Provincia</th>
+                    </tr>
+                </thead>
+                <tbody id="miTablaBody">
+                    {% for cliente in clientes %}
+                        <tr class="fila-servicio" data-url="{% url 'detalle_cliente' cliente.id %}">
+                            <td>{{ cliente.razon_social }}</td>
+                            <td>{{ cliente.email }}</td>
+                            <td>{{ cliente.telefono }}</td>
+                            <td>{{ cliente.provincia.nombre }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Offcanvas -->
+    <div class="offcanvas offcanvas-start" tabindex="-1" id="offcanvasFormulario" aria-labelledby="offcanvasFormularioLabel">
+        <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="offcanvasFormularioLabel">
+                <i class="fas fa-user-plus"></i>
+                Agregar un nuevo Cliente
+            </h5>
+            <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body">
+            <!-- Contenido del formulario con clases de Bootstrap -->
+            <form method="POST" action="{% url 'guardar_cliente' %}" class="needs-validation" novalidate>
+                {% csrf_token %}
+                
+                <!-- Tipo de Cliente -->
+                <div class="mb-3">
+                    <label for="tipo" class="form-label">
+                        <i class="fas fa-tag me-2"></i>Tipo de Cliente:
+                    </label>
+                    <select class="form-control" id="tipo" name="tipo" required>
+                        <option value="EMPRESA">Empresa</option>
+                        <option value="PARTICULAR">Particular</option>
+                        <option value="ORGANISMO_PUBLICO">Organismo Público</option>
+                    </select>
+                    <div class="invalid-feedback">
+                        Por favor, selecciona un tipo de cliente.
+                    </div>
+                </div>
+
+                <!-- Sucursal -->
+                <div class="mb-3">
+                    <label for="sucursal" class="form-label">
+                        <i class="fas fa-building me-2"></i>Sucursal:
+                    </label>
+                    <select class="form-control" id="sucursal" name="sucursal" required>
+                        {% for sucursal in sucursales %}
+                            <option value="{{ sucursal.id }}">{{ sucursal.nombre }}</option>
+                        {% endfor %}
+                    </select>
+                    <div class="invalid-feedback">
+                        Por favor, selecciona una sucursal.
+                    </div>
+                </div>
+
+                <!-- Razón Social -->
+                <div class="mb-3">
+                    <label for="razon_social" class="form-label">
+                        <i class="fas fa-id-card me-2"></i>Razón Social:
+                    </label>
+                    <input type="text" class="form-control" id="razon_social" name="razon_social" required>
+                    <div class="invalid-feedback">
+                        Por favor, ingresa la razón social.
+                    </div>
+                </div>
+
+                <!-- Nombre Fantasía -->
+                <div class="mb-3">
+                    <label for="nombre_fantasia" class="form-label">
+                        <i class="fas fa-star me-2"></i>Nombre Fantasía:
+                    </label>
+                    <input type="text" class="form-control" id="nombre_fantasia" name="nombre_fantasia">
+                </div>
+
+                <!-- CUIT -->
+                <div class="mb-3">
+                    <label for="cuit" class="form-label">
+                        <i class="fas fa-hashtag me-2"></i>CUIT:
+                    </label>
+                    <input type="text" class="form-control" id="cuit" name="cuit" required>
+                    <div class="invalid-feedback">
+                        Por favor, ingresa el CUIT.
+                    </div>
+                </div>
+
+                <!-- EMAIL -->
+                <div class="mb-3">
+                    <label for="email" class="form-label">
+                        <i class="fas fa-envelope me-2"></i>Email:
+                    </label>
+                    <input type="text" class="form-control" id="email" name="email" required>
+                    <div class="invalid-feedback">
+                        Por favor, ingresa el email.
+                    </div>
+                </div>
+
+                <!-- TELEFONO -->
+                <div class="mb-3">
+                    <label for="telefono" class="form-label">
+                        <i class="fas fa-phone me-2"></i>Teléfono:
+                    </label>
+                    <input type="text" class="form-control" id="telefono" name="telefono" required>
+                    <div class="invalid-feedback">
+                        Por favor, ingresa el teléfono.
+                    </div>
+                </div>
+
+                <!-- Dirección -->
+                <div class="mb-3">
+                    <label for="direccion" class="form-label">
+                        <i class="fas fa-map-marker-alt me-2"></i>Dirección:
+                    </label>
+                    <input type="text" class="form-control" id="direccion" name="direccion" required>
+                    <div class="invalid-feedback">
+                        Por favor, ingresa la dirección.
+                    </div>
+                </div>
+
+                <!-- Código Postal -->
+                <div class="mb-3">
+                    <label for="codigo_postal" class="form-label">
+                        <i class="fas fa-mail-bulk me-2"></i>Código Postal:
+                    </label>
+                    <input type="text" class="form-control" id="codigo_postal" name="codigo_postal" required>
+                    <div class="invalid-feedback">
+                        Por favor, ingresa el código postal.
+                    </div>
+                </div>
+
+                <!-- Ciudad -->
+                <div class="mb-3">
+                    <label for="ciudad" class="form-label">
+                        <i class="fas fa-city me-2"></i>Ciudad:
+                    </label>
+                    <select class="form-control" id="ciudad" name="ciudad" required>
+                        {% for ciudad in ciudades %}
+                            <option value="{{ ciudad.id }}">{{ ciudad.nombre }}</option>
+                        {% endfor %}
+                    </select>
+                    <div class="invalid-feedback">
+                        Por favor, selecciona una ciudad.
+                    </div>
+                </div>
+
+                <!-- Provincia -->
+                <div class="mb-3">
+                    <label for="provincia" class="form-label">
+                        <i class="fas fa-map me-2"></i>Provincia:
+                    </label>
+                    <select class="form-control" id="provincia" name="provincia" required>
+                        {% for provincia in provincias %}
+                            <option value="{{ provincia.id }}">{{ provincia.nombre }}</option>
+                        {% endfor %}
+                    </select>
+                    <div class="invalid-feedback">
+                        Por favor, selecciona una provincia.
+                    </div>
+                </div>
+
+                <!-- Observaciones -->
+                <div class="mb-3">
+                    <label for="observaciones" class="form-label">
+                        <i class="fas fa-sticky-note me-2"></i>Observaciones:
+                    </label>
+                    <textarea class="form-control" id="observaciones" name="observaciones" rows="4"></textarea>
+                </div>
+
+                <button id="cerrarModalBtn" type="button" class="btn btn-secondary" data-bs-dismiss="offcanvas">
+                    <i class="fas fa-times me-2"></i>Cerrar
+                </button>
+                <input id="guardarModalBtn" type="submit" class="btn btn-primary" value="Guardar Cliente">
+            </form>
+        </div>
+    </div>
+</main>
+
+<script src="{% static 'js/clientes.js' %}"></script>
+
+{% endblock %}

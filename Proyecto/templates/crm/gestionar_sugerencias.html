@@ -1,0 +1,243 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2>
+                <i class="bi bi-list-check me-2"></i>Gestionar Sugerencias
+            </h2>
+            <p class="text-muted">Panel de administración para revisar y gestionar sugerencias de mejora</p>
+        </div>
+        <a href="{% url 'crm:gestionar_sugerencias' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Volver a Gestionar Sugerencias
+        </a>
+    </div>
+
+    <!-- Estadísticas -->
+    <div class="row mb-4">
+        <div class="col-md-2">
+            <div class="card bg-primary text-white">
+                <div class="card-body text-center">
+                    <h4 class="mb-0">{{ total_sugerencias }}</h4>
+                    <small>Total</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card bg-warning text-dark">
+                <div class="card-body text-center">
+                    <h4 class="mb-0">{{ pendientes }}</h4>
+                    <small>Pendientes</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card bg-info text-white">
+                <div class="card-body text-center">
+                    <h4 class="mb-0">{{ en_analisis }}</h4>
+                    <small>En Análisis</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card bg-success text-white">
+                <div class="card-body text-center">
+                    <h4 class="mb-0">{{ aprobadas }}</h4>
+                    <small>Aprobadas</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card bg-secondary text-white">
+                <div class="card-body text-center">
+                    <h4 class="mb-0">{{ implementadas }}</h4>
+                    <small>Implementadas</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card bg-danger text-white">
+                <div class="card-body text-center">
+                    <h4 class="mb-0">{{ sugerencias|length|add:"-"|add:total_sugerencias|add:total_sugerencias }}</h4>
+                    <small>Rechazadas</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">
+                <i class="bi bi-funnel me-2"></i>Filtros
+            </h5>
+        </div>
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-3">
+                    <label for="estado" class="form-label">Estado</label>
+                    <select name="estado" id="estado" class="form-select">
+                        <option value="">Todos los estados</option>
+                        <option value="PENDIENTE" {% if estado_filtro == 'PENDIENTE' %}selected{% endif %}>Pendiente de Revisión</option>
+                        <option value="EN_ANALISIS" {% if estado_filtro == 'EN_ANALISIS' %}selected{% endif %}>En Análisis</option>
+                        <option value="APROBADA" {% if estado_filtro == 'APROBADA' %}selected{% endif %}>Aprobada</option>
+                        <option value="IMPLEMENTADA" {% if estado_filtro == 'IMPLEMENTADA' %}selected{% endif %}>Implementada</option>
+                        <option value="RECHAZADA" {% if estado_filtro == 'RECHAZADA' %}selected{% endif %}>Rechazada</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="categoria" class="form-label">Categoría</label>
+                    <select name="categoria" id="categoria" class="form-select">
+                        <option value="">Todas las categorías</option>
+                        <option value="PROCESOS" {% if categoria_filtro == 'PROCESOS' %}selected{% endif %}>Procesos de Trabajo</option>
+                        <option value="EQUIPOS" {% if categoria_filtro == 'EQUIPOS' %}selected{% endif %}>Equipos y Herramientas</option>
+                        <option value="SEGURIDAD" {% if categoria_filtro == 'SEGURIDAD' %}selected{% endif %}>Seguridad Laboral</option>
+                        <option value="CALIDAD" {% if categoria_filtro == 'CALIDAD' %}selected{% endif %}>Control de Calidad</option>
+                        <option value="MANTENIMIENTO" {% if categoria_filtro == 'MANTENIMIENTO' %}selected{% endif %}>Mantenimiento Preventivo</option>
+                        <option value="ATENCION_CLIENTE" {% if categoria_filtro == 'ATENCION_CLIENTE' %}selected{% endif %}>Atención al Cliente</option>
+                        <option value="FORMACION" {% if categoria_filtro == 'FORMACION' %}selected{% endif %}>Formación y Capacitación</option>
+                        <option value="TECNOLOGIA" {% if categoria_filtro == 'TECNOLOGIA' %}selected{% endif %}>Tecnología y Sistemas</option>
+                        <option value="AMBIENTE" {% if categoria_filtro == 'AMBIENTE' %}selected{% endif %}>Ambiente de Trabajo</option>
+                        <option value="OTROS" {% if categoria_filtro == 'OTROS' %}selected{% endif %}>Otros</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="prioridad" class="form-label">Prioridad</label>
+                    <select name="prioridad" id="prioridad" class="form-select">
+                        <option value="">Todas las prioridades</option>
+                        <option value="BAJA" {% if prioridad_filtro == 'BAJA' %}selected{% endif %}>Baja</option>
+                        <option value="MEDIA" {% if prioridad_filtro == 'MEDIA' %}selected{% endif %}>Media</option>
+                        <option value="ALTA" {% if prioridad_filtro == 'ALTA' %}selected{% endif %}>Alta</option>
+                        <option value="URGENTE" {% if prioridad_filtro == 'URGENTE' %}selected{% endif %}>Urgente</option>
+                    </select>
+                </div>
+                <div class="col-md-3 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary me-2">
+                        <i class="bi bi-search me-2"></i>Filtrar
+                    </button>
+                    <a href="{% url 'crm:gestionar_sugerencias' %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-clockwise me-2"></i>Limpiar
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Tabla de Sugerencias -->
+    <div class="card shadow-sm">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">
+                <i class="bi bi-table me-2"></i>Lista de Sugerencias
+            </h5>
+            <div>
+                <button class="btn btn-sm btn-outline-primary" onclick="exportarExcel()">
+                    <i class="bi bi-file-earmark-excel me-2"></i>Exportar
+                </button>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped table-hover" id="tablaSugerencias">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Título</th>
+                            <th>Categoría</th>
+                            <th>Estado</th>
+                            <th>Prioridad</th>
+                            <th>Impacto</th>
+                            <th>Fecha Sugerencia</th>
+                            <th>Días Pendiente</th>
+                            <th>Revisor</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for sugerencia in sugerencias %}
+                        <tr>
+                            <td>
+                                <strong>{{ sugerencia.titulo }}</strong><br>
+                                <small class="text-muted">{{ sugerencia.descripcion|truncatewords:10 }}</small>
+                            </td>
+                            <td>
+                                <span class="badge bg-secondary">{{ sugerencia.get_categoria_display }}</span>
+                            </td>
+                            <td>
+                                <span class="badge {% if sugerencia.estado == 'PENDIENTE' %}bg-warning{% elif sugerencia.estado == 'EN_ANALISIS' %}bg-info{% elif sugerencia.estado == 'APROBADA' %}bg-success{% elif sugerencia.estado == 'IMPLEMENTADA' %}bg-primary{% else %}bg-danger{% endif %}">
+                                    {{ sugerencia.get_estado_display }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge {% if sugerencia.prioridad == 'BAJA' %}bg-secondary{% elif sugerencia.prioridad == 'MEDIA' %}bg-info{% elif sugerencia.prioridad == 'ALTA' %}bg-warning{% else %}bg-danger{% endif %}">
+                                    {{ sugerencia.get_prioridad_display }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge {% if sugerencia.impacto_estimado == 'BAJO' %}bg-secondary{% elif sugerencia.impacto_estimado == 'MEDIO' %}bg-info{% elif sugerencia.impacto_estimado == 'ALTO' %}bg-warning{% else %}bg-danger{% endif %}">
+                                    {{ sugerencia.get_impacto_estimado_display }}
+                                </span>
+                            </td>
+                            <td>
+                                {{ sugerencia.fecha_sugerencia|date:"d/m/Y" }}<br>
+                                <small class="text-muted">{{ sugerencia.fecha_sugerencia|date:"H:i" }}</small>
+                            </td>
+                            <td>
+                                {% if sugerencia.dias_pendiente > 0 %}
+                                    <span class="badge {% if sugerencia.dias_pendiente <= 7 %}bg-success{% elif sugerencia.dias_pendiente <= 30 %}bg-warning{% else %}bg-danger{% endif %}">
+                                        {{ sugerencia.dias_pendiente }} días
+                                    </span>
+                                {% else %}
+                                    <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if sugerencia.revisor %}
+                                    {{ sugerencia.revisor.nombre }}<br>
+                                    <small class="text-muted">{{ sugerencia.fecha_revision|date:"d/m/Y" }}</small>
+                                {% else %}
+                                    <span class="text-muted">Sin revisar</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="btn-group btn-group-sm">
+                                    <a href="{% url 'crm:revisar_sugerencia' sugerencia.id %}" class="btn btn-outline-primary" title="Revisar Sugerencia">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    {% if sugerencia.estado == 'PENDIENTE' %}
+                                    <button class="btn btn-outline-success" title="Marcar como En Análisis" onclick="cambiarEstado({{ sugerencia.id }}, 'EN_ANALISIS')">
+                                        <i class="bi bi-play-circle"></i>
+                                    </button>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="9" class="text-center text-muted">
+                                <i class="bi bi-inbox me-2"></i>No hay sugerencias que coincidan con los filtros aplicados
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Función para exportar a Excel (placeholder)
+function exportarExcel() {
+    alert('Función de exportación en desarrollo');
+}
+
+// Función para cambiar estado rápidamente (placeholder)
+function cambiarEstado(sugerenciaId, nuevoEstado) {
+    if (confirm('¿Estás seguro de cambiar el estado de esta sugerencia?')) {
+        // Aquí se implementaría la lógica para cambiar el estado
+        alert('Función de cambio de estado en desarrollo');
+    }
+}
+</script>
+{% endblock %} 

@@ -1,0 +1,41 @@
+<!-- templates/dashboard/campanas_finalizadas.html -->
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-5">
+    <h1>Campañas Finalizadas</h1>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Nombre</th>
+                <th>Fecha de Inicio</th>
+                <th>Fecha de Fin</th>
+                <th>Ventas Exitosas</th>
+                <th>Ventas Perdidas</th>
+                <th>Total Paquetes Vendidos</th>
+                <th>Valor Total Vendido (USD)</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for resumen in resumen_campanias %}
+                <tr>
+                    <td>{{ resumen.campania.nombre }}</td>
+                    <td>{{ resumen.campania.fecha_inicio }}</td>
+                    <td>{{ resumen.campania.fecha_fin }}</td>
+                    <td>{{ resumen.ventas_exitosas }}</td>
+                    <td>{{ resumen.ventas_perdidas }}</td>
+                    <td>{{ resumen.total_paquetes_vendidos }}</td>
+                    <td>${{ resumen.valor_total_vendido|floatformat:2 }}</td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="7">No hay campañas finalizadas.</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
+
+
+    

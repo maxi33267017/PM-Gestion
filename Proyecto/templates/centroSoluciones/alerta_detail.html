@@ -1,0 +1,204 @@
+{% extends 'base.html' %}
+{% block title %} | Detalle de Alerta{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="display-6 mb-2">
+                        <i class="bi bi-exclamation-triangle-fill text-warning me-2"></i>Alerta {{ alerta.codigo }}
+                    </h1>
+                    <p class="lead text-muted">Detalle de la alerta de equipo</p>
+                </div>
+                <div>
+                    <a href="{% url 'centroSoluciones:alertas_list' %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left me-2"></i>Volver a Alertas
+                    </a>
+                    {% if user.rol == 'TECNICO' and alerta.tecnico_asignado == user and alerta.estado == 'ASIGNADA' %}
+                    <a href="{% url 'centroSoluciones:procesar_alerta' alerta.id %}" class="btn btn-warning">
+                        <i class="bi bi-tools me-2"></i>Procesar Alerta
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Información Principal -->
+        <div class="col-md-8">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-info-circle me-2"></i>Información de la Alerta
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Cliente</label>
+                            <p class="form-control-plaintext">{{ alerta.cliente.razon_social }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">PIN del Equipo</label>
+                            <p class="form-control-plaintext">{{ alerta.pin_equipo }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Código de Alerta</label>
+                            <p class="form-control-plaintext">{{ alerta.codigo }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Clasificación</label>
+                            <p class="form-control-plaintext">
+                                <span class="badge bg-{{ alerta.get_prioridad_color }}">
+                                    {{ alerta.get_clasificacion_display }}
+                                </span>
+                            </p>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Estado</label>
+                            <p class="form-control-plaintext">
+                                {% if alerta.estado == 'PENDIENTE' %}
+                                    <span class="badge bg-danger">Pendiente</span>
+                                {% elif alerta.estado == 'ASIGNADA' %}
+                                    <span class="badge bg-warning">Asignada</span>
+                                {% elif alerta.estado == 'EN_PROCESO' %}
+                                    <span class="badge bg-info">En Proceso</span>
+                                {% elif alerta.estado == 'RESUELTA' %}
+                                    <span class="badge bg-success">Resuelta</span>
+                                {% elif alerta.estado == 'CANCELADA' %}
+                                    <span class="badge bg-secondary">Cancelada</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Sucursal</label>
+                            <p class="form-control-plaintext">{{ alerta.sucursal.nombre }}</p>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-bold">Descripción</label>
+                            <p class="form-control-plaintext">{{ alerta.descripcion|linebreaks }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Observaciones del Técnico -->
+            {% if alerta.observaciones_tecnico %}
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-clipboard-text me-2"></i>Observaciones del Técnico
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="mb-0">{{ alerta.observaciones_tecnico|linebreaks }}</p>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Panel Lateral -->
+        <div class="col-md-4">
+            <!-- Asignación -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-person-gear me-2"></i>Asignación
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if alerta.tecnico_asignado %}
+                        <div class="d-flex align-items-center mb-3">
+                            <i class="bi bi-person-circle fs-1 text-primary me-3"></i>
+                            <div>
+                                <h6 class="mb-1">{{ alerta.tecnico_asignado.get_nombre_completo }}</h6>
+                                <small class="text-muted">Técnico Asignado</small>
+                            </div>
+                        </div>
+                        {% if alerta.fecha_asignacion %}
+                        <p class="mb-1">
+                            <strong>Asignado el:</strong><br>
+                            <small class="text-muted">{{ alerta.fecha_asignacion|date:"d/m/Y H:i" }}</small>
+                        </p>
+                        {% endif %}
+                    {% else %}
+                        <div class="text-center py-3">
+                            <i class="bi bi-person-x display-4 text-muted"></i>
+                            <p class="text-muted mt-2">Sin técnico asignado</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Fechas -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-calendar-event me-2"></i>Fechas
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Fecha de Recepción</label>
+                        <p class="form-control-plaintext">{{ alerta.fecha|date:"d/m/Y H:i" }}</p>
+                    </div>
+                    {% if alerta.fecha_asignacion %}
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Fecha de Asignación</label>
+                        <p class="form-control-plaintext">{{ alerta.fecha_asignacion|date:"d/m/Y H:i" }}</p>
+                    </div>
+                    {% endif %}
+                    {% if alerta.fecha_resolucion %}
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Fecha de Resolución</label>
+                        <p class="form-control-plaintext">{{ alerta.fecha_resolucion|date:"d/m/Y H:i" }}</p>
+                    </div>
+                    {% endif %}
+                    {% if alerta.tiempo_pendiente %}
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Tiempo Pendiente</label>
+                        <p class="form-control-plaintext text-warning">
+                            {{ alerta.tiempo_pendiente.days }} días, {{ alerta.tiempo_pendiente.seconds|floatformat:0|div:3600|floatformat:0 }} horas
+                        </p>
+                    </div>
+                    {% endif %}
+                    {% if alerta.tiempo_resolucion %}
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Tiempo Total de Resolución</label>
+                        <p class="form-control-plaintext text-success">
+                            {{ alerta.tiempo_resolucion.days }} días, {{ alerta.tiempo_resolucion.seconds|floatformat:0|div:3600|floatformat:0 }} horas
+                        </p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Información de Auditoría -->
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-clock-history me-2"></i>Auditoría
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Creado por</label>
+                        <p class="form-control-plaintext">{{ alerta.creado_por.get_nombre_completo }}</p>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Fecha de Creación</label>
+                        <p class="form-control-plaintext">{{ alerta.fecha_creacion|date:"d/m/Y H:i" }}</p>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Última Modificación</label>
+                        <p class="form-control-plaintext">{{ alerta.fecha_modificacion|date:"d/m/Y H:i" }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

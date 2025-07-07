@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+
+    </style>
+
+    <main>
+        <div class="container mt-4">
+            <h1 class="display-6">Editar Servicio {{ servicio.id }}</h1>
+            <hr>
+
+            <form id="formulario_agregar_equipo_pm" method="POST" action="{% url 'editar_servicio' servicio_id=servicio.id %}" class="needs-validation" novalidate>
+                {% csrf_token %}
+      
+                <div class="mb-3">
+                    <p class="form-control-static cliente">{{ servicio.cliente }}</p>
+                </div>
+
+                <div class="mb-3">
+                    <label for="equipo_relacionado" class="form-label">S/N de Equipo:</label>
+                    <p class="form-control-static cliente">{{ servicio.equipo_relacionado }}</p>
+                </div>
+
+                <div class="mb-3">
+                    <label for="horas_equipo" class="form-label fw-bold">Horas de motor:</label>
+                    <input type="text" class="form-control" id="horas_equipo" name="horas_equipo" required value="{{ servicio.horas_equipo }}">
+                    <div class="invalid-feedback">Este campo es obligatorio.</div>
+                </div>
+        
+                <div class="mb-3">
+                    <label for="solicitud_trabajo" class="form-label fw-bold">Solicitud cliente:</label>
+                    <input type="text" class="form-control" id="solicitud_trabajo" name="solicitud_trabajo" value="{{ servicio.solicitud_trabajo }}">
+                </div>
+
+                <div class="mb-3">
+                    <label for="comentarios" class="form-label fw-bold">Comentarios:</label>
+                    <textarea class="form-control" id="comentarios" name="comentarios" cols="30" rows="3">{{ servicio.comentarios }}</textarea>
+                </div>
+
+                <div class="mb-3">
+                    <label for="informe_servicio" class="form-label fw-bold">Número de Informe de servicio:</label>
+                    <input type="text" class="form-control" id="informe_servicio" name="informe_servicio">
+                </div>
+
+                <div class="mb-3">
+                    <label for="estado_solicitud" class="form-label fw-bold">Estado solicitud:</label>
+                    <select class="form-select" name="estado_solicitud" id="estado_solicitud">
+                        <option value="pendiente">Pendiente</option>
+                        <option value="finalizado">Finalizado</option>
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label for="fecha_egreso" class="form-label fw-bold">Fecha de egreso:</label>
+                    <input type="text" class="form-control" id="fecha_egreso" name="fecha_egreso" required>
+                    <div class="invalid-feedback">Este campo es obligatorio.</div>
+                </div>
+
+                <div class="d-flex justify-content-between">
+                    <a href="{% url 'servicios' %}" class="btn btn-secondary boton">Volver</a>
+                    <button type="submit" class="btn btn-primary boton">Guardar</button>
+                </div>
+            </form>
+        </div>
+        
+        <script>
+            $(document).ready(function() {
+                $("#fecha_egreso").datepicker();
+            });
+        </script>
+    </main>
+{% endblock %}

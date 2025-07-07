@@ -1,0 +1,360 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2>
+                <i class="bi bi-person-circle me-2"></i>{{ cliente.razon_social }}
+            </h2>
+            <p class="text-muted">Dashboard individual de análisis y comportamiento</p>
+        </div>
+        <div>
+            <a href="{% url 'crm:analisis_clientes' %}" class="btn btn-outline-secondary me-2">
+                <i class="bi bi-arrow-left me-2"></i>Volver al Análisis
+            </a>
+            <a href="{% url 'crm:crm' %}" class="btn btn-outline-primary">
+                <i class="fas fa-arrow-left me-2"></i>Volver al CRM
+            </a>
+        </div>
+    </div>
+
+    <!-- Información del Cliente -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-info-circle me-2"></i>Información del Cliente
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Razón Social:</strong> {{ cliente.razon_social }}</p>
+                            <p><strong>Email:</strong> {{ cliente.email|default:"No especificado" }}</p>
+                            <p><strong>Teléfono:</strong> {{ cliente.telefono|default:"No especificado" }}</p>
+                            <p><strong>Dirección:</strong> {{ cliente.direccion|default:"No especificada" }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Estado:</strong> 
+                                <span class="badge {% if cliente.activo %}bg-success{% else %}bg-danger{% endif %}">
+                                    {{ cliente.activo|yesno:"Activo,Inactivo" }}
+                                </span>
+                            </p>
+                            <p><strong>Fecha de Registro:</strong> {{ cliente.fecha_registro|date:"d/m/Y" }}</p>
+                            <p><strong>Sucursal:</strong> {{ cliente.sucursal|default:"No especificada" }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-activity me-2"></i>Estado Actual
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="text-center">
+                        <div class="mb-3">
+                            <span class="badge fs-6 {% if comportamiento == 'ACTIVO' %}bg-success{% elif comportamiento == 'CRECIMIENTO' %}bg-info{% elif comportamiento == 'COMPORTAMIENTO_BAJISTA' %}bg-warning{% else %}bg-danger{% endif %}">
+                                {{ comportamiento }}
+                            </span>
+                        </div>
+                        {% if dias_desde_ultimo %}
+                        <p><strong>{{ dias_desde_ultimo }} días</strong><br>
+                        <small class="text-muted">desde el último servicio</small></p>
+                        {% else %}
+                        <p><strong>Sin servicios</strong><br>
+                        <small class="text-muted">cliente nuevo</small></p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Estadísticas Principales -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body text-center">
+                    <h6 class="card-title">Total Servicios</h6>
+                    <h3 class="mb-0">{{ total_servicios }}</h3>
+                    <small>{{ servicios_ultimo_ano }} en el último año</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body text-center">
+                    <h6 class="card-title">Facturación Total</h6>
+                    <h3 class="mb-0">${{ facturacion_total|floatformat:0 }}</h3>
+                    <small>Histórico completo</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body text-center">
+                    <h6 class="card-title">Equipos Activos</h6>
+                    <h3 class="mb-0">{{ equipos.count }}</h3>
+                    <small>En servicio</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-dark">
+                <div class="card-body text-center">
+                    <h6 class="card-title">Paquetes Activos</h6>
+                    <h3 class="mb-0">{{ paquetes_activos.count }}</h3>
+                    <small>Vigentes</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Oportunidades -->
+    {% if oportunidades %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm border-warning">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0">
+                        <i class="bi bi-lightbulb me-2"></i>Oportunidades de Venta
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for oportunidad in oportunidades %}
+                        <div class="col-md-6 mb-3">
+                            <div class="d-flex align-items-center">
+                                <div class="bg-{% if oportunidad.prioridad == 'ALTA' %}danger{% else %}warning{% endif %} rounded-circle me-3" style="width: 15px; height: 15px;"></div>
+                                <div>
+                                    <strong>{{ oportunidad.descripcion }}</strong><br>
+                                    <small class="text-muted">Prioridad: {{ oportunidad.prioridad }}</small>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Contenido Principal -->
+    <div class="row">
+        <!-- Historial de Facturación -->
+        <div class="col-md-8">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-graph-up me-2"></i>Historial de Facturación (Últimos 12 meses)
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="historialChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Equipos y Paquetes -->
+        <div class="col-md-4">
+            <!-- Equipos -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-gear me-2"></i>Equipos Activos
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% for equipo in equipos %}
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <div>
+                            <strong>{{ equipo.modelo.nombre }}</strong><br>
+                            <small class="text-muted">{{ equipo.serial }}</small>
+                        </div>
+                        <span class="badge bg-success">Activo</span>
+                    </div>
+                    {% empty %}
+                    <p class="text-muted text-center">No hay equipos registrados</p>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Paquetes Activos -->
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-box me-2"></i>Paquetes Activos
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% for paquete_cliente in paquetes_activos %}
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <div>
+                            <strong>{{ paquete_cliente.paquete.nombre }}</strong><br>
+                            <small class="text-muted">${{ paquete_cliente.paquete.precio|floatformat:0 }}</small>
+                        </div>
+                        <span class="badge bg-success">Activo</span>
+                    </div>
+                    {% empty %}
+                    <p class="text-muted text-center">No hay paquetes activos</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Servicios Recientes -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-clock-history me-2"></i>Servicios Recientes
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Fecha</th>
+                                    <th>Descripción</th>
+                                    <th>Estado</th>
+                                    <th>Valor Mano de Obra</th>
+                                    <th>Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for servicio_data in servicios %}
+                                <tr>
+                                    <td>{{ servicio_data.servicio.fecha_servicio|date:"d/m/Y" }}</td>
+                                    <td>{{ servicio_data.servicio.descripcion|truncatewords:10 }}</td>
+                                    <td>
+                                        <span class="badge {% if servicio_data.servicio.estado == 'COMPLETADO' %}bg-success{% elif servicio_data.servicio.estado == 'EN_PROCESO' %}bg-warning{% else %}bg-secondary{% endif %}">
+                                            {{ servicio_data.servicio.get_estado_display }}
+                                        </span>
+                                    </td>
+                                    <td>${{ servicio_data.servicio.valor_mano_obra|floatformat:0 }}</td>
+                                    <td>
+                                        <strong>${{ servicio_data.total|floatformat:0 }}</strong>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="5" class="text-center text-muted">
+                                        <i class="bi bi-inbox me-2"></i>No hay servicios registrados
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contactos de Campañas -->
+    {% if contactos %}
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-people me-2"></i>Contactos de Campañas
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Fecha</th>
+                                    <th>Campaña</th>
+                                    <th>Responsable</th>
+                                    <th>Resultado</th>
+                                    <th>Valor Venta</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for contacto in contactos %}
+                                <tr>
+                                    <td>{{ contacto.fecha_contacto|date:"d/m/Y" }}</td>
+                                    <td>{{ contacto.campania.nombre }}</td>
+                                    <td>{{ contacto.responsable.username }}</td>
+                                    <td>
+                                        <span class="badge {% if contacto.resultado == 'VENTA_EXITOSA' %}bg-success{% elif contacto.resultado == 'VENTA_PERDIDA' %}bg-danger{% else %}bg-warning{% endif %}">
+                                            {{ contacto.get_resultado_display }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% if contacto.valor_venta %}
+                                        <strong>${{ contacto.valor_venta|floatformat:0 }}</strong>
+                                        {% else %}
+                                        <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Gráfico de historial de facturación
+const ctx = document.getElementById('historialChart').getContext('2d');
+const historialData = {{ historial_facturacion|safe }};
+
+const chart = new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: historialData.map(item => item.mes),
+        datasets: [{
+            label: 'Facturación Mensual',
+            data: historialData.map(item => item.facturacion),
+            borderColor: 'rgb(75, 192, 192)',
+            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+            tension: 0.1
+        }]
+    },
+    options: {
+        responsive: true,
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: {
+                    callback: function(value) {
+                        return '$' + value.toLocaleString();
+                    }
+                }
+            }
+        },
+        plugins: {
+            tooltip: {
+                callbacks: {
+                    label: function(context) {
+                        return 'Facturación: $' + context.parsed.y.toLocaleString();
+                    }
+                }
+            }
+        }
+    }
+});
+</script>
+{% endblock %} 

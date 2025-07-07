@@ -1,0 +1,134 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Historial de Cambios - Servicio {{ servicio.id }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="card-title">
+                        <i class="fas fa-history"></i>
+                        Historial de Cambios de Estado - Servicio #{{ servicio.id }}
+                    </h4>
+                    <p class="text-muted">
+                        Cliente: {{ servicio.preorden.cliente.razon_social }} | 
+                        Estado Actual: <span class="badge bg-primary">{{ servicio.get_estado_display }}</span>
+                    </p>
+                </div>
+                <div class="card-body">
+                    {% if logs_cambios %}
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Fecha y Hora</th>
+                                        <th>Usuario</th>
+                                        <th>Estado Anterior</th>
+                                        <th>Estado Nuevo</th>
+                                        <th>Motivo</th>
+                                        <th>IP</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for log in logs_cambios %}
+                                    <tr>
+                                        <td>
+                                            <i class="fas fa-clock"></i>
+                                            {{ log.fecha_cambio|date:"d/m/Y H:i" }}
+                                            <br>
+                                            <small class="text-muted">
+                                                {{ log.tiempo_transcurrido.days }} días, 
+                                                {{ log.tiempo_transcurrido.seconds|floatformat:0 }} segundos atrás
+                                            </small>
+                                        </td>
+                                        <td>
+                                            <i class="fas fa-user"></i>
+                                            {{ log.usuario.nombre }}
+                                            <br>
+                                            <small class="text-muted">{{ log.usuario.get_rol_display }}</small>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-secondary">
+                                                {{ log.estado_anterior }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-success">
+                                                {{ log.estado_nuevo }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            {% if log.motivo %}
+                                                <i class="fas fa-comment"></i>
+                                                {{ log.motivo }}
+                                            {% else %}
+                                                <span class="text-muted">Sin motivo especificado</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if log.ip_address %}
+                                                <code>{{ log.ip_address }}</code>
+                                            {% else %}
+                                                <span class="text-muted">No registrada</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <div class="row mt-4">
+                            <div class="col-md-6">
+                                <div class="card bg-light">
+                                    <div class="card-body">
+                                        <h6><i class="fas fa-chart-line"></i> Resumen de Cambios:</h6>
+                                        <ul class="list-unstyled">
+                                            <li><strong>Total de cambios:</strong> {{ logs_cambios.count }}</li>
+                                            <li><strong>Primer cambio:</strong> {{ logs_cambios.last.fecha_cambio|date:"d/m/Y H:i" }}</li>
+                                            <li><strong>Último cambio:</strong> {{ logs_cambios.first.fecha_cambio|date:"d/m/Y H:i" }}</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="card bg-light">
+                                    <div class="card-body">
+                                        <h6><i class="fas fa-users"></i> Usuarios que han hecho cambios:</h6>
+                                        <ul class="list-unstyled">
+                                            {% for usuario in usuarios_unicos %}
+                                                <li><i class="fas fa-user"></i> {{ usuario }}</li>
+                                            {% endfor %}
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-history fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">No hay cambios registrados</h5>
+                            <p class="text-muted">Este servicio no ha tenido cambios de estado registrados.</p>
+                        </div>
+                    {% endif %}
+                    
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <a href="{% url 'gestionDeTaller:detalle_servicio' servicio.id %}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> Volver al Servicio
+                            </a>
+                            <a href="{% url 'gestionDeTaller:cambiar_estado_servicio' servicio.id %}" class="btn btn-primary">
+                                <i class="fas fa-exchange-alt"></i> Cambiar Estado
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

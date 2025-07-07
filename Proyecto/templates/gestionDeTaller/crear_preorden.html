@@ -1,0 +1,857 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load form_extras %} 
+
+{% block content %}
+<style>
+    /* Variables CSS para consistencia */
+    :root {
+        --primary-gradient: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        --secondary-gradient: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        --success-gradient: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+        --warning-gradient: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+        --danger-gradient: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+        --dark-gradient: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        --light-gradient: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        --card-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        --hover-shadow: 0 15px 40px rgba(0,0,0,0.15);
+        --border-radius: 20px;
+        --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Header mejorado */
+    .preorden-header {
+        background: var(--dark-gradient);
+        color: white;
+        padding: 3rem 2rem;
+        border-radius: var(--border-radius);
+        margin-bottom: 2.5rem;
+        box-shadow: var(--card-shadow);
+        position: relative;
+        overflow: hidden;
+        text-align: center;
+    }
+    
+    .preorden-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="dots" width="20" height="20" patternUnits="userSpaceOnUse"><circle cx="10" cy="10" r="1" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23dots)"/></svg>');
+        pointer-events: none;
+    }
+    
+    .preorden-header h1 {
+        margin: 0;
+        font-weight: 800;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        font-size: 3rem;
+        position: relative;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 1rem;
+    }
+    
+    .preorden-header .subtitle {
+        font-size: 1.2rem;
+        opacity: 0.9;
+        margin-top: 1rem;
+        position: relative;
+        z-index: 1;
+    }
+
+    /* Contenedor principal */
+    .form-container {
+        background: white;
+        border-radius: var(--border-radius);
+        box-shadow: var(--card-shadow);
+        overflow: hidden;
+        border: 1px solid #e9ecef;
+        margin-bottom: 2rem;
+    }
+
+    /* Header del formulario */
+    .form-header {
+        background: var(--dark-gradient);
+        color: white;
+        padding: 1.5rem 2rem;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .form-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="form-dots" width="20" height="20" patternUnits="userSpaceOnUse"><circle cx="10" cy="10" r="1" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23form-dots)"/></svg>');
+        pointer-events: none;
+    }
+    
+    .form-header h3 {
+        margin: 0;
+        font-weight: 700;
+        font-size: 1.5rem;
+        position: relative;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        gap: 0.8rem;
+    }
+
+    /* Secciones del formulario */
+    .form-section {
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+        border: 1px solid #e9ecef;
+        overflow: hidden;
+        margin-bottom: 2rem;
+        transition: var(--transition);
+    }
+    
+    .form-section:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+    }
+    
+    .section-header {
+        background: var(--dark-gradient);
+        color: white;
+        padding: 1.2rem 1.5rem;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .section-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="section-dots" width="20" height="20" patternUnits="userSpaceOnUse"><circle cx="10" cy="10" r="1" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23section-dots)"/></svg>');
+        pointer-events: none;
+    }
+    
+    .section-header h5 {
+        margin: 0;
+        font-weight: 600;
+        font-size: 1.1rem;
+        position: relative;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .section-body {
+        padding: 2rem;
+        background: #fafbfc;
+    }
+
+    /* Estilos para formularios */
+    .form-label {
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 0.5rem;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .form-control, .form-select {
+        border-radius: 12px;
+        border: 2px solid #e9ecef;
+        padding: 0.8rem 1rem;
+        transition: var(--transition);
+        font-size: 0.95rem;
+        background: white;
+    }
+    
+    .form-control:focus, .form-select:focus {
+        border-color: #2c3e50;
+        box-shadow: 0 0 0 0.2rem rgba(44, 62, 80, 0.25);
+        outline: none;
+    }
+    
+    textarea.form-control {
+        min-height: 100px;
+        resize: vertical;
+    }
+
+    /* Estilos para Select2 */
+    .select2-container--default .select2-selection--single {
+        border-radius: 12px !important;
+        border: 2px solid #e9ecef !important;
+        padding: 0.8rem 1rem !important;
+        height: auto !important;
+        min-height: 45px !important;
+        background: white !important;
+        transition: var(--transition) !important;
+    }
+    
+    .select2-container--default .select2-selection--single:focus {
+        border-color: #2c3e50 !important;
+        box-shadow: 0 0 0 0.2rem rgba(44, 62, 80, 0.25) !important;
+    }
+    
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        line-height: 1.5 !important;
+        padding-left: 0 !important;
+        color: #2c3e50 !important;
+        font-size: 0.95rem !important;
+    }
+    
+    .select2-container--default .select2-selection--single .select2-selection__placeholder {
+        color: #6c757d !important;
+        font-style: italic !important;
+    }
+    
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 100% !important;
+        top: 0 !important;
+        right: 10px !important;
+    }
+    
+    .select2-dropdown {
+        border-radius: 12px !important;
+        border: 2px solid #2c3e50 !important;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.15) !important;
+        background: white !important;
+    }
+    
+    .select2-container--default .select2-results__option {
+        padding: 0.8rem 1rem !important;
+        font-size: 0.95rem !important;
+        border-bottom: 1px solid #f8f9fa !important;
+    }
+    
+    .select2-container--default .select2-results__option--highlighted[aria-selected] {
+        background-color: #2c3e50 !important;
+        color: white !important;
+    }
+    
+    .select2-container--default .select2-results__option[aria-selected=true] {
+        background-color: #e9ecef !important;
+        color: #2c3e50 !important;
+    }
+    
+    /* Checkbox personalizado */
+    .form-check {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 1rem;
+        background: white;
+        border-radius: 12px;
+        border: 2px solid #e9ecef;
+        transition: var(--transition);
+        cursor: pointer;
+    }
+    
+    .form-check:hover {
+        border-color: #2c3e50;
+        background: #f8f9fa;
+    }
+    
+    .form-check-input {
+        width: 1.2rem;
+        height: 1.2rem;
+        margin: 0;
+    }
+    
+    .form-check-label {
+        margin: 0;
+        font-weight: 500;
+        color: #2c3e50;
+        cursor: pointer;
+    }
+
+    /* Canvas de firma mejorado */
+    .signature-section {
+        background: white;
+        border-radius: 15px;
+        padding: 1.5rem;
+        border: 2px dashed #e9ecef;
+        text-align: center;
+        transition: var(--transition);
+    }
+    
+    .signature-section:hover {
+        border-color: #2c3e50;
+        background: #f8f9fa;
+    }
+    
+    #firma_canvas {
+        border: 2px solid #e9ecef;
+        border-radius: 12px;
+        background: white;
+        cursor: crosshair;
+        transition: var(--transition);
+    }
+    
+    #firma_canvas:hover {
+        border-color: #2c3e50;
+        box-shadow: 0 4px 15px rgba(44, 62, 80, 0.1);
+    }
+
+    /* Botones mejorados */
+    .btn {
+        border-radius: 25px;
+        padding: 0.8rem 1.5rem;
+        font-weight: 600;
+        transition: var(--transition);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-size: 0.9rem;
+        border: none;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    
+    .btn-primary {
+        background: var(--success-gradient);
+        color: white;
+    }
+    
+    .btn-primary:hover {
+        background: var(--success-gradient);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(39, 174, 96, 0.4);
+        color: white;
+    }
+    
+    .btn-secondary {
+        background: var(--dark-gradient);
+        color: white;
+    }
+    
+    .btn-secondary:hover {
+        background: var(--dark-gradient);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(44, 62, 80, 0.4);
+        color: white;
+    }
+
+    /* Select2 personalizado */
+    .select2-container--default .select2-selection--single {
+        border-radius: 12px;
+        border: 2px solid #e9ecef;
+        height: auto;
+        padding: 0.8rem 1rem;
+        background: white;
+    }
+    
+    .select2-container--default .select2-selection--single:focus {
+        border-color: #2c3e50;
+        box-shadow: 0 0 0 0.2rem rgba(44, 62, 80, 0.25);
+    }
+    
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        line-height: 1.5;
+        padding: 0;
+        color: #495057;
+    }
+    
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 100%;
+        top: 0;
+    }
+
+    /* Animaciones */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .preorden-header, .form-container, .form-section {
+        animation: fadeInUp 0.6s ease-out;
+    }
+    
+    .form-container { animation-delay: 0.1s; }
+    .form-section:nth-child(1) { animation-delay: 0.2s; }
+    .form-section:nth-child(2) { animation-delay: 0.3s; }
+    .form-section:nth-child(3) { animation-delay: 0.4s; }
+    .form-section:nth-child(4) { animation-delay: 0.5s; }
+    .form-section:nth-child(5) { animation-delay: 0.6s; }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .preorden-header {
+            padding: 2rem 1.5rem;
+        }
+        
+        .preorden-header h1 {
+            font-size: 2rem;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .section-body {
+            padding: 1.5rem;
+        }
+        
+        .form-control, .form-select {
+            padding: 0.7rem 0.8rem;
+            font-size: 0.9rem;
+        }
+        
+        .btn {
+            padding: 0.7rem 1.2rem;
+            font-size: 0.85rem;
+        }
+        
+        #firma_canvas {
+            width: 100%;
+            max-width: 350px;
+            height: 120px;
+        }
+    }
+</style>
+
+<head>
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+</head>
+
+<main class="container-fluid mt-4">
+    <!-- Header mejorado -->
+    <div class="preorden-header">
+        <h1>
+            <i class="bi bi-clipboard-plus"></i>
+            Crear Nueva Preorden
+        </h1>
+        <div class="subtitle">
+            Complete todos los campos para crear una nueva preorden de servicio
+        </div>
+    </div>
+
+    <div class="form-container">
+        <div class="form-header">
+            <h3>
+                <i class="bi bi-file-earmark-text"></i>
+                Formulario de Preorden
+            </h3>
+        </div>
+        
+        <form method="post" enctype="multipart/form-data" class="p-4">
+            {% csrf_token %}
+            <input type="hidden" name="sucursal" value="{{ form.sucursal.value }}">
+            
+            <!-- Datos de Cliente y Equipo -->
+            <div class="form-section">
+                <div class="section-header">
+                    <h5>
+                        <i class="bi bi-person-gear"></i>
+                        Datos del Cliente y Equipo
+                    </h5>
+                </div>
+                <div class="section-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="id_sucursal" class="form-label">
+                                <i class="bi bi-building"></i>Sucursal
+                            </label>
+                            {{ form.sucursal|add_class:"form-control" }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="id_cliente" class="form-label">
+                                <i class="bi bi-person"></i>Cliente
+                            </label>
+                            {{ form.cliente|add_class:"form-control" }}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="id_equipo" class="form-label">
+                                <i class="bi bi-gear"></i>Equipo
+                            </label>
+                            {{ form.equipo|add_class:"form-control" }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="id_horometro" class="form-label">
+                                <i class="bi bi-speedometer2"></i>Horómetro Actual
+                            </label>
+                            {{ form.horometro|add_class:"form-control" }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Detalles de Trabajo -->
+            <div class="form-section">
+                <div class="section-header">
+                    <h5>
+                        <i class="bi bi-tools"></i>
+                        Detalles de Trabajo
+                    </h5>
+                </div>
+                <div class="section-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="id_solicitud_cliente" class="form-label">
+                                <i class="bi bi-chat-text"></i>Solicitud del Cliente
+                            </label>
+                            {{ form.solicitud_cliente|add_class:"form-control" }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="id_tipo_trabajo" class="form-label">
+                                <i class="bi bi-briefcase"></i>Tipo de Trabajo
+                            </label>
+                            {{ form.tipo_trabajo|add_class:"form-control" }}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="id_detalles_adicionales" class="form-label">
+                                <i class="bi bi-file-text"></i>Detalles Adicionales
+                            </label>
+                            {{ form.detalles_adicionales|add_class:"form-control" }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="id_clasificacion" class="form-label">
+                                <i class="bi bi-tags"></i>Clasificación de la Preorden
+                            </label>
+                            {{ form.clasificacion|add_class:"form-control" }}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="id_tecnicos" class="form-label">
+                                <i class="bi bi-people"></i>Técnicos
+                            </label>
+                            {{ form.tecnicos|add_class:"form-control" }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="id_codigos_error" class="form-label">
+                                <i class="bi bi-exclamation-triangle"></i>Códigos de Error
+                            </label>
+                            {{ form.codigos_error|add_class:"form-control" }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Programación de Servicio -->
+            <div class="form-section">
+                <div class="section-header">
+                    <h5>
+                        <i class="bi bi-calendar-event"></i>
+                        Programación de Servicio
+                    </h5>
+                </div>
+                <div class="section-body">
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label for="id_fecha_estimada" class="form-label">
+                                <i class="bi bi-calendar"></i>Fecha Estimada de Atención
+                            </label>
+                            {{ form.fecha_estimada|add_class:"form-control" }}
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="id_hora_inicio_estimada" class="form-label">
+                                <i class="bi bi-clock"></i>Hora de Inicio Estimada
+                            </label>
+                            {{ form.hora_inicio_estimada|add_class:"form-control" }}
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="id_hora_fin_estimada" class="form-label">
+                                <i class="bi bi-clock-fill"></i>Hora de Fin Estimada
+                            </label>
+                            {{ form.hora_fin_estimada|add_class:"form-control" }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Estado del Equipo al Ingreso -->
+            <div class="form-section">
+                <div class="section-header">
+                    <h5>
+                        <i class="bi bi-clipboard-check"></i>
+                        Estado del Equipo al Ingreso
+                    </h5>
+                </div>
+                <div class="section-body">
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" id="id_trae_llave" name="trae_llave" {% if form.trae_llave.value %}checked{% endif %}>
+                                <label for="id_trae_llave" class="form-check-label">
+                                    <i class="bi bi-key"></i>¿Trae Llave? (Marcar para Sí)
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="id_estado_cabina" class="form-label">
+                                <i class="bi bi-car-front"></i>Estado de la Cabina
+                            </label>
+                            {{ form.estado_cabina|add_class:"form-control" }}
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="id_estado_neumaticos_tren" class="form-label">
+                                <i class="bi bi-circle"></i>Estado de Neumáticos/Tren Rodante
+                            </label>
+                            {{ form.estado_neumaticos_tren|add_class:"form-control" }}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label for="id_estado_vidrios" class="form-label">
+                                <i class="bi bi-window"></i>Estado de los Vidrios
+                            </label>
+                            {{ form.estado_vidrios|add_class:"form-control" }}
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="id_combustible_ingreso" class="form-label">
+                                <i class="bi bi-fuel-pump"></i>Combustible de Ingreso (%)
+                            </label>
+                            {{ form.combustible_ingreso|add_class:"form-control" }}
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="id_observaciones_estado_equipo" class="form-label">
+                                <i class="bi bi-sticky"></i>Observaciones del Estado del Equipo
+                            </label>
+                            {{ form.observaciones_estado_equipo|add_class:"form-control" }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Imágenes de Evidencia -->
+            <div class="form-section">
+                <div class="section-header">
+                    <h5>
+                        <i class="bi bi-images"></i>
+                        Imágenes de Evidencia
+                    </h5>
+                </div>
+                <div class="section-body">
+                    <div id="evidencia-forms">
+                        <div class="mb-3">
+                            <label for="{{ evidencia_form.imagen.id_for_label }}" class="form-label">
+                                <i class="bi bi-camera"></i>Evidencia 1
+                            </label>
+                            {{ evidencia_form.imagen }}
+                        </div>
+                    </div>
+                    <button type="button" class="btn btn-secondary" onclick="addEvidenciaForm()">
+                        <i class="bi bi-plus-circle"></i>Agregar otra imagen
+                    </button>
+                </div>
+            </div>
+
+            <!-- Firma del Cliente -->
+            <div class="form-section">
+                <div class="section-header">
+                    <h5>
+                        <i class="bi bi-pen"></i>
+                        Firma del Cliente
+                    </h5>
+                </div>
+                <div class="section-body">
+                    <div class="row">
+                        <div class="col-md-8 mb-3">
+                            <div class="signature-section">
+                                <label for="firma_canvas" class="form-label">
+                                    <i class="bi bi-pencil-square"></i>Firma del Cliente
+                                </label>
+                                <br>
+                                <canvas id="firma_canvas" width="350" height="150"></canvas>
+                                <input type="hidden" name="firma_cliente" id="firma_input">
+                                <div class="mt-3">
+                                    <button type="button" class="btn btn-secondary" onclick="limpiarFirma()">
+                                        <i class="bi bi-eraser"></i>Limpiar Firma
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="id_nombre_cliente" class="form-label">
+                                <i class="bi bi-person-badge"></i>Aclaración del Cliente
+                            </label>
+                            {{ form.nombre_cliente|add_class:"form-control" }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Botón de Enviar -->
+            <div class="d-flex justify-content-end mt-4">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-check-circle"></i>Crear Preorden
+                </button>
+            </div>
+        </form>
+    </div>
+</main>
+
+<script>
+    $(document).ready(function () {
+        $('#id_cliente').select2({ 
+            placeholder: 'Buscar cliente...', 
+            width: '100%', 
+            allowClear: true,
+            dropdownParent: $('body')
+        });
+        $('#id_equipo').select2({ 
+            placeholder: 'Buscar equipo...', 
+            width: '100%', 
+            allowClear: true,
+            dropdownParent: $('body')
+        });
+        
+        $('#id_cliente').change(function () {
+            var clienteId = $(this).val();
+            console.log('Cliente seleccionado:', clienteId);
+            
+            if (clienteId) {
+                var url = "/gestion_de_taller/equipos-por-cliente/" + clienteId + "/";
+                console.log('Haciendo petición a:', url);
+                
+                $.ajax({
+                    url: url,
+                    type: "GET",
+                    dataType: "json",
+                    success: function (data) {
+                        console.log('Respuesta recibida:', data);
+                        var equipoSelect = $('#id_equipo');
+                        equipoSelect.empty();
+                        equipoSelect.append('<option value="">Seleccione un equipo</option>');
+                        data.forEach(function (equipo) {
+                            equipoSelect.append('<option value="' + equipo.id + '">' + equipo.texto_completo + '</option>');
+                        });
+                        console.log('Equipos agregados al select:', data.length);
+                        
+                        // Reinicializar select2 para el equipo
+                        $('#id_equipo').select2({
+                            placeholder: 'Buscar equipo...', 
+                            width: '100%', 
+                            allowClear: true,
+                            dropdownParent: $('body')
+                        });
+                    },
+                    error: function (xhr, status, error) {
+                        console.error("Error al obtener los equipos:", error);
+                        console.error("Status:", status);
+                        console.error("Response:", xhr.responseText);
+                        $('#id_equipo').empty().append('<option value="">Error al cargar equipos</option>');
+                    }
+                });
+            } else {
+                console.log('No se seleccionó cliente');
+                $('#id_equipo').empty().append('<option value="">Seleccione un cliente primero</option>');
+                // Reinicializar select2 para el equipo
+                $('#id_equipo').select2({
+                    placeholder: 'Buscar equipo...', 
+                    width: '100%', 
+                    allowClear: true,
+                    dropdownParent: $('body')
+                });
+            }
+        });
+    });
+
+    // Inicializa el Canvas para la firma
+    let canvas = document.getElementById('firma_canvas');
+    let ctx = canvas.getContext('2d');
+    let dibujando = false;
+
+    // Configurar el estilo del canvas
+    ctx.strokeStyle = '#2c3e50';
+    ctx.lineWidth = 2;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+
+    // Eventos para dispositivos de escritorio
+    canvas.addEventListener('mousedown', iniciarDibujo);
+    canvas.addEventListener('mouseup', terminarDibujo);
+    canvas.addEventListener('mousemove', dibujar);
+
+    // Eventos para dispositivos táctiles
+    canvas.addEventListener('touchstart', iniciarDibujoTouch);
+    canvas.addEventListener('touchend', terminarDibujo);
+    canvas.addEventListener('touchmove', dibujarTouch);
+
+    function iniciarDibujo(e) {
+        dibujando = true;
+        ctx.beginPath();
+        ctx.moveTo(e.offsetX, e.offsetY);
+    }
+
+    function iniciarDibujoTouch(e) {
+        dibujando = true;
+        ctx.beginPath();
+        let touch = e.touches[0];
+        let rect = canvas.getBoundingClientRect();
+        ctx.moveTo(touch.clientX - rect.left, touch.clientY - rect.top);
+        e.preventDefault();
+    }
+
+    function terminarDibujo() {
+        dibujando = false;
+        guardarFirma();
+    }
+
+    function dibujar(e) {
+        if (!dibujando) return;
+        ctx.lineTo(e.offsetX, e.offsetY);
+        ctx.stroke();
+    }
+
+    function dibujarTouch(e) {
+        if (!dibujando) return;
+        let touch = e.touches[0];
+        let rect = canvas.getBoundingClientRect();
+        ctx.lineTo(touch.clientX - rect.left, touch.clientY - rect.top);
+        ctx.stroke();
+        e.preventDefault();
+    }
+
+    function limpiarFirma() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        document.getElementById('firma_input').value = '';
+    }
+
+    function guardarFirma() {
+        let dataURL = canvas.toDataURL('image/png');
+        document.getElementById('firma_input').value = dataURL;
+    }
+
+    function addEvidenciaForm() {
+        const evidenciaFormsContainer = document.getElementById('evidencia-forms');
+        const totalForms = evidenciaFormsContainer.children.length;
+        const newFormIndex = totalForms;
+
+        const newFormDiv = document.createElement('div');
+        newFormDiv.classList.add('mb-3');
+        newFormIndex = `evidencia-form-${newFormIndex}`;
+
+        const newFormHTML = `
+            <label for="id_imagen_${newFormIndex}" class="form-label">
+                <i class="bi bi-camera"></i>Evidencia ${newFormIndex + 1}
+            </label>
+            <input type="file" name="imagen_${newFormIndex}" class="form-control" id="id_imagen_${newFormIndex}">
+        `;
+
+        newFormDiv.innerHTML = newFormHTML;
+        evidenciaFormsContainer.appendChild(newFormDiv);
+    }
+</script>
+{% endblock %}

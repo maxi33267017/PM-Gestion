@@ -1,0 +1,442 @@
+{% extends 'base.html' %}
+{% block title %} | Embudo de Ventas{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="display-6 mb-2">
+                        <i class="bi bi-funnel-fill text-primary me-2"></i>Embudo de Ventas
+                    </h1>
+                    <p class="lead text-muted">Análisis visual del proceso de ventas por etapas</p>
+                </div>
+                <div>
+                    <a href="{% url 'crm:crear_embudo' %}" class="btn btn-success">
+                        <i class="bi bi-plus-circle me-2"></i>Nuevo Embudo
+                    </a>
+                    <a href="{% url 'crm:crm' %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left me-2"></i>Volver al CRM
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- KPIs Principales -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="card shadow-sm border-primary">
+                <div class="card-body text-center">
+                    <h5 class="card-title text-primary">
+                        <i class="bi bi-people-fill me-2"></i>Total Embudos
+                    </h5>
+                    <p class="card-text display-6 text-primary">{{ total_embudos }}</p>
+                    <small class="text-muted">Oportunidades activas</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm border-success">
+                <div class="card-body text-center">
+                    <h5 class="card-title text-success">
+                        <i class="bi bi-currency-dollar me-2"></i>Valor Estimado
+                    </h5>
+                    <p class="card-text display-6 text-success">${{ total_valor_estimado|floatformat:0 }}</p>
+                    <small class="text-muted">USD total</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm border-info">
+                <div class="card-body text-center">
+                    <h5 class="card-title text-info">
+                        <i class="bi bi-graph-up me-2"></i>Valor Probabilizado
+                    </h5>
+                    <p class="card-text display-6 text-info">${{ total_valor_probabilizado|floatformat:0 }}</p>
+                    <small class="text-muted">USD ponderado</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm border-warning">
+                <div class="card-body text-center">
+                    <h5 class="card-title text-warning">
+                        <i class="bi bi-percent me-2"></i>Tasa Conversión
+                    </h5>
+                    <p class="card-text display-6 text-warning">{{ tasa_conversion }}%</p>
+                    <small class="text-muted">Cierre exitoso</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Gráfico del Embudo -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-funnel me-2"></i>Embudo de Ventas - Vista General
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="embudo-container">
+                        {% for etapa in embudo_data %}
+                        <div class="embudo-etapa" style="background-color: {{ etapa.color }}20; border: 2px solid {{ etapa.color }};">
+                            <div class="embudo-etapa-header">
+                                <h6 class="mb-1">{{ etapa.etapa }}</h6>
+                                <div class="embudo-stats">
+                                    <span class="badge bg-light text-dark">{{ etapa.total }} oportunidades</span>
+                                    {% if etapa.valor_total > 0 %}
+                                    <span class="badge bg-success">${{ etapa.valor_total|floatformat:0 }}</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="embudo-etapa-body">
+                                <div class="progress mb-2" style="height: 8px;">
+                                    {% if total_embudos > 0 %}
+                                    {% widthratio etapa.total total_embudos 100 as porcentaje %}
+                                    <div class="progress-bar" role="progressbar" 
+                                         style="width: {{ porcentaje }}%; background-color: {{ etapa.color }};"></div>
+                                    {% endif %}
+                                </div>
+                                <small class="text-muted">
+                                    {% if total_embudos > 0 %}
+                                    {% widthratio etapa.total total_embudos 100 as porcentaje %}
+                                    {{ porcentaje }}% del total
+                                    {% else %}
+                                    0% del total
+                                    {% endif %}
+                                </small>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filtros y Análisis -->
+    <div class="row g-4">
+        <!-- Análisis por Origen -->
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-pie-chart me-2"></i>Análisis por Origen
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if origenes_stats %}
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Origen</th>
+                                        <th>Oportunidades</th>
+                                        <th>Valor Total</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for origen in origenes_stats %}
+                                    <tr>
+                                        <td>
+                                            <span class="badge bg-secondary">{{ origen.origen|title }}</span>
+                                        </td>
+                                        <td>
+                                            <strong>{{ origen.total }}</strong>
+                                        </td>
+                                        <td>
+                                            <span class="text-success">${{ origen.valor_total|floatformat:0 }}</span>
+                                        </td>
+                                        <td>
+                                            <a href="{% url 'crm:embudo_ventas_origen' origen.origen %}" 
+                                               class="btn btn-sm btn-outline-primary">
+                                                <i class="bi bi-eye me-1"></i>Ver Embudo
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="bi bi-inbox display-4 text-muted"></i>
+                            <p class="text-muted mt-2">No hay datos por origen</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Análisis por Campaña -->
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-megaphone me-2"></i>Análisis por Campaña
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if campanas_stats %}
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Campaña</th>
+                                        <th>Oportunidades</th>
+                                        <th>Valor Total</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for campana in campanas_stats %}
+                                    <tr>
+                                        <td>
+                                            <strong>{{ campana.campana__nombre }}</strong>
+                                        </td>
+                                        <td>
+                                            <strong>{{ campana.total }}</strong>
+                                        </td>
+                                        <td>
+                                            <span class="text-success">${{ campana.valor_total|floatformat:0 }}</span>
+                                        </td>
+                                        <td>
+                                            <a href="{% url 'crm:embudo_ventas_campana' campana.campana__id %}" 
+                                               class="btn btn-sm btn-outline-info">
+                                                <i class="bi bi-eye me-1"></i>Ver Embudo
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="bi bi-inbox display-4 text-muted"></i>
+                            <p class="text-muted mt-2">No hay datos por campaña</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lista de Embudos Recientes -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-clock-history me-2"></i>Embudos Recientes
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Cliente</th>
+                                    <th>Etapa</th>
+                                    <th>Origen</th>
+                                    <th>Valor Estimado</th>
+                                    <th>Probabilidad</th>
+                                    <th>Última Actividad</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for embudo in embudos_recientes %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ embudo.cliente.razon_social }}</strong>
+                                    </td>
+                                    <td>
+                                        <span class="badge" style="background-color: {{ embudo.color }}; color: white;">
+                                            {{ embudo.get_etapa_display }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-secondary">{{ embudo.get_origen_display }}</span>
+                                    </td>
+                                    <td>
+                                        {% if embudo.valor_estimado %}
+                                            <span class="text-success">${{ embudo.valor_estimado|floatformat:0 }}</span>
+                                        {% else %}
+                                            <span class="text-muted">No especificado</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="progress" style="height: 20px;">
+                                            <div class="progress-bar bg-success" role="progressbar" 
+                                                 style="width: {{ embudo.probabilidad_cierre }}%">
+                                                {{ embudo.probabilidad_cierre }}%
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <small class="text-muted">{{ embudo.fecha_ultima_actividad|date:"d/m/Y H:i" }}</small>
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'crm:embudo_ventas_detalle' embudo.id %}" 
+                                           class="btn btn-sm btn-outline-primary">
+                                            <i class="bi bi-eye me-1"></i>Ver
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="7" class="text-center py-4">
+                                        <i class="bi bi-inbox display-4 text-muted"></i>
+                                        <p class="text-muted mt-2">No hay embudos recientes</p>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.embudo-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    padding: 20px 0;
+}
+
+.embudo-etapa {
+    width: 100%;
+    max-width: 800px;
+    border-radius: 15px;
+    padding: 20px;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.embudo-etapa:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.embudo-etapa::before {
+    content: '';
+    position: absolute;
+    top: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 10px solid transparent;
+    border-right: 10px solid transparent;
+    border-bottom: 10px solid currentColor;
+    opacity: 0.3;
+}
+
+.embudo-etapa:first-child::before {
+    display: none;
+}
+
+.embudo-etapa-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.embudo-etapa-header h6 {
+    margin: 0;
+    font-weight: 600;
+    color: #333;
+}
+
+.embudo-stats {
+    display: flex;
+    gap: 8px;
+}
+
+.embudo-etapa-body {
+    text-align: center;
+}
+
+.progress {
+    background-color: rgba(0,0,0,0.1);
+    border-radius: 10px;
+}
+
+.progress-bar {
+    border-radius: 10px;
+    transition: width 0.6s ease;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .embudo-etapa {
+        padding: 15px;
+    }
+    
+    .embudo-etapa-header {
+        flex-direction: column;
+        gap: 10px;
+        text-align: center;
+    }
+    
+    .embudo-stats {
+        justify-content: center;
+    }
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Animación de las barras de progreso
+    const progressBars = document.querySelectorAll('.progress-bar');
+    
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const progressBar = entry.target;
+                const width = progressBar.style.width;
+                progressBar.style.width = '0%';
+                
+                setTimeout(() => {
+                    progressBar.style.width = width;
+                }, 200);
+            }
+        });
+    });
+    
+    progressBars.forEach(bar => {
+        observer.observe(bar);
+    });
+    
+    // Tooltips para las etapas
+    const embudoEtapas = document.querySelectorAll('.embudo-etapa');
+    embudoEtapas.forEach(etapa => {
+        etapa.addEventListener('click', function() {
+            const etapaName = this.querySelector('h6').textContent;
+            const total = this.querySelector('.badge').textContent;
+            const valor = this.querySelector('.badge.bg-success')?.textContent || 'Sin valor estimado';
+            
+            // Aquí podrías abrir un modal con más detalles de la etapa
+            console.log(`Etapa: ${etapaName}, ${total}, ${valor}`);
+        });
+    });
+});
+</script>
+{% endblock %} 

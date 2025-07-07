@@ -1,0 +1,192 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="bi bi-person-plus me-2"></i>Asignar Paquete a Cliente
+                        </h5>
+                        <a href="{% url 'crm:portfolio_paquetes' %}" class="btn btn-outline-secondary btn-sm">
+                            <i class="fas fa-arrow-left me-2"></i>Volver a Portfolio
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="cliente" class="form-label">Cliente *</label>
+                                <select class="form-select" id="cliente" name="cliente" required>
+                                    <option value="">Selecciona un cliente...</option>
+                                    {% for cliente in clientes %}
+                                    <option value="{{ cliente.id }}" 
+                                            {% if request.GET.cliente == cliente.id|stringformat:"s" %}selected{% endif %}>
+                                        {{ cliente.razon_social }} - {{ cliente.sucursal.nombre }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="paquete" class="form-label">Paquete *</label>
+                                <select class="form-select" id="paquete" name="paquete" required>
+                                    <option value="">Selecciona un paquete...</option>
+                                    {% for paquete in paquetes %}
+                                    <option value="{{ paquete.id }}" 
+                                            {% if request.GET.paquete == paquete.id|stringformat:"s" %}selected{% endif %}>
+                                        {{ paquete.nombre }} - ${{ paquete.precio }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="fecha_inicio" class="form-label">Fecha de Inicio *</label>
+                                <input type="date" class="form-control" id="fecha_inicio" name="fecha_inicio" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="fecha_fin" class="form-label">Fecha de Fin (Opcional)</label>
+                                <input type="date" class="form-control" id="fecha_fin" name="fecha_fin">
+                                <small class="form-text text-muted">Deja vacío si no tiene fecha de finalización</small>
+                            </div>
+                        </div>
+                        
+                        <!-- Información del paquete seleccionado -->
+                        <div id="info-paquete" class="alert alert-info" style="display: none;">
+                            <h6>Información del Paquete</h6>
+                            <div id="paquete-details"></div>
+                        </div>
+                        
+                        <!-- Información del cliente seleccionado -->
+                        <div id="info-cliente" class="alert alert-warning" style="display: none;">
+                            <h6>Información del Cliente</h6>
+                            <div id="cliente-details"></div>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'crm:portfolio_paquetes' %}" class="btn btn-outline-secondary">
+                                <i class="bi bi-x-circle me-2"></i>Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-success">
+                                <i class="bi bi-check-circle me-2"></i>Asignar Paquete
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Datos de paquetes para mostrar información
+const paquetes = [
+    {% for paquete in paquetes %}
+    {
+        id: {{ paquete.id }},
+        nombre: "{{ paquete.nombre }}",
+        descripcion: "{{ paquete.descripcion|escapejs }}",
+        precio: {{ paquete.precio }},
+        servicios_count: {{ paquete.servicios.count }}
+    },
+    {% endfor %}
+];
+
+// Datos de clientes para mostrar información
+const clientes = [
+    {% for cliente in clientes %}
+    {
+        id: {{ cliente.id }},
+        razon_social: "{{ cliente.razon_social }}",
+        sucursal: "{{ cliente.sucursal.nombre }}",
+        equipos_activos: {{ cliente.equipos.filter.activo.count|default:0 }}
+    },
+    {% endfor %}
+];
+
+// Función para mostrar información del paquete
+document.getElementById('paquete').addEventListener('change', function() {
+    const paqueteId = this.value;
+    const infoDiv = document.getElementById('info-paquete');
+    const detailsDiv = document.getElementById('paquete-details');
+    
+    if (paqueteId) {
+        const paquete = paquetes.find(p => p.id == paqueteId);
+        if (paquete) {
+            detailsDiv.innerHTML = `
+                <p><strong>Nombre:</strong> ${paquete.nombre}</p>
+                <p><strong>Precio:</strong> $${paquete.precio}</p>
+                <p><strong>Servicios incluidos:</strong> ${paquete.servicios_count}</p>
+                ${paquete.descripcion ? `<p><strong>Descripción:</strong> ${paquete.descripcion}</p>` : ''}
+            `;
+            infoDiv.style.display = 'block';
+        }
+    } else {
+        infoDiv.style.display = 'none';
+    }
+});
+
+// Función para mostrar información del cliente
+document.getElementById('cliente').addEventListener('change', function() {
+    const clienteId = this.value;
+    const infoDiv = document.getElementById('info-cliente');
+    const detailsDiv = document.getElementById('cliente-details');
+    
+    if (clienteId) {
+        const cliente = clientes.find(c => c.id == clienteId);
+        if (cliente) {
+            detailsDiv.innerHTML = `
+                <p><strong>Razón Social:</strong> ${cliente.razon_social}</p>
+                <p><strong>Sucursal:</strong> ${cliente.sucursal}</p>
+                <p><strong>Equipos Activos:</strong> ${cliente.equipos_activos}</p>
+            `;
+            infoDiv.style.display = 'block';
+        }
+    } else {
+        infoDiv.style.display = 'none';
+    }
+});
+
+// Función para validar el formulario
+document.querySelector('form').addEventListener('submit', function(e) {
+    const cliente = document.getElementById('cliente').value;
+    const paquete = document.getElementById('paquete').value;
+    const fechaInicio = document.getElementById('fecha_inicio').value;
+    const fechaFin = document.getElementById('fecha_fin').value;
+    
+    if (!cliente) {
+        e.preventDefault();
+        alert('Por favor selecciona un cliente.');
+        return;
+    }
+    
+    if (!paquete) {
+        e.preventDefault();
+        alert('Por favor selecciona un paquete.');
+        return;
+    }
+    
+    if (!fechaInicio) {
+        e.preventDefault();
+        alert('Por favor ingresa la fecha de inicio.');
+        return;
+    }
+    
+    if (fechaFin && fechaFin < fechaInicio) {
+        e.preventDefault();
+        alert('La fecha de fin no puede ser anterior a la fecha de inicio.');
+        return;
+    }
+});
+
+// Establecer fecha de inicio por defecto como hoy
+document.getElementById('fecha_inicio').value = new Date().toISOString().split('T')[0];
+</script>
+{% endblock %} 

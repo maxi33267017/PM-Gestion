@@ -1,0 +1,124 @@
+    {% extends 'base.html' %}
+    {% load static %}
+
+    {% block content %}
+    <main>
+        <div id="contenido_servicios">
+            <h1 class="mb-4" id="titulo_detalle_servicio">{{tecnico.nombre}}</h1>
+
+            <!-- Acordeón para advertencia de días sin registro -->
+            {% if dias_sin_registro %}
+            <div class="accordion" id="diasSinRegistroAccordion">
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="headingAdvertencia">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseAdvertencia" aria-expanded="false" aria-controls="collapseAdvertencia">
+                            <strong>Advertencia:</strong> Hay días sin registro de horas. Haga clic para ver más detalles.
+                        </button>
+                    </h2>
+                    <div id="collapseAdvertencia" class="accordion-collapse collapse" aria-labelledby="headingAdvertencia" data-bs-parent="#diasSinRegistroAccordion">
+                        <div class="accordion-body">
+                            <ul>
+                                {% for dia in dias_sin_registro %}
+                                <li>{{ dia|date:"d/m/Y" }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Botón para registrar horas del técnico -->
+            <div class="caja_botones_clientes mt-4">
+                <a class="btn btn-primary" href="{% url 'registrar_horas' tecnico.id %}">Cargar Horas</a>
+            </div>
+
+            <!-- Tabla con DataTables para los registros de horas por día -->
+            <div class="table-responsive mt-4">
+                <table id="tablaHorasTecnico" class="table table-hover" style="width: 100%">
+                    <thead class="table-header table-dark">
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Horas Registradas</th>
+                            <th>Horas Pendientes</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for registro in registros_por_dia %}
+                        <tr>
+                            <td>{{ registro.fecha|date:"d/m/Y" }}</td>
+                            <td>{{ registro.total_horas_formateadas }}</td>
+                            <td>
+                                {% if registro.horas_pendientes > 0 %}
+                                    <span class="text-danger">{{ registro.horas_pendientes_formateadas }} horas pendientes</span>
+                                {% else %}
+                                    <span class="text-success">Completo</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if registro.horas_pendientes > 0 %}
+                                <a href="{% url 'registrar_horas' tecnico.id %}?fecha={{ registro.fecha|date:'Y-m-d' }}" class="btn btn-warning">Registrar Horas Faltantes</a>
+                                {% else %}
+                                    Completo
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div id="contenido_servicios">
+            <h1>KPI's</h1>
+            <!-- Mostrar el resultado del cálculo de productividad y eficiencia -->
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card shadow">
+                        <div class="card-body">
+                            <h3>Productividad Promedio</h3>
+                            <p>{{ promedio_productividad|floatformat:2 }}%</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card shadow">
+                        <div class="card-body">
+                            <h3>Eficiencia Promedio</h3>
+                            <p>{{ promedio_eficiencia|floatformat:2 }}%</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Agrega los recursos de DataTables -->
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css"/>
+    <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap5.min.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            // Inicializar DataTable para la tabla de horas del técnico
+            $('#tablaHorasTecnico').DataTable({
+                "language": {
+                    "url": "",
+                    "search": "Buscar:",
+                    "lengthMenu": "Mostrar _MENU_ registros",
+                    "info": "Mostrando _START_ a _END_ de _TOTAL_ registros",
+                    "infoEmpty": "Mostrando 0 a 0 de 0 registros",
+                    "infoFiltered": "(filtrado de _MAX_ registros en total)",
+                    "paginate": {
+                        "first": "Primero",
+                        "previous": "Anterior",
+                        "next": "Siguiente",
+                        "last": "Último"
+                    }
+                },
+                "scrollX": false,
+            });
+        });
+    </script>
+
+    {% endblock %}

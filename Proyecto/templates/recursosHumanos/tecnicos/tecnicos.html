@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<main>
+    
+    
+    <div id="contenido_servicios">
+        <h1 class="mb-4" id="titulo_detalle_servicio">Tecnicos</h1>
+        <!-- <div class="col-md-2">
+            <div class="card-group">
+                <div class="card shadow mb-4">
+                    <div class="card-header d-flex justify-content-between align-items-center"> -->
+                     
+                        <div class="caja_botones_clientes">
+                            {% if es_superuser or es_tecnico_riogrande %}
+                            <div>
+                                <h2>Técnicos Río Grande</h2>
+                                {% for tecnico in tecnicos_riogrande %}
+                                    <a class="btn btn-primary btn_editar_servicio" href="{% url 'detalle_tecnico' tecnico.id %}">{{ tecnico.nombre }}</a>
+                                {% empty %}
+                                    <p>No hay técnicos asignados a la sucursal de Río Grande.</p>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        
+                            {% if es_superuser or es_tecnico_comodoro %}
+                            <div>
+                                <h2 class="mt-4">Técnicos Comodoro Rivadavia</h2>
+                                {% for tecnico in tecnicos_comodoro %}
+                                    <a class="btn btn-primary btn_editar_servicio" href="{% url 'detalle_tecnico' tecnico.id %}">{{ tecnico.nombre }}</a>
+                                {% empty %}
+                                    <p>No hay técnicos asignados a la sucursal de Comodoro Rivadavia.</p>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                   
+                        <a class="btn btn-primary btn_editar_servicio mt-4" href="{% url 'resumen_semanal' %}">Resumen</a>
+                    </div>
+                </div>
+            </div>
+            <h2 class="mt-4">Estadísticas Globales</h2>
+            <p><strong>Productividad Promedio Global:</strong> {{ promedio_productividad_global|floatformat:2 }}%</p>
+            <p><strong>Eficiencia Promedio Global:</strong> {{ promedio_eficiencia_global|floatformat:2 }}%</p>
+        </div>
+    </div>
+</main>
+{% endblock %}

@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card shadow">
+                <div class="card-header">
+                    <h3 class="card-title mb-0">Enviar Encuesta de Satisfacción</h3>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{% url 'gestionDeTaller:enviar_encuesta' servicio.id %}">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Seleccionar destinatarios:</label>
+                            {% for email in destinatarios_existentes %}
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="emails[]" value="{{ email }}" id="email_{{ forloop.counter }}" checked>
+                                <label class="form-check-label" for="email_{{ forloop.counter }}">
+                                    {{ email }}
+                                </label>
+                            </div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="nuevo_correo" class="form-label">Agregar correo adicional:</label>
+                            <input type="email" class="form-control" id="nuevo_correo" name="nuevo_correo" placeholder="ejemplo@correo.com">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="mensaje_correo" class="form-label">Mensaje del correo:</label>
+                            <textarea class="form-control" id="mensaje_correo" name="mensaje_correo" rows="6">
+Estimado/a {{ servicio.preorden.cliente.razon_social }},
+
+Gracias por confiar en nuestros servicios. Nos gustaría conocer su opinión sobre el servicio #{{ servicio.id }}.
+
+Por favor, complete nuestra encuesta de satisfacción en el siguiente enlace:
+[LINK_ENCUESTA]
+
+Su opinión es muy importante para nosotros y nos ayuda a mejorar nuestros servicios.
+
+Saludos cordiales,
+Equipo de Patagonia Maquinarias
+                            </textarea>
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'gestionDeTaller:detalle_servicio' servicio.id %}" class="btn btn-secondary">Cancelar</a>
+                            <button type="submit" class="btn btn-primary">Enviar Encuesta</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

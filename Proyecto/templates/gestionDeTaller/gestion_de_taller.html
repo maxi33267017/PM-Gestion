@@ -1,0 +1,327 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+    /* Variables CSS para consistencia */
+    :root {
+        --primary-gradient: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        --secondary-gradient: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        --success-gradient: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        --warning-gradient: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        --danger-gradient: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+        --dark-gradient: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        --light-gradient: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        --card-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        --hover-shadow: 0 15px 40px rgba(0,0,0,0.15);
+        --border-radius: 20px;
+        --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Header mejorado */
+    .taller-header {
+        background: var(--dark-gradient);
+        color: white;
+        padding: 3rem 2rem;
+        border-radius: var(--border-radius);
+        margin-bottom: 2.5rem;
+        box-shadow: var(--card-shadow);
+        position: relative;
+        overflow: hidden;
+        text-align: center;
+    }
+    
+    .taller-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="dots" width="20" height="20" patternUnits="userSpaceOnUse"><circle cx="10" cy="10" r="1" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23dots)"/></svg>');
+        pointer-events: none;
+    }
+    
+    .taller-header h1 {
+        margin: 0;
+        font-weight: 800;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        font-size: 3rem;
+        position: relative;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 1rem;
+    }
+    
+    .taller-header .subtitle {
+        font-size: 1.2rem;
+        opacity: 0.9;
+        margin-top: 1rem;
+        position: relative;
+        z-index: 1;
+    }
+
+    /* Tarjetas de módulos mejoradas */
+    .module-card {
+        background: white;
+        border-radius: var(--border-radius);
+        box-shadow: var(--card-shadow);
+        border: 1px solid #e9ecef;
+        overflow: hidden;
+        transition: var(--transition);
+        height: 100%;
+        position: relative;
+    }
+    
+    .module-card:hover {
+        transform: translateY(-10px);
+        box-shadow: var(--hover-shadow);
+        border-color: #2c3e50;
+    }
+    
+    .module-card-header {
+        background: var(--dark-gradient);
+        color: white;
+        padding: 2rem 1.5rem;
+        position: relative;
+        overflow: hidden;
+        text-align: center;
+    }
+    
+    .module-card-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="card-dots" width="20" height="20" patternUnits="userSpaceOnUse"><circle cx="10" cy="10" r="1" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23card-dots)"/></svg>');
+        pointer-events: none;
+    }
+    
+    .module-icon {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1rem;
+        background: rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(10px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+        position: relative;
+        z-index: 1;
+        transition: var(--transition);
+    }
+    
+    .module-card:hover .module-icon {
+        transform: scale(1.1);
+        box-shadow: 0 12px 35px rgba(0,0,0,0.3);
+    }
+    
+    .module-icon i {
+        font-size: 2rem;
+        color: white;
+    }
+    
+    .module-title {
+        font-weight: 700;
+        font-size: 1.5rem;
+        margin: 0;
+        position: relative;
+        z-index: 1;
+    }
+    
+    .module-card-body {
+        padding: 2rem;
+        text-align: center;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+    
+    .module-description {
+        color: #6c757d;
+        font-size: 1rem;
+        line-height: 1.6;
+        margin-bottom: 2rem;
+        flex: 1;
+    }
+
+    /* Botones mejorados */
+    .btn-module {
+        background: var(--dark-gradient);
+        color: white;
+        border: none;
+        border-radius: 25px;
+        padding: 1rem 2rem;
+        font-weight: 600;
+        transition: var(--transition);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-size: 0.95rem;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        min-width: 180px;
+        justify-content: center;
+    }
+    
+    .btn-module:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+        color: white;
+        background: var(--dark-gradient);
+        text-decoration: none;
+    }
+
+    /* Animaciones */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .taller-header {
+        animation: fadeInUp 0.6s ease-out;
+    }
+    
+    .module-card:nth-child(1) { animation: fadeInUp 0.6s ease-out 0.1s both; }
+    .module-card:nth-child(2) { animation: fadeInUp 0.6s ease-out 0.2s both; }
+    .module-card:nth-child(3) { animation: fadeInUp 0.6s ease-out 0.3s both; }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .taller-header {
+            padding: 2rem 1.5rem;
+        }
+        
+        .taller-header h1 {
+            font-size: 2rem;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .module-card-header {
+            padding: 1.5rem 1rem;
+        }
+        
+        .module-icon {
+            width: 60px;
+            height: 60px;
+        }
+        
+        .module-icon i {
+            font-size: 1.5rem;
+        }
+        
+        .module-title {
+            font-size: 1.3rem;
+        }
+        
+        .module-card-body {
+            padding: 1.5rem;
+        }
+        
+        .module-description {
+            font-size: 0.9rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .btn-module {
+            padding: 0.8rem 1.5rem;
+            font-size: 0.9rem;
+            min-width: 160px;
+        }
+    }
+</style>
+
+<main class="container-fluid mt-4">
+    <!-- Header mejorado -->
+    <div class="taller-header">
+        <h1>
+            <i class="bi bi-tools"></i>
+            Gestión de Taller
+        </h1>
+        <div class="subtitle">
+            Administración integral de servicios, técnicos y revisiones 5S
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Servicios -->
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="module-card">
+                <div class="module-card-header">
+                    <div class="module-icon">
+                        <i class="bi bi-tools"></i>
+                    </div>
+                    <h5 class="module-title">Servicios</h5>
+                </div>
+                <div class="module-card-body">
+                    <p class="module-description">
+                        Accede a la gestión de servicios para ver y administrar todas las órdenes de servicio del taller.
+                    </p>
+                    <a href="{% url 'gestionDeTaller:lista_servicios' %}" class="btn btn-module">
+                        <i class="bi bi-arrow-right"></i>
+                        Servicios
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Técnicos -->
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="module-card">
+                <div class="module-card-header">
+                    <div class="module-icon">
+                        <i class="bi bi-person-badge"></i>
+                    </div>
+                    <h5 class="module-title">Técnicos</h5>
+                </div>
+                <div class="module-card-body">
+                    <p class="module-description">
+                        Consulta y gestiona la información de los técnicos y sus registros de horas trabajadas.
+                    </p>
+                    <a href="{% url 'gestionDeTaller:tecnicos' %}" class="btn btn-module">
+                        <i class="bi bi-arrow-right"></i>
+                        Técnicos
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Revisiones 5S -->
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="module-card">
+                <div class="module-card-header">
+                    <div class="module-icon">
+                        <i class="bi bi-clipboard-check"></i>
+                    </div>
+                    <h5 class="module-title">Revisiones 5S</h5>
+                </div>
+                <div class="module-card-body">
+                    <p class="module-description">
+                        Realiza un seguimiento de las revisiones 5S para mantener la organización y limpieza del taller.
+                    </p>
+                    <a href="{% url 'gestionDeTaller:lista_revisiones_5s' %}" class="btn btn-module">
+                        <i class="bi bi-arrow-right"></i>
+                        Revisiones 5S
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+{% endblock %}

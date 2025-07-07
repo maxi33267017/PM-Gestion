@@ -1,0 +1,442 @@
+{% extends 'base.html' %}
+{% block title %} | Leads John Deere{% endblock %}
+
+{% block content %}
+{% csrf_token %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="display-6 mb-2">
+                        <i class="bi bi-person-plus-fill text-info me-2"></i>Leads John Deere
+                    </h1>
+                    <p class="lead text-muted">Gestión de leads proporcionados por John Deere</p>
+                </div>
+                <div>
+                    <button type="button" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#modalNuevoLead">
+                        <i class="bi bi-plus-circle me-2"></i>Nuevo Lead
+                    </button>
+                    <a href="{% url 'centroSoluciones:centro_soluciones_dashboard' %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left me-2"></i>Volver al Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <form method="get" class="row g-3">
+                        <div class="col-md-3">
+                            <label for="estado" class="form-label">Estado</label>
+                            <select class="form-select" id="estado" name="estado">
+                                <option value="">Todos los estados</option>
+                                <option value="NUEVO" {% if estado_filtro == 'NUEVO' %}selected{% endif %}>Nuevo</option>
+                                <option value="CONTACTADO" {% if estado_filtro == 'CONTACTADO' %}selected{% endif %}>Contactado</option>
+                                <option value="CALIFICADO" {% if estado_filtro == 'CALIFICADO' %}selected{% endif %}>Calificado</option>
+                                <option value="CONVERTIDO" {% if estado_filtro == 'CONVERTIDO' %}selected{% endif %}>Convertido</option>
+                                <option value="DESCARTADO" {% if estado_filtro == 'DESCARTADO' %}selected{% endif %}>Descartado</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="clasificacion" class="form-label">Clasificación</label>
+                            <select class="form-select" id="clasificacion" name="clasificacion">
+                                <option value="">Todas las clasificaciones</option>
+                                <option value="JOHN_DEERE_PROTECT" {% if clasificacion_filtro == 'JOHN_DEERE_PROTECT' %}selected{% endif %}>John Deere Protect</option>
+                                <option value="MTTO_PREVENTIVO" {% if clasificacion_filtro == 'MTTO_PREVENTIVO' %}selected{% endif %}>Mtto Preventivo</option>
+                                <option value="PIP" {% if clasificacion_filtro == 'PIP' %}selected{% endif %}>PIP</option>
+                                <option value="REFORMA_COMPONENTES" {% if clasificacion_filtro == 'REFORMA_COMPONENTES' %}selected{% endif %}>Reforma de componentes</option>
+                                <option value="DIENTES_CUCHILLAS" {% if clasificacion_filtro == 'DIENTES_CUCHILLAS' %}selected{% endif %}>Dientes / Cuchillas</option>
+                                <option value="TREN_RODANTE" {% if clasificacion_filtro == 'TREN_RODANTE' %}selected{% endif %}>Tren rodante</option>
+                                <option value="GARANTIA_BASICA" {% if clasificacion_filtro == 'GARANTIA_BASICA' %}selected{% endif %}>Garantía Básica</option>
+                                <option value="GARANTIA_EXTENDIDA" {% if clasificacion_filtro == 'GARANTIA_EXTENDIDA' %}selected{% endif %}>Garantía Extendida</option>
+                                <option value="DISPONIBILIDAD" {% if clasificacion_filtro == 'DISPONIBILIDAD' %}selected{% endif %}>Disponibilidad</option>
+                                <option value="RECONEXION" {% if clasificacion_filtro == 'RECONEXION' %}selected{% endif %}>Reconexión</option>
+                                <option value="OTROS" {% if clasificacion_filtro == 'OTROS' %}selected{% endif %}>Otros</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="search" class="form-label">Buscar</label>
+                            <input type="text" class="form-control" id="search" name="search" 
+                                   value="{{ search_filtro }}" placeholder="Cliente, equipo o descripción...">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">&nbsp;</label>
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-search me-2"></i>Filtrar
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lista de Leads -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-list-ul me-2"></i>Leads ({{ page_obj.paginator.count }} total)
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    {% if page_obj %}
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Cliente</th>
+                                        <th>Equipo</th>
+                                        <th>Clasificación</th>
+                                        <th>Estado</th>
+                                        <th>Valor Estimado</th>
+                                        <th>Fecha</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for lead in page_obj %}
+                                    <tr>
+                                        <td>
+                                            <div>
+                                                <strong>{{ lead.cliente.razon_social }}</strong>
+                                                <br>
+                                                <small class="text-muted">{{ lead.cliente.cuit }}</small>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div>
+                                                <strong>{{ lead.equipo.numero_serie }}</strong>
+                                                <br>
+                                                <small class="text-muted">{{ lead.equipo.modelo.nombre }}</small>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-{{ lead.get_clasificacion_color }}">
+                                                {{ lead.get_clasificacion_display }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            {% if lead.estado == 'NUEVO' %}
+                                                <span class="badge bg-danger">Nuevo</span>
+                                            {% elif lead.estado == 'CONTACTADO' %}
+                                                <span class="badge bg-warning">Contactado</span>
+                                            {% elif lead.estado == 'CALIFICADO' %}
+                                                <span class="badge bg-info">Calificado</span>
+                                            {% elif lead.estado == 'CONVERTIDO' %}
+                                                <span class="badge bg-success">Convertido</span>
+                                            {% elif lead.estado == 'DESCARTADO' %}
+                                                <span class="badge bg-secondary">Descartado</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if lead.valor_estimado %}
+                                                <span class="text-success fw-bold">${{ lead.valor_estimado|floatformat:2 }}</span>
+                                            {% else %}
+                                                <span class="text-muted">-</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div>
+                                                <strong>{{ lead.fecha|date:"d/m/Y" }}</strong>
+                                                <br>
+                                                <small class="text-muted">{{ lead.fecha|date:"H:i" }}</small>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="btn-group" role="group">
+                                                <button type="button" class="btn btn-sm btn-outline-primary" 
+                                                        data-bs-toggle="tooltip" title="Ver detalles">
+                                                    <i class="bi bi-eye"></i>
+                                                </button>
+                                                <button type="button" class="btn btn-sm btn-outline-warning" 
+                                                        data-bs-toggle="tooltip" title="Editar">
+                                                    <i class="bi bi-pencil"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="bi bi-inbox display-1 text-muted"></i>
+                            <h4 class="mt-3 text-muted">No se encontraron leads</h4>
+                            <p class="text-muted">No hay leads que coincidan con los filtros aplicados.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Paginación -->
+    {% if page_obj.has_other_pages %}
+    <div class="row mt-4">
+        <div class="col-12">
+            <nav aria-label="Navegación de páginas">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page=1{% if estado_filtro %}&estado={{ estado_filtro }}{% endif %}{% if clasificacion_filtro %}&clasificacion={{ clasificacion_filtro }}{% endif %}{% if search_filtro %}&search={{ search_filtro }}{% endif %}">
+                                <i class="bi bi-chevron-double-left"></i>
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if estado_filtro %}&estado={{ estado_filtro }}{% endif %}{% if clasificacion_filtro %}&clasificacion={{ clasificacion_filtro }}{% endif %}{% if search_filtro %}&search={{ search_filtro }}{% endif %}">
+                                <i class="bi bi-chevron-left"></i>
+                            </a>
+                        </li>
+                    {% endif %}
+
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ num }}</span>
+                            </li>
+                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ num }}{% if estado_filtro %}&estado={{ estado_filtro }}{% endif %}{% if clasificacion_filtro %}&clasificacion={{ clasificacion_filtro }}{% endif %}{% if search_filtro %}&search={{ search_filtro }}{% endif %}">{{ num }}</a>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if estado_filtro %}&estado={{ estado_filtro }}{% endif %}{% if clasificacion_filtro %}&clasificacion={{ clasificacion_filtro }}{% endif %}{% if search_filtro %}&search={{ search_filtro }}{% endif %}">
+                                <i class="bi bi-chevron-right"></i>
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if estado_filtro %}&estado={{ estado_filtro }}{% endif %}{% if clasificacion_filtro %}&clasificacion={{ clasificacion_filtro }}{% endif %}{% if search_filtro %}&search={{ search_filtro }}{% endif %}">
+                                <i class="bi bi-chevron-double-right"></i>
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Modal Nuevo Lead -->
+<div class="modal fade" id="modalNuevoLead" tabindex="-1" aria-labelledby="modalNuevoLeadLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalNuevoLeadLabel">
+                    <i class="bi bi-person-plus-fill text-info me-2"></i>Nuevo Lead John Deere
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="formNuevoLead">
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="cliente_lead" class="form-label">Cliente *</label>
+                            <select class="form-select" id="cliente_lead" name="cliente" required>
+                                <option value="">Seleccionar cliente...</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="equipo_lead" class="form-label">Equipo *</label>
+                            <select class="form-select" id="equipo_lead" name="equipo" required>
+                                <option value="">Primero selecciona un cliente...</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="clasificacion_lead" class="form-label">Clasificación *</label>
+                            <select class="form-select" id="clasificacion_lead" name="clasificacion" required>
+                                <option value="">Seleccionar clasificación...</option>
+                                <option value="JOHN_DEERE_PROTECT">John Deere Protect</option>
+                                <option value="MTTO_PREVENTIVO">Mtto Preventivo</option>
+                                <option value="PIP">PIP</option>
+                                <option value="REFORMA_COMPONENTES">Reforma de componentes</option>
+                                <option value="DIENTES_CUCHILLAS">Dientes / Cuchillas</option>
+                                <option value="TREN_RODANTE">Tren rodante</option>
+                                <option value="GARANTIA_BASICA">Garantía Básica</option>
+                                <option value="GARANTIA_EXTENDIDA">Garantía Extendida</option>
+                                <option value="DISPONIBILIDAD">Disponibilidad</option>
+                                <option value="RECONEXION">Reconexión</option>
+                                <option value="OTROS">Otros</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="valor_estimado" class="form-label">Valor Estimado (USD)</label>
+                            <input type="number" class="form-control" id="valor_estimado" name="valor_estimado" step="0.01" min="0">
+                        </div>
+                        <div class="col-12">
+                            <label for="descripcion_lead" class="form-label">Descripción *</label>
+                            <textarea class="form-control" id="descripcion_lead" name="descripcion" rows="3" required></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-info">
+                        <i class="bi bi-check-circle me-2"></i>Crear Lead
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Toast para notificaciones -->
+<div class="toast-container position-fixed bottom-0 end-0 p-3">
+    <div id="toastNotificacion" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header">
+            <i class="bi bi-info-circle me-2"></i>
+            <strong class="me-auto">Notificación</strong>
+            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+        <div class="toast-body" id="toastMensaje">
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Cargar clientes al abrir el modal
+    const modalNuevoLead = document.getElementById('modalNuevoLead');
+    
+    modalNuevoLead.addEventListener('show.bs.modal', function() {
+        cargarClientes('cliente_lead');
+    });
+    
+    // Cargar equipos cuando se selecciona un cliente
+    document.getElementById('cliente_lead').addEventListener('change', function() {
+        const clienteId = this.value;
+        const equipoSelect = document.getElementById('equipo_lead');
+        
+        if (clienteId) {
+            cargarEquiposCliente(clienteId, equipoSelect);
+        } else {
+            equipoSelect.innerHTML = '<option value="">Primero selecciona un cliente...</option>';
+        }
+    });
+    
+    // Manejar envío del formulario de lead
+    document.getElementById('formNuevoLead').addEventListener('submit', function(e) {
+        e.preventDefault();
+        enviarFormularioLead();
+    });
+    
+    // Inicializar tooltips
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+});
+
+// Función para cargar clientes
+function cargarClientes(selectId) {
+    fetch('{% url "centroSoluciones:obtener_clientes" %}')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const select = document.getElementById(selectId);
+                select.innerHTML = '<option value="">Seleccionar cliente...</option>';
+                
+                data.clientes.forEach(cliente => {
+                    const option = document.createElement('option');
+                    option.value = cliente.id;
+                    option.textContent = `${cliente.razon_social} (${cliente.cuit})`;
+                    select.appendChild(option);
+                });
+            } else {
+                mostrarNotificacion(data.message, 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error cargando clientes:', error);
+            mostrarNotificacion('Error al cargar clientes', 'error');
+        });
+}
+
+// Función para cargar equipos de un cliente
+function cargarEquiposCliente(clienteId, selectElement) {
+    fetch(`{% url "centroSoluciones:obtener_equipos_cliente" %}?cliente_id=${clienteId}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                selectElement.innerHTML = '<option value="">Seleccionar equipo...</option>';
+                
+                data.equipos.forEach(equipo => {
+                    const option = document.createElement('option');
+                    option.value = equipo.id;
+                    option.textContent = `${equipo.numero_serie} - ${equipo.modelo__nombre}`;
+                    selectElement.appendChild(option);
+                });
+            }
+        })
+        .catch(error => {
+            console.error('Error cargando equipos:', error);
+            selectElement.innerHTML = '<option value="">Error al cargar equipos...</option>';
+        });
+}
+
+// Función para enviar formulario de lead
+function enviarFormularioLead() {
+    const formData = new FormData(document.getElementById('formNuevoLead'));
+    
+    fetch('{% url "centroSoluciones:crear_lead" %}', {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            mostrarNotificacion(data.message, 'success');
+            document.getElementById('formNuevoLead').reset();
+            bootstrap.Modal.getInstance(document.getElementById('modalNuevoLead')).hide();
+            // Recargar la página para actualizar la lista
+            setTimeout(() => location.reload(), 1500);
+        } else {
+            mostrarNotificacion(data.message, 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        mostrarNotificacion('Error al crear el lead', 'error');
+    });
+}
+
+// Función para mostrar notificaciones
+function mostrarNotificacion(mensaje, tipo) {
+    const toast = document.getElementById('toastNotificacion');
+    const toastBody = document.getElementById('toastMensaje');
+    
+    toastBody.textContent = mensaje;
+    
+    // Cambiar color según el tipo
+    toast.className = 'toast';
+    if (tipo === 'success') {
+        toast.classList.add('bg-success', 'text-white');
+    } else if (tipo === 'error') {
+        toast.classList.add('bg-danger', 'text-white');
+    } else {
+        toast.classList.add('bg-info', 'text-white');
+    }
+    
+    const bsToast = new bootstrap.Toast(toast);
+    bsToast.show();
+}
+</script>
+{% endblock %} 

@@ -1,0 +1,723 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+    /* Variables CSS para consistencia */
+    :root {
+        --primary-gradient: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        --secondary-gradient: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        --success-gradient: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+        --warning-gradient: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+        --danger-gradient: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+        --info-gradient: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+        --dark-gradient: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        --light-gradient: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        --card-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        --hover-shadow: 0 15px 40px rgba(0,0,0,0.15);
+        --border-radius: 20px;
+        --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Header mejorado */
+    .create-header {
+        background: var(--dark-gradient);
+        color: white;
+        padding: 3rem 2rem;
+        border-radius: var(--border-radius);
+        margin-bottom: 2.5rem;
+        box-shadow: var(--card-shadow);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .create-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="dots" width="20" height="20" patternUnits="userSpaceOnUse"><circle cx="10" cy="10" r="1" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23dots)"/></svg>');
+        pointer-events: none;
+    }
+    
+    .create-header h1 {
+        margin: 0;
+        font-weight: 800;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        font-size: 3rem;
+        position: relative;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+    
+    .header-actions {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    /* Botón de volver */
+    .back-btn {
+        border-radius: 25px;
+        padding: 0.8rem 1.5rem;
+        font-weight: 600;
+        transition: var(--transition);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-size: 0.9rem;
+        border: none;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        text-decoration: none;
+        background: var(--dark-gradient);
+        color: white;
+    }
+    
+    .back-btn:hover {
+        background: var(--dark-gradient);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(44, 62, 80, 0.4);
+        color: white;
+        text-decoration: none;
+    }
+
+    /* Mensajes de alerta mejorados */
+    .messages-container {
+        margin-bottom: 2rem;
+    }
+    
+    .custom-alert {
+        border-radius: var(--border-radius);
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        border: none;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        position: relative;
+        overflow: hidden;
+        font-weight: 500;
+    }
+    
+    .custom-alert.success {
+        background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+        color: #155724;
+        border-left: 4px solid #28a745;
+    }
+    
+    .custom-alert.error {
+        background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+        color: #721c24;
+        border-left: 4px solid #dc3545;
+    }
+    
+    .custom-alert.warning {
+        background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+        color: #856404;
+        border-left: 4px solid #ffc107;
+    }
+    
+    .custom-alert.info {
+        background: linear-gradient(135deg, #d1ecf1 0%, #bee5eb 100%);
+        color: #0c5460;
+        border-left: 4px solid #17a2b8;
+    }
+
+    /* Contenedor del formulario */
+    .form-container {
+        background: white;
+        border-radius: var(--border-radius);
+        box-shadow: var(--card-shadow);
+        overflow: hidden;
+        border: 1px solid #e9ecef;
+        margin-bottom: 2rem;
+    }
+    
+    .form-header {
+        background: var(--dark-gradient);
+        color: white;
+        padding: 1.2rem 1.5rem;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .form-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="form-dots" width="20" height="20" patternUnits="userSpaceOnUse"><circle cx="10" cy="10" r="1" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23form-dots)"/></svg>');
+        pointer-events: none;
+    }
+    
+    .form-header h5 {
+        margin: 0;
+        font-weight: 700;
+        font-size: 1.2rem;
+        position: relative;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        gap: 0.8rem;
+    }
+    
+    .form-body {
+        padding: 2rem;
+        background: #fafbfc;
+    }
+
+    /* Estilos para formularios */
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+    
+    .form-label {
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 0.5rem;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .form-control, .form-select {
+        border-radius: 12px;
+        border: 2px solid #e9ecef;
+        padding: 0.8rem 1rem;
+        transition: var(--transition);
+        font-size: 0.95rem;
+        background: white;
+        width: 100%;
+    }
+    
+    .form-control:focus, .form-select:focus {
+        border-color: #2c3e50;
+        box-shadow: 0 0 0 0.2rem rgba(44, 62, 80, 0.25);
+        outline: none;
+    }
+    
+    .form-control-file {
+        border: 2px dashed #e9ecef;
+        border-radius: 12px;
+        padding: 1.5rem;
+        text-align: center;
+        transition: var(--transition);
+        background: white;
+    }
+    
+    .form-control-file:hover {
+        border-color: #2c3e50;
+        background: rgba(44, 62, 80, 0.02);
+    }
+
+    /* Tarjetas de las 5S */
+    .s5-card {
+        background: white;
+        border-radius: var(--border-radius);
+        box-shadow: var(--card-shadow);
+        overflow: hidden;
+        border: 1px solid #e9ecef;
+        margin-bottom: 2rem;
+        transition: var(--transition);
+        height: 100%;
+    }
+    
+    .s5-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--hover-shadow);
+    }
+    
+    .s5-header {
+        padding: 1.2rem 1.5rem;
+        color: white;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .s5-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="s5-dots" width="20" height="20" patternUnits="userSpaceOnUse"><circle cx="10" cy="10" r="1" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23s5-dots)"/></svg>');
+        pointer-events: none;
+    }
+    
+    .s5-header h5 {
+        margin: 0;
+        font-weight: 700;
+        font-size: 1.1rem;
+        position: relative;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        gap: 0.8rem;
+    }
+    
+    .s5-body {
+        padding: 1.5rem;
+    }
+
+    /* Colores específicos para cada S */
+    .s5-seiri .s5-header {
+        background: var(--info-gradient);
+    }
+    
+    .s5-seiton .s5-header {
+        background: var(--success-gradient);
+    }
+    
+    .s5-seiso .s5-header {
+        background: var(--primary-gradient);
+    }
+    
+    .s5-seiketsu .s5-header {
+        background: var(--warning-gradient);
+    }
+    
+    .s5-shitsuke .s5-header {
+        background: var(--danger-gradient);
+    }
+
+    /* Contenedor de evidencias */
+    .evidence-container {
+        background: white;
+        border-radius: var(--border-radius);
+        box-shadow: var(--card-shadow);
+        overflow: hidden;
+        border: 1px solid #e9ecef;
+        margin-bottom: 2rem;
+    }
+    
+    .evidence-header {
+        background: var(--dark-gradient);
+        color: white;
+        padding: 1.2rem 1.5rem;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .evidence-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="evidence-dots" width="20" height="20" patternUnits="userSpaceOnUse"><circle cx="10" cy="10" r="1" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23evidence-dots)"/></svg>');
+        pointer-events: none;
+    }
+    
+    .evidence-header h5 {
+        margin: 0;
+        font-weight: 700;
+        font-size: 1.2rem;
+        position: relative;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        gap: 0.8rem;
+    }
+    
+    .evidence-body {
+        padding: 2rem;
+        background: #fafbfc;
+    }
+
+    /* Botón de guardar */
+    .save-btn {
+        background: var(--success-gradient);
+        color: white;
+        border: none;
+        border-radius: 25px;
+        padding: 1rem 2rem;
+        font-weight: 700;
+        transition: var(--transition);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-size: 1rem;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .save-btn:hover {
+        background: var(--success-gradient);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(39, 174, 96, 0.4);
+        color: white;
+    }
+
+    /* Errores de formulario */
+    .error-message {
+        color: #e74c3c;
+        font-size: 0.85rem;
+        margin-top: 0.5rem;
+        font-weight: 500;
+    }
+
+    /* Animaciones */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .create-header, .form-container, .s5-card, .evidence-container {
+        animation: fadeInUp 0.6s ease-out;
+    }
+    
+    .form-container { animation-delay: 0.1s; }
+    .s5-card:nth-child(1) { animation-delay: 0.2s; }
+    .s5-card:nth-child(2) { animation-delay: 0.3s; }
+    .s5-card:nth-child(3) { animation-delay: 0.4s; }
+    .s5-card:nth-child(4) { animation-delay: 0.5s; }
+    .s5-card:nth-child(5) { animation-delay: 0.6s; }
+    .evidence-container { animation-delay: 0.7s; }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .create-header {
+            padding: 2rem 1.5rem;
+            text-align: center;
+        }
+        
+        .create-header h1 {
+            font-size: 2rem;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .header-actions {
+            justify-content: center;
+            margin-top: 1rem;
+        }
+        
+        .back-btn {
+            padding: 0.7rem 1.2rem;
+            font-size: 0.85rem;
+        }
+        
+        .form-body {
+            padding: 1.5rem;
+        }
+        
+        .form-control, .form-select {
+            padding: 0.7rem 0.8rem;
+            font-size: 0.9rem;
+        }
+        
+        .s5-body {
+            padding: 1rem;
+        }
+        
+        .save-btn {
+            padding: 0.8rem 1.5rem;
+            font-size: 0.9rem;
+        }
+    }
+</style>
+
+<main class="container-fluid mt-4">
+    <!-- Header mejorado -->
+    <div class="create-header">
+        <div class="d-flex justify-content-between align-items-center">
+            <h1>
+                <i class="bi bi-clipboard-plus"></i>
+                Crear Revisión 5S
+            </h1>
+            <div class="header-actions">
+                <a href="{% url 'gestionDeTaller:lista_revisiones_5s' %}" class="back-btn">
+                    <i class="bi bi-arrow-left"></i>
+                    Volver
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mensajes de alerta -->
+    {% if messages %}
+    <div class="messages-container">
+        {% for message in messages %}
+        <div class="custom-alert {{ message.tags }}">
+            <i class="bi bi-{% if message.tags == 'success' %}check-circle{% elif message.tags == 'error' %}exclamation-triangle{% elif message.tags == 'warning' %}exclamation-triangle{% else %}info-circle{% endif %}"></i>
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Formulario principal -->
+    <div class="form-container">
+        <div class="form-header">
+            <h5>
+                <i class="bi bi-info-circle"></i>
+                Información General
+            </h5>
+        </div>
+        <div class="form-body">
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                {{ form.non_field_errors }}
+
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="{{ form.sucursal.id_for_label }}" class="form-label">
+                                <i class="bi bi-building"></i>Sucursal
+                            </label>
+                            {{ form.sucursal }}
+                            {% if form.sucursal.errors %}
+                                <div class="error-message">{{ form.sucursal.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="{{ form.fecha_revision.id_for_label }}" class="form-label">
+                                <i class="bi bi-calendar-date"></i>Fecha de Revisión
+                            </label>
+                            {{ form.fecha_revision }}
+                            {% if form.fecha_revision.errors %}
+                                <div class="error-message">{{ form.fecha_revision.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="{{ form.fecha_proxima.id_for_label }}" class="form-label">
+                                <i class="bi bi-calendar-event"></i>Próxima Revisión
+                            </label>
+                            {{ form.fecha_proxima }}
+                            {% if form.fecha_proxima.errors %}
+                                <div class="error-message">{{ form.fecha_proxima.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Tarjetas de las 5S -->
+    <div class="row">
+        <div class="col-md-4">
+            <div class="s5-card s5-seiri">
+                <div class="s5-header">
+                    <h5>
+                        <i class="bi bi-sort-down"></i>
+                        Seiri (Clasificar)
+                    </h5>
+                </div>
+                <div class="s5-body">
+                    <div class="form-group">
+                        <label for="{{ form.bancos_trabajo.id_for_label }}" class="form-label">
+                            <i class="bi bi-tools"></i>Bancos de trabajo
+                        </label>
+                        {{ form.bancos_trabajo }}
+                    </div>
+                    <div class="form-group">
+                        <label for="{{ form.herramientas_funcionales.id_for_label }}" class="form-label">
+                            <i class="bi bi-wrench"></i>Herramientas funcionales
+                        </label>
+                        {{ form.herramientas_funcionales }}
+                    </div>
+                    <div class="form-group">
+                        <label for="{{ form.piezas_organizadas.id_for_label }}" class="form-label">
+                            <i class="bi bi-box"></i>Piezas organizadas
+                        </label>
+                        {{ form.piezas_organizadas }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="s5-card s5-seiton">
+                <div class="s5-header">
+                    <h5>
+                        <i class="bi bi-grid-3x3"></i>
+                        Seiton (Ordenar)
+                    </h5>
+                </div>
+                <div class="s5-body">
+                    <div class="form-group">
+                        <label for="{{ form.herramientas_devueltas.id_for_label }}" class="form-label">
+                            <i class="bi bi-arrow-return-left"></i>Herramientas devueltas
+                        </label>
+                        {{ form.herramientas_devueltas }}
+                    </div>
+                    <div class="form-group">
+                        <label for="{{ form.box_limpios.id_for_label }}" class="form-label">
+                            <i class="bi bi-box-seam"></i>Box limpios
+                        </label>
+                        {{ form.box_limpios }}
+                    </div>
+                    <div class="form-group">
+                        <label for="{{ form.sala_garantia.id_for_label }}" class="form-label">
+                            <i class="bi bi-shield-check"></i>Sala garantía
+                        </label>
+                        {{ form.sala_garantia }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="s5-card s5-seiso">
+                <div class="s5-header">
+                    <h5>
+                        <i class="bi bi-brush"></i>
+                        Seiso (Limpiar)
+                    </h5>
+                </div>
+                <div class="s5-body">
+                    <div class="form-group">
+                        <label for="{{ form.piso_limpio.id_for_label }}" class="form-label">
+                            <i class="bi bi-square"></i>Piso limpio
+                        </label>
+                        {{ form.piso_limpio }}
+                    </div>
+                    <div class="form-group">
+                        <label for="{{ form.instrumentos_limpios.id_for_label }}" class="form-label">
+                            <i class="bi bi-droplet"></i>Instrumentos limpios
+                        </label>
+                        {{ form.instrumentos_limpios }}
+                    </div>
+                    <div class="form-group">
+                        <label for="{{ form.paredes_limpias.id_for_label }}" class="form-label">
+                            <i class="bi bi-layers"></i>Paredes limpias
+                        </label>
+                        {{ form.paredes_limpias }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="s5-card s5-seiketsu">
+                <div class="s5-header">
+                    <h5>
+                        <i class="bi bi-award"></i>
+                        Seiketsu (Estandarizar)
+                    </h5>
+                </div>
+                <div class="s5-body">
+                    <div class="form-group">
+                        <label for="{{ form.personal_uniformado.id_for_label }}" class="form-label">
+                            <i class="bi bi-person-badge"></i>Personal uniformado
+                        </label>
+                        {{ form.personal_uniformado }}
+                    </div>
+                    <div class="form-group">
+                        <label for="{{ form.epp_usado.id_for_label }}" class="form-label">
+                            <i class="bi bi-shield"></i>EPP usado
+                        </label>
+                        {{ form.epp_usado }}
+                    </div>
+                    <div class="form-group">
+                        <label for="{{ form.herramientas_calibradas.id_for_label }}" class="form-label">
+                            <i class="bi bi-speedometer2"></i>Herramientas calibradas
+                        </label>
+                        {{ form.herramientas_calibradas }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="s5-card s5-shitsuke">
+                <div class="s5-header">
+                    <h5>
+                        <i class="bi bi-lightning"></i>
+                        Shitsuke (Disciplina)
+                    </h5>
+                </div>
+                <div class="s5-body">
+                    <div class="form-group">
+                        <label for="{{ form.residuos_gestionados.id_for_label }}" class="form-label">
+                            <i class="bi bi-recycle"></i>Residuos gestionados
+                        </label>
+                        {{ form.residuos_gestionados }}
+                    </div>
+                    <div class="form-group">
+                        <label for="{{ form.documentacion_actualizada.id_for_label }}" class="form-label">
+                            <i class="bi bi-file-earmark-text"></i>Documentación actualizada
+                        </label>
+                        {{ form.documentacion_actualizada }}
+                    </div>
+                    <div class="form-group">
+                        <label for="{{ form.procedimientos_seguidos.id_for_label }}" class="form-label">
+                            <i class="bi bi-list-check"></i>Procedimientos seguidos
+                        </label>
+                        {{ form.procedimientos_seguidos }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contenedor de evidencias -->
+    <div class="evidence-container">
+        <div class="evidence-header">
+            <h5>
+                <i class="bi bi-camera"></i>
+                Evidencias
+            </h5>
+        </div>
+        <div class="evidence-body">
+            <div class="form-group">
+                <label for="{{ form.evidencias.id_for_label }}" class="form-label">
+                    <i class="bi bi-upload"></i>Subir evidencias fotográficas
+                </label>
+                <div class="form-control-file">
+                    {{ form.evidencias }}
+                </div>
+                {% if form.evidencias.errors %}
+                    <div class="error-message">{{ form.evidencias.errors }}</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Botón de guardar -->
+    <div class="text-center">
+        <button type="submit" class="save-btn">
+            <i class="bi bi-check-circle"></i>
+            Guardar Revisión
+        </button>
+    </div>
+</main>
+
+{% block extra_js %}
+<script>
+    // Inicializar los select2 para los campos de selección
+    $(document).ready(function() {
+        $('select').select2({
+            theme: 'bootstrap-5'
+        });
+    });
+</script>
+{% endblock %}
+{% endblock %}

@@ -1,0 +1,209 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2>
+                <i class="bi bi-eye me-2"></i>Revisar Sugerencia
+            </h2>
+            <p class="text-muted">Evaluar y responder a la sugerencia de mejora</p>
+        </div>
+        <a href="{% url 'crm:gestionar_sugerencias' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Volver a Gestionar Sugerencias
+        </a>
+    </div>
+
+    <div class="row">
+        <!-- Detalles de la Sugerencia -->
+        <div class="col-md-8">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-chat-dots me-2"></i>Detalles de la Sugerencia
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-8">
+                            <h4>{{ sugerencia.titulo }}</h4>
+                            <p class="text-muted mb-0">
+                                <i class="bi bi-calendar me-2"></i>
+                                Sugerida el {{ sugerencia.fecha_sugerencia|date:"d/m/Y H:i" }}
+                            </p>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <span class="badge {% if sugerencia.estado == 'PENDIENTE' %}bg-warning{% elif sugerencia.estado == 'EN_ANALISIS' %}bg-info{% elif sugerencia.estado == 'APROBADA' %}bg-success{% elif sugerencia.estado == 'IMPLEMENTADA' %}bg-primary{% else %}bg-danger{% endif %} fs-6">
+                                {{ sugerencia.get_estado_display }}
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <strong>Categoría:</strong>
+                            <span class="badge bg-secondary">{{ sugerencia.get_categoria_display }}</span>
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Prioridad:</strong>
+                            <span class="badge {% if sugerencia.prioridad == 'BAJA' %}bg-secondary{% elif sugerencia.prioridad == 'MEDIA' %}bg-info{% elif sugerencia.prioridad == 'ALTA' %}bg-warning{% else %}bg-danger{% endif %}">
+                                {{ sugerencia.get_prioridad_display }}
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <strong>Impacto Estimado:</strong>
+                            <span class="badge {% if sugerencia.impacto_estimado == 'BAJO' %}bg-secondary{% elif sugerencia.impacto_estimado == 'MEDIO' %}bg-info{% elif sugerencia.impacto_estimado == 'ALTO' %}bg-warning{% else %}bg-danger{% endif %}">
+                                {{ sugerencia.get_impacto_estimado_display }}
+                            </span>
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Días Pendiente:</strong>
+                            {% if sugerencia.dias_pendiente > 0 %}
+                                <span class="badge {% if sugerencia.dias_pendiente <= 7 %}bg-success{% elif sugerencia.dias_pendiente <= 30 %}bg-warning{% else %}bg-danger{% endif %}">
+                                    {{ sugerencia.dias_pendiente }} días
+                                </span>
+                            {% else %}
+                                <span class="text-muted">-</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <strong>Descripción:</strong>
+                        <p class="mt-2">{{ sugerencia.descripcion }}</p>
+                    </div>
+                    
+                    {% if sugerencia.beneficios_esperados %}
+                    <div class="mb-3">
+                        <strong>Beneficios Esperados:</strong>
+                        <p class="mt-2">{{ sugerencia.beneficios_esperados }}</p>
+                    </div>
+                    {% endif %}
+                    
+                    {% if sugerencia.recursos_necesarios %}
+                    <div class="mb-3">
+                        <strong>Recursos Necesarios:</strong>
+                        <p class="mt-2">{{ sugerencia.recursos_necesarios }}</p>
+                    </div>
+                    {% endif %}
+                    
+                    {% if sugerencia.tiempo_estimado_implementacion %}
+                    <div class="mb-3">
+                        <strong>Tiempo Estimado de Implementación:</strong>
+                        <p class="mt-2">{{ sugerencia.tiempo_estimado_implementacion }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Formulario de Revisión -->
+        <div class="col-md-4">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-pencil-square me-2"></i>Evaluación y Respuesta
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label for="estado" class="form-label">Nuevo Estado *</label>
+                            <select class="form-select" id="estado" name="estado" required>
+                                <option value="PENDIENTE" {% if sugerencia.estado == 'PENDIENTE' %}selected{% endif %}>Pendiente de Revisión</option>
+                                <option value="EN_ANALISIS" {% if sugerencia.estado == 'EN_ANALISIS' %}selected{% endif %}>En Análisis</option>
+                                <option value="APROBADA" {% if sugerencia.estado == 'APROBADA' %}selected{% endif %}>Aprobada</option>
+                                <option value="IMPLEMENTADA" {% if sugerencia.estado == 'IMPLEMENTADA' %}selected{% endif %}>Implementada</option>
+                                <option value="RECHAZADA" {% if sugerencia.estado == 'RECHAZADA' %}selected{% endif %}>Rechazada</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="respuesta_gerencia" class="form-label">Respuesta de la Gerencia *</label>
+                            <textarea class="form-control" id="respuesta_gerencia" name="respuesta_gerencia" rows="4" required
+                                      placeholder="Explica la decisión tomada y los motivos...">{{ sugerencia.respuesta_gerencia }}</textarea>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="accion_especifica" class="form-label">Acción Específica</label>
+                            <textarea class="form-control" id="accion_especifica" name="accion_especifica" rows="3"
+                                      placeholder="Describe las acciones específicas que se tomarán...">{{ sugerencia.accion_especifica }}</textarea>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="responsable_implementacion" class="form-label">Responsable de Implementación</label>
+                            <input type="text" class="form-control" id="responsable_implementacion" name="responsable_implementacion"
+                                   value="{{ sugerencia.responsable_implementacion }}" placeholder="Nombre del responsable">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="fecha_implementacion" class="form-label">Fecha de Implementación</label>
+                            <input type="date" class="form-control" id="fecha_implementacion" name="fecha_implementacion"
+                                   value="{% if sugerencia.fecha_implementacion %}{{ sugerencia.fecha_implementacion|date:'Y-m-d' }}{% endif %}">
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-circle me-2"></i>Guardar Evaluación
+                            </button>
+                            <a href="{% url 'crm:gestionar_sugerencias' %}" class="btn btn-outline-secondary">
+                                <i class="bi bi-x-circle me-2"></i>Cancelar
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Información del Revisor -->
+            {% if sugerencia.revisor %}
+            <div class="card shadow-sm mt-3">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="bi bi-person-check me-2"></i>Información del Revisor
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <p><strong>Revisor:</strong> {{ sugerencia.revisor.nombre }}</p>
+                    <p><strong>Fecha de Revisión:</strong> {{ sugerencia.fecha_revision|date:"d/m/Y H:i" }}</p>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+// Validación del formulario
+document.querySelector('form').addEventListener('submit', function(e) {
+    const estado = document.getElementById('estado').value;
+    const respuesta = document.getElementById('respuesta_gerencia').value.trim();
+    
+    if (!respuesta) {
+        e.preventDefault();
+        alert('Por favor ingresa la respuesta de la gerencia.');
+        document.getElementById('respuesta_gerencia').focus();
+        return;
+    }
+    
+    if (respuesta.length < 20) {
+        e.preventDefault();
+        alert('La respuesta debe tener al menos 20 caracteres para ser más detallada.');
+        document.getElementById('respuesta_gerencia').focus();
+        return;
+    }
+    
+    if (estado === 'IMPLEMENTADA' && !document.getElementById('accion_especifica').value.trim()) {
+        e.preventDefault();
+        alert('Para marcar como implementada, debes especificar las acciones tomadas.');
+        document.getElementById('accion_especifica').focus();
+        return;
+    }
+});
+</script>
+{% endblock %} 

@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+{% block content %}
+<main class="container mt-4">
+    <h1>Resumen Financiero de Servicios</h1>
+    
+    <form method="get" class="mb-4">
+        <label for="mes">Mes:</label>
+        <input type="number" id="mes" name="mes" value="{{ mes }}" min="1" max="12">
+        <label for="anio">Año:</label>
+        <input type="number" id="anio" name="anio" value="{{ anio }}">
+        <button type="submit" class="btn btn-primary">Filtrar</button>
+    </form>
+
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Cliente</th>
+                <th>Fecha Ingreso</th>
+                <th>IS</th>
+                <th>Valor Mano de Obra</th>
+                <th>Gastos de Asistencia</th>
+                <th>Venta de Repuestos</th>
+                <th>Total Valor</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for servicio in servicios %}
+            <tr>
+                <td>{{ servicio.id }}</td>
+                <td>{{ servicio.preorden.cliente }}</td>
+                <td>{{ servicio.fecha_ingreso }}</td>
+                <td>{{ servicio.informe_servicio }}</td>
+                <td>{{ servicio.valor_mano_obra }} USD</td>
+                <td>{{ servicio.total_gastos }} USD</td>
+                <td>{{ servicio.total_ventas }} USD</td>
+                <td>{{ servicio.total_valor }} USD</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h2>Total Mensual: {{ total_mensual }} USD</h2>
+
+    <canvas id="graficoTotales" width="400" height="200"></canvas>
+</main>
+
+<!-- <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const ctx = document.getElementById('graficoTotales').getContext('2d');
+        const chart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['{{ mes }}/{{ anio }}'],
+                datasets: [{
+                    label: 'Total Mensual',
+                    data: [{{ total_mensual }}],
+                    backgroundColor: ['#007bff'],
+                    borderColor: ['#007bff'],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    });
+</script> -->
+{% endblock %}

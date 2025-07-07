@@ -1,0 +1,771 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+    /* Variables CSS para consistencia */
+    :root {
+        --primary-gradient: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        --secondary-gradient: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        --success-gradient: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+        --warning-gradient: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+        --danger-gradient: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+        --info-gradient: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+        --dark-gradient: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        --light-gradient: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        --card-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        --hover-shadow: 0 15px 40px rgba(0,0,0,0.15);
+        --border-radius: 20px;
+        --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Header mejorado */
+    .tecnico-header {
+        background: var(--dark-gradient);
+        color: white;
+        padding: 3rem 2rem;
+        border-radius: var(--border-radius);
+        margin-bottom: 2.5rem;
+        box-shadow: var(--card-shadow);
+        position: relative;
+        overflow: hidden;
+        text-align: center;
+    }
+    
+    .tecnico-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="dots" width="20" height="20" patternUnits="userSpaceOnUse"><circle cx="10" cy="10" r="1" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23dots)"/></svg>');
+        pointer-events: none;
+    }
+    
+    .tecnico-header h1 {
+        margin: 0;
+        font-weight: 800;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        font-size: 3rem;
+        position: relative;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 1rem;
+    }
+    
+    .tecnico-header .subtitle {
+        font-size: 1.2rem;
+        opacity: 0.9;
+        margin-top: 1rem;
+        position: relative;
+        z-index: 1;
+    }
+
+    /* Tarjetas de estadísticas mejoradas */
+    .stats-container {
+        margin-bottom: 2.5rem;
+    }
+    
+    .stat-card {
+        background: white;
+        border-radius: var(--border-radius);
+        box-shadow: var(--card-shadow);
+        border: 1px solid #e9ecef;
+        overflow: hidden;
+        transition: var(--transition);
+        height: 100%;
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--hover-shadow);
+    }
+    
+    .stat-header {
+        background: var(--dark-gradient);
+        color: white;
+        padding: 1.5rem;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .stat-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="stat-dots" width="20" height="20" patternUnits="userSpaceOnUse"><circle cx="10" cy="10" r="1" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23stat-dots)"/></svg>');
+        pointer-events: none;
+    }
+    
+    .stat-title {
+        margin: 0;
+        font-weight: 700;
+        font-size: 1.2rem;
+        position: relative;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        gap: 0.8rem;
+    }
+    
+    .stat-body {
+        padding: 2rem;
+        text-align: center;
+    }
+    
+    .stat-value {
+        font-size: 3rem;
+        font-weight: 800;
+        margin-bottom: 1rem;
+        background: var(--dark-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    
+    .stat-description {
+        color: #6c757d;
+        font-size: 0.9rem;
+        font-weight: 500;
+        line-height: 1.4;
+    }
+
+    /* Alerta mejorada */
+    .alert-container {
+        margin-bottom: 2rem;
+    }
+    
+    .custom-alert {
+        background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+        border: 2px solid #f39c12;
+        border-radius: var(--border-radius);
+        padding: 1.5rem;
+        box-shadow: 0 5px 20px rgba(243, 156, 18, 0.2);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .custom-alert::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="alert-dots" width="20" height="20" patternUnits="userSpaceOnUse"><circle cx="10" cy="10" r="1" fill="#f39c12" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23alert-dots)"/></svg>');
+        pointer-events: none;
+    }
+    
+    .alert-title {
+        font-weight: 700;
+        color: #d68910;
+        font-size: 1.1rem;
+        margin-bottom: 1rem;
+        position: relative;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .alert-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        position: relative;
+        z-index: 1;
+    }
+    
+    .alert-list li {
+        background: rgba(255, 255, 255, 0.8);
+        margin: 0.5rem 0;
+        padding: 0.8rem 1rem;
+        border-radius: 10px;
+        font-weight: 500;
+        color: #d68910;
+        border-left: 4px solid #f39c12;
+    }
+
+    /* Navegación semanal mejorada */
+    .week-navigation {
+        background: white;
+        border-radius: var(--border-radius);
+        padding: 1.5rem;
+        box-shadow: var(--card-shadow);
+        border: 1px solid #e9ecef;
+        margin-bottom: 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+    
+    .nav-btn {
+        background: var(--dark-gradient);
+        color: white;
+        border: none;
+        border-radius: 25px;
+        padding: 0.8rem 1.5rem;
+        font-weight: 600;
+        transition: var(--transition);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-size: 0.9rem;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        text-decoration: none;
+    }
+    
+    .nav-btn:hover {
+        background: var(--dark-gradient);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(44, 62, 80, 0.4);
+        color: white;
+        text-decoration: none;
+    }
+    
+    .week-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #2c3e50;
+        margin: 0;
+        text-align: center;
+        flex: 1;
+    }
+
+    /* Calendario semanal mejorado */
+    .calendar-container {
+        background: white;
+        border-radius: var(--border-radius);
+        box-shadow: var(--card-shadow);
+        overflow: hidden;
+        border: 1px solid #e9ecef;
+        margin-bottom: 2rem;
+    }
+    
+    .calendar-header {
+        background: var(--dark-gradient);
+        color: white;
+        padding: 1.2rem 1.5rem;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .calendar-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="calendar-dots" width="20" height="20" patternUnits="userSpaceOnUse"><circle cx="10" cy="10" r="1" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23calendar-dots)"/></svg>');
+        pointer-events: none;
+    }
+    
+    .calendar-header h5 {
+        margin: 0;
+        font-weight: 700;
+        font-size: 1.2rem;
+        position: relative;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        gap: 0.8rem;
+    }
+
+    /* Tabla del calendario */
+    .calendar-table {
+        margin: 0;
+        border: none;
+        width: 100%;
+    }
+    
+    .calendar-table th {
+        background: var(--dark-gradient) !important;
+        color: white !important;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 1rem 0.5rem;
+        border: none;
+        font-size: 0.9rem;
+    }
+    
+    .calendar-table td {
+        padding: 1.5rem 0.5rem;
+        border: 1px solid #e9ecef;
+        vertical-align: middle;
+        text-align: center;
+        transition: var(--transition);
+    }
+    
+    .calendar-table td:hover {
+        background: rgba(44, 62, 80, 0.05);
+    }
+    
+    .day-date {
+        font-weight: 700;
+        font-size: 1.1rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .day-hours {
+        font-size: 0.9rem;
+        margin-bottom: 1rem;
+        font-weight: 500;
+    }
+    
+    .day-btn {
+        border-radius: 20px;
+        padding: 0.5rem 1rem;
+        font-weight: 600;
+        transition: var(--transition);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-size: 0.8rem;
+        border: none;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        text-decoration: none;
+        display: inline-block;
+    }
+    
+    .day-btn.registrar {
+        background: var(--success-gradient);
+        color: white;
+    }
+    
+    .day-btn.registrar:hover {
+        background: var(--success-gradient);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(39, 174, 96, 0.4);
+        color: white;
+        text-decoration: none;
+    }
+    
+    .day-btn.futuro {
+        background: #6c757d;
+        color: white;
+        cursor: not-allowed;
+    }
+    
+    .day-btn.futuro:hover {
+        background: #6c757d;
+        color: white;
+        transform: none;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+
+    /* Estados de días */
+    .day-completo {
+        background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+        color: white;
+    }
+    
+    .day-parcial {
+        background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+        color: white;
+    }
+    
+    .day-pendiente {
+        background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+        color: white;
+    }
+
+    /* Tabla de horas registradas */
+    .hours-table-container {
+        background: white;
+        border-radius: var(--border-radius);
+        box-shadow: var(--card-shadow);
+        overflow: hidden;
+        border: 1px solid #e9ecef;
+        margin-bottom: 2rem;
+    }
+    
+    .hours-table-header {
+        background: var(--dark-gradient);
+        color: white;
+        padding: 1.2rem 1.5rem;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .hours-table-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="hours-dots" width="20" height="20" patternUnits="userSpaceOnUse"><circle cx="10" cy="10" r="1" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23hours-dots)"/></svg>');
+        pointer-events: none;
+    }
+    
+    .hours-table-header h5 {
+        margin: 0;
+        font-weight: 700;
+        font-size: 1.2rem;
+        position: relative;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        gap: 0.8rem;
+    }
+
+    /* Tabla de horas */
+    .hours-table {
+        margin: 0;
+        border: none;
+        width: 100%;
+    }
+    
+    .hours-table th {
+        background: var(--dark-gradient) !important;
+        color: white !important;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 1rem 0.8rem;
+        border: none;
+        font-size: 0.8rem;
+    }
+    
+    .hours-table td {
+        padding: 1rem 0.8rem;
+        border: none;
+        border-bottom: 1px solid #f0f0f0;
+        font-weight: 500;
+        font-size: 0.9rem;
+        vertical-align: middle;
+    }
+    
+    .hours-table tbody tr {
+        transition: var(--transition);
+    }
+    
+    .hours-table tbody tr:hover {
+        background: rgba(44, 62, 80, 0.05);
+    }
+    
+    .hours-table tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    /* Badges de estado */
+    .status-badge {
+        border-radius: 20px;
+        padding: 0.5rem 1rem;
+        font-weight: 600;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border: none;
+    }
+    
+    .status-badge.aprobado {
+        background: var(--success-gradient);
+        color: white;
+    }
+    
+    .status-badge.parcial {
+        background: var(--warning-gradient);
+        color: white;
+    }
+    
+    .status-badge.pendiente {
+        background: var(--danger-gradient);
+        color: white;
+    }
+
+    /* Botón de revisar */
+    .review-btn {
+        background: var(--info-gradient);
+        color: white;
+        border: none;
+        border-radius: 20px;
+        padding: 0.5rem 1rem;
+        font-weight: 600;
+        transition: var(--transition);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-size: 0.8rem;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        text-decoration: none;
+    }
+    
+    .review-btn:hover {
+        background: var(--info-gradient);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4);
+        color: white;
+        text-decoration: none;
+    }
+
+    /* Animaciones */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .tecnico-header, .stats-container, .alert-container, .week-navigation, .calendar-container, .hours-table-container {
+        animation: fadeInUp 0.6s ease-out;
+    }
+    
+    .stats-container { animation-delay: 0.1s; }
+    .alert-container { animation-delay: 0.2s; }
+    .week-navigation { animation-delay: 0.3s; }
+    .calendar-container { animation-delay: 0.4s; }
+    .hours-table-container { animation-delay: 0.5s; }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .tecnico-header {
+            padding: 2rem 1.5rem;
+        }
+        
+        .tecnico-header h1 {
+            font-size: 2rem;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .week-navigation {
+            flex-direction: column;
+            text-align: center;
+        }
+        
+        .nav-btn {
+            width: 100%;
+            justify-content: center;
+        }
+        
+        .calendar-table th,
+        .calendar-table td {
+            padding: 0.5rem 0.2rem;
+            font-size: 0.75rem;
+        }
+        
+        .day-date {
+            font-size: 0.9rem;
+        }
+        
+        .day-hours {
+            font-size: 0.75rem;
+        }
+        
+        .day-btn {
+            padding: 0.4rem 0.8rem;
+            font-size: 0.7rem;
+        }
+        
+        .hours-table th,
+        .hours-table td {
+            padding: 0.5rem 0.4rem;
+            font-size: 0.75rem;
+        }
+    }
+</style>
+
+<main class="container-fluid mt-4">
+    <!-- Header mejorado -->
+    <div class="tecnico-header">
+        <h1>
+            <i class="bi bi-person-badge"></i>
+            {{ tecnico.get_nombre_completo }}
+        </h1>
+        <div class="subtitle">
+            Detalle de rendimiento y registro de horas
+        </div>
+    </div>
+
+    <!-- Estadísticas del Técnico -->
+    <div class="stats-container">
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <h5 class="stat-title">
+                            <i class="bi bi-speedometer2"></i>
+                            Productividad
+                        </h5>
+                    </div>
+                    <div class="stat-body">
+                        <div class="stat-value">{{ promedio_productividad|floatformat:2 }}%</div>
+                        <div class="stat-description">
+                            Horas que generan ingreso / Horas disponibles
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-3">
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <h5 class="stat-title">
+                            <i class="bi bi-lightning"></i>
+                            Eficiencia
+                        </h5>
+                    </div>
+                    <div class="stat-body">
+                        <div class="stat-value">{{ promedio_eficiencia|floatformat:2 }}%</div>
+                        <div class="stat-description">
+                            Horas facturadas / Horas que generan ingreso
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-3">
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <h5 class="stat-title">
+                            <i class="bi bi-star"></i>
+                            Desempeño
+                        </h5>
+                    </div>
+                    <div class="stat-body">
+                        <div class="stat-value">{{ promedio_desempeno|floatformat:2 }}%</div>
+                        <div class="stat-description">
+                            Horas facturadas / Horas disponibles
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ALERTA DE REGISTROS PENDIENTES -->
+    {% if registros_pendientes %}
+    <div class="alert-container">
+        <div class="custom-alert">
+            <div class="alert-title">
+                <i class="bi bi-exclamation-triangle"></i>
+                Tienes registros pendientes en los siguientes días:
+            </div>
+            <ul class="alert-list">
+                {% for fecha in registros_pendientes %}
+                <li>{{ fecha|date:"d M Y" }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- CONTROLES DE NAVEGACIÓN SEMANAL -->
+    <div class="week-navigation">
+        <a href="?semana={{ semana_anterior }}" class="nav-btn">
+            <i class="bi bi-chevron-left"></i>
+            Semana Anterior
+        </a>
+        <h2 class="week-title">{{ semana_actual }}</h2>
+        <a href="?semana={{ semana_siguiente }}" class="nav-btn">
+            Semana Siguiente
+            <i class="bi bi-chevron-right"></i>
+        </a>
+    </div>
+
+    <!-- TABLA SEMANAL -->
+    <div class="calendar-container">
+        <div class="calendar-header">
+            <h5>
+                <i class="bi bi-calendar-week"></i>
+                Vista Semanal
+            </h5>
+        </div>
+        <div class="table-responsive">
+            <table class="table calendar-table">
+                <thead>
+                    <tr>
+                        <th>Lunes</th>
+                        <th>Martes</th>
+                        <th>Miércoles</th>
+                        <th>Jueves</th>
+                        <th>Viernes</th>
+                        <th>Sábado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        {% for dia in dias_semana %}
+                        <td class="{% if dia.estado == 'completo' %}day-completo
+                                    {% elif dia.estado == 'parcial' %}day-parcial
+                                    else %}day-pendiente{% endif %}">
+                            <div class="day-date">{{ dia.fecha|date:"d M" }}</div>
+                            <div class="day-hours">{{ dia.horas_registradas }}/{{ dia.horas_disponibles }} horas</div>
+                    
+                            {% if dia.fecha > fecha_actual %}
+                                <button class="day-btn futuro" disabled>Futuro</button>
+                            {% else %}
+                                <a href="{% url 'gestionDeTaller:registrar_horas' tecnico_id=tecnico.id %}?fecha={{ dia.fecha|date:'Y-m-d' }}" 
+                                   class="day-btn registrar">Registrar</a>
+                            {% endif %}
+                        </td>
+                        {% endfor %}
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- TABLA DE HORAS REGISTRADAS Y APROBADAS -->
+    <div class="hours-table-container">
+        <div class="hours-table-header">
+            <h5>
+                <i class="bi bi-clock-history"></i>
+                Registro de Horas
+            </h5>
+        </div>
+        <div class="table-responsive">
+            <table class="table hours-table">
+                <thead>
+                    <tr>
+                        <th><i class="bi bi-calendar me-2"></i>Fecha</th>
+                        <th><i class="bi bi-clock me-2"></i>Total Horas Registradas</th>
+                        <th><i class="bi bi-check-circle me-2"></i>Total Horas Aprobadas</th>
+                        <th><i class="bi bi-flag me-2"></i>Estado</th>
+                        {% if user.rol == "GERENTE" %}
+                            <th><i class="bi bi-gear me-2"></i>Acción</th>
+                        {% endif %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for dia in dias_semana %}
+                    <tr>
+                        <td>{{ dia.fecha|date:"d M Y" }}</td>
+                        <td>{{ dia.horas_registradas|floatformat:2 }}</td>
+                        <td>{{ dia.horas_aprobadas|floatformat:2 }}</td>
+                        <td>
+                            {% if dia.horas_aprobadas == dia.horas_disponibles %}
+                                <span class="status-badge aprobado">Aprobado</span>
+                            {% elif dia.horas_aprobadas > 0 %}
+                                <span class="status-badge parcial">Parcialmente Aprobado</span>
+                            {% else %}
+                                <span class="status-badge pendiente">Pendiente</span>
+                            {% endif %}
+                        </td>
+                        {% if user.rol == "GERENTE" and dia.horas_registradas > 0 %}
+                            <td>
+                                <a href="{% url 'gestionDeTaller:revisar_horas' tecnico_id=tecnico.id fecha=dia.fecha|date:'Y-m-d' %}" 
+                                   class="review-btn">Revisar</a>
+                            </td>
+                        {% endif %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</main>
+{% endblock %}

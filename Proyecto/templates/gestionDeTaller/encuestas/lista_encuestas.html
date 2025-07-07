@@ -1,0 +1,670 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+    :root {
+        --primary-gradient: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        --success-gradient: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+        --warning-gradient: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+        --danger-gradient: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+        --info-gradient: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+        --dark-gradient: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        --card-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        --hover-shadow: 0 15px 40px rgba(0,0,0,0.15);
+        --border-radius: 20px;
+        --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .surveys-header {
+        background: var(--dark-gradient);
+        color: white;
+        padding: 3rem 2rem;
+        border-radius: var(--border-radius);
+        margin-bottom: 2.5rem;
+        box-shadow: var(--card-shadow);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .surveys-header::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="dots" width="20" height="20" patternUnits="userSpaceOnUse"><circle cx="10" cy="10" r="1" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23dots)"/></svg>');
+        pointer-events: none;
+    }
+    
+    .surveys-header h1 {
+        margin: 0;
+        font-weight: 800;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        font-size: 3rem;
+        position: relative;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+    
+    .header-actions {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+    
+    .header-btn {
+        border-radius: 25px;
+        padding: 0.8rem 1.5rem;
+        font-weight: 600;
+        transition: var(--transition);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-size: 0.9rem;
+        border: none;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        text-decoration: none;
+        color: white;
+    }
+    
+    .header-btn.warning {
+        background: var(--warning-gradient);
+    }
+    
+    .header-btn.warning:hover {
+        background: var(--warning-gradient);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(243, 156, 18, 0.4);
+        color: white;
+        text-decoration: none;
+    }
+    
+    .stats-card {
+        background: white;
+        border-radius: var(--border-radius);
+        box-shadow: var(--card-shadow);
+        overflow: hidden;
+        border: 1px solid #e9ecef;
+        margin-bottom: 2rem;
+        transition: var(--transition);
+    }
+    
+    .stats-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--hover-shadow);
+    }
+    
+    .stats-header {
+        background: var(--dark-gradient);
+        color: white;
+        padding: 1.2rem 1.5rem;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .stats-header h5 {
+        margin: 0;
+        font-weight: 700;
+        font-size: 1.2rem;
+        position: relative;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        gap: 0.8rem;
+    }
+    
+    .stats-body {
+        padding: 2rem;
+    }
+    
+    .nps-score {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+    
+    .nps-number {
+        font-size: 4rem;
+        font-weight: 900;
+        background: var(--success-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 0.5rem;
+    }
+    
+    .nps-label {
+        color: #6c757d;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    
+    .nps-breakdown {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1.5rem;
+        margin-top: 2rem;
+    }
+    
+    .nps-item {
+        text-align: center;
+        padding: 1.5rem;
+        border-radius: 15px;
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        transition: var(--transition);
+    }
+    
+    .nps-item:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+    }
+    
+    .nps-item.promotores {
+        background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+        border: 2px solid #28a745;
+    }
+    
+    .nps-item.pasivos {
+        background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+        border: 2px solid #ffc107;
+    }
+    
+    .nps-item.detractores {
+        background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+        border: 2px solid #dc3545;
+    }
+    
+    .nps-count {
+        font-size: 2.5rem;
+        font-weight: 800;
+        margin-bottom: 0.5rem;
+    }
+    
+    .nps-item.promotores .nps-count { color: #155724; }
+    .nps-item.pasivos .nps-count { color: #856404; }
+    .nps-item.detractores .nps-count { color: #721c24; }
+    
+    .nps-label-item {
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-size: 0.9rem;
+    }
+    
+    .nps-item.promotores .nps-label-item { color: #155724; }
+    .nps-item.pasivos .nps-label-item { color: #856404; }
+    .nps-item.detractores .nps-label-item { color: #721c24; }
+    
+    .chart-container {
+        position: relative;
+        height: 300px;
+        margin: 1rem 0;
+    }
+    
+    .section-card {
+        background: white;
+        border-radius: var(--border-radius);
+        box-shadow: var(--card-shadow);
+        overflow: hidden;
+        border: 1px solid #e9ecef;
+        margin-bottom: 2rem;
+    }
+    
+    .section-header {
+        background: var(--dark-gradient);
+        color: white;
+        padding: 1.2rem 1.5rem;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .section-header h5 {
+        margin: 0;
+        font-weight: 700;
+        font-size: 1.2rem;
+        position: relative;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        gap: 0.8rem;
+    }
+    
+    .section-body {
+        padding: 2rem;
+    }
+    
+    .table {
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    
+    .table thead th {
+        background: var(--dark-gradient);
+        color: white;
+        border: none;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-size: 0.85rem;
+        padding: 1rem;
+    }
+    
+    .table tbody tr {
+        transition: var(--transition);
+    }
+    
+    .table tbody tr:hover {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        transform: scale(1.01);
+    }
+    
+    .table tbody td {
+        padding: 1rem;
+        vertical-align: middle;
+        border-bottom: 1px solid #e9ecef;
+    }
+    
+    .badge {
+        border-radius: 20px;
+        padding: 0.5rem 1rem;
+        font-weight: 600;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border: none;
+    }
+    
+    .badge.bg-success { background: var(--success-gradient) !important; }
+    .badge.bg-warning { background: var(--warning-gradient) !important; }
+    .badge.bg-danger { background: var(--danger-gradient) !important; }
+    .badge.bg-info { background: var(--info-gradient) !important; }
+    
+    .action-btn {
+        border-radius: 20px;
+        padding: 0.5rem 1rem;
+        font-weight: 600;
+        transition: var(--transition);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-size: 0.8rem;
+        border: none;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+        color: white;
+        margin: 0.2rem;
+    }
+    
+    .action-btn.primary { background: var(--info-gradient); }
+    .action-btn.primary:hover { background: var(--info-gradient); transform: translateY(-2px); box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4); color: white; }
+    .action-btn.warning { background: var(--warning-gradient); }
+    .action-btn.warning:hover { background: var(--warning-gradient); transform: translateY(-2px); box-shadow: 0 6px 20px rgba(243, 156, 18, 0.4); color: white; }
+    .action-btn.success { background: var(--success-gradient); }
+    .action-btn.success:hover { background: var(--success-gradient); transform: translateY(-2px); box-shadow: 0 6px 20px rgba(39, 174, 96, 0.4); color: white; }
+    .action-btn.info { background: var(--info-gradient); }
+    .action-btn.info:hover { background: var(--info-gradient); transform: translateY(-2px); box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4); color: white; }
+    
+    .no-data {
+        text-align: center;
+        padding: 3rem 2rem;
+        color: #6c757d;
+        background: #f8f9fa;
+        border-radius: 15px;
+    }
+    
+    .no-data i {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+    }
+    
+    .client-info {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .client-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: var(--info-gradient);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 700;
+        font-size: 1.2rem;
+    }
+    
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(30px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .surveys-header, .stats-card, .section-card {
+        animation: fadeInUp 0.6s ease-out;
+    }
+    
+    .stats-card { animation-delay: 0.1s; }
+    .section-card { animation-delay: 0.2s; }
+    
+    @media (max-width: 768px) {
+        .surveys-header {
+            padding: 2rem 1.5rem;
+            text-align: center;
+        }
+        
+        .surveys-header h1 {
+            font-size: 2rem;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .header-actions {
+            justify-content: center;
+            margin-top: 1rem;
+        }
+        
+        .header-btn {
+            padding: 0.7rem 1.2rem;
+            font-size: 0.85rem;
+        }
+        
+        .nps-breakdown {
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+        
+        .stats-body, .section-body {
+            padding: 1.2rem;
+        }
+        
+        .table-responsive {
+            font-size: 0.9rem;
+        }
+    }
+</style>
+
+<main class="container-fluid mt-4">
+    <!-- Header mejorado -->
+    <div class="surveys-header d-flex justify-content-between align-items-center">
+        <h1><i class="bi bi-clipboard-check"></i> Encuestas de Satisfacción</h1>
+        <div class="header-actions">
+            <a href="{% url 'gestionDeTaller:lista_insatisfacciones' %}" class="header-btn warning">
+                <i class="bi bi-exclamation-triangle"></i> Ver Insatisfacciones
+            </a>
+        </div>
+    </div>
+    
+    <!-- Estadísticas NPS -->
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="stats-card">
+                <div class="stats-header">
+                    <h5><i class="bi bi-graph-up"></i> Resumen NPS</h5>
+                </div>
+                <div class="stats-body">
+                    <div class="nps-score">
+                        <div class="nps-number">{{ nps_promedio|floatformat:1 }}</div>
+                        <div class="nps-label">Promedio NPS</div>
+                    </div>
+                    <div class="nps-breakdown">
+                        <div class="nps-item promotores">
+                            <div class="nps-count">{{ promotores_count }}</div>
+                            <div class="nps-label-item">Promotores</div>
+                        </div>
+                        <div class="nps-item pasivos">
+                            <div class="nps-count">{{ pasivos_count }}</div>
+                            <div class="nps-label-item">Pasivos</div>
+                        </div>
+                        <div class="nps-item detractores">
+                            <div class="nps-count">{{ detractores_count }}</div>
+                            <div class="nps-label-item">Detractores</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="stats-card">
+                <div class="stats-header">
+                    <h5><i class="bi bi-pie-chart"></i> Distribución NPS</h5>
+                </div>
+                <div class="stats-body">
+                    <div class="chart-container">
+                        <canvas id="npsPieChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Servicios Pendientes de Encuesta -->
+    <div class="section-card">
+        <div class="section-header">
+            <h5><i class="bi bi-clock-history"></i> Servicios Pendientes de Encuesta</h5>
+        </div>
+        <div class="section-body">
+            {% if servicios %}
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th><i class="bi bi-hash me-2"></i>ID Servicio</th>
+                            <th><i class="bi bi-person me-2"></i>Cliente</th>
+                            <th><i class="bi bi-calendar-check me-2"></i>Fecha Completado</th>
+                            <th><i class="bi bi-gear me-2"></i>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for servicio in servicios %}
+                        <tr>
+                            <td><strong>#{{ servicio.id }}</strong></td>
+                            <td>
+                                <div class="client-info">
+                                    <div class="client-avatar">
+                                        {{ servicio.preorden.cliente.razon_social|first|upper }}
+                                    </div>
+                                    <div>
+                                        <div><strong>{{ servicio.preorden.cliente.razon_social }}</strong></div>
+                                        <small class="text-muted">{{ servicio.preorden.equipo.numero_serie }}</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>{{ servicio.fecha_servicio|date:"d/m/Y" }}</td>
+                            <td>
+                                <form method="post" action="{% url 'gestionDeTaller:enviar_encuesta' servicio.id %}" style="display: inline;">
+                                    {% csrf_token %}
+                                    <button type="submit" class="action-btn primary">
+                                        <i class="bi bi-envelope"></i> Enviar Encuesta
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="no-data">
+                <i class="bi bi-check-circle"></i>
+                <h5>¡Excelente!</h5>
+                <p>No hay servicios pendientes de encuesta. Todos los servicios completados ya tienen encuestas enviadas.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Encuestas Enviadas -->
+    <div class="section-card">
+        <div class="section-header">
+            <h5><i class="bi bi-envelope-check"></i> Encuestas Enviadas</h5>
+        </div>
+        <div class="section-body">
+            {% if encuestas_enviadas %}
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th><i class="bi bi-hash me-2"></i>ID Servicio</th>
+                            <th><i class="bi bi-person me-2"></i>Cliente</th>
+                            <th><i class="bi bi-calendar-check me-2"></i>Fecha Completado</th>
+                            <th><i class="bi bi-envelope me-2"></i>Fecha Envío</th>
+                            <th><i class="bi bi-flag me-2"></i>Estado</th>
+                            <th><i class="bi bi-star me-2"></i>Calificación</th>
+                            <th><i class="bi bi-calendar-event me-2"></i>Fecha Respuesta</th>
+                            <th><i class="bi bi-gear me-2"></i>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for encuesta in encuestas_enviadas %}
+                        <tr>
+                            <td><strong>#{{ encuesta.servicio.id }}</strong></td>
+                            <td>
+                                <div class="client-info">
+                                    <div class="client-avatar">
+                                        {{ encuesta.servicio.preorden.cliente.razon_social|first|upper }}
+                                    </div>
+                                    <div>
+                                        <div><strong>{{ encuesta.servicio.preorden.cliente.razon_social }}</strong></div>
+                                        <small class="text-muted">{{ encuesta.servicio.preorden.equipo.numero_serie }}</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>{{ encuesta.servicio.fecha_servicio|date:"d/m/Y" }}</td>
+                            <td>{{ encuesta.fecha_envio|date:"d/m/Y H:i" }}</td>
+                            <td>
+                                <span class="badge {% if encuesta.estado == 'RESPONDIDA' %}bg-success{% elif encuesta.estado == 'ENVIADA' %}bg-warning{% else %}bg-danger{% endif %}">
+                                    {{ encuesta.get_estado_display }}
+                                </span>
+                            </td>
+                            <td>
+                                {% if encuesta.respuestas.exists %}
+                                    {% with respuesta=encuesta.respuestas.first %}
+                                        <span class="badge {% if respuesta.calificacion >= 9 %}bg-success{% elif respuesta.calificacion >= 7 %}bg-warning{% else %}bg-danger{% endif %}">
+                                            {{ respuesta.calificacion }}/10
+                                        </span>
+                                    {% endwith %}
+                                {% else %}
+                                    <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if encuesta.fecha_respuesta %}
+                                    {{ encuesta.fecha_respuesta|date:"d/m/Y H:i" }}
+                                {% else %}
+                                    <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="d-flex flex-wrap gap-1">
+                                    {% if encuesta.estado == 'ENVIADA' %}
+                                        <a href="{% url 'gestionDeTaller:cargar_respuesta_encuesta' encuesta.id %}" class="action-btn primary">
+                                            <i class="bi bi-pencil"></i> Cargar
+                                        </a>
+                                    {% endif %}
+                                    {% if encuesta.respuestas.exists %}
+                                        {% with respuesta=encuesta.respuestas.first %}
+                                            {% if respuesta.calificacion < 7 %}
+                                                {% if not encuesta.insatisfacciones.exists %}
+                                                    <a href="{% url 'gestionDeTaller:registrar_insatisfaccion' encuesta.id %}" class="action-btn warning">
+                                                        <i class="bi bi-exclamation-triangle"></i> Insatisfacción
+                                                    </a>
+                                                {% else %}
+                                                    <a href="{% url 'gestionDeTaller:ver_insatisfaccion' encuesta.insatisfacciones.first.id %}" class="action-btn info">
+                                                        <i class="bi bi-eye"></i> Ver
+                                                    </a>
+                                                {% endif %}
+                                            {% endif %}
+                                        {% endwith %}
+                                        <a href="{% url 'gestionDeTaller:ver_respuesta_encuesta' encuesta.id %}" class="action-btn info">
+                                            <i class="bi bi-eye"></i> Respuesta
+                                        </a>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="no-data">
+                <i class="bi bi-envelope"></i>
+                <h5>No hay encuestas enviadas</h5>
+                <p>Aún no se han enviado encuestas de satisfacción.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const ctx = document.getElementById('npsPieChart').getContext('2d');
+    
+    // Destruir el gráfico existente si existe
+    if (window.npsChart) {
+        window.npsChart.destroy();
+    }
+    
+    const data = {
+        labels: ['Promotores', 'Pasivos', 'Detractores'],
+        datasets: [{
+            data: [{{ promotores_count }}, {{ pasivos_count }}, {{ detractores_count }}],
+            backgroundColor: ['#28a745', '#ffc107', '#dc3545'],
+            borderWidth: 3,
+            borderColor: '#fff',
+            hoverBorderWidth: 5
+        }]
+    };
+    
+    const config = {
+        type: 'doughnut',
+        data: data,
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        padding: 20,
+                        usePointStyle: true,
+                        font: {
+                            size: 12,
+                            weight: 'bold'
+                        }
+                    }
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(0,0,0,0.8)',
+                    titleColor: '#fff',
+                    bodyColor: '#fff',
+                    borderColor: '#fff',
+                    borderWidth: 1,
+                    cornerRadius: 10,
+                    displayColors: true
+                }
+            },
+            animation: {
+                animateRotate: true,
+                animateScale: true
+            }
+        }
+    };
+    
+    window.npsChart = new Chart(ctx, config);
+});
+</script>
+{% endblock %} 

@@ -1,0 +1,293 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load crm_filters %}
+
+{% block title %}Detalle de Oportunidad - CRM{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0">
+                <i class="fas fa-eye text-primary me-2"></i>
+                Oportunidad: {{ embudo.cliente.razon_social }}
+            </h1>
+            <p class="text-muted">Detalle completo de la oportunidad de venta</p>
+        </div>
+        <div>
+            <a href="{% url 'crm:embudo_ventas' %}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-2"></i>Volver al Embudo
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Información Principal -->
+        <div class="col-lg-8">
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Información de la Oportunidad
+                    </h5>
+                    <span class="badge bg-{{ embudo.etapa|etapa_color }} fs-6">
+                        {{ embudo.get_etapa_display }}
+                    </span>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="text-primary">Cliente</h6>
+                            <p class="mb-3">
+                                <strong>{{ embudo.cliente.razon_social }}</strong><br>
+                                <small class="text-muted">{{ embudo.cliente.sucursal.nombre }}</small>
+                            </p>
+                            
+                            <h6 class="text-primary">Origen</h6>
+                            <p class="mb-3">
+                                <span class="badge bg-secondary">{{ embudo.get_origen_display }}</span>
+                            </p>
+                            
+                            <h6 class="text-primary">Campaña</h6>
+                            <p class="mb-3">
+                                {% if embudo.campana %}
+                                <strong>{{ embudo.campana.nombre }}</strong><br>
+                                <small class="text-muted">{{ embudo.campana.fecha_inicio|date:"d/m/Y" }} - {{ embudo.campana.fecha_fin|date:"d/m/Y" }}</small>
+                                {% else %}
+                                <span class="text-muted">Sin campaña específica</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <h6 class="text-primary">Valor Estimado</h6>
+                            <p class="mb-3">
+                                {% if embudo.valor_estimado %}
+                                <strong class="text-success fs-4">${{ embudo.valor_estimado|floatformat:0 }}</strong>
+                                {% else %}
+                                <span class="text-muted">No especificado</span>
+                                {% endif %}
+                            </p>
+                            
+                            <h6 class="text-primary">Probabilidad de Cierre</h6>
+                            <div class="mb-3">
+                                <div class="progress mb-2" style="height: 8px;">
+                                    <div class="progress-bar bg-success" style="width: {{ embudo.probabilidad_cierre }}%"></div>
+                                </div>
+                                <small class="text-muted">{{ embudo.probabilidad_cierre }}%</small>
+                            </div>
+                            
+                            <h6 class="text-primary">Fecha de Ingreso</h6>
+                            <p class="mb-3">
+                                <small>{{ embudo.fecha_ingreso|date:"d/m/Y H:i" }}</small><br>
+                                <small class="text-muted">Creado por: {{ embudo.creado_por.get_full_name|default:embudo.creado_por.username }}</small>
+                            </p>
+                        </div>
+                    </div>
+                    
+                    {% if embudo.descripcion_negocio %}
+                    <hr>
+                    <h6 class="text-primary">Descripción del Negocio</h6>
+                    <p class="mb-0">{{ embudo.descripcion_negocio }}</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Cambio de Etapa -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-exchange-alt me-2"></i>
+                        Cambiar Etapa
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="col-md-8">
+                                <label for="etapa" class="form-label">Nueva Etapa</label>
+                                <select name="etapa" id="etapa" class="form-select">
+                                    <option value="CONTACTO_INICIAL" {% if embudo.etapa == 'CONTACTO_INICIAL' %}selected{% endif %}>Contacto Inicial</option>
+                                    <option value="CALIFICACION" {% if embudo.etapa == 'CALIFICACION' %}selected{% endif %}>Calificación</option>
+                                    <option value="PROPUESTA" {% if embudo.etapa == 'PROPUESTA' %}selected{% endif %}>Propuesta</option>
+                                    <option value="NEGOCIACION" {% if embudo.etapa == 'NEGOCIACION' %}selected{% endif %}>Negociación</option>
+                                    <option value="CIERRE" {% if embudo.etapa == 'CIERRE' %}selected{% endif %}>Cierre</option>
+                                    <option value="PERDIDO" {% if embudo.etapa == 'PERDIDO' %}selected{% endif %}>Perdido</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4 d-flex align-items-end">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save me-2"></i>Actualizar Etapa
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Historial de Contactos -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-phone me-2"></i>
+                        Historial de Contactos
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if contactos %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Fecha</th>
+                                    <th>Tipo</th>
+                                    <th>Descripción</th>
+                                    <th>Resultado</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for contacto in contactos %}
+                                <tr>
+                                    <td>
+                                        <small>{{ contacto.fecha_contacto|date:"d/m/Y H:i" }}</small>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-info">{{ contacto.get_tipo_contacto_display }}</span>
+                                    </td>
+                                    <td>{{ contacto.descripcion }}</td>
+                                    <td>
+                                        <span class="badge bg-{{ contacto.resultado|resultado_color }}">
+                                            {{ contacto.get_resultado_display }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-phone fa-2x text-muted mb-3"></i>
+                        <h6 class="text-muted">No hay contactos registrados</h6>
+                        <p class="text-muted small">Los contactos se registrarán automáticamente cuando se actualice la etapa</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Estadísticas Rápidas -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-chart-bar me-2"></i>
+                        Estadísticas
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <h4 class="text-primary">{{ contactos.count }}</h4>
+                            <small class="text-muted">Contactos</small>
+                        </div>
+                        <div class="col-6">
+                            <h4 class="text-success">{{ embudo.probabilidad_cierre }}%</h4>
+                            <small class="text-muted">Probabilidad</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Información del Cliente -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-building me-2"></i>
+                        Información del Cliente
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <h6 class="text-primary">{{ embudo.cliente.razon_social }}</h6>
+                    <p class="small text-muted mb-2">
+                        <i class="fas fa-map-marker-alt me-1"></i>
+                        {{ embudo.cliente.sucursal.nombre }}
+                    </p>
+                    
+                    {% if embudo.cliente.telefono %}
+                    <p class="small mb-1">
+                        <i class="fas fa-phone me-1"></i>
+                        {{ embudo.cliente.telefono }}
+                    </p>
+                    {% endif %}
+                    
+                    {% if embudo.cliente.email %}
+                    <p class="small mb-1">
+                        <i class="fas fa-envelope me-1"></i>
+                        {{ embudo.cliente.email }}
+                    </p>
+                    {% endif %}
+                    
+                    {% if embudo.cliente.direccion %}
+                    <p class="small mb-0">
+                        <i class="fas fa-home me-1"></i>
+                        {{ embudo.cliente.direccion }}
+                    </p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Acciones Rápidas -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-tools me-2"></i>
+                        Acciones
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="#" class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-phone me-2"></i>Registrar Llamada
+                        </a>
+                        <a href="#" class="btn btn-outline-success btn-sm">
+                            <i class="fas fa-envelope me-2"></i>Enviar Email
+                        </a>
+                        <a href="#" class="btn btn-outline-info btn-sm">
+                            <i class="fas fa-calendar me-2"></i>Agendar Reunión
+                        </a>
+                        <a href="#" class="btn btn-outline-warning btn-sm">
+                            <i class="fas fa-file-alt me-2"></i>Crear Propuesta
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Confirmar cambio de etapa
+    const etapaSelect = document.getElementById('etapa');
+    const form = document.querySelector('form');
+    
+    form.addEventListener('submit', function(e) {
+        const currentEtapa = '{{ embudo.etapa }}';
+        const newEtapa = etapaSelect.value;
+        
+        if (currentEtapa !== newEtapa) {
+            const confirmacion = confirm(`¿Estás seguro de cambiar la etapa de "${currentEtapa}" a "${newEtapa}"?`);
+            if (!confirmacion) {
+                e.preventDefault();
+            }
+        }
+    });
+});
+</script>
+{% endblock %} 

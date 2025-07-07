@@ -1,0 +1,125 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Cambiar Estado - Servicio {{ servicio.id }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="card-title">
+                        <i class="fas fa-exchange-alt"></i>
+                        Cambiar Estado del Servicio #{{ servicio.id }}
+                    </h4>
+                    <p class="text-muted">
+                        Cliente: {{ servicio.preorden.cliente.razon_social }} | 
+                        Estado Actual: <span class="badge bg-primary">{{ servicio.get_estado_display }}</span>
+                    </p>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="nuevo_estado" class="form-label">
+                                        <strong>Nuevo Estado:</strong>
+                                    </label>
+                                    <select name="nuevo_estado" id="nuevo_estado" class="form-select" required>
+                                        <option value="">Selecciona un estado...</option>
+                                        {% for estado_codigo, estado_nombre in estados_choices %}
+                                            {% if estado_codigo in estados_disponibles %}
+                                                <option value="{{ estado_codigo }}" 
+                                                        {% if estado_codigo == servicio.estado %}selected{% endif %}>
+                                                    {{ estado_nombre }}
+                                                </option>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </select>
+                                    <small class="form-text text-muted">
+                                        Estados disponibles según tu rol y el estado actual
+                                    </small>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="motivo" class="form-label">
+                                        <strong>Motivo del Cambio (Opcional):</strong>
+                                    </label>
+                                    <textarea name="motivo" id="motivo" class="form-control" rows="3" 
+                                              placeholder="Explica el motivo del cambio de estado..."></textarea>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <div class="alert alert-info">
+                                    <h6><i class="fas fa-info-circle"></i> Reglas de Cambio de Estado:</h6>
+                                    <ul class="mb-0">
+                                        <li><strong>Gerente:</strong> Puede cambiar a cualquier estado válido</li>
+                                        <li><strong>Técnico/Administrador:</strong> Puede cambiar según las reglas de transición</li>
+                                        <li><strong>Servicio "Finalizado a Facturar":</strong> Solo puede cambiar a "Completado"</li>
+                                        <li><strong>Servicio "Completado":</strong> No puede cambiar de estado</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row mt-3">
+                            <div class="col-12">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save"></i> Confirmar Cambio
+                                </button>
+                                <a href="{% url 'gestionDeTaller:detalle_servicio' servicio.id %}" class="btn btn-secondary">
+                                    <i class="fas fa-arrow-left"></i> Volver
+                                </a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const estadoSelect = document.getElementById('nuevo_estado');
+    const motivoTextarea = document.getElementById('motivo');
+    
+    // Validar que se seleccione un estado diferente
+    estadoSelect.addEventListener('change', function() {
+        if (this.value === '{{ servicio.estado }}') {
+            alert('Debes seleccionar un estado diferente al actual');
+            this.value = '';
+        }
+    });
+    
+    // Confirmar antes de enviar
+    document.querySelector('form').addEventListener('submit', function(e) {
+        const nuevoEstado = estadoSelect.value;
+        const motivo = motivoTextarea.value.trim();
+        
+        if (!nuevoEstado) {
+            e.preventDefault();
+            alert('Debes seleccionar un nuevo estado');
+            return;
+        }
+        
+        const confirmacion = confirm(
+            `¿Estás seguro de que quieres cambiar el estado de "${estadoSelect.options[estadoSelect.selectedIndex].text}"?\n\n` +
+            (motivo ? `Motivo: ${motivo}` : 'Sin motivo especificado')
+        );
+        
+        if (!confirmacion) {
+            e.preventDefault();
+        }
+    });
+});
+</script>
+{% endblock %} 

@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<main>
+        <div class="div_formulario_editar_equipo form-group">
+            <h1 class="titulo_formulario_editar_equipo">Editar Equipo: {{ equipo.pin }}</h1>
+            <form id="formulario_editar_equipo" method="POST" action="{% url 'editar_equipo' equipo_id=equipo.id cliente_id=cliente.id %}">
+                {% csrf_token %}
+                <label for="equipo">Equipo:</label>
+                <input class="form-control" type="text" id="equipo" name="equipo" value="{{equipo.equipo}}" required><br>
+
+                <label for="pin">PIN:</label>
+                <input class="form-control" type="text" id="pin" name="pin" value="{{equipo.pin}}" required><br>
+
+                <label for="cliente">ID de cliente:</label>
+                <input class="form-control" type="text" id="cliente" name="cliente" value="{{ cliente.id }}"
+                    readonly><br>
+
+                <label for="motor">Motor:</label>
+                <input class="form-control" type="motor" id="motor" name="motor" value="{{equipo.motor}}"><br>
+
+                <label for="serial_motor">Serial de Motor:</label>
+                <input class="form-control" type="serial_motor" id="serial_motor" name="serial_motor" value="{{equipo.serial_motor}}"><br>
+
+                <label for="horas">Horas de Motor:</label>
+                <input class="form-control" type="horas" id="horas" name="horas" value="{{equipo.horas}}"><br>
+
+                <label for="mtg">Modulo MTG:</label>
+                <input class="form-control" type="mtg" id="mtg" name="mtg" value="{{equipo.mtg}}"><br>
+
+
+                <input class="boton_guardar_equipo_en_editar_equipo" type="submit" value="Guardar">
+            </form>
+        </div>
+</main>
+{% endblock %}

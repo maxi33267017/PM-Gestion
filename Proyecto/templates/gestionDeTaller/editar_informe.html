@@ -1,0 +1,104 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<main class="container mt-4">
+    <h1 class="text-center mb-4">Editar Informe del Servicio #{{ servicio.id }}</h1>
+
+    <div class="card">
+        <div class="card-header bg-dark text-white">Información del Cliente y Equipo</div>
+        <div class="card-body">
+            <p><strong>Fecha del Servicio:</strong> {{ fecha_servicio|date:"d/m/Y" }}</p>
+            <p><strong>Cliente:</strong> {{ cliente.razon_social }}</p>
+            <p><strong>Marca:</strong> {{ equipo.modelo.marca }}</p>
+            <p><strong>Equipo:</strong> {{ equipo.modelo }}</p>
+            <p><strong>N Serie:</strong> {{ equipo.numero_serie }}</p>
+            <p><strong>Horas:</strong> {{ servicio.horometro_servicio }}</p>
+            <p><strong>Trabajo:</strong> {{ trabajo }}</p>
+            <p><strong>Tipo:</strong> {{ servicio.preorden.tipo_trabajo }}</p>
+            <p><strong>Solicitud del Cliente:</strong> {{ solicitud_cliente }}</p>
+        </div>
+    </div>
+
+    <form method="POST" action="" enctype="multipart/form-data" class="mt-4" onsubmit="guardarFirma()">
+        {% csrf_token %}
+        <div class="card">
+            <div class="card-header bg-dark text-white">Editar Diagnóstico/Acción Correctiva</div>
+            <div class="card-body">
+                {{ form.as_p }}
+    
+                <!-- Campo de firma -->
+                <div class="mb-3">
+                    <label for="firma_canvas" class="form-label">Firma del Cliente:</label><br>
+                    <canvas id="firma_canvas" width="300" height="100" style="border:1px solid #000;"></canvas>
+                    <input type="hidden" name="firma" id="firma_input">
+                    <button type="button" class="btn btn-secondary mt-2" onclick="limpiarFirma()">Limpiar Firma</button>
+                </div>
+    
+                <!-- Botones para guardar o cancelar -->
+                <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+                <a href="{% url 'gestionDeTaller:detalle_servicio' servicio.id %}" class="btn btn-secondary">Cancelar</a>
+            </div>
+        </div>
+    </form>
+    
+    <script>
+        // Inicializa el Canvas para la firma
+        let canvas = document.getElementById('firma_canvas');
+        let ctx = canvas.getContext('2d');
+        let dibujando = false;
+    
+        // Eventos para dispositivos de escritorio
+        canvas.addEventListener('mousedown', iniciarDibujo);
+        canvas.addEventListener('mouseup', terminarDibujo);
+        canvas.addEventListener('mousemove', dibujar);
+    
+        // Eventos para dispositivos táctiles
+        canvas.addEventListener('touchstart', iniciarDibujoTouch);
+        canvas.addEventListener('touchend', terminarDibujo);
+        canvas.addEventListener('touchmove', dibujarTouch);
+    
+        function iniciarDibujo(e) {
+            dibujando = true;
+            ctx.beginPath();
+            ctx.moveTo(e.offsetX, e.offsetY);
+        }
+    
+        function iniciarDibujoTouch(e) {
+            dibujando = true;
+            ctx.beginPath();
+            let touch = e.touches[0];
+            let rect = canvas.getBoundingClientRect();
+            ctx.moveTo(touch.clientX - rect.left, touch.clientY - rect.top);
+            e.preventDefault();
+        }
+    
+        function terminarDibujo() {
+            dibujando = false;
+        }
+    
+        function dibujar(e) {
+            if (!dibujando) return;
+            ctx.lineTo(e.offsetX, e.offsetY);
+            ctx.stroke();
+        }
+    
+        function dibujarTouch(e) {
+            if (!dibujando) return;
+            let touch = e.touches[0];
+            let rect = canvas.getBoundingClientRect();
+            ctx.lineTo(touch.clientX - rect.left, touch.clientY - rect.top);
+            ctx.stroke();
+            e.preventDefault();
+        }
+    
+        function limpiarFirma() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+    
+        function guardarFirma() {
+            let dataURL = canvas.toDataURL('image/png');
+            document.getElementById('firma_input').value = dataURL;
+        }
+    </script>
+{% endblock%}

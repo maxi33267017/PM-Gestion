@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-graph-up me-2"></i>Estadísticas de Encuestas
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h6 class="mb-3">Resumen de Encuestas</h6>
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead class="table-dark">
+                                        <tr>
+                                            <th>ID Servicio</th>
+                                            <th>Cliente</th>
+                                            <th>Fecha Envío</th>
+                                            <th>Estado</th>
+                                            <th>Fecha Respuesta</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for encuesta in encuestas %}
+                                        <tr>
+                                            <td>{{ encuesta.servicio.id }}</td>
+                                            <td>{{ encuesta.servicio.preorden.cliente.razon_social }}</td>
+                                            <td>{{ encuesta.fecha_envio|date:"d/m/Y H:i" }}</td>
+                                            <td>
+                                                <span class="badge {% if encuesta.estado == 'RESPONDIDA' %}bg-success
+                                                              {% elif encuesta.estado == 'ENVIADA' %}bg-warning
+                                                              {% else %}bg-danger{% endif %}">
+                                                    {{ encuesta.get_estado_display }}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                {% if encuesta.fecha_respuesta %}
+                                                    {{ encuesta.fecha_respuesta|date:"d/m/Y H:i" }}
+                                                {% else %}
+                                                    -
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        {% empty %}
+                                        <tr>
+                                            <td colspan="5" class="text-center">No hay encuestas registradas</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="alert alert-info">
+                                <i class="bi bi-info-circle me-2"></i>
+                                Para ver las estadísticas detalladas, por favor exporte los datos desde Google Forms y analícelos en Excel.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

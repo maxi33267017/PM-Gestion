@@ -1,0 +1,143 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+
+<style>
+    .items_equipo{
+        margin-left: 3.5rem;
+    }
+    .titulo {
+        margin-left: 1rem;
+        text-decoration: underline;
+        margin-bottom: 0.5rem;
+    }
+    .datos_cliente{
+        margin-left: 1rem;
+    }
+    .datos_patagonia {
+        margin-left: 1rem;
+    }
+    .firma-box {
+        margin-left: 1rem;
+    }
+    .razon_social {
+        font-weight: 700;
+    }
+    hr {
+        border-top: 1px solid #000000;
+	    border-bottom: 1px solid #0d0d0d;
+    }
+    p {
+        padding: 0;
+        margin: 0;
+    }
+    
+</style>
+
+
+<body>
+        <div class="invoice-box">
+            <div class="logo-box">
+                <img src="{% static 'img/logo-web-optimized-700x229-1.png' %}" alt="Logo de la empresa">
+                <div class="letter-r">R</div>
+                <div class="referencia">documento no valido como factura</div>
+                <div class="remito-info">
+                    <p class="numero_remito" name="numero_remito">REMITO #: {{servicio.id}}/E</p>
+                    <p class="fecha_creacion" name="fecha_creacion">{{ servicio.fecha_ingreso|date:"d/m/Y"}}</p>
+                </div>
+            </div>
+
+            <div class="information">
+                <div class="datos_patagonia">
+                    Ruta 3 KM. 2815 (9420) Rio Grande, Tierra del Fuego</br>											
+                    Telefono / Fax : 54 2964 446019 </br>											
+                    Email : administracion@patagoniamaquinarias.com </br>											
+                    Iva : Responsable Inscripto </br>											
+                    Cuit : 30-71228471-0 -- Iibb: 999-129115/7	</br>	
+                </div>
+                <hr class="separador">
+                <div class="datos_cliente">
+                    <div class="datos_clientes_basededatos">
+                        <p class="razon_social">Cliente: {{ datos_cliente.razon_social }}</p>
+                        <p class="items_detalle_equipo"><strong>Cuit: </strong>{{ datos_cliente.cuit }}</p>
+                        <p class="items_detalle_equipo"><strong>Domicilio: </strong>{{ datos_cliente.domicilio }}</p>
+                        <p class="items_detalle_equipo"><strong>Ciudad: </strong>{{ datos_cliente.ciudad }}</p>
+                        <p class="items_detalle_equipo"><strong>Provincia: </strong>{{ datos_cliente.provincia }}</p>
+                    </div>
+                </div>
+            </div>
+            <hr class="separador">
+
+            <div class="heading">
+                <label class="titulo"><strong>REMITO DE INGRESO</strong></label><br>
+
+            </div>
+
+            <div class="items_equipo">
+                <p class="items_detalle_equipo"><strong>Equipo: </strong>{{ servicio.equipo_relacionado }}</p>
+                <p class="items_detalle_equipo"><strong>Horas de motor: </strong>{{ servicio.horas_equipo }} Hs.</p>
+
+                {% with booleanos_resultados=servicio.booleanos_como_string %}
+                <p class="item_detalle_cliente"><strong>Llave: </strong>{{ booleanos_resultados.llave_equipo }}</p>
+                <p class="item_detalle_cliente"><strong>Matafuego: </strong> {{ booleanos_resultados.matafuegos_equipo }}</p>
+                {% endwith %}
+                <p class="items_detalle_equipo"><strong>Estado: </strong>{{ servicio.estado_equipo }}</p>
+                <p class="items_detalle_equipo"><strong>Solicitud de trabajo: </strong>{{ servicio.solicitud_trabajo }}</p>
+                <p class="items_detalle_equipo"><strong>Comentarios: </strong>{{ servicio.comentarios }}</p>
+                
+            </div>
+            <hr class="separador">
+            <div class="firma-box">
+                <ol>
+                    <li>
+                        <strong>Firma Recepcionista:</strong>
+                    </li>
+                </br>
+                    <li>
+                        Firma:       _______________________
+                    </li>
+                </ol>
+                <ol>
+                    <li>
+                        <strong>Firma Cliente:</strong>
+                    </li>
+                </br>
+                    <li>
+                        Firma:      _______________________
+                    </li>
+                </br>
+                    <li>
+                        Aclaracion: _______________________
+                    </li>
+                </br>
+                    <li>
+                        DNI:        _______________________
+                    </li>
+                </ol>
+            </div>
+            <button id="imprimirRemitoBtn" class="print-button boton" onclick="imprimirRemito()">Imprimir Remito</button>
+        
+        </div>
+  
+
+
+
+
+    <script>
+        $(document).ready(function () {
+
+            function imprimirRemito() {
+                window.print();
+            };
+    
+            $('.print-button').click(function () {
+                imprimirRemito();
+            });
+    
+        });
+    </script>
+    
+</body>
+
+{% endblock %}

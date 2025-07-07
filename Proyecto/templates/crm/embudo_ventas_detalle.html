@@ -1,0 +1,372 @@
+{% extends 'base.html' %}
+{% block title %} | Detalle Embudo - {{ embudo.cliente.razon_social }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="display-6 mb-2">
+                        <i class="bi bi-funnel-fill text-primary me-2"></i>Detalle del Embudo
+                    </h1>
+                    <p class="lead text-muted">{{ embudo.cliente.razon_social }} - {{ embudo.get_etapa_display }}</p>
+                </div>
+                <div>
+                    <a href="{% url 'crm:embudo_ventas_dashboard' %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left me-2"></i>Volver al Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Información Principal del Embudo -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-info-circle me-2"></i>Información del Embudo
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Cliente</h6>
+                            <p class="mb-3">
+                                <strong>{{ embudo.cliente.razon_social }}</strong><br>
+                                <small class="text-muted">{{ embudo.cliente.cuit }}</small>
+                            </p>
+                            
+                            <h6>Etapa Actual</h6>
+                            <p class="mb-3">
+                                <span class="badge bg-primary fs-6">{{ embudo.get_etapa_display }}</span>
+                            </p>
+                            
+                            <h6>Origen</h6>
+                            <p class="mb-3">
+                                <span class="badge bg-secondary">{{ embudo.get_origen_display }}</span>
+                            </p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Valor Estimado</h6>
+                            <p class="mb-3">
+                                {% if embudo.valor_estimado %}
+                                    <span class="text-success fs-4">${{ embudo.valor_estimado|floatformat:0 }}</span>
+                                {% else %}
+                                    <span class="text-muted">No especificado</span>
+                                {% endif %}
+                            </p>
+                            
+                            <h6>Probabilidad de Cierre</h6>
+                            <p class="mb-3">
+                                <div class="progress" style="height: 25px;">
+                                    <div class="progress-bar bg-success" role="progressbar" 
+                                         style="width: {{ embudo.probabilidad_cierre }}%">
+                                        {{ embudo.probabilidad_cierre }}%
+                                    </div>
+                                </div>
+                            </p>
+                            
+                            <h6>Valor Probabilizado</h6>
+                            <p class="mb-3">
+                                <span class="text-info fs-5">${{ embudo.valor_probabilizado|floatformat:0 }}</span>
+                            </p>
+                        </div>
+                    </div>
+                    
+                    {% if embudo.descripcion_negocio %}
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <h6>Descripción del Negocio</h6>
+                            <p class="text-muted">{{ embudo.descripcion_negocio }}</p>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    {% if embudo.observaciones %}
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <h6>Observaciones</h6>
+                            <p class="text-muted">{{ embudo.observaciones }}</p>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-clock me-2"></i>Información Temporal
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <h6>Fecha de Ingreso</h6>
+                        <p class="text-muted">{{ embudo.fecha_ingreso|date:"d/m/Y H:i" }}</p>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <h6>Última Actividad</h6>
+                        <p class="text-muted">{{ embudo.fecha_ultima_actividad|date:"d/m/Y H:i" }}</p>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <h6>Tiempo en Embudo</h6>
+                        <p class="text-muted">{{ embudo.tiempo_en_embudo.days }} días</p>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <h6>Creado por</h6>
+                        <p class="text-muted">{{ embudo.creado_por.get_nombre_completo }}</p>
+                    </div>
+                    
+                    {% if embudo.campana %}
+                    <div class="mb-3">
+                        <h6>Campaña</h6>
+                        <p class="text-muted">{{ embudo.campana.nombre }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Relaciones con Alertas/Leads -->
+    {% if embudo.alerta_equipo or embudo.lead_jd %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-link-45deg me-2"></i>Relaciones
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% if embudo.alerta_equipo %}
+                        <div class="col-md-6">
+                            <h6>Alerta de Equipo</h6>
+                            <div class="alert alert-info">
+                                <strong>{{ embudo.alerta_equipo.equipo.modelo }}</strong><br>
+                                <small>{{ embudo.alerta_equipo.equipo.numero_serie }}</small><br>
+                                <a href="{% url 'centroSoluciones:alerta_detail' embudo.alerta_equipo.id %}" 
+                                   class="btn btn-sm btn-outline-primary mt-2">
+                                    <i class="bi bi-eye me-1"></i>Ver Alerta
+                                </a>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        {% if embudo.lead_jd %}
+                        <div class="col-md-6">
+                            <h6>Lead John Deere</h6>
+                            <div class="alert alert-warning">
+                                <strong>{{ embudo.lead_jd.nombre_contacto }}</strong><br>
+                                <small>{{ embudo.lead_jd.empresa }}</small><br>
+                                <a href="#" class="btn btn-sm btn-outline-warning mt-2">
+                                    <i class="bi bi-eye me-1"></i>Ver Lead
+                                </a>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Historial de Contactos -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="bi bi-chat-dots me-2"></i>Historial de Contactos
+                    </h5>
+                    <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#nuevoContactoModal">
+                        <i class="bi bi-plus-circle me-1"></i>Nuevo Contacto
+                    </button>
+                </div>
+                <div class="card-body">
+                    {% if contactos %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Fecha</th>
+                                        <th>Tipo</th>
+                                        <th>Responsable</th>
+                                        <th>Resultado</th>
+                                        <th>Descripción</th>
+                                        <th>Próximo Seguimiento</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for contacto in contactos %}
+                                    <tr>
+                                        <td>{{ contacto.fecha_contacto|date:"d/m/Y H:i" }}</td>
+                                        <td>
+                                            <span class="badge bg-info">{{ contacto.get_tipo_contacto_display }}</span>
+                                        </td>
+                                        <td>{{ contacto.responsable.get_nombre_completo }}</td>
+                                        <td>
+                                            <span class="badge {% if contacto.resultado == 'EXITOSO' %}bg-success{% elif contacto.resultado == 'VENTA' %}bg-success{% elif contacto.resultado == 'OBJECCION' %}bg-warning{% else %}bg-secondary{% endif %}">
+                                                {{ contacto.get_resultado_display }}
+                                            </span>
+                                        </td>
+                                        <td>{{ contacto.descripcion|truncatewords:10 }}</td>
+                                        <td>
+                                            {% if contacto.proximo_seguimiento %}
+                                                {{ contacto.proximo_seguimiento|date:"d/m/Y" }}
+                                            {% else %}
+                                                <span class="text-muted">No programado</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="bi bi-chat-dots display-4 text-muted"></i>
+                            <p class="text-muted mt-2">No hay contactos registrados</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para Nuevo Contacto -->
+<div class="modal fade" id="nuevoContactoModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bi bi-plus-circle me-2"></i>Nuevo Contacto
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" action="{% url 'crm:crear_contacto' %}">
+                {% csrf_token %}
+                <input type="hidden" name="embudo_id" value="{{ embudo.id }}">
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Tipo de Contacto</label>
+                                <select name="tipo_contacto" class="form-select" required>
+                                    <option value="">Seleccionar...</option>
+                                    <option value="TELEFONO">Teléfono</option>
+                                    <option value="EMAIL">Email</option>
+                                    <option value="WHATSAPP">WhatsApp</option>
+                                    <option value="VISITA">Visita</option>
+                                    <option value="VIDEO_LLAMADA">Video Llamada</option>
+                                    <option value="REUNION">Reunión</option>
+                                    <option value="PRESENTACION">Presentación</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Resultado</label>
+                                <select name="resultado" class="form-select" required>
+                                    <option value="">Seleccionar...</option>
+                                    <option value="EXITOSO">Exitoso</option>
+                                    <option value="NO_CONTESTA">No Contesta</option>
+                                    <option value="REPROGRAMADO">Reprogramado</option>
+                                    <option value="CANCELADO">Cancelado</option>
+                                    <option value="VENTA">Venta Realizada</option>
+                                    <option value="OBJECCION">Objeción</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Descripción del Contacto</label>
+                        <textarea name="descripcion" class="form-control" rows="4" required></textarea>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Próximo Seguimiento</label>
+                                <input type="date" name="proximo_seguimiento" class="form-control">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Observaciones</label>
+                                <textarea name="observaciones" class="form-control" rows="2"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check-circle me-1"></i>Guardar Contacto
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.card {
+    border-radius: 15px;
+    border: none;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.card-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 15px 15px 0 0 !important;
+    border: none;
+}
+
+.badge {
+    border-radius: 20px;
+    padding: 0.5rem 1rem;
+    font-weight: 600;
+}
+
+.progress {
+    border-radius: 15px;
+    background: #e9ecef;
+}
+
+.progress-bar {
+    border-radius: 15px;
+    font-weight: 600;
+}
+
+.table {
+    border-radius: 15px;
+    overflow: hidden;
+}
+
+.table thead th {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    font-weight: 600;
+}
+
+.alert {
+    border-radius: 15px;
+    border: none;
+}
+</style>
+{% endblock %} 

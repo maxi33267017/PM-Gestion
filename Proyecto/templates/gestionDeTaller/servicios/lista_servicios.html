@@ -1,0 +1,1015 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load l10n %}
+
+{% block content %}
+<style>
+    /* Variables CSS para consistencia */
+    :root {
+        --primary-gradient: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        --secondary-gradient: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        --success-gradient: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        --warning-gradient: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        --danger-gradient: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+        --dark-gradient: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        --light-gradient: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        --card-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        --hover-shadow: 0 15px 40px rgba(0,0,0,0.15);
+        --border-radius: 20px;
+        --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Layout con Toolbar Horizontal */
+    .main-layout {
+        margin-top: 2rem;
+    }
+    
+    .toolbar {
+        background: white;
+        border-radius: var(--border-radius);
+        padding: 1.5rem;
+        box-shadow: var(--card-shadow);
+        border: 1px solid #e9ecef;
+        margin-bottom: 1.5rem;
+    }
+    
+    .toolbar-sections {
+        display: flex;
+        gap: 2rem;
+        align-items: flex-start;
+        flex-wrap: wrap;
+    }
+    
+    .toolbar-section {
+        flex: 1;
+        min-width: 200px;
+    }
+    
+    .toolbar-title {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 0.8rem;
+        padding-bottom: 0.4rem;
+        border-bottom: 2px solid #e9ecef;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .toolbar-buttons {
+        display: flex;
+        flex-direction: column;
+        gap: 0.4rem;
+    }
+    
+    .toolbar-btn {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.7rem 1rem;
+        background: white;
+        border: 1px solid #e9ecef;
+        border-radius: 8px;
+        color: #495057;
+        text-decoration: none;
+        transition: var(--transition);
+        font-size: 0.85rem;
+        font-weight: 500;
+        width: 100%;
+        justify-content: flex-start;
+    }
+    
+    .toolbar-btn:hover {
+        background: var(--dark-gradient);
+        color: white;
+        transform: translateY(-2px);
+        text-decoration: none;
+        box-shadow: 0 4px 15px rgba(44, 62, 80, 0.3);
+    }
+    
+    .toolbar-btn.disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        background: #f8f9fa;
+    }
+    
+    .toolbar-btn.disabled:hover {
+        transform: none;
+        background: #f8f9fa;
+        color: #495057;
+    }
+    
+    .main-content {
+        width: 100%;
+    }
+
+    /* Header mejorado */
+    .servicios-header {
+        background: var(--dark-gradient);
+        color: white;
+        padding: 3rem 2rem;
+        border-radius: var(--border-radius);
+        margin-bottom: 2.5rem;
+        box-shadow: var(--card-shadow);
+        position: relative;
+        overflow: hidden;
+        text-align: center;
+    }
+    
+    .servicios-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="dots" width="20" height="20" patternUnits="userSpaceOnUse"><circle cx="10" cy="10" r="1" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23dots)"/></svg>');
+        pointer-events: none;
+    }
+    
+    .servicios-header h1 {
+        margin: 0;
+        font-weight: 800;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        font-size: 3rem;
+        position: relative;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 1rem;
+    }
+    
+    .servicios-header .subtitle {
+        font-size: 1.2rem;
+        opacity: 0.9;
+        margin-top: 1rem;
+        position: relative;
+        z-index: 1;
+    }
+
+    /* Tarjetas de módulos mejoradas */
+    .module-card {
+        background: white;
+        border-radius: var(--border-radius);
+        box-shadow: var(--card-shadow);
+        border: 1px solid #e9ecef;
+        overflow: hidden;
+        transition: var(--transition);
+        height: 100%;
+    }
+    
+    .module-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--hover-shadow);
+        border-color: #2c3e50;
+    }
+    
+    .module-card-header {
+        background: var(--dark-gradient);
+        color: white;
+        padding: 1.5rem;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .module-card-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="card-dots" width="20" height="20" patternUnits="userSpaceOnUse"><circle cx="10" cy="10" r="1" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23card-dots)"/></svg>');
+        pointer-events: none;
+    }
+    
+    .module-card-header h5 {
+        margin: 0;
+        font-weight: 700;
+        font-size: 1.3rem;
+        position: relative;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        gap: 0.8rem;
+    }
+    
+    .module-card-body {
+        padding: 1.5rem;
+    }
+
+    /* Botones mejorados */
+    .btn-module {
+        background: var(--dark-gradient);
+        color: white;
+        border: none;
+        border-radius: 25px;
+        padding: 0.8rem 1.5rem;
+        font-weight: 600;
+        transition: var(--transition);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-size: 0.9rem;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .btn-module:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+        color: white;
+        background: var(--dark-gradient);
+        text-decoration: none;
+    }
+
+    /* Tabla mejorada */
+    .table-container {
+        background: white;
+        border-radius: var(--border-radius);
+        box-shadow: var(--card-shadow);
+        overflow: hidden;
+        border: 1px solid #e9ecef;
+        margin-bottom: 2rem;
+    }
+    
+    .table-header {
+        background: var(--dark-gradient);
+        color: white;
+        padding: 1.2rem 1.5rem;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .table-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="table-dots" width="20" height="20" patternUnits="userSpaceOnUse"><circle cx="10" cy="10" r="1" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23table-dots)"/></svg>');
+        pointer-events: none;
+    }
+    
+    .table-header h5 {
+        margin: 0;
+        font-weight: 700;
+        font-size: 1.2rem;
+        position: relative;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        gap: 0.8rem;
+    }
+
+    /* Mejoras en la tabla */
+    .table-responsive {
+        border-radius: 0 0 var(--border-radius) var(--border-radius);
+        overflow: hidden;
+    }
+    
+    .table {
+        margin-bottom: 0;
+        border: none;
+        border-radius: 0 0 var(--border-radius) var(--border-radius);
+        overflow: hidden;
+        width: 100%;
+    }
+    
+    .table th {
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 1rem 0.8rem;
+        border: none;
+        font-size: 0.8rem;
+        background: var(--dark-gradient) !important;
+        color: white !important;
+        white-space: nowrap;
+    }
+    
+    .table td {
+        padding: 0.8rem;
+        vertical-align: middle;
+        border: none;
+        border-bottom: 1px solid #f0f0f0;
+        font-weight: 500;
+        font-size: 0.9rem;
+    }
+    
+    .table tbody tr {
+        transition: var(--transition);
+        cursor: pointer;
+    }
+    
+    .table tbody tr:hover {
+        background: rgba(44, 62, 80, 0.05);
+        transform: scale(1.005);
+    }
+    
+    .table tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    /* Optimización de columnas específicas */
+    .table th:nth-child(1), .table td:nth-child(1) { /* Nr. */
+        width: 60px;
+        text-align: center;
+    }
+    
+    .table th:nth-child(2), .table td:nth-child(2) { /* Sucursal */
+        min-width: 120px;
+        max-width: 150px;
+    }
+    
+    .table th:nth-child(3), .table td:nth-child(3) { /* Cliente */
+        min-width: 180px;
+        max-width: 250px;
+    }
+    
+    .table th:nth-child(4), .table td:nth-child(4) { /* Equipo */
+        min-width: 120px;
+        max-width: 150px;
+    }
+    
+    .table th:nth-child(5), .table td:nth-child(5) { /* Fecha */
+        width: 100px;
+        text-align: center;
+    }
+    
+    .table th:nth-child(6), .table td:nth-child(6) { /* Estado */
+        width: 120px;
+        text-align: center;
+    }
+    
+    .table th:nth-child(7), .table td:nth-child(7) { /* Prioridad */
+        width: 100px;
+        text-align: center;
+    }
+
+    /* Badges mejorados */
+    .badge {
+        border-radius: 15px;
+        padding: 0.5rem 1rem;
+        font-weight: 600;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    /* Estilos para modales mejorados */
+    .modal-content {
+        border-radius: var(--border-radius);
+        border: none;
+        box-shadow: var(--hover-shadow);
+        overflow: hidden;
+        max-height: 90vh;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .modal-header {
+        background: var(--dark-gradient);
+        color: white;
+        border-bottom: none;
+        padding: 1.5rem 2rem;
+        position: relative;
+        overflow: hidden;
+        flex-shrink: 0;
+    }
+    
+    .modal-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="modal-dots" width="20" height="20" patternUnits="userSpaceOnUse"><circle cx="10" cy="10" r="1" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23modal-dots)"/></svg>');
+        pointer-events: none;
+    }
+    
+    .modal-title {
+        font-weight: 700;
+        font-size: 1.3rem;
+        position: relative;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        gap: 0.8rem;
+        margin: 0;
+    }
+    
+    .btn-close {
+        filter: invert(1);
+        opacity: 0.8;
+        transition: var(--transition);
+        position: relative;
+        z-index: 1;
+    }
+    
+    .btn-close:hover {
+        opacity: 1;
+        transform: scale(1.1);
+    }
+    
+    .modal-body {
+        padding: 2rem;
+        background: #f8f9fa;
+        flex: 1;
+        overflow-y: auto;
+        max-height: calc(90vh - 140px);
+    }
+    
+    .modal-footer {
+        background: white;
+        border-top: 1px solid #e9ecef;
+        padding: 1.5rem 2rem;
+        border-radius: 0 0 var(--border-radius) var(--border-radius);
+        flex-shrink: 0;
+    }
+
+    /* Estilos para formularios en modales */
+    .modal-body form {
+        background: white;
+        padding: 2rem;
+        border-radius: 15px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+    }
+    
+    .modal-body label {
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 0.5rem;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .modal-body input,
+    .modal-body select,
+    .modal-body textarea {
+        border-radius: 12px;
+        border: 2px solid #e9ecef;
+        padding: 0.8rem 1rem;
+        transition: var(--transition);
+        font-size: 0.95rem;
+        background: #f8f9fa;
+    }
+    
+    .modal-body input:focus,
+    .modal-body select:focus,
+    .modal-body textarea:focus {
+        border-color: #2c3e50;
+        box-shadow: 0 0 0 0.2rem rgba(44, 62, 80, 0.25);
+        outline: none;
+        background: white;
+    }
+
+    /* Botones de modal mejorados */
+    .modal-body .btn {
+        border-radius: 25px;
+        padding: 0.8rem 1.5rem;
+        font-weight: 600;
+        transition: var(--transition);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-size: 0.9rem;
+        border: none;
+    }
+    
+    .modal-body .btn-primary {
+        background: var(--dark-gradient);
+        color: white;
+        box-shadow: 0 4px 15px rgba(44, 62, 80, 0.3);
+    }
+    
+    .modal-body .btn-primary:hover {
+        background: var(--dark-gradient);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(44, 62, 80, 0.4);
+        color: white;
+    }
+
+    /* Animaciones */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .servicios-header, .toolbar, .table-container {
+        animation: fadeInUp 0.6s ease-out;
+    }
+    
+    .toolbar { animation-delay: 0.1s; }
+    .table-container { animation-delay: 0.2s; }
+
+    /* Responsive */
+    @media (max-width: 1200px) {
+        .toolbar-sections {
+            gap: 1.5rem;
+        }
+        
+        .toolbar-section {
+            min-width: 180px;
+        }
+        
+        .table th, .table td {
+            padding: 0.7rem 0.6rem;
+            font-size: 0.85rem;
+        }
+    }
+    
+    @media (max-width: 992px) {
+        .toolbar-sections {
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .toolbar-section {
+            min-width: auto;
+            width: 100%;
+        }
+        
+        .toolbar-buttons {
+            flex-direction: row;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+        
+        .toolbar-btn {
+            flex: 1;
+            min-width: 200px;
+            justify-content: center;
+        }
+        
+        .table th, .table td {
+            padding: 0.6rem 0.5rem;
+            font-size: 0.8rem;
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .servicios-header {
+            padding: 2rem 1.5rem;
+        }
+        
+        .servicios-header h1 {
+            font-size: 2rem;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .toolbar {
+            padding: 1rem;
+        }
+        
+        .toolbar-btn {
+            min-width: 150px;
+            padding: 0.6rem 0.8rem;
+            font-size: 0.8rem;
+        }
+        
+        .table-responsive {
+            font-size: 0.75rem;
+        }
+        
+        .table th, .table td {
+            padding: 0.5rem 0.4rem;
+            font-size: 0.75rem;
+        }
+        
+        .badge {
+            font-size: 0.7rem;
+            padding: 0.3rem 0.6rem;
+        }
+        
+        .modal-body {
+            padding: 1.5rem;
+        }
+        
+        .modal-body form {
+            padding: 1.5rem;
+        }
+        
+        .modal-body input,
+        .modal-body select,
+        .modal-body textarea {
+            padding: 0.7rem 0.8rem;
+            font-size: 0.9rem;
+        }
+    }
+    
+    @media (max-width: 576px) {
+        .toolbar-buttons {
+            flex-direction: column;
+        }
+        
+        .toolbar-btn {
+            min-width: auto;
+            width: 100%;
+        }
+        
+        .table-responsive {
+            overflow-x: auto;
+        }
+        
+        .table {
+            min-width: 600px;
+        }
+    }
+</style>
+
+<main class="container-fluid mt-4">
+    <!-- Header mejorado -->
+    <div class="servicios-header">
+        <h1>
+            <i class="bi bi-tools"></i>
+            Servicios
+        </h1>
+        <div class="subtitle">
+            Gestión y administración de todos los servicios del taller
+        </div>
+    </div>
+
+    <!-- Layout Principal con Toolbar Horizontal -->
+    <div class="main-layout">
+        <!-- Toolbar Horizontal -->
+        <div class="toolbar">
+            <div class="toolbar-sections">
+                <!-- Exportar -->
+                {% if puede_exportar %}
+                <div class="toolbar-section">
+                    <div class="toolbar-title">
+                        <i class="bi bi-file-excel"></i>
+                        Exportar
+                    </div>
+                    <div class="toolbar-buttons">
+                        <form method="post" action="{% url 'gestionDeTaller:lista_servicios' %}" class="d-grid gap-2">
+                            {% csrf_token %}
+                            <div class="mb-2">
+                                {{ form_filtro.fecha_inicio.label_tag }}
+                                {{ form_filtro.fecha_inicio }}
+                            </div>
+                            <div class="mb-2">
+                                {{ form_filtro.fecha_fin.label_tag }}
+                                {{ form_filtro.fecha_fin }}
+                            </div>
+                            <input type="hidden" name="exportar" value="1">
+                            <button type="submit" class="toolbar-btn">
+                                <i class="bi bi-file-excel"></i>
+                                Exportar a Excel
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Preórdenes -->
+                <div class="toolbar-section">
+                    <div class="toolbar-title">
+                        <i class="bi bi-clipboard-check"></i>
+                        Preórdenes
+                    </div>
+                    <div class="toolbar-buttons">
+                        {% if user.rol == 'GERENTE' or user.rol == 'ADMINISTRATIVO' %}
+                            <a href="{% url 'gestionDeTaller:crear_preorden' %}" class="toolbar-btn">
+                                <i class="bi bi-plus-circle"></i>
+                                Nueva Preorden
+                            </a>
+                        {% endif %}
+                        <a href="{% url 'gestionDeTaller:lista_preordenes' %}" class="toolbar-btn">
+                            <i class="bi bi-list-ul"></i>
+                            Lista de Preórdenes
+                        </a>
+                        <a href="{% url 'gestionDeTaller:calendario_preordenes' %}" class="toolbar-btn">
+                            <i class="bi bi-calendar-week"></i>
+                            Programación
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Servicios -->
+                <div class="toolbar-section">
+                    <div class="toolbar-title">
+                        <i class="bi bi-tools"></i>
+                        Servicios
+                    </div>
+                    <div class="toolbar-buttons">
+                        <button type="button" class="toolbar-btn" data-bs-toggle="modal" data-bs-target="#modalAgregarServicio">
+                            <i class="bi bi-plus-circle"></i>
+                            Nuevo Servicio
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Contenido Principal -->
+        <div class="main-content">
+            <!-- Tabla de Servicios -->
+            <div class="table-container">
+                <div class="table-header">
+                    <h5>
+                        <i class="bi bi-table"></i>
+                        Tabla de Servicios
+                    </h5>
+                </div>
+                <div class="table-responsive">
+                    <table id="miTabla" class="table table-hover" style="width: 100%">
+                        <thead class="table-dark">
+                            <tr>
+                                <th><i class="bi bi-hash me-2"></i>Nr.</th>
+                                <th><i class="bi bi-building me-2"></i>Sucursal</th>
+                                <th><i class="bi bi-person me-2"></i>Cliente</th>
+                                <th><i class="bi bi-gear me-2"></i>Equipo</th>
+                                <th><i class="bi bi-calendar me-2"></i>Fecha de ingreso</th>
+                                <th><i class="bi bi-flag me-2"></i>Estado</th>
+                                <th><i class="bi bi-exclamation-triangle me-2"></i>Prioridad</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for servicio in servicios %}
+                                <tr data-url="{% url 'gestionDeTaller:detalle_servicio' servicio.id %}" class="cursor-pointer">
+                                    <td>{{ servicio.id }}</td>
+                                    <td>{{ servicio.preorden.sucursal.nombre }}</td>
+                                    <td>{{ servicio.preorden.cliente.razon_social }}</td>
+                                    <td>{{ servicio.preorden.equipo.numero_serie }}</td>
+                                    <td>{{ servicio.fecha_servicio|date:"d/m/Y" }}</td>
+                                    <td>
+                                        <span class="badge {% if servicio.estado == 'COMPLETADO' %}bg-success
+                                                          {% elif servicio.estado == 'EN_PROCESO' %}bg-warning
+                                                          {% elif servicio.estado == 'PENDIENTE' %}bg-info
+                                                          {% else %}bg-secondary{% endif %}">
+                                            {{ servicio.estado }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="badge {% if servicio.prioridad == '0' %}bg-danger
+                                                          {% elif servicio.prioridad == '1' %}bg-warning
+                                                          {% elif servicio.prioridad == '2' %}bg-primary
+                                                          {% elif servicio.prioridad == '3' %}bg-info
+                                                          {% else %}bg-secondary{% endif %}">
+                                            {{ servicio.get_prioridad_display }}
+                                        </span>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- Modal para agregar servicio -->
+<div class="modal fade" id="modalAgregarServicio" tabindex="-1" aria-labelledby="modalAgregarServicioLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalAgregarServicioLabel">
+                    <i class="bi bi-plus-circle"></i>
+                    Agregar Servicio
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form method="POST" action="{% url 'gestionDeTaller:lista_servicios' %}" class="needs-validation" novalidate>
+                    {% csrf_token %}
+                    
+                    {% if servicio_form.non_field_errors %}
+                    <div class="alert alert-danger">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        {% for error in servicio_form.non_field_errors %}
+                            {{ error }}
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ servicio_form.preorden.id_for_label }}" class="form-label">
+                                <i class="bi bi-clipboard me-2"></i>Preorden
+                            </label>
+                            {{ servicio_form.preorden }}
+                            {% if servicio_form.preorden.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ servicio_form.preorden.errors }}
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ servicio_form.fecha_servicio.id_for_label }}" class="form-label">
+                                <i class="bi bi-calendar me-2"></i>Fecha de Servicio
+                            </label>
+                            {{ servicio_form.fecha_servicio }}
+                            {% if servicio_form.fecha_servicio.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ servicio_form.fecha_servicio.errors }}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ servicio_form.horometro_servicio.id_for_label }}" class="form-label">
+                                <i class="bi bi-speedometer2 me-2"></i>Horómetro en Servicio
+                            </label>
+                            {{ servicio_form.horometro_servicio }}
+                            {% if servicio_form.horometro_servicio.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ servicio_form.horometro_servicio.errors }}
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ servicio_form.estado.id_for_label }}" class="form-label">
+                                <i class="bi bi-flag me-2"></i>Estado
+                            </label>
+                            {{ servicio_form.estado }}
+                            {% if servicio_form.estado.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ servicio_form.estado.errors }}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ servicio_form.prioridad.id_for_label }}" class="form-label">
+                                <i class="bi bi-exclamation-triangle me-2"></i>Prioridad
+                            </label>
+                            {{ servicio_form.prioridad }}
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ servicio_form.trabajo.id_for_label }}" class="form-label">
+                                <i class="bi bi-tools me-2"></i>Tipo de Trabajo
+                            </label>
+                            {{ servicio_form.trabajo }}
+                            {% if servicio_form.trabajo.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ servicio_form.trabajo.errors }}
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ servicio_form.numero_cotizacion.id_for_label }}" class="form-label">
+                                <i class="bi bi-file-text me-2"></i>Número de Cotización
+                            </label>
+                            {{ servicio_form.numero_cotizacion }}
+                            {% if servicio_form.numero_cotizacion.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ servicio_form.numero_cotizacion.errors }}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="{{ servicio_form.observaciones.id_for_label }}" class="form-label">
+                            <i class="bi bi-sticky me-2"></i>Observaciones
+                        </label>
+                        {{ servicio_form.observaciones }}
+                        {% if servicio_form.observaciones.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ servicio_form.observaciones.errors }}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="{{ servicio_form.archivo_cotizacion.id_for_label }}" class="form-label">
+                            <i class="bi bi-file-earmark me-2"></i>Archivo de Cotización
+                        </label>
+                        {{ servicio_form.archivo_cotizacion }}
+                        {% if servicio_form.archivo_cotizacion.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ servicio_form.archivo_cotizacion.errors }}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" name="guardar_servicio" class="btn btn-primary">
+                            <i class="bi bi-save me-2"></i>Guardar Servicio
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Scripts existentes -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css">
+<script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
+
+<script>
+    $(document).ready(function () {
+        // Inicializar DataTable
+        $('#miTabla').DataTable({
+            "order": [[0, "desc"]],
+            "language": {
+                "search": "Buscar:",
+                "lengthMenu": "Mostrar _MENU_ servicios",
+                "info": "Mostrando _START_ a _END_ de _TOTAL_ servicios",
+                "infoEmpty": "Mostrando 0 a 0 de 0 servicios",
+                "infoFiltered": "(filtrado de _MAX_ servicios en total)",
+                "paginate": {
+                    "first": "Primero",
+                    "previous": "Anterior",
+                    "next": "Siguiente",
+                    "last": "Último"
+                }
+            }
+        });
+    
+        // Inicializar Select2 para el campo de preorden
+        $('#id_preorden').select2({
+            width: '100%',
+            dropdownParent: $('#modalAgregarServicio')
+        });
+    
+        // Manejar clic en filas de la tabla
+        $('tr[data-url]').on('click', function () {
+            window.location.href = $(this).data('url');
+        });
+    
+        // Manejar selección de preorden
+        $('#id_preorden').on('select2:select', function() {
+            var preordenId = $(this).val();
+            if (preordenId) {
+                $.ajax({
+                    url: "{% url 'gestionDeTaller:get_preorden_horometro' %}",
+                    type: 'GET',
+                    dataType: 'json',
+                    data: {
+                        'preorden_id': preordenId
+                    },
+                    success: function(data) {
+                        console.log('Datos recibidos:', data);
+                        if (data.horometro !== null) {
+                            $('#id_horometro_servicio').val(data.horometro);
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Error en la petición:', error);
+                    }
+                });
+            }
+        });
+
+        // Manejar el formato de fecha
+        $('#id_fecha_servicio').on('change', function() {
+            var fecha = $(this).val();
+            if (fecha) {
+                // Convertir de YYYY-MM-DD a DD/MM/YYYY para mostrar
+                var partes = fecha.split('-');
+                if (partes.length === 3) {
+                    var fechaFormateada = partes[2] + '/' + partes[1] + '/' + partes[0];
+                    // Mantener el valor original en formato YYYY-MM-DD para el input
+                    $(this).data('fecha-formateada', fechaFormateada);
+                }
+            }
+        });
+
+        // Antes de enviar el formulario, convertir la fecha al formato correcto
+        $('form').on('submit', function(e) {
+            var fechaInput = $('#id_fecha_servicio');
+            var fecha = fechaInput.val();
+            if (fecha) {
+                // Si la fecha está en formato DD/MM/YYYY, convertirla a YYYY-MM-DD
+                var partes = fecha.split('/');
+                if (partes.length === 3) {
+                    var fechaFormateada = partes[2] + '-' + partes[1] + '-' + partes[0];
+                    fechaInput.val(fechaFormateada);
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}
+

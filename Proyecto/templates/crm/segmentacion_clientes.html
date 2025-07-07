@@ -1,0 +1,712 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<style>
+    /* Variables CSS para consistencia */
+    :root {
+        --primary-gradient: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        --secondary-gradient: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        --success-gradient: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        --warning-gradient: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        --danger-gradient: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+        --dark-gradient: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        --light-gradient: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        --card-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        --hover-shadow: 0 15px 40px rgba(0,0,0,0.15);
+        --border-radius: 20px;
+        --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Header mejorado */
+    .segmentacion-header {
+        background: var(--dark-gradient);
+        color: white;
+        padding: 3rem 2rem;
+        border-radius: var(--border-radius);
+        margin-bottom: 2.5rem;
+        box-shadow: var(--card-shadow);
+        position: relative;
+        overflow: hidden;
+        text-align: center;
+    }
+    
+    .segmentacion-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="dots" width="20" height="20" patternUnits="userSpaceOnUse"><circle cx="10" cy="10" r="1" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23dots)"/></svg>');
+        pointer-events: none;
+    }
+    
+    .segmentacion-header h1 {
+        margin: 0;
+        font-weight: 800;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        font-size: 3rem;
+        position: relative;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 1rem;
+    }
+    
+    .segmentacion-header .subtitle {
+        font-size: 1.2rem;
+        opacity: 0.9;
+        margin-top: 1rem;
+        position: relative;
+        z-index: 1;
+    }
+
+    /* Estadísticas */
+    .stats-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2.5rem;
+    }
+    
+    .stat-card {
+        background: white;
+        border-radius: var(--border-radius);
+        padding: 1.5rem;
+        box-shadow: var(--card-shadow);
+        text-align: center;
+        transition: var(--transition);
+        border: 1px solid #e9ecef;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 5px;
+        height: 100%;
+        background: var(--dark-gradient);
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-8px);
+        box-shadow: var(--hover-shadow);
+        border-color: #2c3e50;
+    }
+    
+    .stat-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1rem;
+        background: var(--dark-gradient);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    
+    .stat-icon i {
+        font-size: 1.5rem;
+        color: white;
+    }
+    
+    .stat-number {
+        font-size: 2rem;
+        font-weight: 800;
+        color: #2c3e50;
+        margin-bottom: 0.5rem;
+    }
+    
+    .stat-label {
+        font-size: 0.9rem;
+        color: #6c757d;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    /* Contenedor principal */
+    .segmentacion-container {
+        background: white;
+        border-radius: var(--border-radius);
+        box-shadow: var(--card-shadow);
+        overflow: hidden;
+        border: 1px solid #e9ecef;
+    }
+    
+    .segmentacion-container-header {
+        background: var(--dark-gradient);
+        color: white;
+        padding: 2rem;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .segmentacion-container-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="header-dots" width="20" height="20" patternUnits="userSpaceOnUse"><circle cx="10" cy="10" r="1" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23header-dots)"/></svg>');
+        pointer-events: none;
+    }
+    
+    .segmentacion-container-header h2 {
+        margin: 0;
+        font-weight: 700;
+        font-size: 1.5rem;
+        position: relative;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        gap: 0.8rem;
+    }
+
+    /* Filtros mejorados */
+    .filtros-container {
+        background: white;
+        border-radius: var(--border-radius);
+        box-shadow: var(--card-shadow);
+        overflow: hidden;
+        border: 1px solid #e9ecef;
+        margin-bottom: 2rem;
+    }
+    
+    .filtros-header {
+        background: var(--light-gradient);
+        padding: 1.5rem 2rem;
+        border-bottom: 1px solid #e9ecef;
+    }
+    
+    .filtros-body {
+        padding: 2rem;
+    }
+    
+    .form-select, .form-control {
+        border-radius: 12px;
+        border: 2px solid #e9ecef;
+        padding: 0.8rem 1rem;
+        transition: var(--transition);
+    }
+    
+    .form-select:focus, .form-control:focus {
+        border-color: #2c3e50;
+        box-shadow: 0 0 0 0.2rem rgba(44, 62, 80, 0.25);
+        outline: none;
+    }
+
+    /* Mejoras en la tabla */
+    .table-responsive {
+        border-radius: 0 0 var(--border-radius) var(--border-radius);
+        overflow: hidden;
+    }
+    
+    .table {
+        margin-bottom: 0;
+        border: none;
+        border-radius: 0 0 var(--border-radius) var(--border-radius);
+        overflow: hidden;
+    }
+    
+    .table-dark {
+        background: var(--dark-gradient);
+        border: none;
+    }
+    
+    .table th {
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 1.5rem 1rem;
+        border: none;
+        font-size: 0.9rem;
+        position: relative;
+        z-index: 1;
+        background: var(--dark-gradient) !important;
+        color: white !important;
+    }
+    
+    .table td {
+        padding: 1.2rem 1rem;
+        vertical-align: middle;
+        border: none;
+        border-bottom: 1px solid #f0f0f0;
+        font-weight: 500;
+    }
+    
+    .table tbody tr {
+        transition: var(--transition);
+        cursor: pointer;
+    }
+    
+    .table tbody tr:hover {
+        background: rgba(44, 62, 80, 0.05);
+        transform: scale(1.01);
+    }
+    
+    .table tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    /* Botón mejorado */
+    .btn-exportar {
+        background: var(--dark-gradient);
+        color: white;
+        border: none;
+        border-radius: 25px;
+        padding: 0.8rem 1.5rem;
+        font-weight: 600;
+        transition: var(--transition);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-size: 0.9rem;
+    }
+    
+    .btn-exportar:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+        color: white;
+        background: var(--dark-gradient);
+    }
+
+    /* DataTables personalizado */
+    .dataTables_wrapper {
+        padding: 2rem;
+    }
+    
+    .dataTables_filter input {
+        border-radius: 25px;
+        border: 2px solid #e9ecef;
+        padding: 0.8rem 1.2rem;
+        transition: var(--transition);
+    }
+    
+    .dataTables_filter input:focus {
+        border-color: #2c3e50;
+        box-shadow: 0 0 0 0.2rem rgba(44, 62, 80, 0.25);
+        outline: none;
+    }
+    
+    .dataTables_length select {
+        border-radius: 12px;
+        border: 2px solid #e9ecef;
+        padding: 0.5rem 1rem;
+        transition: var(--transition);
+    }
+    
+    .dataTables_length select:focus {
+        border-color: #2c3e50;
+        box-shadow: 0 0 0 0.2rem rgba(44, 62, 80, 0.25);
+        outline: none;
+    }
+    
+    .dataTables_info {
+        font-weight: 500;
+        color: #6c757d;
+        margin-top: 1rem;
+        text-align: center;
+    }
+
+    /* Animaciones */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .segmentacion-header, .stats-container, .segmentacion-container, .filtros-container {
+        animation: fadeInUp 0.6s ease-out;
+    }
+    
+    .stat-card:nth-child(1) { animation-delay: 0.1s; }
+    .stat-card:nth-child(2) { animation-delay: 0.2s; }
+    .stat-card:nth-child(3) { animation-delay: 0.3s; }
+    .stat-card:nth-child(4) { animation-delay: 0.4s; }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .segmentacion-header {
+            padding: 2rem 1.5rem;
+        }
+        
+        .segmentacion-header h1 {
+            font-size: 2rem;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .stats-container {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.8rem;
+        }
+        
+        .stat-card {
+            padding: 1rem;
+        }
+        
+        .stat-icon {
+            width: 40px;
+            height: 40px;
+        }
+        
+        .stat-icon i {
+            font-size: 1.2rem;
+        }
+        
+        .stat-number {
+            font-size: 1.5rem;
+        }
+        
+        .stat-label {
+            font-size: 0.8rem;
+        }
+        
+        .table th, .table td {
+            padding: 1rem 0.5rem;
+            font-size: 0.9rem;
+        }
+        
+        .dataTables_wrapper {
+            padding: 1rem;
+        }
+    }
+</style>
+
+<div class="container-fluid mt-4">
+    <!-- Header -->
+    <div class="segmentacion-header">
+        <h1>
+            <i class="bi bi-graph-up"></i>
+            Segmentación ABC de Clientes
+        </h1>
+        <p class="subtitle">Análisis automático de clientes por facturación, comportamiento y potencial</p>
+    </div>
+
+    <!-- Estadísticas -->
+    <div class="stats-container">
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="bi bi-currency-dollar"></i>
+            </div>
+            <div class="stat-number">${{ total_facturacion|floatformat:0 }}</div>
+            <div class="stat-label">Total Facturación</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="bi bi-people"></i>
+            </div>
+            <div class="stat-number">{{ clientes_segmentados|length }}</div>
+            <div class="stat-label">Clientes Analizados</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="bi bi-calendar-event"></i>
+            </div>
+            <div class="stat-number">{{ fecha_limite|date:"d/m/Y" }}</div>
+            <div class="stat-label">Desde</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="bi bi-calculator"></i>
+            </div>
+            <div class="stat-number">${{ promedio_por_cliente|floatformat:0 }}</div>
+            <div class="stat-label">Promedio por Cliente</div>
+        </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="filtros-container">
+        <div class="filtros-header">
+            <h5 class="mb-0">
+                <i class="bi bi-funnel me-2"></i>Filtros de Análisis
+            </h5>
+        </div>
+        <div class="filtros-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-3">
+                    <label for="periodo" class="form-label fw-bold">
+                        <i class="bi bi-calendar-range me-1"></i>Período de Análisis
+                    </label>
+                    <select name="periodo_dias" id="periodo" class="form-select">
+                        <option value="90" {% if periodo_dias == 90 %}selected{% endif %}>Últimos 3 meses</option>
+                        <option value="180" {% if periodo_dias == 180 %}selected{% endif %}>Últimos 6 meses</option>
+                        <option value="365" {% if periodo_dias == 365 %}selected{% endif %}>Último año</option>
+                        <option value="730" {% if periodo_dias == 730 %}selected{% endif %}>Últimos 2 años</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="sucursal" class="form-label fw-bold">
+                        <i class="bi bi-building me-1"></i>Sucursal
+                    </label>
+                    <select name="sucursal" id="sucursal" class="form-select">
+                        <option value="">Todas las sucursales</option>
+                        {% for sucursal in sucursales %}
+                            <option value="{{ sucursal.id }}" {% if sucursal_id == sucursal.id|stringformat:"s" %}selected{% endif %}>
+                                {{ sucursal.nombre }} - {{ sucursal.ciudad }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="segmento" class="form-label fw-bold">
+                        <i class="bi bi-tags me-1"></i>Segmento
+                    </label>
+                    <select name="segmento" id="segmento" class="form-select">
+                        <option value="">Todos los segmentos</option>
+                        <option value="A" {% if segmento_filtro == 'A' %}selected{% endif %}>Segmento A (Top 20%)</option>
+                        <option value="B" {% if segmento_filtro == 'B' %}selected{% endif %}>Segmento B (15%)</option>
+                        <option value="C" {% if segmento_filtro == 'C' %}selected{% endif %}>Segmento C (5%)</option>
+                        <option value="NUEVO" {% if segmento_filtro == 'NUEVO' %}selected{% endif %}>Clientes Nuevos</option>
+                    </select>
+                </div>
+                <div class="col-md-3 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary me-2">
+                        <i class="bi bi-search me-2"></i>Filtrar
+                    </button>
+                    <a href="{% url 'crm:segmentacion_clientes' %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-clockwise me-2"></i>Limpiar
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Estadísticas por Segmento -->
+    <div class="row mb-4">
+        <div class="col-lg-6">
+            <div class="segmentacion-container">
+                <div class="segmentacion-container-header">
+                    <h2>
+                        <i class="bi bi-pie-chart"></i>
+                        Estadísticas por Segmento ABC
+                    </h2>
+                </div>
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Segmento</th>
+                                <th>Cantidad</th>
+                                <th>Facturación Total</th>
+                                <th>Promedio</th>
+                                <th>% del Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for segmento, stats in estadisticas_segmentos.items %}
+                            <tr>
+                                <td>
+                                    <span class="badge {% if segmento == 'A' %}bg-success{% elif segmento == 'B' %}bg-warning{% elif segmento == 'C' %}bg-secondary{% else %}bg-info{% endif %} fs-6">
+                                        {% if segmento == 'NUEVO' %}
+                                            <i class="bi bi-person-plus me-1"></i>Clientes Nuevos
+                                        {% else %}
+                                            <i class="bi bi-star me-1"></i>Segmento {{ segmento }}
+                                        {% endif %}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="fw-bold">{{ stats.cantidad }}</span>
+                                </td>
+                                <td>
+                                    <span class="fw-bold text-success">${{ stats.facturacion_total|floatformat:0 }}</span>
+                                </td>
+                                <td>
+                                    <span class="text-muted">${{ stats.facturacion_promedio|floatformat:0 }}</span>
+                                </td>
+                                <td>
+                                    <span class="badge bg-primary">{{ stats.porcentaje_del_total|floatformat:1 }}%</span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-6">
+            <div class="segmentacion-container">
+                <div class="segmentacion-container-header">
+                    <h2>
+                        <i class="bi bi-activity"></i>
+                        Estadísticas por Comportamiento
+                    </h2>
+                </div>
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Comportamiento</th>
+                                <th>Cantidad</th>
+                                <th>Facturación Total</th>
+                                <th>% del Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for comportamiento, stats in estadisticas_comportamiento.items %}
+                            <tr>
+                                <td>
+                                    <span class="badge {% if comportamiento == 'ACTIVO' %}bg-success{% elif comportamiento == 'CRECIMIENTO' %}bg-info{% elif comportamiento == 'COMPORTAMIENTO_BAJISTA' %}bg-warning{% else %}bg-danger{% endif %} fs-6">
+                                        <i class="bi {% if comportamiento == 'ACTIVO' %}bi-check-circle{% elif comportamiento == 'CRECIMIENTO' %}bi-graph-up{% elif comportamiento == 'COMPORTAMIENTO_BAJISTA' %}bi-graph-down{% else %}bi-x-circle{% endif %} me-1"></i>
+                                        {{ comportamiento|title }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="fw-bold">{{ stats.cantidad }}</span>
+                                </td>
+                                <td>
+                                    <span class="fw-bold text-success">${{ stats.facturacion_total|floatformat:0 }}</span>
+                                </td>
+                                <td>
+                                    <span class="badge bg-primary">{{ stats.porcentaje_del_total|floatformat:1 }}%</span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabla de Clientes -->
+    <div class="segmentacion-container">
+        <div class="segmentacion-container-header d-flex justify-content-between align-items-center">
+            <h2>
+                <i class="bi bi-table"></i>
+                Detalle de Clientes Segmentados
+            </h2>
+            <button class="btn btn-exportar" onclick="exportarExcel()">
+                <i class="bi bi-file-earmark-excel me-2"></i>Exportar Excel
+            </button>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover" id="tablaSegmentacion">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Cliente</th>
+                        <th>Segmento</th>
+                        <th>Comportamiento</th>
+                        <th>Facturación</th>
+                        <th>Servicios</th>
+                        <th>Equipos Activos</th>
+                        <th>Potencial Estimado</th>
+                        <th>Último Servicio</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for cliente_data in clientes_segmentados %}
+                    <tr>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <div class="avatar-sm bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3">
+                                    <i class="bi bi-person"></i>
+                                </div>
+                                <div>
+                                    <div class="fw-bold">{{ cliente_data.cliente.razon_social }}</div>
+                                    <small class="text-muted">{{ cliente_data.cliente.email|default:"Sin email" }}</small>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="badge {% if cliente_data.segmento == 'A' %}bg-success{% elif cliente_data.segmento == 'B' %}bg-warning{% elif cliente_data.segmento == 'C' %}bg-secondary{% else %}bg-info{% endif %} fs-6">
+                                {% if cliente_data.segmento == 'NUEVO' %}
+                                    <i class="bi bi-person-plus me-1"></i>Nuevo
+                                {% else %}
+                                    <i class="bi bi-star me-1"></i>{{ cliente_data.segmento }}
+                                {% endif %}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge {% if cliente_data.comportamiento == 'ACTIVO' %}bg-success{% elif cliente_data.comportamiento == 'CRECIMIENTO' %}bg-info{% elif cliente_data.comportamiento == 'COMPORTAMIENTO_BAJISTA' %}bg-warning{% else %}bg-danger{% endif %} fs-6">
+                                <i class="bi {% if cliente_data.comportamiento == 'ACTIVO' %}bi-check-circle{% elif cliente_data.comportamiento == 'CRECIMIENTO' %}bi-graph-up{% elif cliente_data.comportamiento == 'COMPORTAMIENTO_BAJISTA' %}bi-graph-down{% else %}bi-x-circle{% endif %} me-1"></i>
+                                {{ cliente_data.comportamiento|title }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="fw-bold text-success">${{ cliente_data.total_facturacion|floatformat:0 }}</span>
+                        </td>
+                        <td>
+                            <span class="badge bg-primary">{{ cliente_data.total_servicios }}</span>
+                        </td>
+                        <td>
+                            <span class="badge bg-info">{{ cliente_data.equipos_activos }}</span>
+                        </td>
+                        <td>
+                            <span class="text-muted">${{ cliente_data.potencial_estimado|floatformat:0 }}</span>
+                        </td>
+                        <td>
+                            {% if cliente_data.ultimo_servicio %}
+                                <div>
+                                    <div class="fw-bold">{{ cliente_data.ultimo_servicio|date:"d/m/Y" }}</div>
+                                    <small class="text-muted">{{ cliente_data.dias_desde_ultimo }} días</small>
+                                </div>
+                            {% else %}
+                                <span class="text-muted">Sin servicios</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Botón Volver -->
+    <div class="text-center mt-4">
+        <a href="{% url 'crm:segmentacion_clientes' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Volver a Segmentación
+        </a>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function () {
+        // Configuración de DataTable
+        var tablaSegmentacion = $('#tablaSegmentacion').DataTable({
+            "language": {
+                "url": "//cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json",
+                "search": "Buscar:",
+                "lengthMenu": "Mostrar _MENU_ clientes",
+                "info": "Mostrando _START_ a _END_ de _TOTAL_ clientes",
+                "infoEmpty": "Mostrando 0 a 0 de 0 clientes",
+                "infoFiltered": "(filtrado de _MAX_ clientes en total)",
+                "paginate": {
+                    "first": "Primero",
+                    "previous": "Anterior",
+                    "next": "Siguiente",
+                    "last": "Último"
+                }
+            },
+            "pageLength": 25,
+            "order": [[3, "desc"]], // Ordenar por facturación descendente
+            "responsive": true,
+            "scrollX": false,
+            "columnDefs": [
+                {
+                    "targets": [0, 1, 2, 4, 5, 6, 7], // Columnas que no se pueden buscar
+                    "searchable": false
+                }
+            ]
+        });
+    });
+
+    function exportarExcel() {
+        // Función para exportar a Excel (implementar según necesidades)
+        alert('Función de exportación a Excel - Implementar según requerimientos');
+    }
+</script>
+{% endblock %} 

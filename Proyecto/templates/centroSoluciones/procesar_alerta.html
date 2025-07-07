@@ -1,0 +1,188 @@
+{% extends 'base.html' %}
+{% block title %} | Procesar Alerta{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="display-6 mb-2">
+                        <i class="bi bi-tools text-warning me-2"></i>Procesar Alerta {{ alerta.codigo }}
+                    </h1>
+                    <p class="lead text-muted">Actualizar estado y observaciones de la alerta</p>
+                </div>
+                <div>
+                    <a href="{% url 'centroSoluciones:alertas_list' %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left me-2"></i>Volver a Alertas
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Información de la Alerta -->
+        <div class="col-md-4">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-info-circle me-2"></i>Información de la Alerta
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Cliente</label>
+                        <p class="form-control-plaintext">{{ alerta.cliente.razon_social }}</p>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">PIN del Equipo</label>
+                        <p class="form-control-plaintext">{{ alerta.pin_equipo }}</p>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Código de Alerta</label>
+                        <p class="form-control-plaintext">{{ alerta.codigo }}</p>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Clasificación</label>
+                        <p class="form-control-plaintext">
+                            <span class="badge bg-{{ alerta.get_prioridad_color }}">
+                                {{ alerta.get_clasificacion_display }}
+                            </span>
+                        </p>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Estado Actual</label>
+                        <p class="form-control-plaintext">
+                            {% if alerta.estado == 'PENDIENTE' %}
+                                <span class="badge bg-danger">Pendiente</span>
+                            {% elif alerta.estado == 'ASIGNADA' %}
+                                <span class="badge bg-warning">Asignada</span>
+                            {% elif alerta.estado == 'EN_PROCESO' %}
+                                <span class="badge bg-info">En Proceso</span>
+                            {% elif alerta.estado == 'RESUELTA' %}
+                                <span class="badge bg-success">Resuelta</span>
+                            {% elif alerta.estado == 'CANCELADA' %}
+                                <span class="badge bg-secondary">Cancelada</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Descripción</label>
+                        <p class="form-control-plaintext">{{ alerta.descripcion|linebreaks }}</p>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Fecha de Recepción</label>
+                        <p class="form-control-plaintext">{{ alerta.fecha|date:"d/m/Y H:i" }}</p>
+                    </div>
+                    {% if alerta.tiempo_pendiente %}
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Tiempo Pendiente</label>
+                        <p class="form-control-plaintext text-warning">
+                            {{ alerta.tiempo_pendiente.days }} días, {{ alerta.tiempo_pendiente.seconds|floatformat:0|div:3600|floatformat:0 }} horas
+                        </p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Formulario de Procesamiento -->
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-clipboard-check me-2"></i>Actualizar Estado y Observaciones
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="estado" class="form-label">Nuevo Estado *</label>
+                                <select class="form-select" id="estado" name="estado" required>
+                                    <option value="">Seleccionar estado...</option>
+                                    <option value="EN_PROCESO" {% if alerta.estado == 'EN_PROCESO' %}selected{% endif %}>En Proceso</option>
+                                    <option value="RESUELTA" {% if alerta.estado == 'RESUELTA' %}selected{% endif %}>Resuelta</option>
+                                    <option value="CANCELADA" {% if alerta.estado == 'CANCELADA' %}selected{% endif %}>Cancelada</option>
+                                </select>
+                                <div class="form-text">
+                                    <strong>En Proceso:</strong> El técnico está trabajando en la alerta<br>
+                                    <strong>Resuelta:</strong> La alerta ha sido solucionada<br>
+                                    <strong>Cancelada:</strong> La alerta no requiere acción
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <label for="observaciones_tecnico" class="form-label">Observaciones del Técnico *</label>
+                                <textarea class="form-control" id="observaciones_tecnico" name="observaciones_tecnico" rows="6" required 
+                                          placeholder="Describe las acciones realizadas, diagnóstico, solución aplicada, etc...">{{ alerta.observaciones_tecnico }}</textarea>
+                                <div class="form-text">
+                                    Incluye detalles sobre el diagnóstico, acciones realizadas, repuestos utilizados, 
+                                    tiempo de trabajo, y cualquier información relevante para el seguimiento.
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <hr class="my-4">
+                        
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'centroSoluciones:alertas_list' %}" class="btn btn-secondary">
+                                <i class="bi bi-x-circle me-2"></i>Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-success">
+                                <i class="bi bi-check-circle me-2"></i>Guardar Cambios
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Validación del formulario
+    const form = document.querySelector('form');
+    const estadoSelect = document.getElementById('estado');
+    const observacionesTextarea = document.getElementById('observaciones_tecnico');
+    
+    form.addEventListener('submit', function(e) {
+        let isValid = true;
+        
+        // Validar estado
+        if (!estadoSelect.value) {
+            estadoSelect.classList.add('is-invalid');
+            isValid = false;
+        } else {
+            estadoSelect.classList.remove('is-invalid');
+        }
+        
+        // Validar observaciones
+        if (!observacionesTextarea.value.trim()) {
+            observacionesTextarea.classList.add('is-invalid');
+            isValid = false;
+        } else {
+            observacionesTextarea.classList.remove('is-invalid');
+        }
+        
+        if (!isValid) {
+            e.preventDefault();
+            alert('Por favor, completa todos los campos requeridos.');
+        }
+    });
+    
+    // Remover clases de validación cuando el usuario empiece a escribir
+    estadoSelect.addEventListener('change', function() {
+        this.classList.remove('is-invalid');
+    });
+    
+    observacionesTextarea.addEventListener('input', function() {
+        this.classList.remove('is-invalid');
+    });
+});
+</script>
+{% endblock %} 

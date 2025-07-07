@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<main class="container mt-5">
+    <!-- Encabezado con logos -->
+    <div class="d-flex justify-content-between align-items-center mb-4 p-3" style="border: 2px solid #000;">
+        <img src="{% static 'img/logo_pm_fondo_blanco.png' %}" alt="Logo Empresa" style="height: 80px;">
+        <h2 class="text-center" style="font-weight: bold;">INFORME DE SERVICIO POST VENTA #{{ servicio.id }}</h2>
+        <div class="d-flex gap-2">
+            <img src="{% static 'img/logoJohnDeere.png' %}" alt="Logo John Deere" style="height: 120px;">
+            <!-- Agrega más logos según sea necesario -->
+        </div>
+    </div>
+    
+    <div class="d-flex justify-content-end mb-4">
+        <p><strong>Fecha del Servicio:</strong> {{ servicio.fecha_servicio|date:"d/m/Y" }}</p>
+    </div>
+
+    <!-- Datos del Cliente -->
+    <div class="border p-3 mb-4">
+        <h4 class="bg-dark text-white p-2">Datos del Cliente</h4>
+        <p><strong>Razón Social:</strong> {{ cliente.razon_social }}</p>
+        <p><strong>Domicilio:</strong> {{ cliente.direccion }}</p>
+        <p><strong>Ciudad:</strong> {{ cliente.ciudad }}</p>
+        <p><strong>Email:</strong> {{ cliente.email }}</p>
+    </div>
+
+    <!-- Datos del Equipo -->
+    <div class="border p-3 mb-4">
+        <h4 class="bg-dark text-white p-2">Datos del Equipo</h4>
+        <p><strong>Marca:</strong> {{ equipo.modelo.marca }}</p>
+        <p><strong>Modelo:</strong> {{ equipo.modelo }}</p>
+        <p><strong>Número de Serie:</strong> {{ equipo.numero_serie }}</p>
+        <p><strong>Horas:</strong> {{ servicio.horometro_servicio }}</p>
+    </div>
+
+    <!-- Trabajo, Tipo y Ubicación -->
+    <div class="border p-3 mb-4">
+        <h4 class="bg-dark text-white p-2">Trabajo y Ubicación</h4>
+        <p><strong>Trabajo:</strong> {{ trabajo }}</p>
+        <p><strong>Tipo:</strong> {{ servicio.preorden.tipo_trabajo }}</p>
+        <p><strong>Ubicación:</strong> {{ servicio.ubicacion }}</p>
+    </div>
+
+    <!-- Solicitud del Cliente -->
+    <div class="border p-3 mb-4">
+        <h4 class="bg-dark text-white p-2">Solicitud del Cliente</h4>
+        <p>{{ solicitud_cliente }}</p>
+    </div>
+
+    <!-- Causa -->
+    <div class="border p-3 mb-4">
+        <h4 class="bg-dark text-white p-2">Causa</h4>
+        <p>{{ servicio.causa }}</p>
+    </div>
+
+    <!-- Acción Correctiva -->
+    <div class="border p-3 mb-4">
+        <h4 class="bg-dark text-white p-2">Acción Correctiva</h4>
+        <p>{{ servicio.accion_correctiva }}</p>
+    </div>
+
+    <!-- Repuestos Utilizados -->
+    <div class="border p-3 mb-4">
+        <h4 class="bg-dark text-white p-2">Repuestos Utilizados</h4>
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Código</th>
+                    <th>Descripción</th>
+                    <th>Cantidad</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for repuesto in servicio.repuestos.all %}
+                    <tr>
+                        <td>{{ repuesto.codigo }}</td>
+                        <td>{{ repuesto.descripcion }}</td>
+                        <td>{{ repuesto.cantidad }}</td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center">No hay repuestos utilizados en este servicio.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Observaciones -->
+    <div class="border p-3 mb-4">
+        <h4 class="bg-dark text-white p-2">Observaciones</h4>
+        <p>{{ servicio.observaciones }}</p>
+    </div>
+
+    <!-- Responsable del Servicio y Firma del Cliente -->
+    <div class="border p-3 mb-4 d-flex justify-content-between">
+        <div>
+            <h4 class="bg-dark text-white p-2">Responsable del Servicio</h4>
+            <p>{% for tecnico in tecnicos_responsables %} {{ tecnico.nombre }} {{ tecnico.apellido }} {% if not forloop.last %}, {% endif %}{% endfor %}</p>
+        </div>
+        <div>
+            <h4 class="bg-dark text-white p-2">Firma del Cliente</h4>
+            <p><strong>Aclaración:</strong> {{ servicio.nombre_cliente }}</p>
+            {% if servicio.firma_cliente %}
+                <img src="{{ servicio.firma_cliente.url }}" alt="Firma del Cliente" style="border:1px solid #000; width:300px;">
+            {% endif %}
+        </div>
+    </div>
+
+</main>
+{% endblock %}

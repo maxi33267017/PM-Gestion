@@ -1,0 +1,111 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+<main class="container mt-5">
+    <div class="card">
+        <div class="card-header bg-dark text-white">
+            <h3>Detalle de la Preorden #{{ preorden.numero }}</h3>
+        </div>
+        <div class="card-body">
+
+            <!-- Datos de Cliente y Equipo -->
+            <div class="card mb-4">
+                <div class="card-header bg-secondary text-white">
+                    <h5>Datos del Cliente y Equipo</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Cliente:</strong> {{ preorden.cliente.razon_social }}</p>
+                    <p><strong>Equipo:</strong> {{ preorden.equipo.numero_serie }}</p>
+                    <p><strong>Horómetro Actual:</strong> {{ preorden.horometro }}</p>
+                </div>
+            </div>
+
+            <!-- Detalles de Trabajo -->
+            <div class="card mb-4">
+                <div class="card-header bg-secondary text-white">
+                    <h5>Detalles de Trabajo</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Solicitud del Cliente:</strong> {{ preorden.solicitud_cliente }}</p>
+                    <p><strong>Solicitud de Trabajo:</strong> {{ preorden.solicitud_trabajo }}</p>
+                    <p><strong>Detalles Adicionales:</strong> {{ preorden.detalles_adicionales }}</p>
+                    <p><strong>Tipo de Trabajo:</strong> {{ preorden.tipo_trabajo }}</p>
+                    <p><strong>Técnicos:</strong> 
+                        {% for tecnico in preorden.tecnicos.all %}
+                            {{ tecnico.get_nombre_completo }}{% if not forloop.last %}, {% endif %}
+                        {% endfor %}
+                    </p>
+                    <p><strong>Códigos de Error:</strong>
+                        {% if preorden.codigos_error.all %}
+                            {{ preorden.codigos_error.all|join:", " }}
+                        {% else %}
+                            Sin Códigos
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+
+            <!-- Programación de Servicio -->
+            <div class="card mb-4">
+                <div class="card-header bg-secondary text-white">
+                    <h5>Programación de Servicio</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Fecha Estimada de Atención:</strong> {{ preorden.fecha_estimada }}</p>
+                    <p><strong>Hora de Inicio Estimada:</strong> {{ preorden.hora_inicio_estimada }}</p>
+                    <p><strong>Hora de Fin Estimada:</strong> {{ preorden.hora_fin_estimada }}</p>
+                </div>
+            </div>
+
+            <!-- Estado del Equipo al Ingreso -->
+            <div class="card mb-4">
+                <div class="card-header bg-secondary text-white">
+                    <h5>Estado del Equipo al Ingreso</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>¿Trae Llave?:</strong> {{ preorden.trae_llave|yesno:"Sí,No" }}</p>
+                    <p><strong>Estado de la Cabina:</strong> {{ preorden.estado_cabina }}</p>
+                    <p><strong>Estado de Neumáticos/Tren Rodante:</strong> {{ preorden.estado_neumaticos_tren }}</p>
+                    <p><strong>Estado de los Vidrios:</strong> {{ preorden.estado_vidrios }}</p>
+                    <p><strong>Combustible al Ingreso (%):</strong> {{ preorden.combustible_ingreso }}</p>
+                </div>
+            </div>
+
+            <!-- Imágenes de Evidencia -->
+            <div class="mt-4">
+                <h5>Imágenes de Evidencia</h5>
+                {% if preorden.evidencias.exists %}
+                    <ul>
+                        {% for evidencia in preorden.evidencias.all %}
+                            <li><a href="{{ evidencia.imagen.url }}" target="_blank">Imagen {{ forloop.counter }}</a></li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p>No hay imágenes de evidencia guardadas.</p>
+                {% endif %}
+            </div>
+
+
+            <!-- Firma del Cliente -->
+            <div class="card mb-4">
+                <div class="card-header bg-secondary text-white">
+                    <h5>Firma del Cliente</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Aclaración:</strong> {{ preorden.nombre_cliente }}</p>
+                    {% if preorden.firma_cliente %}
+                        <img src="{{ preorden.firma_cliente.url }}" alt="Firma del Cliente" style="border:1px solid #000; width:300px;">
+                    {% else %}
+                        <p>No se ha registrado la firma del cliente.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Botón de Regreso -->
+            <div class="text-end mt-3">
+                <a href="{% url 'gestionDeTaller:lista_preordenes' %}" class="btn btn-secondary">Volver a la Lista de Preórdenes</a>
+            </div>
+        </div>
+    </div>
+</main>
+{% endblock %}

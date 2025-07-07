@@ -1,0 +1,247 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load crm_filters %}
+
+{% block title %}Embudo de Ventas - CRM{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0">
+                <i class="fas fa-funnel-dollar text-primary me-2"></i>
+                Embudo de Ventas
+            </h1>
+            <p class="text-muted">Gestión de oportunidades y seguimiento de ventas</p>
+        </div>
+        <div>
+            <a href="{% url 'crm:crear_embudo' %}" class="btn btn-primary">
+                <i class="fas fa-plus me-2"></i>Nueva Oportunidad
+            </a>
+        </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-3">
+                    <label for="campana" class="form-label">Campaña</label>
+                    <select name="campana" id="campana" class="form-select">
+                        <option value="">Todas las campañas</option>
+                        {% for campana in campanas %}
+                        <option value="{{ campana.id }}" {% if campana_filtro == campana.id|stringformat:"s" %}selected{% endif %}>
+                            {{ campana.nombre }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label for="etapa" class="form-label">Etapa</label>
+                    <select name="etapa" id="etapa" class="form-select">
+                        <option value="">Todas las etapas</option>
+                        <option value="CONTACTO_INICIAL" {% if etapa_filtro == 'CONTACTO_INICIAL' %}selected{% endif %}>Contacto Inicial</option>
+                        <option value="CALIFICACION" {% if etapa_filtro == 'CALIFICACION' %}selected{% endif %}>Calificación</option>
+                        <option value="PROPUESTA" {% if etapa_filtro == 'PROPUESTA' %}selected{% endif %}>Propuesta</option>
+                        <option value="NEGOCIACION" {% if etapa_filtro == 'NEGOCIACION' %}selected{% endif %}>Negociación</option>
+                        <option value="CIERRE" {% if etapa_filtro == 'CIERRE' %}selected{% endif %}>Cierre</option>
+                        <option value="PERDIDO" {% if etapa_filtro == 'PERDIDO' %}selected{% endif %}>Perdido</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label for="origen" class="form-label">Origen</label>
+                    <select name="origen" id="origen" class="form-select">
+                        <option value="">Todos los orígenes</option>
+                        <option value="REFERIDO" {% if origen_filtro == 'REFERIDO' %}selected{% endif %}>Referido</option>
+                        <option value="WEB" {% if origen_filtro == 'WEB' %}selected{% endif %}>Web</option>
+                        <option value="REDES_SOCIALES" {% if origen_filtro == 'REDES_SOCIALES' %}selected{% endif %}>Redes Sociales</option>
+                        <option value="EVENTO" {% if origen_filtro == 'EVENTO' %}selected{% endif %}>Evento</option>
+                        <option value="COLD_CALL" {% if origen_filtro == 'COLD_CALL' %}selected{% endif %}>Cold Call</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="sucursal" class="form-label">Sucursal</label>
+                    <select name="sucursal" id="sucursal" class="form-select">
+                        <option value="">Todas las sucursales</option>
+                        {% for sucursal in sucursales %}
+                        <option value="{{ sucursal.id }}" {% if sucursal_filtro == sucursal.id|stringformat:"s" %}selected{% endif %}>
+                            {{ sucursal.nombre }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="submit" class="btn btn-outline-primary me-2">
+                        <i class="fas fa-filter me-1"></i>Filtrar
+                    </button>
+                    <a href="{% url 'crm:embudo_ventas' %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-times me-1"></i>Limpiar
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Estadísticas por Etapa -->
+    <div class="row mb-4">
+        {% for etapa in etapas %}
+        {% with stats=estadisticas_etapas|get_item:etapa %}
+        <div class="col-md-2">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <h6 class="card-title text-muted mb-2">{{ etapa|title }}</h6>
+                    <h3 class="text-primary mb-1">{{ stats.cantidad }}</h3>
+                    <p class="text-muted small mb-1">${{ stats.valor_total|floatformat:0 }}</p>
+                    <div class="progress" style="height: 4px;">
+                        <div class="progress-bar bg-primary" style="width: {{ stats.porcentaje_conversion|floatformat:1 }}%"></div>
+                    </div>
+                    <small class="text-muted">{{ stats.porcentaje_conversion|floatformat:1 }}% conversión</small>
+                </div>
+            </div>
+        </div>
+        {% endwith %}
+        {% endfor %}
+    </div>
+
+    <!-- Lista de Oportunidades -->
+    <div class="card">
+        <div class="card-header">
+            <h5 class="card-title mb-0">
+                <i class="fas fa-list me-2"></i>
+                Oportunidades ({{ page_obj.paginator.count }})
+            </h5>
+        </div>
+        <div class="card-body p-0">
+            {% if page_obj %}
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Cliente</th>
+                            <th>Etapa</th>
+                            <th>Valor Estimado</th>
+                            <th>Probabilidad</th>
+                            <th>Origen</th>
+                            <th>Campaña</th>
+                            <th>Fecha Ingreso</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for embudo in page_obj %}
+                        <tr>
+                            <td>
+                                <div>
+                                    <strong>{{ embudo.cliente.razon_social }}</strong>
+                                    <br>
+                                    <small class="text-muted">{{ embudo.cliente.sucursal.nombre }}</small>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="badge bg-{{ embudo.etapa|etapa_color }}">
+                                    {{ embudo.get_etapa_display }}
+                                </span>
+                            </td>
+                            <td>
+                                {% if embudo.valor_estimado %}
+                                <strong>${{ embudo.valor_estimado|floatformat:0 }}</strong>
+                                {% else %}
+                                <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="progress me-2" style="width: 60px; height: 6px;">
+                                        <div class="progress-bar bg-success" style="width: {{ embudo.probabilidad_cierre }}%"></div>
+                                    </div>
+                                    <small>{{ embudo.probabilidad_cierre }}%</small>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="badge bg-secondary">{{ embudo.get_origen_display }}</span>
+                            </td>
+                            <td>
+                                {% if embudo.campana %}
+                                <small>{{ embudo.campana.nombre }}</small>
+                                {% else %}
+                                <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <small>{{ embudo.fecha_ingreso|date:"d/m/Y" }}</small>
+                            </td>
+                            <td>
+                                <a href="{% url 'crm:detalle_embudo' embudo.id %}" class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-funnel-dollar fa-3x text-muted mb-3"></i>
+                <h5 class="text-muted">No hay oportunidades registradas</h5>
+                <p class="text-muted">Comienza creando tu primera oportunidad de venta</p>
+                <a href="{% url 'crm:crear_embudo' %}" class="btn btn-primary">
+                    <i class="fas fa-plus me-2"></i>Crear Oportunidad
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Paginación -->
+    {% if page_obj.has_other_pages %}
+    <nav aria-label="Paginación de oportunidades" class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if campana_filtro %}&campana={{ campana_filtro }}{% endif %}{% if etapa_filtro %}&etapa={{ etapa_filtro }}{% endif %}{% if origen_filtro %}&origen={{ origen_filtro }}{% endif %}{% if sucursal_filtro %}&sucursal={{ sucursal_filtro }}{% endif %}">
+                    <i class="fas fa-chevron-left"></i>
+                </a>
+            </li>
+            {% endif %}
+
+            {% for num in page_obj.paginator.page_range %}
+            {% if page_obj.number == num %}
+            <li class="page-item active">
+                <span class="page-link">{{ num }}</span>
+            </li>
+            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ num }}{% if campana_filtro %}&campana={{ campana_filtro }}{% endif %}{% if etapa_filtro %}&etapa={{ etapa_filtro }}{% endif %}{% if origen_filtro %}&origen={{ origen_filtro }}{% endif %}{% if sucursal_filtro %}&sucursal={{ sucursal_filtro }}{% endif %}">{{ num }}</a>
+            </li>
+            {% endif %}
+            {% endfor %}
+
+            {% if page_obj.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if campana_filtro %}&campana={{ campana_filtro }}{% endif %}{% if etapa_filtro %}&etapa={{ etapa_filtro }}{% endif %}{% if origen_filtro %}&origen={{ origen_filtro }}{% endif %}{% if sucursal_filtro %}&sucursal={{ sucursal_filtro }}{% endif %}">
+                    <i class="fas fa-chevron-right"></i>
+                </a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Auto-submit form when filters change
+document.addEventListener('DOMContentLoaded', function() {
+    const filterSelects = document.querySelectorAll('select[name="campana"], select[name="etapa"], select[name="origen"], select[name="sucursal"]');
+    
+    filterSelects.forEach(select => {
+        select.addEventListener('change', function() {
+            this.closest('form').submit();
+        });
+    });
+});
+</script>
+{% endblock %} 

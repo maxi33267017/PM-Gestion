@@ -1,0 +1,220 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2>
+                <i class="bi bi-chat-dots me-2"></i>Buzón de Sugerencias
+            </h2>
+            <p class="text-muted">Sistema anónimo para sugerir mejoras al taller</p>
+        </div>
+        <a href="{% url 'crm:panel_admin' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Volver al Panel Admin
+        </a>
+    </div>
+
+    <div class="row">
+        <!-- Formulario de Sugerencia -->
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-plus-circle me-2"></i>Enviar Nueva Sugerencia
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="row">
+                            <div class="col-md-8 mb-3">
+                                <label for="titulo" class="form-label">Título de la Sugerencia *</label>
+                                <input type="text" class="form-control" id="titulo" name="titulo" required 
+                                       placeholder="Ej: Mejorar el sistema de ventilación del taller">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="categoria" class="form-label">Categoría *</label>
+                                <select class="form-select" id="categoria" name="categoria" required>
+                                    <option value="">Seleccionar categoría</option>
+                                    <option value="PROCESOS">Procesos de Trabajo</option>
+                                    <option value="EQUIPOS">Equipos y Herramientas</option>
+                                    <option value="SEGURIDAD">Seguridad Laboral</option>
+                                    <option value="CALIDAD">Control de Calidad</option>
+                                    <option value="MANTENIMIENTO">Mantenimiento Preventivo</option>
+                                    <option value="ATENCION_CLIENTE">Atención al Cliente</option>
+                                    <option value="FORMACION">Formación y Capacitación</option>
+                                    <option value="TECNOLOGIA">Tecnología y Sistemas</option>
+                                    <option value="AMBIENTE">Ambiente de Trabajo</option>
+                                    <option value="OTROS">Otros</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="descripcion" class="form-label">Descripción Detallada *</label>
+                            <textarea class="form-control" id="descripcion" name="descripcion" rows="5" required
+                                      placeholder="Describe detalladamente tu sugerencia, incluyendo el problema actual y la solución propuesta..."></textarea>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="impacto_estimado" class="form-label">Impacto Estimado</label>
+                                <select class="form-select" id="impacto_estimado" name="impacto_estimado">
+                                    <option value="BAJO">Bajo</option>
+                                    <option value="MEDIO" selected>Medio</option>
+                                    <option value="ALTO">Alto</option>
+                                    <option value="CRITICO">Crítico</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="prioridad" class="form-label">Prioridad</label>
+                                <select class="form-select" id="prioridad" name="prioridad">
+                                    <option value="BAJA">Baja</option>
+                                    <option value="MEDIA" selected>Media</option>
+                                    <option value="ALTA">Alta</option>
+                                    <option value="URGENTE">Urgente</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="beneficios_esperados" class="form-label">Beneficios Esperados</label>
+                            <textarea class="form-control" id="beneficios_esperados" name="beneficios_esperados" rows="3"
+                                      placeholder="¿Qué beneficios se esperan de implementar esta sugerencia?"></textarea>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="recursos_necesarios" class="form-label">Recursos Necesarios</label>
+                                <textarea class="form-control" id="recursos_necesarios" name="recursos_necesarios" rows="3"
+                                          placeholder="¿Qué recursos se necesitarían para implementar esta mejora?"></textarea>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="tiempo_estimado_implementacion" class="form-label">Tiempo Estimado de Implementación</label>
+                                <input type="text" class="form-control" id="tiempo_estimado_implementacion" name="tiempo_estimado_implementacion"
+                                       placeholder="Ej: 2 semanas, 1 mes, etc.">
+                            </div>
+                        </div>
+                        
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle me-2"></i>
+                            <strong>Importante:</strong> Tu sugerencia será enviada de forma anónima. La gerencia revisará todas las sugerencias y responderá con las acciones específicas que se tomarán.
+                        </div>
+                        
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'crm:panel_admin' %}" class="btn btn-outline-secondary">
+                                <i class="bi bi-x-circle me-2"></i>Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-send me-2"></i>Enviar Sugerencia
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Sugerencias Recientes -->
+        <div class="col-md-4">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-check-circle me-2"></i>Sugerencias Implementadas
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if sugerencias_recientes %}
+                        {% for sugerencia in sugerencias_recientes %}
+                        <div class="border-bottom pb-3 mb-3">
+                            <h6 class="mb-1">{{ sugerencia.titulo }}</h6>
+                            <p class="text-muted small mb-2">{{ sugerencia.descripcion|truncatewords:20 }}</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="badge bg-success">{{ sugerencia.get_estado_display }}</span>
+                                <small class="text-muted">{{ sugerencia.fecha_sugerencia|date:"d/m/Y" }}</small>
+                            </div>
+                        </div>
+                        {% endfor %}
+                        <div class="text-center">
+                            <small class="text-muted">Estas son las sugerencias que ya han sido aprobadas e implementadas</small>
+                        </div>
+                    {% else %}
+                        <div class="text-center text-muted">
+                            <i class="bi bi-inbox display-4"></i>
+                            <p class="mt-2">Aún no hay sugerencias implementadas</p>
+                            <small>¡Sé el primero en hacer una sugerencia!</small>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Información del Sistema -->
+            <div class="card shadow-sm mt-3">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="bi bi-info-circle me-2"></i>¿Cómo funciona?
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled small">
+                        <li class="mb-2">
+                            <i class="bi bi-1-circle text-primary me-2"></i>
+                            Envía tu sugerencia de forma anónima
+                        </li>
+                        <li class="mb-2">
+                            <i class="bi bi-2-circle text-primary me-2"></i>
+                            La gerencia revisa todas las propuestas
+                        </li>
+                        <li class="mb-2">
+                            <i class="bi bi-3-circle text-primary me-2"></i>
+                            Se informa la decisión y acciones específicas
+                        </li>
+                        <li class="mb-2">
+                            <i class="bi bi-4-circle text-primary me-2"></i>
+                            Se implementan las mejoras aprobadas
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Validación del formulario
+document.querySelector('form').addEventListener('submit', function(e) {
+    const titulo = document.getElementById('titulo').value.trim();
+    const descripcion = document.getElementById('descripcion').value.trim();
+    const categoria = document.getElementById('categoria').value;
+    
+    if (!titulo) {
+        e.preventDefault();
+        alert('Por favor ingresa el título de la sugerencia.');
+        document.getElementById('titulo').focus();
+        return;
+    }
+    
+    if (!descripcion) {
+        e.preventDefault();
+        alert('Por favor ingresa la descripción de la sugerencia.');
+        document.getElementById('descripcion').focus();
+        return;
+    }
+    
+    if (!categoria) {
+        e.preventDefault();
+        alert('Por favor selecciona una categoría.');
+        document.getElementById('categoria').focus();
+        return;
+    }
+    
+    if (descripcion.length < 50) {
+        e.preventDefault();
+        alert('La descripción debe tener al menos 50 caracteres para ser más detallada.');
+        document.getElementById('descripcion').focus();
+        return;
+    }
+});
+</script>
+{% endblock %} 

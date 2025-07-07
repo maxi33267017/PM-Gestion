@@ -1,0 +1,152 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2>
+                <i class="bi bi-chat-dots me-2"></i>Buzón de Sugerencias
+            </h2>
+            <p class="text-muted">Envía tus sugerencias para mejorar el taller</p>
+        </div>
+        <a href="{% url 'gestionDeTaller:gestion_de_taller' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-2"></i>Volver al Taller
+        </a>
+    </div>
+
+    <!-- Estadísticas Rápidas -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card bg-primary text-white">
+                <div class="card-body text-center">
+                    <h6 class="card-title">
+                        <i class="bi bi-chat-dots me-2"></i>Total Sugerencias
+                    </h6>
+                    <h3 class="mb-0">{{ total_sugerencias }}</h3>
+                    <small>En el sistema</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-warning text-dark">
+                <div class="card-body text-center">
+                    <h6 class="card-title">
+                        <i class="bi bi-clock me-2"></i>Pendientes
+                    </h6>
+                    <h3 class="mb-0">{{ sugerencias_pendientes }}</h3>
+                    <small>Por revisar</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-success text-white">
+                <div class="card-body text-center">
+                    <h6 class="card-title">
+                        <i class="bi bi-check-circle me-2"></i>Implementadas
+                    </h6>
+                    <h3 class="mb-0">{{ sugerencias_implementadas }}</h3>
+                    <small>Mejoras aplicadas</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Buzón de Sugerencias -->
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-gradient-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-chat-dots me-2"></i>Envía tu Sugerencia
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="text-center mb-4">
+                                <i class="bi bi-lightbulb text-warning" style="font-size: 4rem;"></i>
+                                <h5 class="mt-3">¿Tienes una idea?</h5>
+                                <p class="text-muted">
+                                    Tu opinión es valiosa para mejorar nuestros procesos y servicios.
+                                </p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="d-grid gap-3">
+                                <a href="{% url 'crm:buzon_sugerencias' %}" class="btn btn-primary btn-lg">
+                                    <i class="fas fa-inbox me-2"></i>Enviar Sugerencia
+                                </a>
+                                <div class="text-center">
+                                    <small class="text-muted">
+                                        <i class="bi bi-shield-check me-1"></i>
+                                        Sistema anónimo y confidencial
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Información Adicional -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card bg-light">
+                <div class="card-body">
+                    <h6 class="card-title">
+                        <i class="bi bi-info-circle me-2"></i>¿Cómo funciona?
+                    </h6>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="text-center">
+                                <i class="bi bi-pencil-square text-primary mb-2" style="font-size: 2rem;"></i>
+                                <h6>1. Escribe tu sugerencia</h6>
+                                <p class="text-muted small">Describe tu idea de mejora de manera clara y específica.</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="text-center">
+                                <i class="bi bi-eye text-info mb-2" style="font-size: 2rem;"></i>
+                                <h6>2. Revisión del equipo</h6>
+                                <p class="text-muted small">Nuestro equipo evaluará tu sugerencia y te dará seguimiento.</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="text-center">
+                                <i class="bi bi-check-circle text-success mb-2" style="font-size: 2rem;"></i>
+                                <h6>3. Implementación</h6>
+                                <p class="text-muted small">Las mejores ideas se implementan para mejorar el taller.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .bg-gradient-primary {
+        background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+    }
+    
+    .card {
+        border: none;
+        border-radius: 15px;
+        transition: transform 0.2s ease-in-out;
+    }
+    
+    .card:hover {
+        transform: translateY(-2px);
+    }
+    
+    .btn-lg {
+        padding: 1rem 2rem;
+        font-size: 1.1rem;
+        border-radius: 10px;
+    }
+</style>
+{% endblock %} 

@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<main class="container mt-5">
+    <div class="card">
+        <div class="card-header bg-dark text-white">
+            <h3>Checklist de Salida al Campo para el Servicio #{{ servicio.id }}</h3>
+        </div>
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+                {{ form.non_field_errors }}
+                <div class="row">
+                    <div class="col-md-6 mb-3">{{ form.tipo_equipo.label_tag }}{{ form.tipo_equipo }}</div>
+                    <div class="col-md-6 mb-3">{{ form.cliente.label_tag }}{{ form.cliente }}</div>
+                </div>
+
+                <h5>Vehículo para servicio</h5>
+                <div class="row">
+                    <div class="col-md-4 mb-3">{{ form.nivel_aceite_motor.label_tag }}{{ form.nivel_aceite_motor }}</div>
+                    <div class="col-md-4 mb-3">{{ form.nivel_refrigerante.label_tag }}{{ form.nivel_refrigerante }}</div>
+                    <div class="col-md-4 mb-3">{{ form.nivel_combustible.label_tag }}{{ form.nivel_combustible }}</div>
+                    <div class="col-md-4 mb-3">{{ form.estado_neumaticos.label_tag }}{{ form.estado_neumaticos }}</div>
+                    <div class="col-md-4 mb-3">{{ form.luces.label_tag }}{{ form.luces }}</div>
+                    <div class="col-md-4 mb-3">{{ form.carroceria.label_tag }}{{ form.carroceria }}</div>
+                </div>
+
+                <h5>Checklist de ejecución de servicio</h5>
+                <div class="row">
+                    <div class="col-md-4 mb-3">{{ form.preorden.label_tag }}{{ form.preorden }}</div>
+                    <div class="col-md-4 mb-3">{{ form.orden_servicio.label_tag }}{{ form.orden_servicio }}</div>
+                    <div class="col-md-4 mb-3">{{ form.herramientas_basicas.label_tag }}{{ form.herramientas_basicas }}</div>
+                    <div class="col-md-4 mb-3">{{ form.herramientas_especiales.label_tag }}{{ form.herramientas_especiales }}</div>
+                    <div class="col-md-4 mb-3">{{ form.repuestos.label_tag }}{{ form.repuestos }}</div>
+                    <div class="col-md-4 mb-3">{{ form.cobertores.label_tag }}{{ form.cobertores }}</div>
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    {{ form.tiempo_preparacion.label_tag }}{{ form.tiempo_preparacion }}
+                </div>
+
+                <div class="d-flex justify-content-end mt-4">
+                    <button type="submit" class="btn btn-dark">Guardar Checklist</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</main>
+{% endblock %}

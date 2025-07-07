@@ -1,0 +1,892 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<script src="{% static 'js/clientes.js' %}"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
+{{ form.media.css }}
+
+<style>
+    /* Variables CSS para consistencia */
+    :root {
+        --primary-gradient: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        --secondary-gradient: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        --success-gradient: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        --warning-gradient: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        --danger-gradient: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+        --dark-gradient: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        --light-gradient: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        --card-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        --hover-shadow: 0 15px 40px rgba(0,0,0,0.15);
+        --border-radius: 20px;
+        --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Header mejorado */
+    .cliente-header {
+        background: var(--dark-gradient);
+        color: white;
+        padding: 3rem 2rem;
+        border-radius: var(--border-radius);
+        margin-bottom: 2.5rem;
+        box-shadow: var(--card-shadow);
+        position: relative;
+        overflow: hidden;
+        text-align: center;
+    }
+    
+    .cliente-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="dots" width="20" height="20" patternUnits="userSpaceOnUse"><circle cx="10" cy="10" r="1" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23dots)"/></svg>');
+        pointer-events: none;
+    }
+    
+    .cliente-header h1 {
+        margin: 0;
+        font-weight: 800;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        font-size: 2.5rem;
+        position: relative;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 1rem;
+    }
+    
+    .cliente-header .subtitle {
+        font-size: 1.1rem;
+        opacity: 0.9;
+        margin-top: 1rem;
+        position: relative;
+        z-index: 1;
+    }
+
+    /* Tarjeta de información del cliente */
+    .cliente-info-card {
+        background: white;
+        border-radius: var(--border-radius);
+        box-shadow: var(--card-shadow);
+        border: 1px solid #e9ecef;
+        overflow: hidden;
+        transition: var(--transition);
+    }
+    
+    .cliente-info-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--hover-shadow);
+    }
+    
+    .cliente-info-header {
+        background: var(--dark-gradient);
+        color: white;
+        padding: 1.5rem;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .cliente-info-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="header-dots" width="20" height="20" patternUnits="userSpaceOnUse"><circle cx="10" cy="10" r="1" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23header-dots)"/></svg>');
+        pointer-events: none;
+    }
+    
+    .cliente-info-header h3 {
+        margin: 0;
+        font-weight: 700;
+        font-size: 1.5rem;
+        position: relative;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        gap: 0.8rem;
+    }
+    
+    .cliente-info-body {
+        padding: 2rem;
+    }
+    
+    .info-item {
+        display: flex;
+        align-items: center;
+        margin-bottom: 1rem;
+        padding: 0.8rem;
+        border-radius: 12px;
+        background: rgba(44, 62, 80, 0.05);
+        transition: var(--transition);
+    }
+    
+    .info-item:hover {
+        background: rgba(44, 62, 80, 0.1);
+        transform: translateX(5px);
+    }
+    
+    .info-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 1rem;
+        background: var(--dark-gradient);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    
+    .info-icon i {
+        font-size: 1rem;
+        color: white;
+    }
+    
+    .info-content {
+        flex: 1;
+    }
+    
+    .info-label {
+        font-size: 0.8rem;
+        color: #6c757d;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 0.2rem;
+    }
+    
+    .info-value {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #2c3e50;
+    }
+
+    /* Secciones de contenido */
+    .section-container {
+        background: white;
+        border-radius: var(--border-radius);
+        box-shadow: var(--card-shadow);
+        overflow: hidden;
+        border: 1px solid #e9ecef;
+        margin-bottom: 2rem;
+    }
+    
+    .section-header {
+        background: var(--dark-gradient);
+        color: white;
+        padding: 1.5rem 2rem;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .section-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="section-dots" width="20" height="20" patternUnits="userSpaceOnUse"><circle cx="10" cy="10" r="1" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23section-dots)"/></svg>');
+        pointer-events: none;
+    }
+    
+    .section-header h2 {
+        margin: 0;
+        font-weight: 700;
+        font-size: 1.3rem;
+        position: relative;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        gap: 0.8rem;
+    }
+
+    /* Botones mejorados */
+    .btn-add-item {
+        background: var(--dark-gradient);
+        color: white;
+        border: none;
+        border-radius: 25px;
+        padding: 0.8rem 1.5rem;
+        font-weight: 600;
+        transition: var(--transition);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-size: 0.9rem;
+    }
+    
+    .btn-add-item:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+        color: white;
+        background: var(--dark-gradient);
+    }
+
+    /* Mejoras en las tablas */
+    .table-responsive {
+        border-radius: 0 0 var(--border-radius) var(--border-radius);
+        overflow: hidden;
+    }
+    
+    .table {
+        margin-bottom: 0;
+        border: none;
+        border-radius: 0 0 var(--border-radius) var(--border-radius);
+        overflow: hidden;
+    }
+    
+    .table th {
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 1.2rem 1rem;
+        border: none;
+        font-size: 0.85rem;
+        background: var(--dark-gradient) !important;
+        color: white !important;
+    }
+    
+    .table td {
+        padding: 1rem;
+        vertical-align: middle;
+        border: none;
+        border-bottom: 1px solid #f0f0f0;
+        font-weight: 500;
+    }
+    
+    .table tbody tr {
+        transition: var(--transition);
+        cursor: pointer;
+    }
+    
+    .table tbody tr:hover {
+        background: rgba(44, 62, 80, 0.05);
+        transform: scale(1.01);
+    }
+    
+    .table tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    /* Efectos especiales para filas de equipos */
+    .fila-equipo {
+        cursor: pointer;
+        transition: var(--transition);
+    }
+    
+    .fila-equipo:hover {
+        background: rgba(44, 62, 80, 0.05);
+        transform: scale(1.01);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+
+    .fila-equipo td {
+        position: relative;
+    }
+
+    .fila-equipo td:first-child::before {
+        content: "→";
+        position: absolute;
+        left: -20px;
+        color: #2c3e50;
+        opacity: 0;
+        transition: var(--transition);
+        font-weight: bold;
+    }
+
+    .fila-equipo:hover td:first-child::before {
+        opacity: 1;
+        transform: translateX(5px);
+    }
+
+    /* Animaciones */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .cliente-header, .cliente-info-card, .section-container {
+        animation: fadeInUp 0.6s ease-out;
+    }
+    
+    .cliente-info-card { animation-delay: 0.1s; }
+    .section-container:nth-child(1) { animation-delay: 0.2s; }
+    .section-container:nth-child(2) { animation-delay: 0.3s; }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .cliente-header {
+            padding: 2rem 1.5rem;
+        }
+        
+        .cliente-header h1 {
+            font-size: 2rem;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .cliente-info-body {
+            padding: 1.5rem;
+        }
+        
+        .info-item {
+            flex-direction: column;
+            text-align: center;
+            gap: 0.5rem;
+        }
+        
+        .info-icon {
+            margin-right: 0;
+            margin-bottom: 0.5rem;
+        }
+        
+        .table th, .table td {
+            padding: 0.8rem 0.5rem;
+            font-size: 0.9rem;
+        }
+    }
+
+    /* Estilos para modales mejorados */
+    .modal-content {
+        border-radius: var(--border-radius);
+        border: none;
+        box-shadow: var(--hover-shadow);
+        overflow: hidden;
+        max-height: 90vh;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .modal-header {
+        background: var(--dark-gradient);
+        color: white;
+        border-bottom: none;
+        padding: 1.5rem 2rem;
+        position: relative;
+        overflow: hidden;
+        flex-shrink: 0;
+    }
+    
+    .modal-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="modal-dots" width="20" height="20" patternUnits="userSpaceOnUse"><circle cx="10" cy="10" r="1" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23modal-dots)"/></svg>');
+        pointer-events: none;
+    }
+    
+    .modal-title {
+        font-weight: 700;
+        font-size: 1.3rem;
+        position: relative;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        gap: 0.8rem;
+        margin: 0;
+    }
+    
+    .btn-close {
+        filter: invert(1);
+        opacity: 0.8;
+        transition: var(--transition);
+        position: relative;
+        z-index: 1;
+    }
+    
+    .btn-close:hover {
+        opacity: 1;
+        transform: scale(1.1);
+    }
+    
+    .modal-body {
+        padding: 2rem;
+        background: #f8f9fa;
+        flex: 1;
+        overflow-y: auto;
+        max-height: calc(90vh - 140px);
+    }
+    
+    .modal-footer {
+        background: white;
+        border-top: 1px solid #e9ecef;
+        padding: 1.5rem 2rem;
+        border-radius: 0 0 var(--border-radius) var(--border-radius);
+        flex-shrink: 0;
+    }
+
+    /* Estilos para formularios en modales */
+    .modal-body form {
+        background: white;
+        padding: 2rem;
+        border-radius: 15px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+    }
+    
+    .modal-body .form-group {
+        margin-bottom: 1.5rem;
+    }
+    
+    .modal-body label {
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 0.5rem;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .modal-body input,
+    .modal-body select,
+    .modal-body textarea {
+        border-radius: 12px;
+        border: 2px solid #e9ecef;
+        padding: 0.8rem 1rem;
+        transition: var(--transition);
+        font-size: 0.95rem;
+        background: #f8f9fa;
+    }
+    
+    .modal-body input:focus,
+    .modal-body select:focus,
+    .modal-body textarea:focus {
+        border-color: #2c3e50;
+        box-shadow: 0 0 0 0.2rem rgba(44, 62, 80, 0.25);
+        outline: none;
+        background: white;
+    }
+    
+    .modal-body .select2-container--default .select2-selection--single {
+        border-radius: 12px;
+        border: 2px solid #e9ecef;
+        padding: 0.6rem 1rem;
+        transition: var(--transition);
+        background: #f8f9fa;
+        height: auto;
+    }
+    
+    .modal-body .select2-container--default .select2-selection--single:focus {
+        border-color: #2c3e50;
+        box-shadow: 0 0 0 0.2rem rgba(44, 62, 80, 0.25);
+        background: white;
+    }
+    
+    .modal-body .select2-container--default .select2-selection--single .select2-selection__rendered {
+        color: #2c3e50;
+        font-size: 0.95rem;
+        padding: 0;
+    }
+    
+    .modal-body .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 100%;
+        top: 0;
+    }
+
+    /* Botones de modal mejorados */
+    .modal-footer .btn {
+        border-radius: 25px;
+        padding: 0.8rem 1.5rem;
+        font-weight: 600;
+        transition: var(--transition);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-size: 0.9rem;
+        border: none;
+    }
+    
+    .modal-footer .btn-secondary {
+        background: #6c757d;
+        color: white;
+        box-shadow: 0 4px 15px rgba(108, 117, 125, 0.3);
+    }
+    
+    .modal-footer .btn-secondary:hover {
+        background: #5a6268;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(108, 117, 125, 0.4);
+        color: white;
+    }
+    
+    .modal-footer .btn-primary {
+        background: var(--dark-gradient);
+        color: white;
+        box-shadow: 0 4px 15px rgba(44, 62, 80, 0.3);
+    }
+    
+    .modal-footer .btn-primary:hover {
+        background: var(--dark-gradient);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(44, 62, 80, 0.4);
+        color: white;
+    }
+
+    /* Alertas mejoradas */
+    .alert {
+        border-radius: 15px;
+        border: none;
+        padding: 1rem 1.5rem;
+        margin-bottom: 1.5rem;
+        font-weight: 500;
+    }
+    
+    .alert-danger {
+        background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+        color: white;
+        box-shadow: 0 4px 15px rgba(231, 76, 60, 0.3);
+    }
+
+    /* Animación para modales */
+    .modal.fade .modal-dialog {
+        transition: transform 0.3s ease-out;
+        transform: translate(0, -50px);
+    }
+    
+    .modal.show .modal-dialog {
+        transform: none;
+    }
+
+    /* Mejoras adicionales para scroll en modales */
+    .modal-body::-webkit-scrollbar {
+        width: 8px;
+    }
+    
+    .modal-body::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 10px;
+    }
+    
+    .modal-body::-webkit-scrollbar-thumb {
+        background: var(--dark-gradient);
+        border-radius: 10px;
+    }
+    
+    .modal-body::-webkit-scrollbar-thumb:hover {
+        background: linear-gradient(135deg, #34495e 0%, #2c3e50 100%);
+    }
+    
+    /* Responsive para modales */
+    @media (max-width: 768px) {
+        .modal-content {
+            max-height: 95vh;
+            margin: 1rem;
+        }
+        
+        .modal-body {
+            max-height: calc(95vh - 120px);
+            padding: 1.5rem;
+        }
+        
+        .modal-header,
+        .modal-footer {
+            padding: 1rem 1.5rem;
+        }
+        
+        .modal-title {
+            font-size: 1.1rem;
+        }
+        
+        .modal-body form {
+            padding: 1.5rem;
+        }
+        
+        .modal-body input,
+        .modal-body select,
+        .modal-body textarea {
+            padding: 0.7rem 0.8rem;
+            font-size: 0.9rem;
+        }
+        
+        .modal-footer .btn {
+            padding: 0.7rem 1.2rem;
+            font-size: 0.85rem;
+        }
+    }
+</style>
+
+<main class="container-fluid mt-4">
+    {{ form.media.js }}
+    
+    <!-- Header mejorado -->
+    <div class="cliente-header">
+        <h1>
+            <i class="fas fa-user-tie"></i>
+            {{ cliente.razon_social }}
+        </h1>
+        <div class="subtitle">
+            Detalles completos del cliente y su información
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Tarjeta de Datos del Cliente -->
+        <div class="col-lg-5 mb-4">
+            <div class="cliente-info-card">
+                <div class="cliente-info-header">
+                    <h3>
+                        <i class="fas fa-info-circle"></i>
+                        Información del Cliente
+                    </h3>
+                </div>
+                <div class="cliente-info-body">
+                    <div class="info-item">
+                        <div class="info-icon">
+                            <i class="fas fa-tag"></i>
+                        </div>
+                        <div class="info-content">
+                            <div class="info-label">Tipo</div>
+                            <div class="info-value">{{ cliente.tipo }}</div>
+                        </div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <div class="info-icon">
+                            <i class="fas fa-id-card"></i>
+                        </div>
+                        <div class="info-content">
+                            <div class="info-label">CUIT</div>
+                            <div class="info-value">{{ cliente.cuit }}</div>
+                        </div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <div class="info-icon">
+                            <i class="fas fa-envelope"></i>
+                        </div>
+                        <div class="info-content">
+                            <div class="info-label">Email</div>
+                            <div class="info-value">{{ cliente.email }}</div>
+                        </div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <div class="info-icon">
+                            <i class="fas fa-phone"></i>
+                        </div>
+                        <div class="info-content">
+                            <div class="info-label">Teléfono</div>
+                            <div class="info-value">{{ cliente.telefono }}</div>
+                        </div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <div class="info-icon">
+                            <i class="fas fa-map-marker-alt"></i>
+                        </div>
+                        <div class="info-content">
+                            <div class="info-label">Dirección</div>
+                            <div class="info-value">{{ cliente.direccion }}, {{ cliente.ciudad }}, {{ cliente.provincia }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sección de Contactos -->
+        <div class="col-lg-7 mb-4">
+            <div class="section-container">
+                <div class="section-header">
+                    <h2>
+                        <i class="fas fa-address-book"></i>
+                        Contactos
+                    </h2>
+                </div>
+                <div class="d-flex justify-content-end p-3">
+                    <button type="button" class="btn btn-add-item" data-bs-toggle="modal" data-bs-target="#addContactModal">
+                        <i class="bi bi-plus-lg me-2"></i> Agregar Contacto
+                    </button>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th><i class="fas fa-user me-2"></i>Nombre</th>
+                                <th><i class="fas fa-briefcase me-2"></i>Rol</th>
+                                <th><i class="fas fa-envelope me-2"></i>Email</th>
+                                <th><i class="fas fa-phone me-2"></i>Teléfono</th>
+                                <th><i class="fas fa-star me-2"></i>Principal</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for contacto in contactos %}
+                                <tr>
+                                    <td>{{ contacto.nombre }} {{ contacto.apellido }}</td>
+                                    <td>{{ contacto.get_rol_display }}</td>
+                                    <td>{{ contacto.email }}</td>
+                                    <td>{{ contacto.telefono_celular }}</td>
+                                    <td>
+                                        {% if contacto.es_contacto_principal %}
+                                            <span class="badge bg-success">Sí</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">No</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="5" class="text-center text-muted py-4">
+                                        <i class="fas fa-info-circle me-2"></i>
+                                        No hay contactos registrados para este cliente.
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sección de Equipos -->
+        <div class="col-12">
+            <div class="section-container">
+                <div class="section-header">
+                    <h2>
+                        <i class="fas fa-cogs"></i>
+                        Equipos
+                    </h2>
+                </div>
+                <div class="d-flex justify-content-end p-3">
+                    <button type="button" class="btn btn-add-item" data-bs-toggle="modal" data-bs-target="#modalAgregarEquipo">
+                        <i class="bi bi-plus-lg me-2"></i> Agregar Equipo
+                    </button>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th><i class="fas fa-tag me-2"></i>Marca</th>
+                                <th><i class="fas fa-cog me-2"></i>Modelo</th>
+                                <th><i class="fas fa-barcode me-2"></i>Número de Serie</th>
+                                <th><i class="fas fa-engine me-2"></i>Modelo Motor</th>
+                                <th><i class="fas fa-microchip me-2"></i>Serie Motor</th>
+                                <th><i class="fas fa-calendar me-2"></i>Año de Fabricación</th>
+                                <th><i class="fas fa-shopping-cart me-2"></i>Fecha de Venta</th>
+                                <th><i class="fas fa-tachometer-alt me-2"></i>Último Horometro</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for equipo in equipos %}
+                                <tr class="fila-equipo" data-url="{% url 'detalle_equipo' cliente.id equipo.id %}">
+                                    <td>{{ equipo.modelo.marca }}</td>
+                                    <td>{{ equipo.modelo }}</td>
+                                    <td>{{ equipo.numero_serie }}</td>
+                                    <td>{{ equipo.modelo_motor }}</td>
+                                    <td>{{ equipo.numero_serie_motor }}</td>
+                                    <td>{{ equipo.año_fabricacion }}</td>
+                                    <td>{{ equipo.fecha_venta }}</td>
+                                    <td>{{ equipo.ultimo_horometro|default:"Sin registro" }}</td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="8" class="text-center text-muted py-4">
+                                        <i class="fas fa-info-circle me-2"></i>
+                                        No hay equipos registrados para este cliente.
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para agregar contacto -->
+    <div class="modal fade" id="addContactModal" tabindex="-1" aria-labelledby="addContactModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addContactModalLabel">
+                        <i class="fas fa-user-plus"></i>
+                        Agregar Contacto
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form method="POST" action="{% url 'detalle_cliente' cliente.id %}" class="row g-3">
+                        {% csrf_token %}
+                        {% if contacto_form.errors %}
+                            <div class="alert alert-danger">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                <strong>Por favor corrija los siguientes errores:</strong>
+                                {{ contacto_form.errors }}
+                            </div>
+                        {% endif %}
+                        {{ contacto_form.as_p }}
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                <i class="fas fa-times me-2"></i>Cancelar
+                            </button>
+                            <button type="submit" name="guardar_contacto" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i>Guardar Contacto
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para agregar equipo -->
+    <div class="modal fade" id="modalAgregarEquipo" tabindex="-1" aria-labelledby="modalAgregarEquipoLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalAgregarEquipoLabel">
+                        <i class="fas fa-cog"></i>
+                        Agregar Equipo
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form method="POST" action="{% url 'detalle_cliente' cliente.id %}" class="row g-3">
+                        {% csrf_token %}
+                        {{ equipo_form.as_p }}
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                <i class="fas fa-times me-2"></i>Cancelar
+                            </button>
+                            <button type="submit" name="guardar_equipo" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i>Guardar Equipo
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<script>
+    $(document).ready(function() {
+        $('#id_modelo, #id_modelo_motor').select2({
+            placeholder: "Buscar...",
+            width: '100%',
+            language: "es",
+            allowClear: true,
+            minimumInputLength: 2,
+            dropdownParent: $('#modalAgregarEquipo')
+        });
+        $('.fila-equipo').on('click', function() {
+            window.location.href = $(this).data('url');
+        });
+    });
+</script>
+{% endblock %}

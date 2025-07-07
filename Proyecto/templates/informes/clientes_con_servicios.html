@@ -1,0 +1,117 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-5">
+    <h1>Clientes y Servicios</h1>
+
+    <div class="mb-3">
+        <label for="filtro_periodo">Filtrar por:</label>
+        <select id="filtro_periodo" class="form-select" onchange="mostrarFiltros()">
+            <option value="historico" {% if filtro_periodo == 'historico' %}selected{% endif %}>Histórico</option>
+            <option value="mensual" {% if filtro_periodo == 'mensual' %}selected{% endif %}>Mensual</option>
+            <option value="anual" {% if filtro_periodo == 'anual' %}selected{% endif %}>Anual</option>
+        </select>
+    </div>
+
+    <div id="filtro_mensual" class="mb-3" style="display: {% if filtro_periodo == 'mensual' %}block{% else %}none{% endif %};">
+        <label for="mes">Seleccionar Mes:</label>
+        <input type="month" id="mes" class="form-control" value="{{ mes }}">
+    </div>
+
+    <div id="filtro_anual" class="mb-3" style="display: {% if filtro_periodo == 'anual' %}block{% else %}none{% endif %};">
+        <label for="anio">Seleccionar Año:</label>
+        <input type="number" id="anio" class="form-control" value="{{ anio }}" placeholder="Ejemplo: 2024">
+    </div>
+
+    <button id="aplicarFiltro" class="btn btn-primary" onclick="aplicarFiltro()">Aplicar Filtro</button>
+
+    <div class="table-responsive mt-4">
+        <table id="miTabla" class="table table-hover" style="width: 100%">
+            <thead class = 'table-header table-dark'>
+                <tr>
+                    <th>Cliente</th>
+                    <th>Cantidad de Servicios</th>
+                    <th>Total Mano de Obra</th>
+                    <th>Total Venta Repuestos</th>
+                    <th>Total Gastos Asistencia</th>
+                    <th>Servicios a Campo</th>
+                    <th>Servicios en Taller</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for data in clientes_data %}
+                <tr>
+                    <td>{{ data.cliente.razon_social }}</td>
+                    <td>{{ data.cantidad_servicios }}</td>
+                    <td>${{ data.total_mano_obra }}</td>
+                    <td>${{ data.total_venta_repuestos }}</td>
+                    <td>${{ data.total_gastos_asistencia }}</td>
+                    <td>{{ data.servicios_campo }}</td>
+                    <td>{{ data.servicios_taller }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="8">No hay datos disponibles para el período seleccionado.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Importar DataTables -->
+<link href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css" rel="stylesheet">
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+
+<script>
+$(document).ready(function() {
+    $('#miTabla').DataTable({
+        "language": {
+                "url": "",
+                "search": "Buscar:",
+                "lengthMenu": "Mostrar _MENU_ clientes",
+                "info": "Mostrando _START_ a _END_ de _TOTAL_ clientes",
+                "infoEmpty": "Mostrando 0 a 0 de 0 clientes",
+                "infoFiltered": "(filtrado de _MAX_ clientes en total)",
+                "paginate": {
+                    "first": "Primero",
+                    "previous": "Anterior",
+                    "next": "Siguiente",
+                    "last": "Último"
+                }
+            },
+            "scrollX": false,
+    });
+
+    mostrarFiltros();
+});
+
+function mostrarFiltros() {
+    var filtro = document.getElementById('filtro_periodo').value;
+    document.getElementById('filtro_mensual').style.display = (filtro === 'mensual') ? 'block' : 'none';
+    document.getElementById('filtro_anual').style.display = (filtro === 'anual') ? 'block' : 'none';
+}
+
+function aplicarFiltro() {
+    var filtro = document.getElementById('filtro_periodo').value;
+    var url = new URL(window.location.href);
+    url.searchParams.set('filtro_periodo', filtro);
+
+    if (filtro === 'mensual') {
+        var mes = document.getElementById('mes').value;
+        if (mes) {
+            url.searchParams.set('mes', mes);
+        }
+    }
+
+    if (filtro === 'anual') {
+        var anio = document.getElementById('anio').value;
+        if (anio) {
+            url.searchParams.set('anio', anio);
+        }
+    }
+
+    window.location.href = url.toString();
+}
+</script>
+{% endblock %}

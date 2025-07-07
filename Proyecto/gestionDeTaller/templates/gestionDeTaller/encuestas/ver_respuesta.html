@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Respuesta de Encuesta</h2>
+    <div class="card">
+        <div class="card-body">
+            <h5 class="card-title">Servicio #{{ servicio.id }}</h5>
+            <p class="card-text">
+                <strong>Cliente:</strong> {{ servicio.preorden.cliente.razon_social }}<br>
+                <strong>Fecha de Servicio:</strong> {{ servicio.fecha_servicio }}<br>
+                <strong>Fecha de Respuesta:</strong> {{ respuesta.fecha_respuesta }}
+            </p>
+            
+            <div class="mt-4">
+                <h6>Detalles de la Respuesta:</h6>
+                <p>
+                    <strong>Calificación NPS:</strong> {{ respuesta.calificacion }}/10<br>
+                    <strong>Categoría:</strong> 
+                    <span class="badge {% if respuesta.calificacion >= 9 %}bg-success
+                                     {% elif respuesta.calificacion >= 7 %}bg-warning
+                                     {% else %}bg-danger{% endif %}">
+                        {{ respuesta.get_nps_category }}
+                    </span><br>
+                    <strong>Comentarios:</strong><br>
+                    {{ respuesta.comentarios|linebreaks }}
+                </p>
+                <p>
+                    <strong>Respondido por:</strong> {{ respuesta.nombre_respondente }}<br>
+                    <strong>Cargo:</strong> {{ respuesta.cargo_respondente }}
+                </p>
+            </div>
+            
+            <a href="{% url 'gestionDeTaller:lista_encuestas' %}" class="btn btn-secondary">Volver</a>
+        </div>
+    </div>
+</div>
+{% endblock %} 

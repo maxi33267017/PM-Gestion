@@ -1,0 +1,28 @@
+
+{% load static %}
+{% block content %}
+<div class="card shadow mx-auto my-5">
+    <div class="card-body">
+        <form  method="POST" action="{% url 'guardar_persona' %}">
+            {% csrf_token %}
+            <label for="nombre">Nombre:</label>
+            <input class="form-control"  type="text" id="nombre" name="nombre" required><br>
+    
+            <label for="cliente">ID de cliente:</label>
+            <input class="form-control" type="text" id="cliente" name="cliente" value="{{ cliente.id }}"  readonly><br>
+       
+            <label for="puesto">Puesto:</label>
+            <input class="form-control" type="text" id="puesto" name="puesto" required><br>
+    
+            <label for="email">Email:</label>
+            <input class="form-control" type="email" id="email" name="email" required><br>
+    
+            <label for="telefono">Teléfono:</label>
+            <input class="form-control" type="text" id="telefono" name="telefono" required><br>
+
+            <input id="guardarModalBtn" type="submit" class="btn btn-primary" value="Guardar">
+        </form>
+    </div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,523 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<style>
+    :root {
+        --primary-gradient: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        --success-gradient: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+        --warning-gradient: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+        --danger-gradient: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+        --info-gradient: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+        --dark-gradient: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        --card-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        --hover-shadow: 0 15px 40px rgba(0,0,0,0.15);
+        --border-radius: 20px;
+        --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .crm-header {
+        background: var(--primary-gradient);
+        color: white;
+        padding: 3rem 2rem;
+        border-radius: var(--border-radius);
+        margin-bottom: 2.5rem;
+        box-shadow: var(--card-shadow);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .crm-header::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="dots" width="20" height="20" patternUnits="userSpaceOnUse"><circle cx="10" cy="10" r="1" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23dots)"/></svg>');
+        pointer-events: none;
+    }
+    
+    .crm-header h1 {
+        margin: 0;
+        font-weight: 800;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        font-size: 3rem;
+        position: relative;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+    
+    .crm-subtitle {
+        position: relative;
+        z-index: 1;
+        font-size: 1.2rem;
+        opacity: 0.9;
+        margin-top: 0.5rem;
+    }
+    
+    .dashboard-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 2rem;
+        margin-bottom: 2.5rem;
+    }
+    
+    .dashboard-card {
+        background: white;
+        border-radius: var(--border-radius);
+        box-shadow: var(--card-shadow);
+        overflow: hidden;
+        border: 1px solid #e9ecef;
+        transition: var(--transition);
+        position: relative;
+    }
+    
+    .dashboard-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--hover-shadow);
+    }
+    
+    .card-header-modern {
+        padding: 2rem;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .dashboard-card.segmentacion .card-header-modern {
+        background: var(--info-gradient);
+        color: white;
+    }
+    
+    .dashboard-card.portfolio .card-header-modern {
+        background: var(--success-gradient);
+        color: white;
+    }
+    
+    .dashboard-card.campanias .card-header-modern {
+        background: var(--warning-gradient);
+        color: white;
+    }
+    
+    .dashboard-card.analisis .card-header-modern {
+        background: var(--danger-gradient);
+        color: white;
+    }
+    
+    .dashboard-card.embudo .card-header-modern {
+        background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);
+        color: white;
+    }
+    
+    .card-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        opacity: 0.8;
+    }
+    
+    .card-title-modern {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+    }
+    
+    .card-description {
+        font-size: 1rem;
+        opacity: 0.9;
+        line-height: 1.5;
+    }
+    
+    .card-body-modern {
+        padding: 2rem;
+        background: white;
+    }
+    
+    .card-btn {
+        width: 100%;
+        border-radius: 15px;
+        padding: 1rem 1.5rem;
+        font-weight: 600;
+        transition: var(--transition);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-size: 0.9rem;
+        border: none;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        text-decoration: none;
+        color: white;
+    }
+    
+    .dashboard-card.segmentacion .card-btn {
+        background: var(--info-gradient);
+    }
+    
+    .dashboard-card.segmentacion .card-btn:hover {
+        background: var(--info-gradient);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4);
+        color: white;
+        text-decoration: none;
+    }
+    
+    .dashboard-card.portfolio .card-btn {
+        background: var(--success-gradient);
+    }
+    
+    .dashboard-card.portfolio .card-btn:hover {
+        background: var(--success-gradient);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(39, 174, 96, 0.4);
+        color: white;
+        text-decoration: none;
+    }
+    
+    .dashboard-card.campanias .card-btn {
+        background: var(--warning-gradient);
+    }
+    
+    .dashboard-card.campanias .card-btn:hover {
+        background: var(--warning-gradient);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(243, 156, 18, 0.4);
+        color: white;
+        text-decoration: none;
+    }
+    
+    .dashboard-card.analisis .card-btn {
+        background: var(--danger-gradient);
+    }
+    
+    .dashboard-card.analisis .card-btn:hover {
+        background: var(--danger-gradient);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(231, 76, 60, 0.4);
+        color: white;
+        text-decoration: none;
+    }
+    
+    .dashboard-card.embudo .card-btn {
+        background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);
+    }
+    
+    .dashboard-card.embudo .card-btn:hover {
+        background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(155, 89, 182, 0.4);
+        color: white;
+        text-decoration: none;
+    }
+    
+    .section-card {
+        background: white;
+        border-radius: var(--border-radius);
+        box-shadow: var(--card-shadow);
+        overflow: hidden;
+        border: 1px solid #e9ecef;
+        margin-bottom: 2rem;
+    }
+    
+    .section-header {
+        background: var(--dark-gradient);
+        color: white;
+        padding: 1.2rem 1.5rem;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .section-header h5 {
+        margin: 0;
+        font-weight: 700;
+        font-size: 1.2rem;
+        position: relative;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        gap: 0.8rem;
+    }
+    
+    .section-body {
+        padding: 2rem;
+    }
+    
+    .table {
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    
+    .table thead th {
+        background: var(--dark-gradient);
+        color: white;
+        border: none;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-size: 0.85rem;
+        padding: 1rem;
+    }
+    
+    .table tbody tr {
+        transition: var(--transition);
+    }
+    
+    .table tbody tr:hover {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        transform: scale(1.01);
+    }
+    
+    .table tbody td {
+        padding: 1rem;
+        vertical-align: middle;
+        border-bottom: 1px solid #e9ecef;
+    }
+    
+    .badge {
+        border-radius: 20px;
+        padding: 0.5rem 1rem;
+        font-weight: 600;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border: none;
+    }
+    
+    .badge.bg-success { background: var(--success-gradient) !important; }
+    .badge.bg-warning { background: var(--warning-gradient) !important; }
+    .badge.bg-secondary { background: var(--dark-gradient) !important; }
+    
+    .progress {
+        border-radius: 15px;
+        background: #e9ecef;
+        overflow: hidden;
+    }
+    
+    .progress-bar {
+        background: var(--success-gradient);
+        border-radius: 15px;
+        font-weight: 600;
+        font-size: 0.8rem;
+    }
+    
+    .campaign-info {
+        display: flex;
+        flex-direction: column;
+        gap: 0.3rem;
+    }
+    
+    .campaign-name {
+        font-weight: 700;
+        color: #2c3e50;
+    }
+    
+    .campaign-description {
+        color: #6c757d;
+        font-size: 0.9rem;
+        line-height: 1.4;
+    }
+    
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(30px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .crm-header, .dashboard-card, .section-card {
+        animation: fadeInUp 0.6s ease-out;
+    }
+    
+    .dashboard-card:nth-child(1) { animation-delay: 0.1s; }
+    .dashboard-card:nth-child(2) { animation-delay: 0.2s; }
+    .dashboard-card:nth-child(3) { animation-delay: 0.3s; }
+    .dashboard-card:nth-child(4) { animation-delay: 0.4s; }
+    .dashboard-card:nth-child(5) { animation-delay: 0.5s; }
+    .section-card { animation-delay: 0.6s; }
+    
+    @media (max-width: 768px) {
+        .crm-header {
+            padding: 2rem 1.5rem;
+            text-align: center;
+        }
+        
+        .crm-header h1 {
+            font-size: 2rem;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .dashboard-grid {
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+        
+        .card-header-modern {
+            padding: 1.5rem;
+        }
+        
+        .card-body-modern {
+            padding: 1.5rem;
+        }
+        
+        .section-body {
+            padding: 1.2rem;
+        }
+        
+        .table-responsive {
+            font-size: 0.9rem;
+        }
+    }
+</style>
+
+<main class="container-fluid mt-4">
+    <!-- Header mejorado -->
+    <div class="crm-header">
+        <h1><i class="bi bi-people-fill"></i> CRM - Gestión de Relaciones con Clientes</h1>
+        <div class="crm-subtitle">
+            Optimiza la relación con tus clientes, gestiona campañas y maximiza oportunidades de negocio
+        </div>
+    </div>
+    
+    <!-- Dashboard Cards -->
+    <div class="dashboard-grid">
+        <div class="dashboard-card segmentacion">
+            <div class="card-header-modern">
+                <div class="card-icon">
+                    <i class="bi bi-graph-up"></i>
+                </div>
+                <div class="card-title-modern">Segmentación de Clientes</div>
+                <div class="card-description">
+                    Analiza la segmentación ABC de clientes, comportamiento y potencial de ingresos para optimizar estrategias comerciales.
+                </div>
+            </div>
+            <div class="card-body-modern">
+                <a href="{% url 'crm:segmentacion_clientes' %}" class="card-btn">
+                    <i class="bi bi-bar-chart"></i> Ver Segmentación
+                </a>
+            </div>
+        </div>
+        
+        <div class="dashboard-card portfolio">
+            <div class="card-header-modern">
+                <div class="card-icon">
+                    <i class="bi bi-box"></i>
+                </div>
+                <div class="card-title-modern">Portfolio de Paquetes</div>
+                <div class="card-description">
+                    Gestiona paquetes de servicios, crea ofertas personalizadas y asigna soluciones específicas a cada cliente.
+                </div>
+            </div>
+            <div class="card-body-modern">
+                <a href="{% url 'crm:portfolio_paquetes' %}" class="card-btn">
+                    <i class="bi bi-gear"></i> Gestionar Paquetes
+                </a>
+            </div>
+        </div>
+        
+        <div class="dashboard-card campanias">
+            <div class="card-header-modern">
+                <div class="card-icon">
+                    <i class="bi bi-megaphone"></i>
+                </div>
+                <div class="card-title-modern">Campañas de Marketing</div>
+                <div class="card-description">
+                    Crea y gestiona campañas dirigidas a segmentos específicos de clientes para maximizar el retorno de inversión.
+                </div>
+            </div>
+            <div class="card-body-modern">
+                <a href="{% url 'crm:campanias_marketing' %}" class="card-btn">
+                    <i class="bi bi-bullhorn"></i> Gestionar Campañas
+                </a>
+            </div>
+        </div>
+        
+        <div class="dashboard-card analisis">
+            <div class="card-header-modern">
+                <div class="card-icon">
+                    <i class="bi bi-people"></i>
+                </div>
+                <div class="card-title-modern">Análisis de Clientes</div>
+                <div class="card-description">
+                    Dashboard individual de clientes, análisis de comportamiento y identificación de oportunidades de crecimiento.
+                </div>
+            </div>
+            <div class="card-body-modern">
+                <a href="{% url 'crm:analisis_clientes' %}" class="card-btn">
+                    <i class="bi bi-person-lines-fill"></i> Ver Análisis
+                </a>
+            </div>
+        </div>
+        
+        <div class="dashboard-card embudo">
+            <div class="card-header-modern">
+                <div class="card-icon">
+                    <i class="bi bi-funnel"></i>
+                </div>
+                <div class="card-title-modern">Embudo de Ventas</div>
+                <div class="card-description">
+                    Gestiona oportunidades de venta, sigue el progreso de leads y optimiza el proceso de conversión comercial.
+                </div>
+            </div>
+            <div class="card-body-modern">
+                <a href="{% url 'crm:embudo_ventas_dashboard' %}" class="card-btn">
+                    <i class="bi bi-funnel-fill"></i> Ver Embudo Visual
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Campañas Activas -->
+    {% if campanias %}
+    <div class="section-card">
+        <div class="section-header">
+            <h5><i class="bi bi-activity"></i> Campañas Activas</h5>
+        </div>
+        <div class="section-body">
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th><i class="bi bi-bullhorn me-2"></i>Campaña</th>
+                            <th><i class="bi bi-target me-2"></i>Objetivo</th>
+                            <th><i class="bi bi-calendar-event me-2"></i>Fecha Inicio</th>
+                            <th><i class="bi bi-calendar-check me-2"></i>Fecha Fin</th>
+                            <th><i class="bi bi-flag me-2"></i>Estado</th>
+                            <th><i class="bi bi-graph-up me-2"></i>Cumplimiento</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for campania in campanias %}
+                        <tr>
+                            <td>
+                                <div class="campaign-info">
+                                    <div class="campaign-name">{{ campania.nombre }}</div>
+                                    <div class="campaign-description">{{ campania.descripcion|truncatewords:10 }}</div>
+                                </div>
+                            </td>
+                            <td>
+                                <strong>{{ campania.objetivo_paquetes }}</strong> paquetes
+                            </td>
+                            <td>{{ campania.fecha_inicio|date:"d/m/Y" }}</td>
+                            <td>{{ campania.fecha_fin|date:"d/m/Y" }}</td>
+                            <td>
+                                <span class="badge {% if campania.estado == 'EN_CURSO' %}bg-success{% elif campania.estado == 'PLANIFICADA' %}bg-warning{% else %}bg-secondary{% endif %}">
+                                    {{ campania.get_estado_display }}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="progress" style="height: 25px;">
+                                    <div class="progress-bar" role="progressbar" style="width: {{ campania.get_cumplimiento }}%">
+                                        {{ campania.get_cumplimiento|floatformat:1 }}%
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</main>
+{% endblock %}

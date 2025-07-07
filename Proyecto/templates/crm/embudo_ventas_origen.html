@@ -1,0 +1,251 @@
+{% extends 'base.html' %}
+{% block title %} | Embudo de Ventas - {{ origen_display }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="display-6 mb-2">
+                        <i class="bi bi-funnel-fill text-primary me-2"></i>Embudo de Ventas - {{ origen_display }}
+                    </h1>
+                    <p class="lead text-muted">Análisis del embudo de ventas para {{ origen_display|lower }}</p>
+                </div>
+                <div>
+                    <a href="{% url 'crm:embudo_ventas_dashboard' %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left me-2"></i>Volver al Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- KPIs del Origen -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="card shadow-sm border-primary">
+                <div class="card-body text-center">
+                    <h5 class="card-title text-primary">
+                        <i class="bi bi-people-fill me-2"></i>Total Oportunidades
+                    </h5>
+                    <p class="card-text display-6 text-primary">{{ total_embudos }}</p>
+                    <small class="text-muted">De {{ origen_display|lower }}</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm border-success">
+                <div class="card-body text-center">
+                    <h5 class="card-title text-success">
+                        <i class="bi bi-currency-dollar me-2"></i>Valor Estimado
+                    </h5>
+                    <p class="card-text display-6 text-success">${{ total_valor_estimado|floatformat:0 }}</p>
+                    <small class="text-muted">USD total</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm border-info">
+                <div class="card-body text-center">
+                    <h5 class="card-title text-info">
+                        <i class="bi bi-graph-up me-2"></i>Valor Probabilizado
+                    </h5>
+                    <p class="card-text display-6 text-info">${{ total_valor_probabilizado|floatformat:0 }}</p>
+                    <small class="text-muted">USD ponderado</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm border-warning">
+                <div class="card-body text-center">
+                    <h5 class="card-title text-warning">
+                        <i class="bi bi-percent me-2"></i>Tasa Conversión
+                    </h5>
+                    <p class="card-text display-6 text-warning">{{ tasa_conversion }}%</p>
+                    <small class="text-muted">Cierre exitoso</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Gráfico del Embudo -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-funnel me-2"></i>Embudo de Ventas - {{ origen_display }}
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="embudo-container">
+                        {% for etapa in embudo_data %}
+                        <div class="embudo-etapa" style="background-color: {{ etapa.color }}20; border: 2px solid {{ etapa.color }};">
+                            <div class="embudo-etapa-header">
+                                <h6 class="mb-1">{{ etapa.etapa }}</h6>
+                                <div class="embudo-stats">
+                                    <span class="badge bg-light text-dark">{{ etapa.total }} oportunidades</span>
+                                    {% if etapa.valor_total > 0 %}
+                                    <span class="badge bg-success">${{ etapa.valor_total|floatformat:0 }}</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="embudo-etapa-body">
+                                <div class="progress mb-2" style="height: 8px;">
+                                    {% if total_embudos > 0 %}
+                                    {% widthratio etapa.total total_embudos 100 as porcentaje %}
+                                    <div class="progress-bar" role="progressbar" 
+                                         style="width: {{ porcentaje }}%; background-color: {{ etapa.color }};"></div>
+                                    {% endif %}
+                                </div>
+                                <small class="text-muted">
+                                    {% if total_embudos > 0 %}
+                                    {% widthratio etapa.total total_embudos 100 as porcentaje %}
+                                    {{ porcentaje }}% del total
+                                    {% else %}
+                                    0% del total
+                                    {% endif %}
+                                </small>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Información Adicional -->
+    <div class="row">
+        <div class="col-12">
+            <div class="alert alert-info">
+                <i class="bi bi-info-circle me-2"></i>
+                <strong>Análisis de {{ origen_display }}</strong> - 
+                Este gráfico muestra la distribución de oportunidades por etapa del embudo de ventas 
+                que provienen de {{ origen_display|lower }}. La tasa de conversión indica el porcentaje 
+                de oportunidades que llegan al cierre exitoso.
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.embudo-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    padding: 20px 0;
+}
+
+.embudo-etapa {
+    width: 100%;
+    max-width: 800px;
+    border-radius: 15px;
+    padding: 20px;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.embudo-etapa:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.embudo-etapa::before {
+    content: '';
+    position: absolute;
+    top: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 10px solid transparent;
+    border-right: 10px solid transparent;
+    border-bottom: 10px solid currentColor;
+    opacity: 0.3;
+}
+
+.embudo-etapa:first-child::before {
+    display: none;
+}
+
+.embudo-etapa-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.embudo-etapa-header h6 {
+    margin: 0;
+    font-weight: 600;
+    color: #333;
+}
+
+.embudo-stats {
+    display: flex;
+    gap: 8px;
+}
+
+.embudo-etapa-body {
+    text-align: center;
+}
+
+.progress {
+    background-color: rgba(0,0,0,0.1);
+    border-radius: 10px;
+}
+
+.progress-bar {
+    border-radius: 10px;
+    transition: width 0.6s ease;
+}
+
+@media (max-width: 768px) {
+    .embudo-etapa {
+        padding: 15px;
+    }
+    
+    .embudo-etapa-header {
+        flex-direction: column;
+        gap: 10px;
+        text-align: center;
+    }
+    
+    .embudo-stats {
+        justify-content: center;
+    }
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Animación de las barras de progreso
+    const progressBars = document.querySelectorAll('.progress-bar');
+    
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const progressBar = entry.target;
+                const width = progressBar.style.width;
+                progressBar.style.width = '0%';
+                
+                setTimeout(() => {
+                    progressBar.style.width = width;
+                }, 200);
+            }
+        });
+    });
+    
+    progressBars.forEach(bar => {
+        observer.observe(bar);
+    });
+});
+</script>
+{% endblock %} 

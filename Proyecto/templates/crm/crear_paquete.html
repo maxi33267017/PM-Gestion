@@ -1,0 +1,109 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="bi bi-plus-circle me-2"></i>Crear Nuevo Paquete de Servicio
+                        </h5>
+                        <a href="{% url 'crm:portfolio_paquetes' %}" class="btn btn-outline-secondary btn-sm">
+                            <i class="fas fa-arrow-left me-2"></i>Volver a Portfolio
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="nombre" class="form-label">Nombre del Paquete *</label>
+                                <input type="text" class="form-control" id="nombre" name="nombre" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="precio" class="form-label">Precio (USD) *</label>
+                                <input type="number" class="form-control" id="precio" name="precio" step="0.01" min="0" required>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="descripcion" class="form-label">Descripción</label>
+                            <textarea class="form-control" id="descripcion" name="descripcion" rows="3" placeholder="Describe los beneficios y características del paquete..."></textarea>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="estado" class="form-label">Estado</label>
+                            <select class="form-select" id="estado" name="estado">
+                                <option value="ACTIVO">Activo</option>
+                                <option value="INACTIVO">Inactivo</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Servicios Incluidos</label>
+                            <div class="border rounded p-3" style="max-height: 300px; overflow-y: auto;">
+                                {% if servicios %}
+                                    <div class="row">
+                                        {% for servicio in servicios %}
+                                        <div class="col-md-6 mb-2">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" name="servicios" value="{{ servicio.id }}" id="servicio_{{ servicio.id }}">
+                                                <label class="form-check-label" for="servicio_{{ servicio.id }}">
+                                                    <strong>{{ servicio.tipo_servicio }}</strong><br>
+                                                    <small class="text-muted">
+                                                        Cliente: {{ servicio.cliente.razon_social|truncatechars:30 }}<br>
+                                                        Fecha: {{ servicio.fecha_servicio|date:"d/m/Y" }}
+                                                    </small>
+                                                </label>
+                                            </div>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    <p class="text-muted">No hay servicios disponibles para incluir en el paquete.</p>
+                                {% endif %}
+                            </div>
+                            <small class="form-text text-muted">
+                                Selecciona los servicios que incluirás en este paquete. Solo se muestran los últimos 50 servicios completados.
+                            </small>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'crm:portfolio_paquetes' %}" class="btn btn-outline-secondary">
+                                <i class="bi bi-x-circle me-2"></i>Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-circle me-2"></i>Crear Paquete
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Función para validar el formulario
+document.querySelector('form').addEventListener('submit', function(e) {
+    const nombre = document.getElementById('nombre').value.trim();
+    const precio = document.getElementById('precio').value;
+    
+    if (!nombre) {
+        e.preventDefault();
+        alert('Por favor ingresa el nombre del paquete.');
+        return;
+    }
+    
+    if (!precio || precio <= 0) {
+        e.preventDefault();
+        alert('Por favor ingresa un precio válido mayor a 0.');
+        return;
+    }
+});
+</script>
+{% endblock %} 

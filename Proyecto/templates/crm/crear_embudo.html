@@ -1,0 +1,211 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Crear Oportunidad - CRM{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0">
+                <i class="fas fa-plus text-primary me-2"></i>
+                Nueva Oportunidad
+            </h1>
+            <p class="text-muted">Registrar una nueva oportunidad de venta</p>
+        </div>
+        <div>
+            <a href="{% url 'crm:embudo_ventas' %}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-2"></i>Volver al Embudo
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-edit me-2"></i>
+                        Información de la Oportunidad
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="cliente" class="form-label">Cliente *</label>
+                                <select name="cliente" id="cliente" class="form-select" required>
+                                    <option value="">Seleccionar cliente</option>
+                                    {% for cliente in clientes %}
+                                    <option value="{{ cliente.id }}">
+                                        {{ cliente.razon_social }} - {{ cliente.sucursal.nombre }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="campana" class="form-label">Campaña</label>
+                                <select name="campana" id="campana" class="form-select">
+                                    <option value="">Sin campaña específica</option>
+                                    {% for campana in campanas %}
+                                    <option value="{{ campana.id }}">
+                                        {{ campana.nombre }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label for="etapa" class="form-label">Etapa *</label>
+                                <select name="etapa" id="etapa" class="form-select" required>
+                                    <option value="">Seleccionar etapa</option>
+                                    <option value="CONTACTO_INICIAL">Contacto Inicial</option>
+                                    <option value="CALIFICACION">Calificación</option>
+                                    <option value="PROPUESTA">Propuesta</option>
+                                    <option value="NEGOCIACION">Negociación</option>
+                                    <option value="CIERRE">Cierre</option>
+                                    <option value="PERDIDO">Perdido</option>
+                                </select>
+                            </div>
+                            
+                            <div class="col-md-4 mb-3">
+                                <label for="origen" class="form-label">Origen *</label>
+                                <select name="origen" id="origen" class="form-select" required>
+                                    <option value="">Seleccionar origen</option>
+                                    <option value="REFERIDO">Referido</option>
+                                    <option value="WEB">Web</option>
+                                    <option value="REDES_SOCIALES">Redes Sociales</option>
+                                    <option value="EVENTO">Evento</option>
+                                    <option value="COLD_CALL">Cold Call</option>
+                                </select>
+                            </div>
+                            
+                            <div class="col-md-4 mb-3">
+                                <label for="valor_estimado" class="form-label">Valor Estimado (USD)</label>
+                                <input type="number" name="valor_estimado" id="valor_estimado" 
+                                       class="form-control" placeholder="0" min="0" step="0.01">
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="probabilidad_cierre" class="form-label">Probabilidad de Cierre (%)</label>
+                                <input type="range" name="probabilidad_cierre" id="probabilidad_cierre" 
+                                       class="form-range" min="0" max="100" value="10" 
+                                       oninput="document.getElementById('probabilidad_valor').textContent = this.value + '%'">
+                                <div class="d-flex justify-content-between">
+                                    <small class="text-muted">0%</small>
+                                    <span id="probabilidad_valor" class="text-primary fw-bold">10%</span>
+                                    <small class="text-muted">100%</small>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="descripcion_negocio" class="form-label">Descripción del Negocio</label>
+                                <textarea name="descripcion_negocio" id="descripcion_negocio" 
+                                          class="form-control" rows="3" 
+                                          placeholder="Describe la oportunidad de negocio..."></textarea>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-end">
+                            <a href="{% url 'crm:embudo_ventas' %}" class="btn btn-outline-secondary me-2">
+                                Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i>Crear Oportunidad
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Información de Ayuda
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <h6 class="text-primary">Etapas del Embudo</h6>
+                    <ul class="list-unstyled small">
+                        <li class="mb-2">
+                            <span class="badge bg-info me-2">Contacto Inicial</span>
+                            Primer contacto con el prospecto
+                        </li>
+                        <li class="mb-2">
+                            <span class="badge bg-warning me-2">Calificación</span>
+                            Evaluar si es un prospecto válido
+                        </li>
+                        <li class="mb-2">
+                            <span class="badge bg-primary me-2">Propuesta</span>
+                            Presentar propuesta comercial
+                        </li>
+                        <li class="mb-2">
+                            <span class="badge bg-secondary me-2">Negociación</span>
+                            Negociar términos y condiciones
+                        </li>
+                        <li class="mb-2">
+                            <span class="badge bg-success me-2">Cierre</span>
+                            Oportunidad ganada
+                        </li>
+                        <li class="mb-2">
+                            <span class="badge bg-danger me-2">Perdido</span>
+                            Oportunidad perdida
+                        </li>
+                    </ul>
+                    
+                    <hr>
+                    
+                    <h6 class="text-primary">Orígenes de Oportunidades</h6>
+                    <ul class="list-unstyled small">
+                        <li class="mb-1">• <strong>Referido:</strong> Recomendación de cliente existente</li>
+                        <li class="mb-1">• <strong>Web:</strong> Contacto a través del sitio web</li>
+                        <li class="mb-1">• <strong>Redes Sociales:</strong> Contacto por redes sociales</li>
+                        <li class="mb-1">• <strong>Evento:</strong> Contacto en ferias o eventos</li>
+                        <li class="mb-1">• <strong>Cold Call:</strong> Contacto directo sin previo aviso</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-select etapa basada en origen
+    const origenSelect = document.getElementById('origen');
+    const etapaSelect = document.getElementById('etapa');
+    
+    origenSelect.addEventListener('change', function() {
+        if (this.value && !etapaSelect.value) {
+            etapaSelect.value = 'CONTACTO_INICIAL';
+        }
+    });
+    
+    // Validación del formulario
+    const form = document.querySelector('form');
+    form.addEventListener('submit', function(e) {
+        const cliente = document.getElementById('cliente').value;
+        const etapa = document.getElementById('etapa').value;
+        const origen = document.getElementById('origen').value;
+        
+        if (!cliente || !etapa || !origen) {
+            e.preventDefault();
+            alert('Por favor completa todos los campos obligatorios.');
+        }
+    });
+});
+</script>
+{% endblock %} 

@@ -1,0 +1,270 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2>
+                <i class="bi bi-graph-up me-2"></i>Dashboard de Campaña: {{ campania.nombre }}
+            </h2>
+            <p class="text-muted">Análisis detallado de resultados y métricas de la campaña</p>
+        </div>
+        <div>
+            <a href="{% url 'crm:campanias_marketing' %}" class="btn btn-outline-secondary me-2">
+                <i class="bi bi-arrow-left me-2"></i>Volver a Campañas
+            </a>
+            <a href="{% url 'crm:gestionar_contactos' campania.id %}" class="btn btn-primary">
+                <i class="fas fa-users me-2"></i>Gestionar Contactos
+            </a>
+        </div>
+    </div>
+
+    <!-- Información de la Campaña -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-info-circle me-2"></i>Información de la Campaña
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Nombre:</strong> {{ campania.nombre }}</p>
+                            <p><strong>Descripción:</strong> {{ campania.descripcion|default:"Sin descripción" }}</p>
+                            <p><strong>Estado:</strong> 
+                                <span class="badge {% if campania.estado == 'EN_CURSO' %}bg-success{% elif campania.estado == 'PLANIFICADA' %}bg-warning{% else %}bg-secondary{% endif %}">
+                                    {{ campania.get_estado_display }}
+                                </span>
+                            </p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Período:</strong> {{ campania.fecha_inicio|date:"d/m/Y" }} - {{ campania.fecha_fin|date:"d/m/Y" }}</p>
+                            <p><strong>Objetivo:</strong> {{ campania.objetivo_paquetes }} paquetes</p>
+                            <p><strong>Valor por Paquete:</strong> ${{ campania.valor_paquete|floatformat:0 }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-target me-2"></i>Cumplimiento
+                    </h5>
+                </div>
+                <div class="card-body text-center">
+                    <div class="mb-3">
+                        <h3 class="text-{% if cumplimiento_objetivo >= 100 %}success{% elif cumplimiento_objetivo >= 50 %}warning{% else %}danger{% endif %}">
+                            {{ cumplimiento_objetivo|floatformat:1 }}%
+                        </h3>
+                        <small class="text-muted">del objetivo</small>
+                    </div>
+                    <div class="progress" style="height: 25px;">
+                        <div class="progress-bar {% if cumplimiento_objetivo >= 100 %}bg-success{% elif cumplimiento_objetivo >= 50 %}bg-warning{% else %}bg-danger{% endif %}" 
+                             role="progressbar" style="width: {{ cumplimiento_objetivo }}%">
+                            {{ ventas_exitosas }}/{{ campania.objetivo_paquetes }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Estadísticas Principales -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body text-center">
+                    <h6 class="card-title">Total Contactos</h6>
+                    <h3 class="mb-0">{{ total_contactos }}</h3>
+                    <small>Realizados</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body text-center">
+                    <h6 class="card-title">Ventas Exitosas</h6>
+                    <h3 class="mb-0">{{ ventas_exitosas }}</h3>
+                    <small>{{ tasa_conversion|floatformat:1 }}% conversión</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-danger text-white">
+                <div class="card-body text-center">
+                    <h6 class="card-title">Ventas Perdidas</h6>
+                    <h3 class="mb-0">{{ ventas_perdidas }}</h3>
+                    <small>Sin éxito</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body text-center">
+                    <h6 class="card-title">Valor Total</h6>
+                    <h3 class="mb-0">${{ valor_total_ventas|floatformat:0 }}</h3>
+                    <small>Ventas exitosas</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Distribución de Resultados -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-pie-chart me-2"></i>Distribución por Resultado
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="bg-success rounded-circle me-3" style="width: 20px; height: 20px;"></div>
+                                <div>
+                                    <strong>Ventas Exitosas</strong><br>
+                                    <small class="text-muted">{{ ventas_exitosas }} contactos</small>
+                                </div>
+                            </div>
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="bg-danger rounded-circle me-3" style="width: 20px; height: 20px;"></div>
+                                <div>
+                                    <strong>Ventas Perdidas</strong><br>
+                                    <small class="text-muted">{{ ventas_perdidas }} contactos</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="bg-warning rounded-circle me-3" style="width: 20px; height: 20px;"></div>
+                                <div>
+                                    <strong>Pendientes</strong><br>
+                                    <small class="text-muted">{{ pendientes }} contactos</small>
+                                </div>
+                            </div>
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="bg-info rounded-circle me-3" style="width: 20px; height: 20px;"></div>
+                                <div>
+                                    <strong>Reprogramados</strong><br>
+                                    <small class="text-muted">{{ reprogramados }} contactos</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-people me-2"></i>Rendimiento por Responsable
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% for responsable in contactos_por_responsable %}
+                    <div class="d-flex justify-content-between align-items-center mb-3 p-2 border rounded">
+                        <div>
+                            <strong>{{ responsable.responsable__nombre }}</strong><br>
+                            <small class="text-muted">{{ responsable.total }} contactos</small>
+                        </div>
+                        <div class="text-end">
+                            <span class="badge bg-success">{{ responsable.exitosas }} exitosas</span><br>
+                            <span class="badge bg-danger">{{ responsable.perdidas }} perdidas</span>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <p class="text-muted text-center">No hay datos de responsables</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Métricas Detalladas -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-speedometer2 me-2"></i>Métricas de Rendimiento
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <div class="text-center">
+                                <h4 class="text-success">{{ tasa_conversion|floatformat:1 }}%</h4>
+                                <small class="text-muted">Tasa de Conversión</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="text-center">
+                                <h4 class="text-info">${{ valor_total_ventas|floatformat:0 }}</h4>
+                                <small class="text-muted">Valor Total Ventas</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="text-center">
+                                <h4 class="text-warning">{{ pendientes }}</h4>
+                                <small class="text-muted">Contactos Pendientes</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="text-center">
+                                <h4 class="text-primary">{{ reprogramados }}</h4>
+                                <small class="text-muted">Reprogramados</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-calendar-check me-2"></i>Estado de la Campaña
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span>Días Transcurridos:</span>
+                        <strong>{{ campania.fecha_inicio|timesince:campania.fecha_fin }}</strong>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span>Días Restantes:</span>
+                        <strong>{{ campania.fecha_fin|timeuntil }}</strong>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span>Progreso Temporal:</span>
+                        <strong>
+                            {% if campania.estado == 'FINALIZADA' %}
+                                100%
+                            {% else %}
+                                {{ campania.fecha_inicio|timesince|floatformat:0 }}%
+                            {% endif %}
+                        </strong>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span>Eficiencia:</span>
+                        <strong class="text-{% if cumplimiento_objetivo >= 100 %}success{% elif cumplimiento_objetivo >= 50 %}warning{% else %}danger{% endif %}">
+                            {{ cumplimiento_objetivo|floatformat:1 }}%
+                        </strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

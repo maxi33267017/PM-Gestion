@@ -1,0 +1,426 @@
+body {
+    background-color: #f8f9fa; /* Color de fondo */
+}
+/* Asegurar que el modal esté centrado y ocupe el espacio correcto en pantallas pequeñas */
+.modal-dialog-centered {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: calc(100% - 1rem);
+}
+
+.modal-content {
+    margin: auto;
+    max-height: 90vh; /* Limita la altura del modal al 90% de la ventana */
+    overflow-y: auto;
+    border-radius: 0.5rem;
+}
+
+/* Asegurando que el modal esté completamente visible en pantallas pequeñas */
+@media (max-width: 576px) {
+    .modal-dialog {
+        max-width: 95%;
+        margin: 1rem auto;
+    }
+}
+#contenido_servicios {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    background-color: #ffffff; /* Color de fondo del contenido */
+    border: 1px solid #dee2e6; /* Borde del contenido */
+    border-radius: 10px; /* Bordes redondeados */
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Sombreado gris */
+    margin: 20px; /* Márgenes alrededor del contenido */
+}
+
+.titulo_servicios {
+    font-size: 36px;
+    font-weight: bold;
+    text-shadow: 3px 3px 4px #9c9b96; 
+    margin-bottom: 1rem;
+}
+
+#abrirOffcanvasBtn {
+    height: 1.75rem;
+    width: 9rem;
+    padding: 0;
+    margin-bottom: 2.5rem;
+    background-color: rgb(0, 0, 0);
+    border: none;
+}
+
+#abrirOffcanvasBtn:hover {
+    background-color: rgb(0, 0, 0);
+    color: #fbd323;
+    font-weight: bold;
+}
+
+/* Cambiar el cursor a 'pointer' al hacer hover sobre las filas de la tabla, excluyendo la fila del encabezado */
+#miTabla tbody tr:hover {
+    cursor: pointer;
+}
+
+/* Mantener el cursor predeterminado para la fila del encabezado */
+#miTabla thead tr {
+    cursor: default;
+}
+
+
+.text-decoration-none {
+    text-decoration: none!important;
+    color: #fbd323;}
+
+.primer_th {
+    border-top-left-radius: 5px;
+    border-bottom-left-radius: 5px;
+}
+.ultimo_th {
+    border-top-right-radius: 5px;
+    border-bottom-right-radius: 5px;
+}
+
+ul.pagination .page-link {
+    color: #000000;
+    box-shadow: none;
+  }
+
+  ul.pagination .page-item.active .page-link {
+    background-color: #000000; /* Color de fondo para la página activa */
+    color: #ffffff; /* Color del texto para la página activa */
+    border: none; /* Quita el borde para la página activa si es necesario */
+    box-shadow: none;
+}
+
+
+/* Estilo para el input de búsqueda cuando está enfocado */
+#miTabla_filter input:focus {
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.5); /* Sombreado cuando está enfocado */
+    border-color: #000000; /* Color del borde cuando está enfocado */
+}
+
+#abrirModalAgregarServicioBtn, 
+#abrirModalAgregarPreordenBtn, 
+#verProgramacionPreordenes,
+#aplicarFiltro {
+    background-color: rgb(0, 0, 0);
+    width: 10rem;
+    margin-bottom: 0.5rem;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}    
+
+#abrirModalAgregarServicioBtn:hover, 
+#abrirModalAgregarPreordenBtn:hover, 
+#verProgramacionPreordenes:hover,
+#aplicarFiltro:hover {
+    background-color: rgb(0, 0, 0);
+    color: #fbd323;
+    font-weight: bold;
+}
+
+/* #abrirModalAgregarServicioBtn {
+    background-color: rgb(0, 0, 0);
+    width: 10rem;
+    margin-bottom: 0.5rem;
+    text-align: center;
+
+}
+
+#abrirModalAgregarServicioBtn:hover {
+    background-color: rgb(0, 0, 0);
+    color: #fbd323;
+    font-weight: bold;
+    text-align: center;
+}
+
+#verProgramacionPreordenes {
+    background-color: rgb(0, 0, 0);
+    width: 15rem;
+    margin-bottom: 0.5rem;
+}
+
+#verProgramacionPreordenes:hover {
+    background-color: rgb(0, 0, 0);
+    color: #fbd323;
+    font-weight: bold;
+} */
+
+#guardarBtnModalAgregarServicio {
+    background-color: rgb(0, 0, 0);
+    width: 10rem;
+    margin-bottom: 0.5rem;
+
+}
+
+#guardarBtnModalAgregarServicio:hover {
+    background-color: rgb(0, 0, 0);
+    color: #fbd323;
+    font-weight: bold;
+}
+
+/* #abrirModalAgregarPreordenBtn {
+    background-color: rgb(0, 0, 0);
+    width: 15rem;
+    margin-bottom: 0.5rem;
+
+} */
+
+/* #abrirModalAgregarPreordenBtn:hover {
+    background-color: rgb(0, 0, 0);
+    color: #fbd323;
+    font-weight: bold;
+} */
+
+#guardarBtnModalAgregarPreorden {
+    background-color: rgb(0, 0, 0);
+    width: 10rem;
+    margin-bottom: 0.5rem;
+
+}
+
+#guardarBtnModalAgregarPreorden:hover {
+    background-color: rgb(0, 0, 0);
+    color: #fbd323;
+    font-weight: bold;
+}
+
+.invoice-box {
+    max-width: 800px;
+    margin: auto;
+    padding: 30px;
+    border: 2px solid #000;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.15);
+    font-size: 16px;
+    line-height: 24px;
+    font-family: 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif;
+    color: #555;
+}
+
+.logo-box {
+    border: 2px solid #000;
+    padding: 10px;
+    text-align: left;
+    margin-bottom: 10px;
+    position: relative;
+}
+
+.logo-box img {
+    max-width: 250px; /* Establece el ancho máximo deseado */
+    width: auto; /* Permite que el ancho sea menor si la imagen es más pequeña */
+}
+
+.letter-r {
+    border: 2px solid #000;
+    padding: 10px;
+    margin-bottom: 10px;
+    font-size: 24px;
+    font-weight: bold;
+    text-align: center;
+    width: 45px; /* Ajusta el ancho según tu preferencia */
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.remito-info {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    text-align: right;
+}
+
+.remito-info p {
+    margin: 0;
+}
+
+.referencia {
+    font-size: 8px;
+    padding: 12px;
+    margin-bottom: 12px;
+    text-align: center;
+    position: absolute;
+    top: 80%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.firma-box {
+    display: flex;
+    justify-content: space-between;
+}
+
+.firma-box ol {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+    width: 48%; /* Ajusta el ancho según tus preferencias */
+}
+
+#imprimirRemitoBtn {
+    background-color: rgb(0, 0, 0);
+    width: 10rem;
+    margin-bottom: 0.5rem;
+    color: #f8f9fa;
+    border-radius: 5px;
+}
+
+#imprimirRemitoBtn:hover {
+    background-color: rgb(0, 0, 0);
+    color: #fbd323;
+    font-weight: bold;
+}
+
+@media print {
+    body {
+        margin: 0;
+        padding: 0;
+    }
+    .invoice-box {
+        max-width: 800px;
+        margin: auto;
+        padding: 30px;
+        border: 2px solid #000;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.15);
+        font-size: 16px;
+        line-height: 24px;
+        font-family: 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif;
+        color: #555;
+    }
+    
+    .logo-box {
+        border: 2px solid #000;
+        padding: 10px;
+        text-align: left;
+        margin-bottom: 10px;
+        position: relative;
+    }
+    
+    .logo-box img {
+        max-width: 250px; /* Establece el ancho máximo deseado */
+        width: auto; /* Permite que el ancho sea menor si la imagen es más pequeña */
+    }
+    
+    .letter-r {
+        border: 2px solid #000;
+        padding: 10px;
+        margin-bottom: 10px;
+        font-size: 24px;
+        font-weight: bold;
+        text-align: center;
+        width: 45px; /* Ajusta el ancho según tu preferencia */
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+    }
+    
+    .remito-info {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        text-align: right;
+    }
+    
+    .remito-info p {
+        margin: 0;
+    }
+    
+    .referencia {
+        font-size: 8px;
+        padding: 12px;
+        margin-bottom: 12px;
+        text-align: center;
+        position: absolute;
+        top: 80%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+    }
+    
+    .firma-box {
+        display: flex;
+        justify-content: space-between;
+    }
+    
+    .firma-box ol {
+        list-style-type: none;
+        padding: 0;
+        margin: 0;
+        width: 48%; /* Ajusta el ancho según tus preferencias */
+    }
+    .print-button {
+        display: none;
+    }
+    .navbar {
+        display: none !important;
+    }
+}
+
+
+.btn_remito {
+    background-color: rgb(0, 0, 0);
+    width: 6rem;
+    margin-bottom: 0.5rem;
+
+}
+
+.btn_remito:hover {
+    background-color: rgb(0, 0, 0);
+    color: #fbd323;
+    font-weight: bold;
+}
+
+.pendiente {
+    border-radius: 5px;
+    padding: 4px;
+    background-color: rgb(255, 0, 0);
+    color: white;
+    display: inline-block;
+}
+
+.finalizado {
+    border-radius: 5px;
+    padding: 4px;
+    background-color: green;
+    color: white;
+    display: inline-block;
+}
+
+.btn_editar_servicio {
+    background-color: rgb(0, 0, 0);
+    width: 9rem;
+    margin-bottom: 0.5rem;
+}
+.btn_editar_servicio:hover {
+    background-color: rgb(0, 0, 0);
+    color: #fbd323;
+    font-weight: bold;
+}
+
+#agregar_comentario {
+    background-color: rgb(0, 0, 0);
+    width: 2rem;
+    margin-bottom: 0.5rem;
+    margin-left: 1rem;
+    margin-top: 1rem;
+}
+#agregar_comentario:hover {
+    background-color: rgb(0, 0, 0);
+    color: #fbd323;
+    font-weight: bold;
+}
+
+#th_servicios {
+    color: #fbd323;
+}
+
+#titulo_detalle_servicio {
+    font-size: 36px;
+    font-weight: bold;
+    text-shadow: 3px 3px 4px #9c9b96; 
+    margin-bottom: 1rem;
+}
+

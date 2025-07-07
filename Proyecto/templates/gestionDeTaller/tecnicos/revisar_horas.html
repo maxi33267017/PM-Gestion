@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<main>
+    <div id="contenido_servicios">
+        <h1 class="mb-4">Revisión de Horas - {{ tecnico.get_nombre_completo }}</h1>
+
+        <h3>Fecha: {{ fecha|date:"d M Y" }}</h3>
+
+        <!-- Mensajes de éxito o error -->
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+
+        <!-- Tabla de horas registradas -->
+        <table class="table table-bordered">
+            <thead class="table-light">
+                <tr>
+                    <th>Hora Inicio</th>
+                    <th>Hora Fin</th>
+                    <th>Actividad</th>
+                    <th>Servicio</th>
+                    <th>Aprobado</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for registro in registros %}
+                    <tr>
+                        <td>{{ registro.hora_inicio }}</td>
+                        <td>{{ registro.hora_fin }}</td>
+                        <td>{{ registro.tipo_hora.nombre }}</td>
+                        <td>
+                            {% if registro.servicio %}
+                                {{ registro.servicio.numero_orden }}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if registro.aprobado %}
+                                <span class="badge bg-success">Aprobado</span>
+                            {% else %}
+                                <span class="badge bg-danger">Pendiente</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <!-- Botón para aprobar todas las horas -->
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit" class="btn btn-success">Aprobar Todas las Horas</button>
+            <a href="{% url 'gestionDeTaller:detalle_tecnico' tecnico_id=tecnico.id %}" class="btn btn-secondary">Volver</a>
+        </form>
+    </div>
+</main>
+{% endblock %}

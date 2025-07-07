@@ -1,0 +1,1720 @@
+{% extends 'base.html' %}
+{% load l10n %}
+
+{% load static %}
+
+{% block content %}
+<style>
+    /* Mejoras visuales generales */
+    .servicio-header {
+        background: linear-gradient(135deg, #f39c12 0%, #e67e22 50%, #95a5a6 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 15px;
+        margin-bottom: 2rem;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+    
+    .servicio-header h1 {
+        margin: 0;
+        font-weight: 700;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    }
+    
+    .servicio-id {
+        background: rgba(255,255,255,0.2);
+        padding: 0.5rem 1rem;
+        border-radius: 25px;
+        display: inline-block;
+        font-size: 1.2rem;
+        font-weight: bold;
+    }
+    
+    /* Hero Section para Solicitud del Cliente */
+    .solicitud-hero {
+        background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        color: white;
+        border-radius: 15px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .solicitud-hero::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="white" opacity="0.1"/><circle cx="75" cy="75" r="1" fill="white" opacity="0.1"/><circle cx="50" cy="10" r="0.5" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+        pointer-events: none;
+    }
+    
+    .solicitud-hero-content {
+        position: relative;
+        z-index: 1;
+    }
+    
+    .solicitud-titulo {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .solicitud-texto {
+        background: rgba(255,255,255,0.1);
+        padding: 1.5rem;
+        border-radius: 10px;
+        border-left: 4px solid #3498db;
+        font-size: 1.1rem;
+        line-height: 1.6;
+        margin-bottom: 1.5rem;
+        backdrop-filter: blur(10px);
+    }
+    
+    .solicitud-contexto {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+    }
+    
+    .contexto-item {
+        background: rgba(255,255,255,0.1);
+        padding: 1rem;
+        border-radius: 8px;
+        text-align: center;
+        backdrop-filter: blur(5px);
+    }
+    
+    .contexto-item i {
+        font-size: 1.5rem;
+        margin-bottom: 0.5rem;
+        display: block;
+    }
+    
+    .contexto-label {
+        font-size: 0.9rem;
+        opacity: 0.8;
+        margin-bottom: 0.3rem;
+    }
+    
+    .contexto-value {
+        font-weight: 600;
+        font-size: 1rem;
+    }
+    
+    /* Layout con Sidebar */
+    .main-layout {
+        display: flex;
+        gap: 2rem;
+        margin-top: 2rem;
+    }
+    
+    .sidebar {
+        flex: 0 0 300px;
+        background: #f8f9fa;
+        border-radius: 15px;
+        padding: 1.5rem;
+        height: fit-content;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+    }
+    
+    .sidebar-section {
+        margin-bottom: 2rem;
+    }
+    
+    .sidebar-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid #e9ecef;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .sidebar-buttons {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .sidebar-btn {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.8rem 1rem;
+        background: white;
+        border: 1px solid #e9ecef;
+        border-radius: 8px;
+        color: #495057;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        font-size: 0.9rem;
+    }
+    
+    .sidebar-btn:hover {
+        background: #667eea;
+        color: white;
+        transform: translateX(5px);
+        text-decoration: none;
+    }
+    
+    .sidebar-btn.disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        background: #f8f9fa;
+    }
+    
+    .sidebar-btn.disabled:hover {
+        transform: none;
+        background: #f8f9fa;
+        color: #495057;
+    }
+    
+    .main-content {
+        flex: 1;
+    }
+    
+    /* Mejoras en las tarjetas */
+    .card {
+        border: none;
+        border-radius: 15px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        margin-bottom: 1.5rem;
+    }
+    
+    .card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+    }
+    
+    .card-header {
+        background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        color: white;
+        border-radius: 15px 15px 0 0 !important;
+        padding: 1.5rem;
+        border: none;
+    }
+    
+    .card-header h3 {
+        margin: 0;
+        font-weight: 600;
+        font-size: 1.3rem;
+    }
+    
+    .card-body {
+        padding: 1.5rem;
+        background: #fafbfc;
+    }
+    
+    .card-footer {
+        background: #f8f9fa;
+        border-top: 1px solid #e9ecef;
+        border-radius: 0 0 15px 15px;
+        padding: 1rem 1.5rem;
+    }
+    
+    /* Mejoras en los estados */
+    .estado {
+        padding: 0.6rem 1.2rem;
+        border-radius: 25px;
+        display: inline-block;
+        font-weight: 600;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .estado-programado {
+        background: linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%);
+        color: white;
+    }
+
+    .estado-en-proceso {
+        background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+        color: white;
+    }
+
+    .estado-en-espera {
+        background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+        color: white;
+    }
+
+    .estado-finalizado {
+        background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+        color: white;
+    }
+
+    .estado-completado {
+        background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+        color: white;
+    }
+    
+    /* Mejoras en los botones */
+    .btn {
+        border-radius: 25px;
+        padding: 0.6rem 1.2rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        border: none;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    .btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    
+    .btn-dark {
+        background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+    }
+    
+    .btn-warning {
+        background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+        color: white;
+    }
+    
+    .btn-info {
+        background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+        color: white;
+    }
+    
+    .btn-success {
+        background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+        color: white;
+    }
+    
+    .btn-secondary {
+        background: linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%);
+        color: white;
+    }
+    
+    /* Mejoras en las alertas */
+    .alert {
+        border: none;
+        border-radius: 15px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 3px 15px rgba(0,0,0,0.1);
+    }
+    
+    .alert-warning {
+        background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+        color: #856404;
+        border-left: 5px solid #ffc107;
+    }
+    
+    .alert-info {
+        background: linear-gradient(135deg, #d1ecf1 0%, #b8e6f2 100%);
+        color: #0c5460;
+        border-left: 5px solid #17a2b8;
+    }
+    
+    /* Mejoras en la información */
+    .info-item {
+        display: flex;
+        align-items: center;
+        margin-bottom: 0.8rem;
+        padding: 0.5rem 0;
+        border-bottom: 1px solid #f0f0f0;
+    }
+    
+    .info-label {
+        font-weight: 600;
+        color: #2c3e50;
+        min-width: 150px;
+        margin-right: 1rem;
+    }
+    
+    .info-value {
+        color: #34495e;
+        flex: 1;
+    }
+    
+    /* Mejoras en las tablas */
+    .table {
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    .table-dark {
+        background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+    }
+    
+    /* Mejoras en los badges */
+    .badge {
+        border-radius: 15px;
+        padding: 0.5rem 1rem;
+        font-weight: 500;
+    }
+    
+    /* Estilos para Widgets */
+    .widget-card {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+        border: 1px solid #e9ecef;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+    
+    .widget-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        border-color: #667eea;
+    }
+    
+    .widget-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    
+    .widget-icon i {
+        font-size: 1.5rem;
+        color: white;
+    }
+    
+    .widget-content {
+        flex: 1;
+        min-width: 0;
+    }
+    
+    .widget-label {
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: #6c757d;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 0.5rem;
+    }
+    
+    .widget-value {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #2c3e50;
+        line-height: 1.3;
+        word-wrap: break-word;
+    }
+    
+    /* Colores personalizados para widgets */
+    .bg-purple {
+        background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);
+    }
+    
+    .bg-primary {
+        background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+    }
+    
+    .bg-success {
+        background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+    }
+    
+    .bg-info {
+        background: linear-gradient(135deg, #17a2b8 0%, #20c997 100%);
+    }
+    
+    .bg-warning {
+        background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+    }
+    
+    .bg-secondary {
+        background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+    }
+    
+    .bg-dark {
+        background: linear-gradient(135deg, #343a40 0%, #212529 100%);
+    }
+    
+    .bg-danger {
+        background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+    }
+    
+    /* Mejoras en los modales */
+    .modal-content {
+        border-radius: 15px;
+        border: none;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    }
+    
+    .modal-header {
+        background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        color: white;
+        border-radius: 15px 15px 0 0;
+        border: none;
+    }
+    
+    /* Responsive improvements */
+    @media (max-width: 768px) {
+        .main-layout {
+            flex-direction: column;
+        }
+        
+        .sidebar {
+            flex: none;
+            width: 100%;
+        }
+        
+        .servicio-header {
+            padding: 1.5rem;
+        }
+        
+        .solicitud-hero {
+            padding: 1.5rem;
+        }
+        
+        .solicitud-contexto {
+            grid-template-columns: 1fr;
+        }
+        
+        .card-header {
+            padding: 1rem;
+        }
+        
+        .card-body {
+            padding: 1rem;
+        }
+        
+        .btn {
+            margin-bottom: 0.5rem;
+            width: 100%;
+        }
+        
+        .info-item {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        
+        .info-label {
+            min-width: auto;
+            margin-bottom: 0.3rem;
+        }
+        
+        /* Widgets responsive */
+        .widget-card {
+            padding: 1rem;
+            flex-direction: column;
+            text-align: center;
+            gap: 0.8rem;
+        }
+        
+        .widget-icon {
+            width: 50px;
+            height: 50px;
+        }
+        
+        .widget-icon i {
+            font-size: 1.2rem;
+        }
+        
+        .widget-label {
+            font-size: 0.8rem;
+        }
+        
+        .widget-value {
+            font-size: 0.9rem;
+        }
+    }
+</style>
+
+<main class="container-fluid mt-4">
+    <!-- Header mejorado -->
+    <div class="servicio-header text-center">
+        <h1><i class="fas fa-tools me-3"></i>Detalle del Servicio</h1>
+        <div class="servicio-id mt-2">
+            <i class="fas fa-hashtag me-2"></i>Nro {{ servicio.id }}
+        </div>
+    </div>
+
+    <!-- Alerta de restricciones de seguridad -->
+    {% if not puede_modificar or not puede_modificar_informe %}
+        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+            <h6><i class="fas fa-shield-alt me-2"></i> Restricciones de Seguridad Activas:</h6>
+            <ul class="mb-0">
+                {% if not puede_modificar %}
+                    <li><strong>Servicio:</strong> No puedes modificar este servicio porque está "Finalizado a Facturar". Solo un gerente puede hacer cambios.</li>
+                {% endif %}
+                {% if not puede_modificar_informe %}
+                    <li><strong>Informe:</strong> No puedes modificar este informe porque ya fue firmado por el cliente. Solo un gerente puede hacer cambios.</li>
+                {% endif %}
+            </ul>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    {% endif %}
+
+
+
+    <!-- Hero Section - Solicitud del Cliente -->
+    <div class="solicitud-hero">
+        <div class="solicitud-hero-content">
+            <div class="solicitud-titulo">
+                <i class="fas fa-bullseye"></i>
+                SOLICITUD DEL CLIENTE
+            </div>
+            
+            <div class="solicitud-texto">
+                "{{ servicio.preorden.solicitud_cliente }}"
+            </div>
+            
+            <div class="solicitud-contexto">
+                <div class="contexto-item">
+                    <i class="fas fa-briefcase"></i>
+                    <div class="contexto-label">Tipo de Trabajo</div>
+                    <div class="contexto-value">{{ servicio.preorden.get_tipo_trabajo_display }}</div>
+                </div>
+                
+                <div class="contexto-item">
+                    <i class="fas fa-users"></i>
+                    <div class="contexto-label">Técnicos Asignados</div>
+                    <div class="contexto-value">
+                        {% if servicio.preorden.tecnicos.all %}
+                            {{ servicio.preorden.get_tecnicos_asignados }}
+                        {% else %}
+                            Sin asignar
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="contexto-item">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <div class="contexto-label">Códigos de Error</div>
+                    <div class="contexto-value">
+                        {% if servicio.preorden.codigos_error.exists %}
+                            {{ servicio.preorden.get_codigos_error }}
+                        {% else %}
+                            Sin códigos
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="contexto-item">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <div class="contexto-label">Prioridad</div>
+                    <div class="contexto-value">{{ servicio.get_prioridad_display }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Layout Principal con Sidebar -->
+    <div class="main-layout">
+        <!-- Sidebar con Acciones -->
+        <div class="sidebar">
+            <!-- Acciones Principales -->
+            <div class="sidebar-section">
+                <div class="sidebar-title">
+                    <i class="fas fa-cogs"></i>
+                    Acciones Principales
+                </div>
+                <div class="sidebar-buttons">
+                    {% if puede_modificar %}
+                        <button type="button" class="sidebar-btn" data-bs-toggle="modal" data-bs-target="#modalEditarServicio">
+                            <i class="bi bi-pencil"></i>
+                            Editar Servicio
+                        </button>
+                        <a href="{% url 'gestionDeTaller:cambiar_estado_servicio' servicio.id %}" class="sidebar-btn">
+                            <i class="fas fa-exchange-alt"></i>
+                            Cambiar Estado
+                        </a>
+                    {% else %}
+                        <button type="button" class="sidebar-btn disabled" disabled title="No puedes modificar este servicio">
+                            <i class="bi bi-pencil"></i>
+                            Editar Servicio
+                        </button>
+                        <span class="badge bg-danger">Solo Gerente puede modificar</span>
+                    {% endif %}
+                    
+                    {% if servicio.preorden.tipo_trabajo == 'PRESENCIAL_CAMPO' %}
+                        <button type="button" class="sidebar-btn {% if checklist_existente %}btn-success{% else %}btn-secondary{% endif %}" 
+                                data-bs-toggle="modal" data-bs-target="#modalChecklistCampo">
+                            <i class="bi bi-check-square"></i>
+                            Salida Campo
+                        </button>
+                    {% endif %}
+                    
+                    <a href="{% url 'gestionDeTaller:lista_servicios' %}" class="sidebar-btn">
+                        <i class="fas fa-arrow-left"></i>
+                        Volver a Lista
+                    </a>
+                </div>
+            </div>
+
+            <!-- Documentos -->
+            <div class="sidebar-section">
+                <div class="sidebar-title">
+                    <i class="fas fa-file-alt"></i>
+                    Documentos
+                </div>
+                <div class="sidebar-buttons">
+                    {% if puede_modificar_informe %}
+                        <a href="{% url 'gestionDeTaller:editar_informe' servicio.id %}" class="sidebar-btn">
+                            <i class="bi bi-pencil"></i>
+                            Editar Informe
+                        </a>
+                    {% else %}
+                        <button type="button" class="sidebar-btn disabled" disabled title="No puedes modificar este informe">
+                            <i class="bi bi-pencil"></i>
+                            Editar Informe
+                        </button>
+                    {% endif %}
+                    
+                    <a href="{% url 'gestionDeTaller:ver_informe' servicio.id %}" class="sidebar-btn">
+                        <i class="bi bi-file-earmark-text"></i>
+                        Ver Informe
+                    </a>
+                    
+                    <a href="{% url 'gestionDeTaller:generar_informe_pdf' servicio.id %}" class="sidebar-btn" target="_blank">
+                        <i class="bi bi-file-earmark-pdf-fill"></i>
+                        Descargar PDF
+                    </a>
+                    
+                    {% if user.rol == 'GERENTE' %}
+                        <a href="{% url 'gestionDeTaller:historial_cambios_informe' servicio.id %}" class="sidebar-btn">
+                            <i class="fas fa-history"></i>
+                            Historial Cambios en IS
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Historial -->
+            {% if user.rol == 'GERENTE' %}
+            <div class="sidebar-section">
+                <div class="sidebar-title">
+                    <i class="fas fa-history"></i>
+                    Historial
+                </div>
+                <div class="sidebar-buttons">
+                    <a href="{% url 'gestionDeTaller:historial_cambios_servicio' servicio.id %}" class="sidebar-btn">
+                        <i class="fas fa-history"></i>
+                        Historial Cambios de Estado
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Financiero -->
+            {% if user.rol == 'GERENTE' or user.rol == 'ADMINISTRATIVO' %}
+            <div class="sidebar-section">
+                <div class="sidebar-title">
+                    <i class="fas fa-dollar-sign"></i>
+                    Facturación
+                </div>
+                <div class="sidebar-buttons">
+                    <button type="button" class="sidebar-btn" data-bs-toggle="modal" data-bs-target="#modalAgregarGasto">
+                        <i class="fas fa-plus"></i>
+                        Agregar Gasto
+                    </button>
+                    <button type="button" class="sidebar-btn" data-bs-toggle="modal" data-bs-target="#modalAgregarRepuesto">
+                        <i class="fas fa-plus"></i>
+                        Agregar Repuesto
+                    </button>
+                    <button type="button" class="sidebar-btn" data-bs-toggle="modal" data-bs-target="#modalManoObra">
+                        <i class="fas fa-tools"></i>
+                        Agregar Mano de Obra
+                    </button>
+                </div>
+            </div>
+
+            <!-- Administrativo -->
+            <div class="sidebar-section">
+                <div class="sidebar-title">
+                    <i class="fas fa-clipboard-list"></i>
+                    Administrativo
+                </div>
+                <div class="sidebar-buttons">
+                    <button type="button" class="sidebar-btn" data-bs-toggle="modal" data-bs-target="#modalAgregarPedido">
+                        <i class="fas fa-plus"></i>
+                        Agregar Pedido de Repuestos
+                    </button>
+                    <button type="button" class="sidebar-btn" data-bs-toggle="modal" data-bs-target="#modalEditarDocumentos">
+                        <i class="fas fa-file-contract"></i>
+                        Editar Documentos
+                    </button>
+                    {% if not servicio.fecha_envio_documentacion %}
+                        <button type="button" class="sidebar-btn" data-bs-toggle="modal" data-bs-target="#enviarDocumentacionModal">
+                            <i class="fas fa-paper-plane"></i>
+                            Enviar Documentación
+                        </button>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Contenido Principal -->
+        <div class="main-content">
+            <!-- Información General del Servicio - Widgets -->
+            <div class="card">
+                <div class="card-header">
+                    <h3><i class="fas fa-cogs me-2"></i>Información General del Servicio</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <!-- Widget Cliente -->
+                        <div class="col-md-6 col-lg-4 mb-3">
+                            <div class="widget-card">
+
+                                <div class="widget-content">
+                                    <div class="widget-label">Cliente</div>
+                                    <div class="widget-value">{{ servicio.preorden.cliente.razon_social }}</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Widget Equipo -->
+                        <div class="col-md-6 col-lg-4 mb-3">
+                            <div class="widget-card">
+
+                                <div class="widget-content">
+                                    <div class="widget-label">Equipo</div>
+                                    <div class="widget-value">{{ servicio.preorden.equipo.numero_serie }}</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Widget Sucursal -->
+                        <div class="col-md-6 col-lg-4 mb-3">
+                            <div class="widget-card">
+
+                                <div class="widget-content">
+                                    <div class="widget-label">Sucursal</div>
+                                    <div class="widget-value">{{ servicio.preorden.sucursal.nombre }}</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Widget Estado -->
+                        <div class="col-md-6 col-lg-4 mb-3">
+                            <div class="widget-card">
+
+                                <div class="widget-content">
+                                    <div class="widget-label">Estado</div>
+                                    <div class="widget-value">
+                                        <span class="estado 
+                                            {% if servicio.estado == 'PROGRAMADO' %}estado-programado
+                                            {% elif servicio.estado == 'EN_PROCESO' %}estado-en-proceso
+                                            {% elif servicio.estado == 'ESPERA_REPUESTOS' %}estado-en-espera
+                                            {% elif servicio.estado == 'A_FACTURAR' %}estado-finalizado
+                                            {% elif servicio.estado == 'COMPLETADO' %}estado-completado
+                                            {% endif %}">
+                                            {{ servicio.get_estado_display }}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Widget Fecha -->
+                        <div class="col-md-6 col-lg-4 mb-3">
+                            <div class="widget-card">
+
+                                <div class="widget-content">
+                                    <div class="widget-label">Fecha de Servicio</div>
+                                    <div class="widget-value">{{ servicio.fecha_servicio|date:"d/m/Y" }}</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Widget Trabajo -->
+                        <div class="col-md-6 col-lg-4 mb-3">
+                            <div class="widget-card">
+
+                                <div class="widget-content">
+                                    <div class="widget-label">Tipo de Trabajo</div>
+                                    <div class="widget-value">{{ servicio.get_trabajo_display }}</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Widget Horómetro -->
+                        <div class="col-md-6 col-lg-4 mb-3">
+                            <div class="widget-card">
+          
+                                <div class="widget-content">
+                                    <div class="widget-label">Horómetro</div>
+                                    <div class="widget-value">{{ servicio.horometro_servicio|default:"No disponible" }}</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Widget Observaciones -->
+                        <div class="col-md-6 col-lg-4 mb-3">
+                            <div class="widget-card">
+
+                                <div class="widget-content">
+                                    <div class="widget-label">Observaciones</div>
+                                    <div class="widget-value">{{ servicio.observaciones|default:"Sin observaciones" }}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+    <!-- Observaciones del Servicio -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3><i class="fas fa-comments me-2"></i>Observaciones del Servicio</h3>
+                    <button type="button" class="btn btn-dark btn-sm" data-bs-toggle="modal" data-bs-target="#modalAgregarObservacion">
+                        <i class="bi bi-plus-circle me-2"></i> Agregar Observación
+                    </button>
+                </div>
+                <div class="card-body">
+                    {% if observaciones %}
+                        <div class="observaciones-container">
+                            {% for observacion in observaciones %}
+                                <div class="observacion-item mb-3 p-3 border rounded" style="background-color: #f8f9fa;">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div class="d-flex align-items-center">
+                                            <i class="fas fa-user-circle me-2 text-primary"></i>
+                                            <strong>{{ observacion.usuario.get_nombre_completo }}</strong>
+                                        </div>
+                                        <div class="d-flex align-items-center">
+                                            <small class="text-muted me-3">
+                                                <i class="fas fa-clock me-1"></i>
+                                                {{ observacion.get_fecha_formateada }}
+                                            </small>
+                                            {% if request.user == observacion.usuario or request.user.rol in 'GERENTE,ADMINISTRACION' %}
+                                                <a href="{% url 'gestionDeTaller:eliminar_observacion' observacion.id %}" 
+                                                   class="btn btn-sm btn-outline-danger"
+                                                   onclick="return confirm('¿Estás seguro de que quieres eliminar esta observación?')">
+                                                    <i class="fas fa-trash"></i>
+                                                </a>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="observacion-texto">
+                                        {{ observacion.observacion|linebreaks }}
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-comments fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">No hay observaciones registradas para este servicio.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pedidos de Repuestos/Terceros -->
+    {% if user.rol == 'GERENTE' or user.rol == 'ADMINISTRATIVO' %}
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3><i class="fas fa-boxes me-2"></i>Pedidos de Repuestos/Terceros</h3>
+                    <button type="button" class="btn btn-dark btn-sm" data-bs-toggle="modal" data-bs-target="#modalAgregarPedido">
+                        <i class="bi bi-plus-circle me-2"></i> Agregar
+                    </button>
+                </div>
+                <div class="card-body">
+                    {% if servicio.pedidos.exists %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th><i class="fas fa-building me-2"></i>Proveedor</th>
+                                    <th><i class="fas fa-hashtag me-2"></i>Número</th>
+                                    <th><i class="fas fa-calendar me-2"></i>Fecha</th>
+                                    <th><i class="fas fa-flag me-2"></i>Estado</th>
+                                    <th><i class="fas fa-file-alt me-2"></i>Descripción</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for pedido in servicio.pedidos.all %}
+                                <tr>
+                                    <td><strong>{{ pedido.proveedor }}</strong></td>
+                                    <td>{{ pedido.numero_pedido }}</td>
+                                    <td>{{ pedido.fecha_pedido|date:"d/m/Y" }}</td>
+                                    <td>
+                                        <select class="form-select form-select-sm cambiar-estado" data-id="{{ pedido.id }}">
+                                            {% for estado, nombre in estados_pedido %}
+                                            <option value="{{ estado }}" {% if pedido.estado == estado %}selected{% endif %}>
+                                                {{ nombre }}
+                                            </option>
+                                            {% endfor %}
+                                        </select>
+                                    </td>
+                                    <td>{{ pedido.descripcion }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-box-open fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">No hay pedidos asociados a este servicio.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Modal de Checklist -->
+    <div class="modal fade" id="modalChecklistCampo" tabindex="-1" aria-labelledby="modalChecklistCampoLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalChecklistCampoLabel">
+                        <i class="fas fa-clipboard-check me-2"></i>Checklist de Salida al Campo
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form method="post" action="{% url 'gestionDeTaller:crear_checklist_campo' servicio.id %}">
+                        {% csrf_token %}
+                        <!-- Mostrar el formulario con los datos guardados o vacío si no existen -->
+                        {{ form_checklist_campo.as_p }}
+                        <div class="text-center mt-4">
+                            <button type="submit" class="btn btn-dark">
+                                <i class="fas fa-save me-2"></i>Guardar Checklist
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Documentación del Servicio y Mano de Obra en la misma fila -->
+    {% if user.rol != 'TECNICO' %}
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h3><i class="fas fa-file-invoice me-2"></i>Documentación del Servicio</h3>
+                </div>
+                <div class="card-body">
+                    <div class="info-item">
+                        <span class="info-label"><i class="fas fa-receipt me-2"></i>Número de Factura:</span>
+                        <span class="info-value">{{ servicio.numero_factura|default:"No disponible" }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label"><i class="fas fa-image me-2"></i>Imagen Factura:</span>
+                        <span class="info-value">
+                            {% if servicio.imagen_factura %}
+                                <a href="{{ servicio.imagen_factura.url }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-eye me-1"></i>Ver Factura
+                                </a>
+                            {% else %}
+                                <span class="text-muted">No disponible</span>
+                            {% endif %}
+                        </span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label"><i class="fas fa-file-invoice-dollar me-2"></i>Número de Cotización:</span>
+                        <span class="info-value">{{ servicio.numero_cotizacion|default:"No disponible" }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label"><i class="fas fa-image me-2"></i>Imagen Cotización:</span>
+                        <span class="info-value">
+                            {% if servicio.imagen_cotizacion %}
+                                <a href="{{ servicio.imagen_cotizacion.url }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-eye me-1"></i>Ver Cotización
+                                </a>
+                            {% else %}
+                                <span class="text-muted">No disponible</span>
+                            {% endif %}
+                        </span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label"><i class="fas fa-file-alt me-2"></i>Informe de Servicio:</span>
+                        <span class="info-value">
+                            {% if servicio.imagen_informe %}
+                                <a href="{{ servicio.imagen_informe.url }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-eye me-1"></i>Ver Informe
+                                </a>
+                            {% else %}
+                                <span class="text-muted">No disponible</span>
+                            {% endif %}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3><i class="fas fa-tools me-2"></i>Mano de Obra</h3>
+                    <button type="button" class="btn btn-dark btn-sm" data-bs-toggle="modal" data-bs-target="#modalManoObra">
+                        <i class="bi bi-pencil me-2"></i> Editar
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div class="info-item">
+                        <span class="info-label"><i class="fas fa-clock me-2"></i>Total de Horas Técnicas:</span>
+                        <span class="info-value"><strong>{{ total_horas_tecnicos }} horas</strong></span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label"><i class="fas fa-dollar-sign me-2"></i>Valor Calculado:</span>
+                        <span class="info-value"><strong>${{ valor_mano_obra }}</strong></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Gastos Asociados -->
+    {% if user.rol != 'TECNICO' %}
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3><i class="fas fa-money-bill-wave me-2"></i>Gastos Asociados</h3>
+                    <button type="button" class="btn btn-dark btn-sm" data-bs-toggle="modal" data-bs-target="#modalAgregarGasto">
+                        <i class="bi bi-plus-circle me-2"></i> Agregar
+                    </button>
+                </div>
+                <div class="card-body">
+                    {% if servicio.gastos.exists %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th><i class="fas fa-tag me-2"></i>Tipo</th>
+                                        <th><i class="fas fa-file-alt me-2"></i>Descripción</th>
+                                        <th><i class="fas fa-dollar-sign me-2"></i>Monto</th>
+                                        <th><i class="fas fa-calendar me-2"></i>Fecha</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for gasto in servicio.gastos.all %}
+                                        <tr>
+                                            <td><span class="badge bg-info">{{ gasto.get_tipo_display }}</span></td>
+                                            <td>{{ gasto.descripcion }}</td>
+                                            <td><strong>${{ gasto.monto }}</strong></td>
+                                            <td>{{ gasto.fecha|date:"d/m/Y" }}</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-money-bill-wave fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">No hay gastos asociados a este servicio.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Venta de Repuestos -->
+    {% if user.rol != 'TECNICO' %}
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3><i class="fas fa-cogs me-2"></i>Venta de Repuestos</h3>
+                    <button type="button" class="btn btn-dark btn-sm" data-bs-toggle="modal" data-bs-target="#modalAgregarRepuesto">
+                        <i class="bi bi-plus-circle me-2"></i> Agregar
+                    </button>
+                </div>
+                <div class="card-body">
+                    {% if servicio.repuestos.exists %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th><i class="fas fa-barcode me-2"></i>Código</th>
+                                        <th><i class="fas fa-file-alt me-2"></i>Descripción</th>
+                                        <th><i class="fas fa-hashtag me-2"></i>Cantidad</th>
+                                        <th><i class="fas fa-dollar-sign me-2"></i>Precio Unit.</th>
+                                        <th><i class="fas fa-calculator me-2"></i>Subtotal</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for repuesto in servicio.repuestos.all %}
+                                        <tr>
+                                            <td><code>{{ repuesto.codigo }}</code></td>
+                                            <td>{{ repuesto.descripcion }}</td>
+                                            <td><span class="badge bg-secondary">{{ repuesto.cantidad }}</span></td>
+                                            <td>${{ repuesto.precio_unitario }}</td>
+                                            <td><strong>${{ repuesto.get_subtotal }}</strong></td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-cogs fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">No hay repuestos vendidos asociados.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Modal para editar un pedido -->
+    <div class="modal fade" id="modalEditarPedido" tabindex="-1" aria-labelledby="modalEditarPedidoLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form method="post" id="formEditarPedido">
+                    {% csrf_token %}
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="modalEditarPedidoLabel">Editar Pedido</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body" id="modalEditarPedidoContent">
+                        <!-- Aquí se cargará dinámicamente el formulario -->
+                        <p>Cargando...</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-dark">Guardar Cambios</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal fade" id="enviarDocumentacionModal" tabindex="-1" aria-labelledby="enviarDocumentacionModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form method="POST" action="{% url 'gestionDeTaller:enviar_documentacion' servicio.id %}">
+                    {% csrf_token %}
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="enviarDocumentacionModalLabel">Enviar Documentación</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <h4>Selecciona los destinatarios:</h4>
+                        {% for email in destinatarios_existentes %}
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="emails[]" value="{{ email }}" id="email_{{ forloop.counter }}" checked>
+                                <label class="form-check-label" for="email_{{ forloop.counter }}">
+                                    {{ email }}
+                                </label>
+                            </div>
+                        {% endfor %}
+                        
+                        <!-- Campo para agregar un nuevo correo manualmente -->
+                        <div class="mb-3">
+                            <label for="nuevo_correo" class="form-label">Agregar correo adicional:</label>
+                            <input type="email" class="form-control" id="nuevo_correo" name="nuevo_correo" placeholder="correo@example.com">
+                        </div>
+                        
+                        <!-- Campo para editar el mensaje -->
+                        <div class="mb-3">
+                            <label for="mensaje_correo" class="form-label">Mensaje del Correo:</label>
+                            <textarea class="form-control" id="mensaje_correo" name="mensaje_correo" rows="6">
+                                <p>Estimado/a,</p>
+                                
+                                <p>Adjunto factura/s e informe/s de servicio correspondientes por las transacciones efectuadas.</p>
+                                
+                                <p>Recuerde que el vencimiento es de 15 días corridos y el tipo de cambio vendedor es brindado por el Banco Nación.</p>
+                                
+                                <div style="max-width: 500px;">
+                                    <table style="width: 100%; border-collapse: collapse; font-family: Arial, sans-serif;">
+                                        <tr>
+                                            <th colspan="2" style="background-color: #d97a32; color: #333; text-align: left; padding: 8px; font-size: 16px;">
+                                                DATOS BANCARIOS
+                                            </th>
+                                        </tr>
+                                        <tr>
+                                            <td style="background-color: #d97a32; color: white; padding: 8px; font-weight: bold;">EMPRESA</td>
+                                            <td style="background-color: #f3b27e; color: #333; padding: 8px;">PATAGONIA MAQUINARIAS SRL</td>
+                                        </tr>
+                                        <tr>
+                                            <td style="background-color: #d97a32; color: white; padding: 8px; font-weight: bold;">CUIT</td>
+                                            <td style="background-color: #f3b27e; color: #333; padding: 8px;">30-71228471-0</td>
+                                        </tr>
+                                        <tr>
+                                            <td style="background-color: #d97a32; color: white; padding: 8px; font-weight: bold;">BANCO</td>
+                                            <td style="background-color: #f3b27e; color: #333; padding: 8px;">FRANCES</td>
+                                        </tr>
+                                        <tr>
+                                            <td style="background-color: #d97a32; color: white; padding: 8px; font-weight: bold;">SUCURSAL</td>
+                                            <td style="background-color: #f3b27e; color: #333; padding: 8px;">228</td>
+                                        </tr>
+                                        <tr>
+                                            <td style="background-color: #d97a32; color: white; padding: 8px; font-weight: bold;">N° CUENTA</td>
+                                            <td style="background-color: #f3b27e; color: #333; padding: 8px;">228-012593/8</td>
+                                        </tr>
+                                        <tr>
+                                            <td style="background-color: #d97a32; color: white; padding: 8px; font-weight: bold;">CBU</td>
+                                            <td style="background-color: #f3b27e; color: #333; padding: 8px;">0170228820000001259382</td>
+                                        </tr>
+                                    </table>
+                                </div>
+                                
+                                <p>Aguardo su recepción.</p>
+                                
+                                <p>Saludos cordiales.</p>
+                                <p>Administración Patagonia Maquinarias.</p>
+                            </textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-dark">Enviar Documentación</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para editar los documentos del servicio -->
+    <div class="modal fade" id="modalEditarDocumentos" tabindex="-1" aria-labelledby="modalEditarDocumentosLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <form method="POST" action="{% url 'gestionDeTaller:editar_servicio_documentos' servicio.id %}" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="modalEditarDocumentosLabel">
+                            <i class="fas fa-file-contract me-2"></i>Editar Documentos del Servicio
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <!-- Número de Factura -->
+                                <div class="mb-3">
+                                    <label for="id_numero_factura" class="form-label">
+                                        <i class="fas fa-receipt me-2"></i>Número de Factura
+                                    </label>
+                                    {{ form_documentos.numero_factura }}
+                                </div>
+                                <!-- Archivo de Factura -->
+                                <div class="mb-3">
+                                    <label for="id_archivo_factura" class="form-label">
+                                        <i class="fas fa-file-upload me-2"></i>Archivo de Factura
+                                    </label>
+                                    {{ form_documentos.archivo_factura }}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <!-- Número de Cotización -->
+                                <div class="mb-3">
+                                    <label for="id_numero_cotizacion" class="form-label">
+                                        <i class="fas fa-file-invoice-dollar me-2"></i>Número de Cotización
+                                    </label>
+                                    {{ form_documentos.numero_cotizacion }}
+                                </div>
+                                <!-- Archivo de Cotización -->
+                                <div class="mb-3">
+                                    <label for="id_archivo_cotizacion" class="form-label">
+                                        <i class="fas fa-file-upload me-2"></i>Archivo de Cotización
+                                    </label>
+                                    {{ form_documentos.archivo_cotizacion }}
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Informe de Servicio -->
+                        <div class="mb-3">
+                            <label for="id_archivo_informe" class="form-label">
+                                <i class="fas fa-file-alt me-2"></i>Informe de Servicio
+                            </label>
+                            {{ form_documentos.archivo_informe }}
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            <i class="fas fa-times me-2"></i>Cancelar
+                        </button>
+                        <button type="submit" class="btn btn-dark">
+                            <i class="fas fa-save me-2"></i>Guardar Cambios
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para editar el estado del servicio, observaciones y número de orden -->
+    <div class="modal fade" id="modalEditarServicio" tabindex="-1" aria-labelledby="modalEditarServicioLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form method="POST" action="{% url 'gestionDeTaller:editar_servicio' servicio.id %}">
+                    {% csrf_token %}
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="modalEditarServicioLabel">
+                            <i class="fas fa-edit me-2"></i>Editar Servicio
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="id_fecha_servicio" class="form-label">
+                                <i class="fas fa-calendar me-2"></i>Fecha de Servicio
+                            </label>
+                            {{ form_editar.fecha_servicio }}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="id_horometro_servicio" class="form-label">
+                                <i class="fas fa-tachometer-alt me-2"></i>Horómetro en Servicio
+                            </label>
+                            {{ form_editar.horometro_servicio }}
+                        </div>
+                        <div class="mb-3">
+                            <label for="id_prioridad" class="form-label">
+                                <i class="fas fa-exclamation-circle me-2"></i>Prioridad
+                            </label>
+                            {{ form_editar.prioridad }}
+                        </div>
+                    </div>
+                    
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            <i class="fas fa-times me-2"></i>Cancelar
+                        </button>
+                        <button type="submit" class="btn btn-dark">
+                            <i class="fas fa-save me-2"></i>Guardar Cambios
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para editar valor de mano de obra -->
+    {% if user.rol != 'TECNICO' %}
+    <div class="modal fade" id="modalManoObra" tabindex="-1" aria-labelledby="modalManoObraLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form method="POST" action="{% url 'gestionDeTaller:detalle_servicio' servicio.id %}">
+                    {% csrf_token %}
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="modalManoObraLabel">
+                            <i class="fas fa-tools me-2"></i>Editar Valor de Mano de Obra
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        {{ form_mano_obra.as_p }}
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            <i class="fas fa-times me-2"></i>Cancelar
+                        </button>
+                        <button type="submit" class="btn btn-dark" name="guardar_valor_mano_obra">
+                            <i class="fas fa-save me-2"></i>Guardar Cambios
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para agregar gasto de asistencia -->
+    <div class="modal fade" id="modalAgregarGasto" tabindex="-1" aria-labelledby="modalAgregarGastoLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form method="POST" action="{% url 'gestionDeTaller:agregar_gasto' servicio.id %}" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="modalAgregarGastoLabel">
+                            <i class="fas fa-money-bill-wave me-2"></i>Agregar Gasto de Asistencia
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        {{ form_gasto.as_p }}
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            <i class="fas fa-times me-2"></i>Cancelar
+                        </button>
+                        <button type="submit" class="btn btn-dark">
+                            <i class="fas fa-save me-2"></i>Guardar Gasto
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Modal para agregar pedido de repuestos y trabajos de terceros -->
+    <div class="modal fade" id="modalAgregarPedido" tabindex="-1" aria-labelledby="modalAgregarPedidoLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form method="POST" action="{% url 'gestionDeTaller:agregar_pedido' servicio.id %}">
+                    {% csrf_token %}
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="modalAgregarPedidoLabel">
+                            <i class="fas fa-boxes me-2"></i>Agregar Pedido de Repuestos/Terceros
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        {{ form_pedido.as_p }}
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            <i class="fas fa-times me-2"></i>Cancelar
+                        </button>
+                        <button type="submit" class="btn btn-dark">
+                            <i class="fas fa-save me-2"></i>Guardar Pedido
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para agregar venta de repuesto -->
+    {% if user.rol != 'TECNICO' %}
+    <div class="modal fade" id="modalAgregarRepuesto" tabindex="-1" aria-labelledby="modalAgregarRepuestoLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form method="POST" action="{% url 'gestionDeTaller:agregar_repuesto' servicio.id %}">
+                    {% csrf_token %}
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="modalAgregarRepuestoLabel">
+                            <i class="fas fa-cogs me-2"></i>Agregar Venta de Repuesto
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        {{ form_repuesto.as_p }}
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            <i class="fas fa-times me-2"></i>Cancelar
+                        </button>
+                        <button type="submit" class="btn btn-dark">
+                            <i class="fas fa-save me-2"></i>Guardar Repuesto
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</main>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('.cambiar-estado').forEach(select => {
+            select.addEventListener('change', function () {
+                const pedidoId = this.dataset.id;
+                const nuevoEstado = this.value;
+
+                fetch("{% url 'gestionDeTaller:actualizar_estado_pedido' %}", {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        id: pedidoId,
+                        estado: nuevoEstado
+                    })
+                })
+                .then(response => {
+                    if (!response.ok) throw new Error('Error en la actualización.');
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        alert('Estado actualizado correctamente.');
+                    } else {
+                        alert('No se pudo actualizar el estado.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Ocurrió un error al actualizar el estado.');
+                });
+            });
+        });
+    });
+</script>
+
+<!-- Modal para agregar observación -->
+<div class="modal fade" id="modalAgregarObservacion" tabindex="-1" aria-labelledby="modalAgregarObservacionLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <form method="POST" action="{% url 'gestionDeTaller:agregar_observacion' servicio.id %}">
+                {% csrf_token %}
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalAgregarObservacionLabel">
+                        <i class="fas fa-comments me-2"></i>Agregar Observación
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="observacion" class="form-label">Observación:</label>
+                        <textarea class="form-control" id="observacion" name="observacion" rows="6" 
+                                  placeholder="Escribe aquí tu observación sobre el servicio..." required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-2"></i>Cancelar
+                    </button>
+                    <button type="submit" class="btn btn-dark">
+                        <i class="fas fa-save me-2"></i>Guardar Observación
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para enviar encuesta -->
+<div class="modal fade" id="modalEnviarEncuesta" tabindex="-1" aria-labelledby="modalEnviarEncuestaLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalEnviarEncuestaLabel">Enviar Encuesta de Satisfacción</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" action="{% url 'gestionDeTaller:enviar_encuesta' servicio.id %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Seleccionar destinatarios:</label>
+                        {% for email in destinatarios_existentes %}
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="emails[]" value="{{ email }}" id="email_{{ forloop.counter }}" checked>
+                            <label class="form-check-label" for="email_{{ forloop.counter }}">
+                                {{ email }}
+                            </label>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="nuevo_correo" class="form-label">Agregar correo adicional:</label>
+                        <input type="email" class="form-control" id="nuevo_correo" name="nuevo_correo" placeholder="ejemplo@correo.com">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="mensaje_correo" class="form-label">Mensaje del correo:</label>
+                        <textarea class="form-control" id="mensaje_correo" name="mensaje_correo" rows="6">
+                            Estimado/a {{ servicio.preorden.cliente.razon_social }},
+
+                            Gracias por confiar en nuestros servicios. Nos gustaría conocer su opinión sobre el servicio #{{ servicio.id }}.
+
+                            Por favor, complete nuestra encuesta de satisfacción en el siguiente enlace:
+                            [LINK_ENCUESTA]
+
+                            Su opinión es muy importante para nosotros y nos ayuda a mejorar nuestros servicios.
+
+                            Saludos cordiales,
+                            Equipo de Patagonia Maquinarias
+                        </textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Enviar Encuesta</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const formEncuesta = document.querySelector('#modalEnviarEncuesta form');
+    if (formEncuesta) {
+        formEncuesta.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            
+            fetch(this.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Mostrar mensaje de éxito
+                    const toast = new bootstrap.Toast(document.createElement('div'));
+                    toast._element.classList.add('toast', 'bg-success', 'text-white');
+                    toast._element.innerHTML = `
+                        <div class="toast-body">
+                            ${data.message}
+                        </div>
+                    `;
+                    document.body.appendChild(toast._element);
+                    toast.show();
+                    
+                    // Cerrar el modal
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('modalEnviarEncuesta'));
+                    modal.hide();
+                    
+                    // Recargar la página después de 1 segundo
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1000);
+                } else {
+                    // Mostrar mensaje de error
+                    const toast = new bootstrap.Toast(document.createElement('div'));
+                    toast._element.classList.add('toast', 'bg-danger', 'text-white');
+                    toast._element.innerHTML = `
+                        <div class="toast-body">
+                            ${data.message}
+                        </div>
+                    `;
+                    document.body.appendChild(toast._element);
+                    toast.show();
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                // Mostrar mensaje de error genérico
+                const toast = new bootstrap.Toast(document.createElement('div'));
+                toast._element.classList.add('toast', 'bg-danger', 'text-white');
+                toast._element.innerHTML = `
+                    <div class="toast-body">
+                        Error al enviar la encuesta. Por favor, intente nuevamente.
+                    </div>
+                `;
+                document.body.appendChild(toast._element);
+                toast.show();
+            });
+        });
+    }
+});
+</script>
+
+{% endblock %}

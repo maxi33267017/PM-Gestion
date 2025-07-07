@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Cargar Respuesta de Encuesta</h2>
+    <div class="card">
+        <div class="card-body">
+            <h5 class="card-title">Servicio #{{ servicio.id }}</h5>
+            <p class="card-text">
+                <strong>Cliente:</strong> {{ servicio.preorden.cliente.razon_social }}<br>
+                <strong>Fecha de Servicio:</strong> {{ servicio.fecha_servicio }}
+            </p>
+            
+            <form method="post">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="{{ form.calificacion.id_for_label }}">Calificación:</label>
+                    {{ form.calificacion }}
+                </div>
+                <div class="form-group">
+                    <label for="{{ form.comentarios.id_for_label }}">Comentarios:</label>
+                    {{ form.comentarios }}
+                </div>
+                <div class="form-group">
+                    <label for="{{ form.nombre_respondente.id_for_label }}">Nombre del Respondente:</label>
+                    {{ form.nombre_respondente }}
+                </div>
+                <div class="form-group">
+                    <label for="{{ form.cargo_respondente.id_for_label }}">Cargo del Respondente:</label>
+                    {{ form.cargo_respondente }}
+                </div>
+                <button type="submit" class="btn btn-primary">Guardar Respuesta</button>
+                <a href="{% url 'gestionDeTaller:lista_encuestas' %}" class="btn btn-secondary">Cancelar</a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %} 

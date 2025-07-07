@@ -1,0 +1,604 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+    /* Variables CSS para consistencia */
+    :root {
+        --primary-gradient: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        --secondary-gradient: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        --success-gradient: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        --warning-gradient: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        --danger-gradient: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+        --dark-gradient: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        --light-gradient: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        --card-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        --hover-shadow: 0 15px 40px rgba(0,0,0,0.15);
+        --border-radius: 20px;
+        --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Header mejorado */
+    .equipo-header {
+        background: var(--dark-gradient);
+        color: white;
+        padding: 3rem 2rem;
+        border-radius: var(--border-radius);
+        margin-bottom: 2.5rem;
+        box-shadow: var(--card-shadow);
+        position: relative;
+        overflow: hidden;
+        text-align: center;
+    }
+    
+    .equipo-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="dots" width="20" height="20" patternUnits="userSpaceOnUse"><circle cx="10" cy="10" r="1" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23dots)"/></svg>');
+        pointer-events: none;
+    }
+    
+    .equipo-header h1 {
+        margin: 0;
+        font-weight: 800;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        font-size: 3rem;
+        position: relative;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 1rem;
+    }
+    
+    .equipo-header .subtitle {
+        font-size: 1.2rem;
+        opacity: 0.9;
+        margin-top: 1rem;
+        position: relative;
+        z-index: 1;
+    }
+
+    /* Estadísticas */
+    .stats-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2.5rem;
+    }
+    
+    .stat-card {
+        background: white;
+        border-radius: var(--border-radius);
+        padding: 1rem;
+        box-shadow: var(--card-shadow);
+        text-align: center;
+        transition: var(--transition);
+        border: 1px solid #e9ecef;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 5px;
+        height: 100%;
+        background: var(--dark-gradient);
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-8px);
+        box-shadow: var(--hover-shadow);
+        border-color: #2c3e50;
+    }
+    
+    .stat-icon {
+        width: 35px;
+        height: 35px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 0.5rem;
+        background: var(--dark-gradient);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    
+    .stat-icon i {
+        font-size: 1rem;
+        color: white;
+    }
+    
+    .stat-number {
+        font-size: 1.25rem;
+        font-weight: 800;
+        color: #2c3e50;
+        margin-bottom: 0.25rem;
+    }
+    
+    .stat-label {
+        font-size: 0.75rem;
+        color: #6c757d;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    /* Contenedor principal */
+    .equipo-container {
+        background: white;
+        border-radius: var(--border-radius);
+        box-shadow: var(--card-shadow);
+        overflow: hidden;
+        border: 1px solid #e9ecef;
+    }
+    
+    .equipo-container-header {
+        background: var(--dark-gradient);
+        color: white;
+        padding: 2rem;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .equipo-container-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="header-dots" width="20" height="20" patternUnits="userSpaceOnUse"><circle cx="10" cy="10" r="1" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23header-dots)"/></svg>');
+        pointer-events: none;
+    }
+    
+    .equipo-container-header h2 {
+        margin: 0;
+        font-weight: 700;
+        font-size: 1.5rem;
+        position: relative;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        gap: 0.8rem;
+    }
+
+    /* Mejoras en la tabla */
+    .table-responsive {
+        border-radius: 0 0 var(--border-radius) var(--border-radius);
+        overflow: hidden;
+    }
+    
+    .table {
+        margin-bottom: 0;
+        border: none;
+        border-radius: 0 0 var(--border-radius) var(--border-radius);
+        overflow: hidden;
+    }
+    
+    .table-dark {
+        background: var(--dark-gradient);
+        border: none;
+    }
+    
+    .table th {
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 1.5rem 1rem;
+        border: none;
+        font-size: 0.9rem;
+        position: relative;
+        z-index: 1;
+        background: var(--dark-gradient) !important;
+        color: white !important;
+    }
+    
+    .table td {
+        padding: 1.2rem 1rem;
+        vertical-align: middle;
+        border: none;
+        border-bottom: 1px solid #f0f0f0;
+        font-weight: 500;
+    }
+    
+    .table tbody tr {
+        transition: var(--transition);
+        cursor: pointer;
+    }
+    
+    .table tbody tr:hover {
+        background: rgba(44, 62, 80, 0.05);
+        transform: scale(1.01);
+    }
+    
+    .table tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    /* Botón mejorado */
+    .btn-volver {
+        background: var(--dark-gradient);
+        color: white;
+        border: none;
+        border-radius: 25px;
+        padding: 1rem 2rem;
+        font-weight: 600;
+        transition: var(--transition);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-size: 0.95rem;
+        margin-bottom: 2rem;
+        min-width: 200px;
+        white-space: nowrap;
+    }
+    
+    .btn-volver:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+        color: white;
+        background: var(--dark-gradient);
+    }
+
+    /* DataTables personalizado */
+    .dataTables_wrapper {
+        padding: 2rem;
+    }
+    
+    .dataTables_filter input {
+        border-radius: 25px;
+        border: 2px solid #e9ecef;
+        padding: 0.8rem 1.2rem;
+        transition: var(--transition);
+    }
+    
+    .dataTables_filter input:focus {
+        border-color: #2c3e50;
+        box-shadow: 0 0 0 0.2rem rgba(44, 62, 80, 0.25);
+        outline: none;
+    }
+    
+    .dataTables_length select {
+        border-radius: 12px;
+        border: 2px solid #e9ecef;
+        padding: 0.5rem 1rem;
+        transition: var(--transition);
+    }
+    
+    .dataTables_length select:focus {
+        border-color: #2c3e50;
+        box-shadow: 0 0 0 0.2rem rgba(44, 62, 80, 0.25);
+        outline: none;
+    }
+    
+    .dataTables_info {
+        font-weight: 500;
+        color: #6c757d;
+        margin-top: 1rem;
+        text-align: center;
+    }
+
+    /* Animaciones */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .equipo-header, .stats-container, .equipo-container {
+        animation: fadeInUp 0.6s ease-out;
+    }
+    
+    .stat-card:nth-child(1) { animation-delay: 0.1s; }
+    .stat-card:nth-child(2) { animation-delay: 0.2s; }
+    .stat-card:nth-child(3) { animation-delay: 0.3s; }
+    .stat-card:nth-child(4) { animation-delay: 0.4s; }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .equipo-header {
+            padding: 2rem 1.5rem;
+        }
+        
+        .equipo-header h1 {
+            font-size: 2rem;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .stats-container {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.8rem;
+        }
+        
+        .stat-card {
+            padding: 0.8rem;
+        }
+        
+        .stat-icon {
+            width: 30px;
+            height: 30px;
+        }
+        
+        .stat-icon i {
+            font-size: 0.8rem;
+        }
+        
+        .stat-number {
+            font-size: 1rem;
+        }
+        
+        .stat-label {
+            font-size: 0.7rem;
+        }
+        
+        .table th, .table td {
+            padding: 1rem 0.5rem;
+            font-size: 0.9rem;
+        }
+        
+        .dataTables_wrapper {
+            padding: 1rem;
+        }
+    }
+</style>
+
+<div class="container-fluid mt-4">
+    <!-- Header -->
+    <div class="equipo-header">
+        <h1>
+            <i class="bi bi-truck"></i>
+            {{ equipo.modelo.marca }} {{ equipo.modelo.nombre }}
+        </h1>
+        <p class="subtitle">Serial: {{ equipo.numero_serie }}</p>
+    </div>
+
+    <!-- Estadísticas -->
+    <div class="stats-container">
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="bi bi-people"></i>
+            </div>
+            <div class="stat-number">{{ equipo.cliente.razon_social|truncatechars:15 }}</div>
+            <div class="stat-label">Cliente</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="bi bi-speedometer2"></i>
+            </div>
+            <div class="stat-number">{{ equipo.ultimo_horometro|default:"Sin registro" }}</div>
+            <div class="stat-label">Horómetro</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="bi bi-calendar-event"></i>
+            </div>
+            <div class="stat-number">{{ equipo.año_fabricacion|default:"N/A" }}</div>
+            <div class="stat-label">Año</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="bi bi-tools"></i>
+            </div>
+            <div class="stat-number">{{ servicios.count }}</div>
+            <div class="stat-label">Servicios</div>
+        </div>
+    </div>
+
+    <!-- Información del Cliente -->
+    <div class="equipo-container mb-4">
+        <div class="equipo-container-header">
+            <h2>
+                <i class="bi bi-person-circle"></i>
+                Información del Cliente
+            </h2>
+        </div>
+        <div class="table-responsive">
+            <table class="table">
+                <tbody>
+                    <tr>
+                        <td><strong>Razón Social:</strong></td>
+                        <td>{{ equipo.cliente.razon_social }}</td>
+                        <td><strong>Email:</strong></td>
+                        <td>{{ equipo.cliente.email|default:"No especificado" }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>CUIT:</strong></td>
+                        <td>{{ equipo.cliente.cuit|default:"No especificado" }}</td>
+                        <td><strong>Teléfono:</strong></td>
+                        <td>{{ equipo.cliente.telefono|default:"No especificado" }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Dirección:</strong></td>
+                        <td colspan="3">{{ equipo.cliente.direccion|default:"No especificada" }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Información del Equipo -->
+    <div class="equipo-container mb-4">
+        <div class="equipo-container-header">
+            <h2>
+                <i class="bi bi-info-circle"></i>
+                Información del Equipo
+            </h2>
+        </div>
+        <div class="table-responsive">
+            <table class="table">
+                <tbody>
+                    <tr>
+                        <td><strong>Marca y Modelo:</strong></td>
+                        <td>{{ equipo.modelo.marca }} {{ equipo.modelo.nombre }}</td>
+                        <td><strong>Número de Serie:</strong></td>
+                        <td>{{ equipo.numero_serie }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Modelo del Motor:</strong></td>
+                        <td>{{ equipo.modelo_motor|default:"No especificado" }}</td>
+                        <td><strong>Serial del Motor:</strong></td>
+                        <td>{{ equipo.numero_serie_motor|default:"No especificado" }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Año de Fabricación:</strong></td>
+                        <td>{{ equipo.año_fabricacion|default:"No especificado" }}</td>
+                        <td><strong>Fecha de Venta:</strong></td>
+                        <td>{{ equipo.fecha_venta|date:"d/m/Y"|default:"No especificada" }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Notas:</strong></td>
+                        <td colspan="3">{{ equipo.notas|default:"Sin notas"|linebreaks }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Historial de Servicios -->
+    <div class="equipo-container">
+        <div class="equipo-container-header">
+            <h2>
+                <i class="bi bi-tools"></i>
+                Historial de Servicios
+            </h2>
+        </div>
+        <div class="table-responsive">
+            {% if servicios %}
+                <table id="serviciosTable" class="table table-hover">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>
+                                <i class="bi bi-hash me-1"></i>Orden
+                            </th>
+                            <th>
+                                <i class="bi bi-calendar me-1"></i>Fecha
+                            </th>
+                            <th>
+                                <i class="bi bi-flag me-1"></i>Estado
+                            </th>
+                            <th>
+                                <i class="bi bi-chat-text me-1"></i>Solicitud del Cliente
+                            </th>
+                            <th>
+                                <i class="bi bi-person-gear me-1"></i>Técnicos Asignados
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for servicio in servicios %}
+                            <tr class="fila-servicio" data-url="{% url 'gestionDeTaller:detalle_servicio' servicio.id %}">
+                                <td>
+                                    <span class="badge bg-primary fs-6">#{{ servicio.id }}</span>
+                                </td>
+                                <td>
+                                    <i class="bi bi-calendar-event me-1 text-muted"></i>
+                                    {{ servicio.fecha_servicio|date:"d/m/Y" }}
+                                </td>
+                                <td>
+                                    <span class="badge {% if servicio.estado == 'COMPLETADO' %}bg-success
+                                                      {% elif servicio.estado == 'EN_PROCESO' %}bg-warning
+                                                      {% elif servicio.estado == 'ESPERA_REPUESTOS' %}bg-info
+                                                      {% elif servicio.estado == 'A_FACTURAR' %}bg-primary
+                                                      {% else %}bg-secondary{% endif %} fs-6">
+                                        <i class="bi {% if servicio.estado == 'COMPLETADO' %}bi-check-circle
+                                                    {% elif servicio.estado == 'EN_PROCESO' %}bi-gear
+                                                    {% elif servicio.estado == 'ESPERA_REPUESTOS' %}bi-clock
+                                                    {% elif servicio.estado == 'A_FACTURAR' %}bi-receipt
+                                                    {% else %}bi-question-circle{% endif %} me-1"></i>
+                                        {{ servicio.get_estado_display }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="text-truncate" style="max-width: 300px;" title="{{ servicio.preorden.solicitud_cliente }}">
+                                        {{ servicio.preorden.solicitud_cliente|default:"Sin solicitud especificada"|truncatechars:50 }}
+                                    </div>
+                                </td>
+                                <td>
+                                    {% if servicio.preorden.tecnicos.all %}
+                                        <div class="d-flex flex-wrap gap-1">
+                                            {% for tecnico in servicio.preorden.tecnicos.all %}
+                                                <span class="badge bg-info fs-6">
+                                                    <i class="bi bi-person me-1"></i>
+                                                    {{ tecnico.nombre|truncatechars:15 }}
+                                                </span>
+                                            {% endfor %}
+                                        </div>
+                                    {% else %}
+                                        <span class="text-muted">Sin técnicos asignados</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="bi bi-tools text-muted" style="font-size: 4rem;"></i>
+                    <h5 class="mt-3 text-muted">No hay servicios registrados</h5>
+                    <p class="text-muted">Este equipo aún no tiene servicios registrados en el sistema.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Botón Volver -->
+    <div class="text-center mt-4">
+        <a href="{% url 'parque' %}" class="btn btn-volver">
+            <i class="bi bi-arrow-left me-2"></i>Volver al Parque de Equipos
+        </a>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function () {
+        // Configuración de DataTable para la tabla de servicios
+        var serviciosTable = $('#serviciosTable').DataTable({
+            "language": {
+                "url": "//cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json",
+                "search": "Buscar:",
+                "lengthMenu": "Mostrar _MENU_ servicios",
+                "info": "Mostrando _START_ a _END_ de _TOTAL_ servicios",
+                "infoEmpty": "Mostrando 0 a 0 de 0 servicios",
+                "infoFiltered": "(filtrado de _MAX_ servicios en total)",
+                "paginate": {
+                    "first": "Primero",
+                    "previous": "Anterior",
+                    "next": "Siguiente",
+                    "last": "Último"
+                }
+            },
+            "pageLength": 10,
+            "order": [[1, "desc"]], // Ordenar por fecha descendente
+            "responsive": true,
+            "scrollX": false,
+            "columnDefs": [
+                {
+                    "targets": [0, 1, 2], // Columnas que no se pueden buscar
+                    "searchable": false
+                }
+            ]
+        });
+
+        // Evento clic para las filas de servicios
+        $('#serviciosTable tbody').on('click', 'tr.fila-servicio', function () {
+            var url = $(this).data('url');
+            window.location.href = url;
+        });
+    });
+</script>
+{% endblock %}
+

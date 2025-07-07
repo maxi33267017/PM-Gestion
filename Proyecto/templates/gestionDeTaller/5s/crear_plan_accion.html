@@ -1,0 +1,687 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+    :root {
+        --primary-gradient: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        --success-gradient: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+        --warning-gradient: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+        --danger-gradient: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+        --info-gradient: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+        --dark-gradient: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        --card-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        --hover-shadow: 0 15px 40px rgba(0,0,0,0.15);
+        --border-radius: 20px;
+        --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .plan-header {
+        background: var(--dark-gradient);
+        color: white;
+        padding: 3rem 2rem;
+        border-radius: var(--border-radius);
+        margin-bottom: 2.5rem;
+        box-shadow: var(--card-shadow);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .plan-header::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="dots" width="20" height="20" patternUnits="userSpaceOnUse"><circle cx="10" cy="10" r="1" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23dots)"/></svg>');
+        pointer-events: none;
+    }
+    
+    .plan-header h1 {
+        margin: 0;
+        font-weight: 800;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        font-size: 3rem;
+        position: relative;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+    
+    .header-actions {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+    
+    .header-btn {
+        border-radius: 25px;
+        padding: 0.8rem 1.5rem;
+        font-weight: 600;
+        transition: var(--transition);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-size: 0.9rem;
+        border: none;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        text-decoration: none;
+        color: white;
+    }
+    
+    .header-btn.secondary {
+        background: var(--dark-gradient);
+    }
+    
+    .header-btn.secondary:hover {
+        background: var(--dark-gradient);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(44, 62, 80, 0.4);
+        color: white;
+        text-decoration: none;
+    }
+    
+    .messages-container { margin-bottom: 2rem; }
+    
+    .custom-alert {
+        border-radius: var(--border-radius);
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        border: none;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        position: relative;
+        overflow: hidden;
+        font-weight: 500;
+    }
+    
+    .custom-alert.success {
+        background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+        color: #155724;
+        border-left: 4px solid #28a745;
+    }
+    
+    .custom-alert.error {
+        background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+        color: #721c24;
+        border-left: 4px solid #dc3545;
+    }
+    
+    .custom-alert.warning {
+        background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+        color: #856404;
+        border-left: 4px solid #ffc107;
+    }
+    
+    .custom-alert.info {
+        background: linear-gradient(135deg, #d1ecf1 0%, #bee5eb 100%);
+        color: #0c5460;
+        border-left: 4px solid #17a2b8;
+    }
+    
+    .info-card, .form-card, .items-card {
+        background: white;
+        border-radius: var(--border-radius);
+        box-shadow: var(--card-shadow);
+        overflow: hidden;
+        border: 1px solid #e9ecef;
+        margin-bottom: 2rem;
+    }
+    
+    .info-card-header, .form-header, .items-header {
+        background: var(--dark-gradient);
+        color: white;
+        padding: 1.2rem 1.5rem;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .info-card-header h5, .form-header h5, .items-header h5 {
+        margin: 0;
+        font-weight: 700;
+        font-size: 1.2rem;
+        position: relative;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        gap: 0.8rem;
+    }
+    
+    .info-body, .form-body, .items-body {
+        padding: 2rem;
+    }
+    
+    .info-row {
+        margin-bottom: 1.2rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .info-row strong {
+        color: #2c3e50;
+        font-weight: 600;
+    }
+    
+    .progress {
+        height: 25px !important;
+        border-radius: 15px;
+        background: #e9ecef;
+        overflow: hidden;
+        box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .progress-bar {
+        border-radius: 15px;
+        font-weight: 700;
+        font-size: 0.8rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+        transition: var(--transition);
+    }
+    
+    .progress-bar.bg-success { background: var(--success-gradient) !important; }
+    .progress-bar.bg-warning { background: var(--warning-gradient) !important; }
+    .progress-bar.bg-danger { background: var(--danger-gradient) !important; }
+    
+    .items-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+    
+    .item-card {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border: 2px solid #dee2e6;
+        border-radius: 15px;
+        padding: 1rem;
+        text-align: center;
+        transition: var(--transition);
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .item-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        border-color: #3498db;
+    }
+    
+    .item-card.selected {
+        background: var(--info-gradient);
+        color: white;
+        border-color: #3498db;
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(52, 152, 219, 0.3);
+    }
+    
+    .item-card.selectable {
+        position: relative;
+    }
+    
+    .item-checkbox {
+        position: absolute;
+        top: 0.5rem;
+        right: 0.5rem;
+        opacity: 0;
+        transition: var(--transition);
+        color: #3498db;
+        font-size: 1.2rem;
+    }
+    
+    .item-card.selected .item-checkbox {
+        opacity: 1;
+        color: white;
+    }
+    
+    .item-card i {
+        font-size: 2rem;
+        margin-bottom: 0.5rem;
+        opacity: 0.8;
+    }
+    
+    .item-card.selected i {
+        opacity: 1;
+    }
+    
+    .btn-group .btn {
+        border-radius: 20px;
+        font-size: 0.85rem;
+        padding: 0.5rem 1rem;
+        transition: var(--transition);
+    }
+    
+    .btn-group .btn:hover {
+        transform: translateY(-1px);
+    }
+    
+    .alert-info {
+        background: linear-gradient(135deg, #d1ecf1 0%, #bee5eb 100%);
+        border: 1px solid #bee5eb;
+        border-radius: 15px;
+        color: #0c5460;
+    }
+    
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+    
+    .form-label {
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .form-control, .form-select {
+        border-radius: 15px;
+        border: 2px solid #e9ecef;
+        padding: 0.75rem 1rem;
+        transition: var(--transition);
+        font-size: 0.95rem;
+    }
+    
+    .form-control:focus, .form-select:focus {
+        border-color: #3498db;
+        box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
+    }
+    
+    .form-control[readonly] {
+        background-color: #f8f9fa;
+        cursor: not-allowed;
+    }
+    
+    .btn-save {
+        background: var(--success-gradient);
+        border: none;
+        border-radius: 25px;
+        padding: 1rem 2rem;
+        font-weight: 700;
+        font-size: 1rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: white;
+        transition: var(--transition);
+        box-shadow: 0 4px 15px rgba(39, 174, 96, 0.3);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .btn-save:hover {
+        background: var(--success-gradient);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(39, 174, 96, 0.4);
+        color: white;
+    }
+    
+    .no-items {
+        text-align: center;
+        padding: 3rem 2rem;
+        color: #6c757d;
+        background: #f8f9fa;
+        border-radius: 15px;
+    }
+    
+    .no-items i {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+    }
+    
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(30px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .plan-header, .info-card, .items-card, .form-card {
+        animation: fadeInUp 0.6s ease-out;
+    }
+    
+    .info-card { animation-delay: 0.1s; }
+    .items-card { animation-delay: 0.2s; }
+    .form-card { animation-delay: 0.3s; }
+    
+    @media (max-width: 768px) {
+        .plan-header {
+            padding: 2rem 1.5rem;
+            text-align: center;
+        }
+        
+        .plan-header h1 {
+            font-size: 2rem;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .header-actions {
+            justify-content: center;
+            margin-top: 1rem;
+        }
+        
+        .header-btn {
+            padding: 0.7rem 1.2rem;
+            font-size: 0.85rem;
+        }
+        
+        .info-body, .form-body, .items-body {
+            padding: 1.2rem;
+        }
+        
+        .items-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<main class="container-fluid mt-4">
+    <!-- Header mejorado -->
+    <div class="plan-header d-flex justify-content-between align-items-center">
+        <h1><i class="bi bi-clipboard-plus"></i> Crear Plan de Acción 5S</h1>
+        <div class="header-actions">
+            <a href="{% url 'gestionDeTaller:detalle_revision_5s' revision.id %}" class="header-btn secondary">
+                <i class="bi bi-arrow-left"></i> Volver a Revisión
+            </a>
+        </div>
+    </div>
+    
+    <!-- Mensajes -->
+    {% if messages %}
+    <div class="messages-container">
+        {% for message in messages %}
+        <div class="custom-alert {{ message.tags }}">
+            <i class="bi bi-{% if message.tags == 'success' %}check-circle{% elif message.tags == 'error' %}exclamation-triangle{% elif message.tags == 'warning' %}exclamation-triangle{% else %}info-circle{% endif %}"></i>
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    
+    <!-- Información de la Revisión -->
+    <div class="info-card">
+        <div class="info-card-header">
+            <h5><i class="bi bi-info-circle"></i> Información de la Revisión</h5>
+        </div>
+        <div class="info-body">
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="info-row">
+                        <strong><i class="bi bi-building"></i> Sucursal:</strong>
+                        <span>{{ revision.sucursal }}</span>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="info-row">
+                        <strong><i class="bi bi-person"></i> Evaluador:</strong>
+                        <span>{{ revision.evaluador.get_nombre_completo }}</span>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="info-row">
+                        <strong><i class="bi bi-calendar-date"></i> Fecha:</strong>
+                        <span>{{ revision.fecha_revision|date:"d/m/Y" }}</span>
+                    </div>
+                </div>
+            </div>
+            <div class="row mt-3">
+                <div class="col-md-8">
+                    <div class="info-row">
+                        <strong><i class="bi bi-speedometer2"></i> Puntuación de Conformidad:</strong>
+                        <div class="progress flex-grow-1">
+                            <div class="progress-bar {% if revision.porcentaje_conformidad >= 90 %}bg-success{% elif revision.porcentaje_conformidad >= 75 %}bg-warning{% else %}bg-danger{% endif %}" 
+                                 role="progressbar" 
+                                 style="width: {{ revision.porcentaje_conformidad }}%;" 
+                                 aria-valuenow="{{ revision.porcentaje_conformidad }}" 
+                                 aria-valuemin="0" 
+                                 aria-valuemax="100">
+                                {{ revision.porcentaje_conformidad }}%
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="info-row">
+                        <strong><i class="bi bi-exclamation-triangle"></i> Items No Conformes:</strong>
+                        <span class="badge bg-danger">{{ items_no_conformes|length }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Items No Conformes -->
+    <div class="items-card">
+        <div class="items-header">
+            <h5><i class="bi bi-exclamation-triangle"></i> Items No Conformes de la Revisión</h5>
+        </div>
+        <div class="items-body">
+            {% if items_no_conformes %}
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <p class="text-muted mb-0">Selecciona uno o varios items no conformes para crear planes de acción:</p>
+                <div class="btn-group" role="group">
+                    <button type="button" class="btn btn-outline-primary btn-sm" onclick="selectAll()">
+                        <i class="bi bi-check-all"></i> Seleccionar Todos
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary btn-sm" onclick="deselectAll()">
+                        <i class="bi bi-x-circle"></i> Deseleccionar
+                    </button>
+                </div>
+            </div>
+            <div class="items-grid">
+                {% for item in items_no_conformes %}
+                <div class="item-card selectable" data-item="{{ item }}" onclick="toggleItem(this, '{{ item }}')">
+                    <div class="item-checkbox">
+                        <i class="bi bi-check-circle-fill"></i>
+                    </div>
+                    <i class="bi bi-exclamation-circle"></i>
+                    <div>{{ item }}</div>
+                </div>
+                {% endfor %}
+            </div>
+            <div class="mt-3">
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle"></i>
+                    <strong>Items seleccionados:</strong> <span id="selected-count">0</span> de {{ items_no_conformes|length }}
+                </div>
+            </div>
+            {% else %}
+            <div class="no-items">
+                <i class="bi bi-check-circle"></i>
+                <h5>¡Excelente!</h5>
+                <p>No hay items no conformes en esta revisión. Todos los criterios 5S están conformes.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Formulario de Plan de Acción -->
+    <div class="form-card">
+        <div class="form-header">
+            <h5><i class="bi bi-clipboard-data"></i> Formulario de Plan de Acción</h5>
+        </div>
+        <div class="form-body">
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                {{ form.non_field_errors }}
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="{{ form.item_no_conforme.id_for_label }}" class="form-label">
+                                <i class="bi bi-exclamation-triangle"></i> Item(s) No Conforme(s) *
+                            </label>
+                            {{ form.item_no_conforme }}
+                            {{ form.item_no_conforme.errors }}
+                            <div class="form-text">
+                                <i class="bi bi-info-circle"></i> 
+                                Selecciona los items arriba para llenar automáticamente este campo
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="{{ form.responsable.id_for_label }}" class="form-label">
+                                <i class="bi bi-person-check"></i> Responsable *
+                            </label>
+                            {{ form.responsable }}
+                            {{ form.responsable.errors }}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="{{ form.accion_correctiva.id_for_label }}" class="form-label">
+                        <i class="bi bi-lightbulb"></i> Acción Correctiva *
+                    </label>
+                    {{ form.accion_correctiva }}
+                    {{ form.accion_correctiva.errors }}
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="{{ form.fecha_limite.id_for_label }}" class="form-label">
+                                <i class="bi bi-calendar-event"></i> Fecha Límite *
+                            </label>
+                            {{ form.fecha_limite }}
+                            {{ form.fecha_limite.errors }}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="{{ form.estado.id_for_label }}" class="form-label">
+                                <i class="bi bi-flag"></i> Estado
+                            </label>
+                            {{ form.estado }}
+                            {{ form.estado.errors }}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="{{ form.evidencia_despues.id_for_label }}" class="form-label">
+                        <i class="bi bi-camera"></i> Evidencia Después
+                    </label>
+                    {{ form.evidencia_despues }}
+                    {{ form.evidencia_despues.errors }}
+                </div>
+                
+                <div class="form-group">
+                    <label for="{{ form.observaciones.id_for_label }}" class="form-label">
+                        <i class="bi bi-chat-text"></i> Observaciones
+                    </label>
+                    {{ form.observaciones }}
+                    {{ form.observaciones.errors }}
+                </div>
+                
+                <div class="text-end">
+                    <button type="submit" class="btn btn-save" onclick="return createMultiplePlans()">
+                        <i class="bi bi-check-circle"></i> Guardar Plan de Acción
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</main>
+
+<script>
+    let selectedItems = [];
+    
+    function toggleItem(element, itemName) {
+        const isSelected = element.classList.contains('selected');
+        
+        if (isSelected) {
+            // Deseleccionar
+            element.classList.remove('selected');
+            selectedItems = selectedItems.filter(item => item !== itemName);
+        } else {
+            // Seleccionar
+            element.classList.add('selected');
+            selectedItems.push(itemName);
+        }
+        
+        updateSelectedCount();
+        updateFormField();
+    }
+    
+    function selectAll() {
+        document.querySelectorAll('.item-card.selectable').forEach(card => {
+            if (!card.classList.contains('selected')) {
+                const itemName = card.getAttribute('data-item');
+                card.classList.add('selected');
+                if (!selectedItems.includes(itemName)) {
+                    selectedItems.push(itemName);
+                }
+            }
+        });
+        updateSelectedCount();
+        updateFormField();
+    }
+    
+    function deselectAll() {
+        document.querySelectorAll('.item-card.selectable').forEach(card => {
+            card.classList.remove('selected');
+        });
+        selectedItems = [];
+        updateSelectedCount();
+        updateFormField();
+    }
+    
+    function updateSelectedCount() {
+        const countElement = document.getElementById('selected-count');
+        if (countElement) {
+            countElement.textContent = selectedItems.length;
+        }
+    }
+    
+    function updateFormField() {
+        const formField = document.getElementById('{{ form.item_no_conforme.id_for_label }}');
+        if (formField) {
+            if (selectedItems.length === 1) {
+                formField.value = selectedItems[0];
+            } else if (selectedItems.length > 1) {
+                formField.value = selectedItems.join('; ');
+            } else {
+                formField.value = '';
+            }
+        }
+    }
+    
+    // Función para crear múltiples planes de acción
+    function createMultiplePlans() {
+        if (selectedItems.length === 0) {
+            alert('Por favor selecciona al menos un item no conforme.');
+            return false;
+        }
+        
+        if (selectedItems.length === 1) {
+            // Si solo hay uno seleccionado, continuar con el formulario normal
+            return true;
+        } else {
+            // Si hay múltiples seleccionados, confirmar
+            const confirmMessage = `Vas a crear ${selectedItems.length} planes de acción para los siguientes items:\n\n${selectedItems.join('\n')}\n\n¿Deseas continuar?`;
+            return confirm(confirmMessage);
+        }
+    }
+    
+    // Inicializar select2 si está disponible
+    $(document).ready(function() {
+        if (typeof $.fn.select2 !== 'undefined') {
+            $('select').select2({
+                theme: 'bootstrap-5'
+            });
+        }
+        
+        // Actualizar contador inicial
+        updateSelectedCount();
+    });
+</script>
+{% endblock %} 

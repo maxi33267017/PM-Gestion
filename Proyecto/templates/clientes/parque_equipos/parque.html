@@ -1,0 +1,483 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+    /* Variables CSS para consistencia */
+    :root {
+        --primary-gradient: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        --secondary-gradient: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        --success-gradient: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        --warning-gradient: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        --danger-gradient: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+        --dark-gradient: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        --light-gradient: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        --card-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        --hover-shadow: 0 15px 40px rgba(0,0,0,0.15);
+        --border-radius: 20px;
+        --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Header mejorado */
+    .parque-header {
+        background: var(--dark-gradient);
+        color: white;
+        padding: 3rem 2rem;
+        border-radius: var(--border-radius);
+        margin-bottom: 2.5rem;
+        box-shadow: var(--card-shadow);
+        position: relative;
+        overflow: hidden;
+        text-align: center;
+    }
+    
+    .parque-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="dots" width="20" height="20" patternUnits="userSpaceOnUse"><circle cx="10" cy="10" r="1" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23dots)"/></svg>');
+        pointer-events: none;
+    }
+    
+    .parque-header h1 {
+        margin: 0;
+        font-weight: 800;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        font-size: 3rem;
+        position: relative;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 1rem;
+    }
+    
+    .parque-header .subtitle {
+        font-size: 1.2rem;
+        opacity: 0.9;
+        margin-top: 1rem;
+        position: relative;
+        z-index: 1;
+    }
+
+    /* Estadísticas */
+    .stats-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(125px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2.5rem;
+    }
+    
+    .stat-card {
+        background: white;
+        border-radius: var(--border-radius);
+        padding: 1rem;
+        box-shadow: var(--card-shadow);
+        text-align: center;
+        transition: var(--transition);
+        border: 1px solid #e9ecef;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 5px;
+        height: 100%;
+        background: var(--dark-gradient);
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-8px);
+        box-shadow: var(--hover-shadow);
+        border-color: #2c3e50;
+    }
+    
+    .stat-icon {
+        width: 35px;
+        height: 35px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 0.5rem;
+        background: var(--dark-gradient);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    
+    .stat-icon i {
+        font-size: 1rem;
+        color: white;
+    }
+    
+    .stat-number {
+        font-size: 1.25rem;
+        font-weight: 800;
+        color: #2c3e50;
+        margin-bottom: 0.25rem;
+    }
+    
+    .stat-label {
+        font-size: 0.75rem;
+        color: #6c757d;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    /* Contenedor principal */
+    .parque-container {
+        background: white;
+        border-radius: var(--border-radius);
+        box-shadow: var(--card-shadow);
+        overflow: hidden;
+        border: 1px solid #e9ecef;
+    }
+    
+    .parque-container-header {
+        background: var(--dark-gradient);
+        color: white;
+        padding: 2rem;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .parque-container-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="header-dots" width="20" height="20" patternUnits="userSpaceOnUse"><circle cx="10" cy="10" r="1" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23header-dots)"/></svg>');
+        pointer-events: none;
+    }
+    
+    .parque-container-header h2 {
+        margin: 0;
+        font-weight: 700;
+        font-size: 1.5rem;
+        position: relative;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        gap: 0.8rem;
+    }
+
+    /* Mejoras en la tabla */
+    .table-responsive {
+        border-radius: 0 0 var(--border-radius) var(--border-radius);
+        overflow: hidden;
+    }
+    
+    .table {
+        margin-bottom: 0;
+        border: none;
+        border-radius: 0 0 var(--border-radius) var(--border-radius);
+        overflow: hidden;
+    }
+    
+    .table-dark {
+        background: var(--dark-gradient);
+        border: none;
+    }
+    
+    .table th {
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 1.5rem 1rem;
+        border: none;
+        font-size: 0.9rem;
+        position: relative;
+        z-index: 1;
+        background: var(--dark-gradient) !important;
+        color: white !important;
+    }
+    
+    .table td {
+        padding: 1.2rem 1rem;
+        vertical-align: middle;
+        border: none;
+        border-bottom: 1px solid #f0f0f0;
+        font-weight: 500;
+    }
+    
+    .table tbody tr {
+        transition: var(--transition);
+    }
+    
+    .table tbody tr:hover {
+        background: rgba(44, 62, 80, 0.05);
+        transform: scale(1.01);
+    }
+    
+    .table tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    /* Enlaces mejorados */
+    .link_parque {
+        color: #2c3e50;
+        text-decoration: none;
+        font-weight: 600;
+        transition: var(--transition);
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        background: rgba(44, 62, 80, 0.1);
+        display: inline-block;
+    }
+    
+    .link_parque:hover {
+        color: white;
+        background: var(--dark-gradient);
+        text-decoration: none;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(44, 62, 80, 0.3);
+    }
+
+    /* DataTables personalizado */
+    .dataTables_wrapper {
+        padding: 2rem;
+    }
+    
+    .dataTables_filter input {
+        border-radius: 25px;
+        border: 2px solid #e9ecef;
+        padding: 0.8rem 1.2rem;
+        transition: var(--transition);
+    }
+    
+    .dataTables_filter input:focus {
+        border-color: #2c3e50;
+        box-shadow: 0 0 0 0.2rem rgba(44, 62, 80, 0.25);
+        outline: none;
+    }
+    
+    .dataTables_length select {
+        border-radius: 12px;
+        border: 2px solid #e9ecef;
+        padding: 0.5rem 1rem;
+        transition: var(--transition);
+    }
+    
+    .dataTables_length select:focus {
+        border-color: #2c3e50;
+        box-shadow: 0 0 0 0.2rem rgba(44, 62, 80, 0.25);
+        outline: none;
+    }
+    
+  
+    
+    .dataTables_info {
+        font-weight: 500;
+        color: #6c757d;
+        margin-top: 1rem;
+        text-align: center;
+    }
+
+    /* Animaciones */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .parque-header, .stats-container, .parque-container {
+        animation: fadeInUp 0.6s ease-out;
+    }
+    
+    .stat-card:nth-child(1) { animation-delay: 0.1s; }
+    .stat-card:nth-child(2) { animation-delay: 0.2s; }
+    .stat-card:nth-child(3) { animation-delay: 0.3s; }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .parque-header {
+            padding: 2rem 1.5rem;
+        }
+        
+        .parque-header h1 {
+            font-size: 2rem;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .stats-container {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.8rem;
+        }
+        
+        .stat-card {
+            padding: 0.8rem;
+        }
+        
+        .stat-icon {
+            width: 30px;
+            height: 30px;
+        }
+        
+        .stat-icon i {
+            font-size: 0.8rem;
+        }
+        
+        .stat-number {
+            font-size: 1rem;
+        }
+        
+        .stat-label {
+            font-size: 0.7rem;
+        }
+        
+        .table th, .table td {
+            padding: 1rem 0.5rem;
+            font-size: 0.9rem;
+        }
+        
+        .dataTables_wrapper {
+            padding: 1rem;
+        }
+    }
+</style>
+
+<main class="container-fluid mt-4">
+    <!-- Header mejorado -->
+    <div class="parque-header">
+        <h1>
+            <i class="fas fa-cogs"></i>
+            Parque de Equipos
+        </h1>
+        <div class="subtitle">
+            Gestión y monitoreo de todos los equipos en el parque
+        </div>
+    </div>
+
+    <!-- Estadísticas -->
+    <div class="stats-container">
+        <div class="stat-card">
+
+            <div class="stat-number">{{ equipos.count }}</div>
+            <div class="stat-label">Total de Equipos</div>
+        </div>
+        
+        <div class="stat-card">
+
+            <div class="stat-number">{{ equipos|length|add:"0"|floatformat:0 }}</div>
+            <div class="stat-label">Clientes Activos</div>
+        </div>
+        
+        <div class="stat-card">
+
+            <div class="stat-number">
+                {% if equipos.count > 0 %}
+                    {{ equipos.count|floatformat:0 }}
+                {% else %}
+                    0
+                {% endif %}
+            </div>
+            <div class="stat-label">Equipos Activos</div>
+        </div>
+    </div>
+
+    <!-- Contenedor de la tabla -->
+    <div class="parque-container">
+        <div class="parque-container-header">
+            <h2>
+                <i class="fas fa-list"></i>
+                Lista de Equipos
+            </h2>
+        </div>
+        
+        <div class="table-responsive">
+            <table id="miTabla" class="table table-hover" style="width: 100%">
+                <thead class="table-dark">
+                    <tr>
+                        <th><i class="fas fa-hashtag me-2"></i>PIN</th>
+                        <th><i class="fas fa-cog me-2"></i>Motor</th>
+                        <th><i class="fas fa-barcode me-2"></i>Serial Motor</th>
+                        <th><i class="fas fa-clock me-2"></i>Horas Motor</th>
+                        <th><i class="fas fa-user me-2"></i>Cliente</th>
+                    </tr>
+                </thead>
+                <tbody id="miTablaBody">
+                    {% for equipo in equipos %}
+                    <tr>
+                        <td>
+                            <a class="link_parque" href="{% url 'detalle_equipo' cliente_id=equipo.cliente.id equipo_id=equipo.id %}">
+                                <i class="fas fa-link me-1"></i>{{ equipo.numero_serie }}
+                            </a>
+                        </td>
+                        <td>{{ equipo.modelo_motor|default:"N/A" }}</td>
+                        <td>{{ equipo.numero_serie_motor|default:"N/A" }}</td>
+                        <td>{{ equipo.horas|default:"0" }} hrs</td>
+                        <td>
+                            <a class="link_parque" href="{% url 'detalle_cliente' cliente_id=equipo.cliente.id %}">
+                                <i class="fas fa-building me-1"></i>{{ equipo.cliente.razon_social }}
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</main>
+
+<!-- Incluye los estilos de DataTables -->
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css">
+
+<!-- Incluye jQuery -->
+<script src="https://code.jquery.com/jquery-3.7.0.js"></script>
+
+<!-- Incluye DataTables y sus extensiones para Bootstrap 5 -->
+<script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
+
+<script>
+$(document).ready(function () {
+    // Inicializa DataTable con Bootstrap 5 y guarda la referencia en 'tabla'
+    var tabla = $('#miTabla').DataTable({
+        "language": {
+            "url": "",  // Aquí puedes proporcionar la URL del archivo de idioma si es necesario
+            "search": "Buscar:",
+            "lengthMenu": "Mostrar _MENU_ equipos",
+            "info": "Mostrando _START_ a _END_ de _TOTAL_ equipos",
+            "infoEmpty": "Mostrando 0 a 0 de 0 equipos",
+            "infoFiltered": "(filtrado de _MAX_ equipos en total)",
+            "paginate": {
+                "first": "Primero",
+                "previous": "Anterior",
+                "next": "Siguiente",
+                "last": "Último"
+            }
+        },
+        "scrollX": false,
+        "pageLength": 25,
+        "order": [[0, "asc"]],
+        "responsive": true,
+        "dom": '<"row"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6"f>>' +
+               '<"row"<"col-sm-12"tr>>' +
+               '<"row"<"col-sm-12 col-md-5"i><"col-sm-12 col-md-7"p>>',
+    });
+    
+    // Añadir efecto de carga
+    $('.dataTables_processing').addClass('text-center');
+    
+    // Mejorar la experiencia de búsqueda
+    $('.dataTables_filter input').attr('placeholder', 'Buscar equipos...');
+});
+</script>
+
+{% endblock %}
+

@@ -1,0 +1,1565 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+/*-------------------------------------------  HEAD ----------------------------------------------- */
+/* Nav Bar */
+
+
+.nav-item a {
+    padding: 10px 15px;
+    text-decoration: none;
+    font-size: 18px;
+    color: #555;
+    display: block;
+}
+
+#sidebar a:hover {
+    background-color: #0a0a0a;
+}
+
+/*-------------------------------------------  END-HEAD ------------------------------------------------ */
+
+/*-------------------------------------------  MAIN --------------------------------------------------- */
+.summary-box {
+    border: 1px solid #ddd;
+    padding: 20px;
+    margin: 10px;
+    text-align: center;
+    background-color: #f5f5f5;
+}
+
+.half-width {
+    flex: 1; /* Para que ocupen espacio igualmente */
+    min-width: calc(50% - 20px); /* Para que los dos primeros div ocupen el 50% del ancho cada uno */
+}
+/* ----------------------------------------- CLIENTES ------------------------------------------------ */
+
+#client_content {
+
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    #client_title_and_button {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        .titulo_cliente {
+            margin-top: 1rem;
+            font-size: 42px; /* Tamaño del texto */
+            font-weight: bold; /* Estilo del texto (negrita) */
+            text-shadow: 3px 3px 4px #9c9b96; 
+            margin-bottom: 3rem;    
+        }
+        #abrirModalBtn {
+            margin-top: 4rem;
+            height: 3rem;
+            width: 10rem;
+            background-color: #333;
+            color: white;
+            padding: 10px 15px;
+            text-decoration: none;
+            border: none;
+            border-radius: 5px;
+            transition: transform 0.5s ease;
+        }
+        #abrirModalBtn:hover {
+            color: #ffd700;
+            transform: scale(1.2);
+            background-color: #555;  
+            }
+    }
+    .search-container {
+        margin-bottom: 1rem;
+        #label_buscar_cliente {
+            font-size: 18px; /* Tamaño del texto */
+            font-weight: bold; /* Estilo del texto (negrita) */
+            /* text-shadow: 3px 3px 4px #9c9b96;  */
+            margin-bottom: 3rem;  
+        }
+        #buscar_cliente {
+            margin-right: 2rem;
+        }
+        #buscarBtn {
+            height: 2.5rem;
+            width: 6rem;
+            background-color: #333;
+            color: white;
+            padding: 10px 15px;
+            text-decoration: none;
+            border: none;
+            border-radius: 5px;
+            margin-right: 1rem;
+            font-size: 14px;
+            transition: transform 0.5s ease;
+        }
+        #buscarBtn:hover {
+            color: #ffd700;
+            transform: scale(1.2);
+            background-color: #555;  
+            }
+        #restaurarBtn {
+            height: 2.5rem;
+            width: 6rem;
+            font-size: 14px;
+            background-color: #333;
+            color: white;
+            padding: 10px 15px;
+            text-decoration: none;
+            border: none;
+            border-radius: 5px;
+            transition: transform 0.5s ease;
+        }
+        #restaurarBtn:hover {
+            color: #ffd700;
+            transform: scale(1.2);
+            background-color: #555;  
+            }
+    }  
+};
+
+/* ------------------------------------------ END CLIENTES --------------------------------------------------------- */
+
+
+/* TABLAS de CLIENTES, Detalles Clientes, Equipos, Parque de equipos */
+.table-container {
+    margin-top: 1rem;
+}
+
+.link_tabla_clientes {
+    text-decoration: none;
+    color: #ffd700;
+}
+
+.link_tabla_equipos {
+    text-decoration: none;
+    color: #efb71f;
+}
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+table, th, td {
+    border: 1px solid #ddd;
+}
+
+th, td {
+    padding: 10px;
+    text-align: left;
+}
+
+th {
+    background-color: #333;
+    color: white;
+    }
+
+
+/* MODAL Clientes */
+/* Estilos para el modal de fondo */
+
+
+
+.modal-bg {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5); /* Fondo semitransparente */
+    z-index: 1;
+    overflow: auto;
+}
+
+/* Estilos para el contenido del modal */
+.modal-content {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #fff; /* Fondo blanco */
+    padding: 20px;
+    border-radius: 10px; /* Bordes redondeados */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Sombra */
+    max-width: 400px; /* Ancho máximo del modal */
+    width: 90%; /* Ancho del contenido del modal */
+    display: flex;
+    justify-content: space-between;
+    .label_modal {
+        margin-left: 10px;
+    }
+    .input_modal_social {
+        margin-left: 1rem;
+    }
+    .input_modal_cuit {
+        margin-left: 5rem;
+    }
+    .input_modal_domicilio {
+        margin-left: 2.7rem;
+    }
+    .input_modal_email {
+        margin-left: 4.2rem;
+    }
+    .input_modal_telefono {
+        margin-left: 3rem;
+    }
+    .input_modal_ciudad {
+        margin-left: 3.5rem;
+    }
+    .input_modal_provincia {
+        margin-left: 2.6rem;
+    }
+}
+
+/* Estilos para los botones dentro del modal */
+#guardarModalBtn,
+#cerrarModalBtn {
+    margin-top: 2rem;
+    padding: 10px 20px;
+    border: none;
+    cursor: pointer;
+    width: 100px; /* Establecer el mismo ancho para ambos botones */
+}
+
+/* Estilos para los botones para que estén alineados uno al lado del otro */
+#guardarModalBtn {
+    height: 2.5rem;
+    width: 6rem;
+    font-size: 14px;
+    background-color: #333;
+    color: white;
+    padding: 10px 15px;
+    text-decoration: none;
+    border: none;
+    border-radius: 5px;
+    transition: transform 0.5s ease;
+}
+#guardarModalBtn:hover {
+    color: #ffd700;
+    transform: scale(1.2);
+    background-color: #555;  
+    }
+
+#cerrarModalBtn {
+            height: 2.5rem;
+            width: 6rem;
+            font-size: 14px;
+            background-color: #333;
+            color: white;
+            padding: 10px 15px;
+            text-decoration: none;
+            border: none;
+            border-radius: 5px;
+            margin-left: 2rem;
+            margin-right: 4.5rem;
+            transition: transform 0.5s ease;
+        }
+
+#cerrarModalBtn:hover {
+    color: #ffd700;
+    transform: scale(1.2);
+    background-color: #555;  
+    }
+
+
+/* Estilos para limpiar el flujo de elementos flotantes */
+.clearfix::after {
+    content: "";
+    clear: both;
+    display: table;
+}
+/* Estilos para el título del modal */
+.titulo_modal {
+    margin-left: 2rem;
+    margin-bottom: 2rem;
+    font-size: 24px; /* Tamaño del texto */
+    font-weight: bold; /* Estilo del texto (negrita) */
+    /* text-shadow: 3px 3px 4px #9c9b96;  */ 
+}
+
+
+/* -------------------DETALLE CLIENTE ------------------------- */
+
+.formulario_agregar_persona {
+    display: flex;
+    align-items: center;
+    /* margin-left: 270px; */
+    padding: 20px;
+    flex-direction: column;
+    .titulo_formulario_agregar_persona {
+        margin-top: 1rem;
+        font-size: 28px; /* Tamaño del texto */
+        font-weight: bold; /* Estilo del texto (negrita) */
+        text-shadow: 3px 3px 4px #9c9b96; 
+        margin-bottom: 0.5rem;
+    }
+    .boton_guardar_persona_en_agregar_persona {
+        height: 2.5rem;
+        width: 6rem;
+        font-size: 14px;
+        background-color: #333;
+        color: white;
+        padding: 10px 15px;
+        text-decoration: none;
+        border: none;
+        border-radius: 5px;
+        margin-left: 3.5rem;
+        transition: transform 0.5s ease;
+    }  
+    .boton_guardar_persona_en_agregar_persona:hover {
+        color: #ffd700;
+        transform: scale(1.2);
+        background-color: #555;  
+    }
+}
+
+.div_formulario_agregar_equipo {
+    display: flex;
+    align-items: center;
+    /* margin-left: 270px; */
+    padding: 20px;
+    flex-direction: column;
+    .titulo_formulario_agregar_equipo {
+        margin-top: 1rem;
+        font-size: 28px; /* Tamaño del texto */
+        font-weight: bold; /* Estilo del texto (negrita) */
+        text-shadow: 3px 3px 4px #9c9b96; 
+        margin-bottom: 0.5rem;
+    }
+    #formulario_agregar_equipo {
+        width: 200px;
+        .boton_guardar_equipo_en_agregar_equipo {
+            height: 2.5rem;
+            width: 6rem;
+            font-size: 14px;
+            background-color: #333;
+            color: white;
+            padding: 10px 15px;
+            text-decoration: none;
+            border: none;
+            border-radius: 5px;
+            margin-left: 3.5rem;
+            transition: transform 0.5s ease;
+        }  
+        .boton_guardar_equipo_en_agregar_equipo:hover {
+            color: #ffd700;
+            transform: scale(1.2);
+            background-color: #555;  
+        }
+    }
+}
+
+.boton_eliminar_equipo {
+    height: 2.5rem;
+    width: 9rem;
+    font-size: 14px;
+    background-color: #333;
+    color: white;
+    padding: 10px 15px;
+    text-decoration: none;
+    border: none;
+    border-radius: 5px;
+    margin-top: 20px;
+    transition: transform 0.5s ease;
+}
+
+.boton_eliminar_equipo:hover {
+    color: #ffd700;
+    transform: scale(1.2);
+    background-color: #555; 
+}
+
+.div_formulario_editar_cliente {
+    display: flex;
+    align-items: center;
+    /* margin-left: 270px; */
+    padding: 20px;
+    flex-direction: column;
+    .titulo_formulario_editar_cliente {
+        margin-top: 1rem;
+        font-size: 28px; /* Tamaño del texto */
+        font-weight: bold; /* Estilo del texto (negrita) */
+        text-shadow: 3px 3px 4px #9c9b96; 
+        margin-bottom: 0.5rem;
+    }
+    .formulario_editar_cliente {
+        .boton_guardar_cliente_en_editar_cliente {
+            height: 2.5rem;
+            width: 6rem;
+            font-size: 14px;
+            background-color: #333;
+            color: white;
+            padding: 10px 15px;
+            text-decoration: none;
+            border: none;
+            border-radius: 5px;
+            margin-top: 1rem;
+            margin-left: 5rem;
+            transition: transform 0.5s ease;
+        }  
+        .boton_guardar_cliente_en_editar_cliente:hover {
+            color: #ffd700;
+            transform: scale(1.2);
+            background-color: #555;  
+        }
+    } 
+}
+
+.div_formulario_editar_equipo {
+    display: flex;
+    align-items: center;
+    /* margin-left: 270px; */
+    padding: 20px;
+    flex-direction: column;
+    .titulo_formulario_editar_equipo {
+        margin-top: 1rem;
+        font-size: 28px; /* Tamaño del texto */
+        font-weight: bold; /* Estilo del texto (negrita) */
+        text-shadow: 3px 3px 4px #9c9b96; 
+        margin-bottom: 0.5rem;
+    }
+    #formulario_editar_equipo {
+        margin-top: 2rem;
+        .boton_guardar_equipo_en_editar_equipo {
+            height: 2.5rem;
+            width: 6rem;
+            font-size: 14px;
+            background-color: #333;
+            color: white;
+            padding: 10px 15px;
+            text-decoration: none;
+            border: none;
+            border-radius: 5px;
+            margin-left: 13.3rem;
+            transition: transform 0.5s ease;
+        }  
+        .boton_guardar_equipo_en_editar_equipo:hover {
+            color: #ffd700;
+            transform: scale(1.2);
+            background-color: #555;  
+        }
+    }
+}
+
+.boton_guardar_alquiler_en_agregar_alquiler{
+    height: 2.5rem;
+    width: 6rem;
+    font-size: 14px;
+    background-color: #333;
+    color: white;
+    padding: 10px 15px;
+    text-decoration: none;
+    border: none;
+    border-radius: 5px;
+    margin-top: 2rem;
+    margin-left: 2rem;
+    transition: transform 0.5s ease;
+} 
+
+
+.boton_guardar_alquiler_en_agregar_alquiler:hover {
+    color: #ffd700;
+    transform: scale(1.2);
+    background-color: #555;  
+}
+
+.boton_guardar_alquiler_en_editar_alquiler {
+    height: 2.5rem;
+    width: 6rem;
+    font-size: 14px;
+    background-color: #333;
+    color: white;
+    padding: 10px 15px;
+    text-decoration: none;
+    border: none;
+    border-radius: 5px;
+    margin-top: 2rem;
+    margin-left: 4rem;
+    transition: transform 0.5s ease;
+}  
+
+.boton_guardar_alquiler_en_editar_alquiler:hover {
+    color: #ffd700;
+    transform: scale(1.2);
+    background-color: #555;  
+}
+
+
+.div_formulario_agregar_equipo_pm {
+    display: flex;
+    align-items: center;
+    /* margin-left: 270px; */
+    padding: 20px;
+    flex-direction: column;
+    .titulo_formulario_agregar_equipo_pm {
+        margin-top: 1rem;
+        font-size: 28px; /* Tamaño del texto */
+        font-weight: bold; /* Estilo del texto (negrita) */
+        text-shadow: 3px 3px 4px #9c9b96; 
+        margin-bottom: 0.5rem;
+    }
+    #formulario_agregar_equipo_pm {
+        .boton_guardar_equipo_en_agregar_equipo_pm {
+            height: 2.5rem;
+            width: 6rem;
+            font-size: 14px;
+            background-color: #333;
+            color: white;
+            padding: 10px 15px;
+            text-decoration: none;
+            border: none;
+            border-radius: 5px;
+            margin-left: 12rem;
+            margin-top: 0.5rem;
+            transition: transform 0.5s ease;
+        }  
+        .boton_guardar_equipo_en_agregar_equipo_pm:hover {
+            color: #ffd700;
+            transform: scale(1.2);
+            background-color: #555;  
+        }
+    }
+}
+.sector_boton_titulo_alquiler {
+    display: flex;
+    flex-direction: row;
+
+}
+
+.subtitulo_detalle_alquiler {
+    font-size: 26px; /* Tamaño del texto */
+    font-weight: bold; /* Estilo del texto (negrita) */
+    text-shadow: 3px 3px 4px #9c9b96;  
+    margin-bottom: 3rem;  
+}
+
+.boton_agregar_alquiler {
+    display: flex;
+    height: 2rem;
+    width: 2rem;
+    justify-content: center;
+    font-size: 24px;
+    text-align: center;
+    background-color: #333;
+    color: white;
+    text-decoration: none;
+    border: none;
+    border-radius: 5px;
+    margin-left: 2rem;
+    margin-top: 0.5rem;
+    margin-bottom: 1rem;
+    transition: transform 0.5s ease;
+}
+
+.boton_agregar_alquiler:hover {
+    color: #ffd700;
+    transform: scale(1.2);
+    background-color: #555;
+}
+
+.boton_agregar_equipo_pm {
+    display: flex;
+    height: 2rem;
+    width: 2rem;
+    justify-content: center;
+    font-size: 24px;
+    text-align: center;
+    background-color: #333;
+    color: white;
+    text-decoration: none;
+    border: none;
+    border-radius: 5px;
+    margin-left: 0.5rem;
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+    transition: transform 0.5s ease;
+}
+
+.boton_agregar_equipo_pm:hover {
+    color: #ffd700;
+    transform: scale(1.2);
+    background-color: #555;
+}
+
+.titulo_pm_rental {
+    font-size: 36px; /* Tamaño del texto */
+    font-weight: bold; /* Estilo del texto (negrita) */
+    text-shadow: 3px 3px 4px #9c9b96;
+}
+
+
+
+
+.titulo_formulario {
+    margin-bottom: 30px;
+}
+
+.filtro_pin {
+    margin-left: 1rem;
+}
+/* Clientes Interface */
+
+
+
+.boton_editar_cliente {
+    margin-left: 0.5rem;
+}
+
+.boton_titulo_cliente {
+    display: flex;
+    flex-direction: row-reverse;
+    justify-content: flex-end;
+}
+
+.detalle_cliente_personas {
+    margin-top: 2rem;
+    border: 1px solid #ddd;
+}
+
+.detalle_cliente_equipos {
+    margin-top: 2rem;
+    border: 1px solid #ddd;
+
+}
+
+#detalle_cliente {
+    align-items: center;
+    display: flex;
+    justify-content: revert;
+}
+
+.detalle_cliente {
+    border: 1px solid black;
+    width: 40rem;
+    display: inline-block;
+    border-radius: 4px;
+    .titulo_detalle_cliente {
+        background-color: #ffd700;
+        padding-top: 1rem;
+    }
+    .titulo_cliente {
+        padding-left: 1rem;
+        font-weight: 700;
+        font-size: 36px; /* Tamaño del texto */
+        text-shadow: 3px 3px 4px #9c9b96; 
+    }
+    .item_detalle_cliente {
+        padding-left: 1rem;
+        font-weight: 700;
+    }
+}
+
+.caja_botones_clientes {
+    display: flex;
+    justify-content: space-between;
+    margin-left: 5rem;
+}
+
+.botones_detalle_cliente {
+    height: 2.5rem;
+    width: 10rem;
+    font-size: 16px;
+    background-color: #333;
+    color: white;
+    padding: 10px 15px;
+    text-decoration: none;
+    border: none;
+    border-radius: 5px;
+    padding-bottom: 0.5rem;
+    margin-left: 2rem;
+    margin-top: 0.5rem;
+    margin-bottom: 1rem;
+    text-align: center;
+}
+
+.boton_editar_cliente {
+    height: 2.5rem;
+    width: 10rem;
+    font-size: 16px;
+    background-color: #333;
+    color: white;
+    padding: 10px 15px;
+    text-decoration: none;
+    border: none;
+    border-radius: 5px;
+    padding-bottom: 0.5rem;
+    margin-left: 2rem;
+    margin-top: 0.5rem;
+    margin-bottom: 1rem;
+    text-align: center;
+    transition: transform 0.5s ease;
+}
+
+.boton_eliminar_cliente {
+    height: 2.5rem;
+    width: 10rem;
+    font-size: 16px;
+    background-color: #333;
+    color: white;
+    padding: 10px 15px;
+    text-decoration: none;
+    border: none;
+    border-radius: 5px;
+    padding-bottom: 0.5rem;
+    margin-left: 2rem;
+    margin-top: 0.5rem;
+    margin-bottom: 1rem;
+    text-align: center;
+    transition: transform 0.5s ease;
+}
+.boton_editar_cliente:hover {
+    color: #ffd700;
+    transform: scale(1.2);
+    background-color: #555;
+}
+.boton_eliminar_cliente:hover {
+    color: #ffd700;
+    transform: scale(1.2);
+    background-color: #555;  
+}
+
+.boton_agregar_persona {
+    height: 2rem;
+    width: 2rem;
+    font-size: 24px;
+    text-align: center;
+    background-color: #333;
+    color: white;
+    text-decoration: none;
+    border: none;
+    border-radius: 5px;
+    margin-left: 2rem;
+    margin-top: 0.5rem;
+    margin-bottom: 1rem;
+    transition: transform 0.5s ease;
+}
+
+.boton_agregar_equipo {
+    height: 2rem;
+    width: 2rem;
+    font-size: 24px;
+    text-align: center;
+    background-color: #333;
+    color: white;
+    text-decoration: none;
+    border: none;
+    border-radius: 5px;
+    margin-left: 2rem;
+    margin-top: 0.5rem;
+    margin-bottom: 1rem;
+    transition: transform 0.5s ease;
+}
+.boton_agregar_persona:hover {
+    color: #ffd700;
+    transform: scale(1.2);
+    background-color: #555;
+}
+.boton_agregar_equipo:hover {
+    color: #ffd700;
+    transform: scale(1.2);
+    background-color: #555;  
+}
+
+.subtitulo_detalle_cliente {
+    margin-left: 0.5rem;
+    margin-top: 0.5rem;
+    font-weight: 700;
+    font-size: 24px; /* Tamaño del texto */
+    text-shadow: 3px 3px 4px #9c9b96; 
+}
+
+.text_area{
+    width: 100vh;
+    height: 80vh;
+    ;
+}
+
+/* .subtitulo_detalle_equipos {
+    margin-top: 2.5rem;
+    text-decoration: underline;
+} */
+
+.input_cliente {
+    width: 25rem;
+}
+
+.titulo_parque {
+    margin-top: 1rem;
+    font-size: 56px; /* Tamaño del texto */
+    font-weight: bold; /* Estilo del texto (negrita) */
+    text-shadow: 3px 3px 4px #9c9b96; 
+    margin-bottom: 3rem;    
+}
+
+.titulo_links {
+    margin-top: 1rem;
+    font-size: 56px; /* Tamaño del texto */
+    font-weight: bold; /* Estilo del texto (negrita) */
+    text-shadow: 3px 3px 4px #9c9b96; 
+    margin-bottom: 3rem;    
+}
+
+.invoice-box {
+    max-width: 800px;
+    margin: auto;
+    padding: 30px;
+    border: 2px solid #000;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.15);
+    font-size: 16px;
+    line-height: 24px;
+    font-family: 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif;
+    color: #555;
+}
+
+.invoice-box table {
+    width: 100%;
+    line-height: inherit;
+    text-align: left;
+}
+
+.invoice-box table td {
+    padding: 5px;
+    vertical-align: top;
+}
+
+.invoice-box table tr td:nth-child(2) {
+    text-align: right;
+}
+
+.invoice-box table tr.top table td {
+    padding-bottom: 20px;
+}
+
+.invoice-box table tr.top table td.title {
+    font-size: 45px;
+    line-height: 45px;
+    color: #333;
+}
+
+.invoice-box table tr.information table td {
+    padding-bottom: 40px;
+}
+
+.invoice-box table tr.heading td {
+    background: #eee;
+    border-bottom: 1px solid #ddd;
+    font-weight: bold;
+}
+
+.invoice-box table tr.details td {
+    padding-bottom: 20px;
+}
+
+.invoice-box table tr.item td {
+    border-bottom: 1px solid #eee;
+}
+
+.invoice-box table tr.item.last td {
+    border-bottom: none;
+}
+
+.invoice-box table tr.total td:nth-child(2) {
+    border-top: 2px solid #eee;
+    font-weight: bold;
+}
+
+@media only screen and (max-width: 600px) {
+    .invoice-box table tr.top table td {
+        width: 100%;
+        display: block;
+        text-align: center;
+    }
+
+    .invoice-box table tr.information table td {
+        width: 100%;
+        display: block;
+        text-align: center;
+    }
+}
+
+/** RTL **/
+.invoice-box.rtl {
+    direction: rtl;
+    font-family: Tahoma, 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif;
+}
+
+.invoice-box.rtl table {
+    text-align: right;
+}
+
+.invoice-box.rtl table tr td:nth-child(2) {
+    text-align: left;
+}
+/* .separador {
+    margin-top: 5px;
+    border: 2px solid black;
+} */
+
+/* Nuevas modificaciones */
+.logo-box {
+    border: 2px solid #000;
+    padding: 10px;
+    text-align: left;
+    margin-bottom: 10px;
+    position: relative;
+}
+
+.logo-box img {
+    max-width: 250px; /* Establece el ancho máximo deseado */
+    width: auto; /* Permite que el ancho sea menor si la imagen es más pequeña */
+}
+
+.letter-r {
+    border: 2px solid #000;
+    padding: 10px;
+    margin-bottom: 10px;
+    font-size: 24px;
+    font-weight: bold;
+    text-align: center;
+    width: 45px; /* Ajusta el ancho según tu preferencia */
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.remito-info {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    text-align: right;
+}
+
+.remito-info p {
+    margin: 0;
+}
+
+.cuil-box {
+    border-top: 1px solid #000;
+    padding-top: 10px;
+    margin-bottom: 10px;
+}
+
+.cuil-box td {
+    vertical-align: top;
+}
+
+.firma-box {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px; /* Agregado para separar la firma de destinatario y transportista */
+}
+
+.firma-box ol {
+    flex: 1;
+    padding: 0;
+}
+.print-button {
+    margin-top: 20px;
+    padding: 10px;
+    background-color: #4caf50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+/* @media print {
+    .boton {
+        display: none;
+    }
+    .select_cliente_remito {
+        display: none;
+    }
+    #title {
+        display: none;
+    }
+
+} */
+
+@media print {
+    body {
+        margin: 0; /* Establece márgenes a cero para evitar espacios innecesarios */
+    }
+
+    .invoice-box {
+        page-break-inside: avoid; /* Evita que el contenido se divida entre páginas */
+        max-width: 100%; /* Asegura que el contenido no se extienda más allá del ancho de la página */
+        margin: 0; /* Establece márgenes a cero para evitar espacios innecesarios */
+        padding: 0; /* Asegura que no haya relleno adicional */
+    }
+
+    /* Otros elementos en los que quieras aplicar el salto de página */
+    /* .otro-elemento {
+        page-break-inside: avoid;
+    } */
+
+    /* Ocultar botones y elementos innecesarios en la impresión */
+    .boton {
+        display: none;
+    }
+    .select_cliente_remito {
+        display: none;
+    }
+    #title {
+        display: none;
+    }
+    .boton-eliminar-item {
+        display: none;
+    }
+    .btn-volver {
+        display: none;
+    }
+}
+
+.firma-box ol {
+    list-style-type: none;
+    padding: 0;
+}
+
+.invoice-box table tr.information table td {
+    padding-bottom: 20px;
+    font-size: 14px; /* Tamaño de la letra ajustado */
+}
+
+.invoice-box table tr.information table td b {
+    font-weight: bold;
+}
+.referencia {
+    font-size: 8px;
+    padding: 12px;
+    margin-bottom: 12px;
+    text-align: center;
+    position: absolute;
+    top: 80%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+
+.input_cantidad {
+    width: 30px;
+}
+
+#option_cliente_remito {
+    color: #000;
+}
+
+hr {
+    margin-top: 4px;
+    margin-bottom: 4px;
+}
+
+#select_cliente_remito {
+    width: 18rem;
+    font-size: 12px;
+    margin-left: 28rem;
+    margin-bottom: 1.5rem;
+}
+
+
+.label_cliente {
+    margin-left: 29rem;
+}
+
+.datos_clientes_basededatos {
+    display: flex;
+    flex-direction: column;
+    width: 320px;
+    margin-bottom: 10px;
+}
+
+.input_sin_estilo {
+    border-color: none;
+    border-style: none;
+}
+#tipo_de_remito {
+    width: 8rem;
+    margin-bottom: 1rem;
+}
+
+#condicion {
+    margin-bottom: 1rem;
+}
+#comentarios {
+    margin-top: 1rem;
+}
+
+.cantidad {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    margin-top: 1px;
+    background-color: #555;
+}
+
+
+.agregar_item_boton {
+    margin-top: 5px;
+    background-color: #555;
+}
+
+.print-button {
+    background-color: #555;
+}
+
+.container {
+    background-color: #ffffff; /* Fondo blanco para el contenido principal */
+    border-radius: 8px; /* Bordes redondeados */
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Sombra ligera */
+    padding: 20px; /* Espaciado interno */
+    margin-top: 20px; /* Margen superior */
+    margin-left: auto; /* Margen izquierdo automático */
+    margin-right: auto; /* Margen derecho automático */
+    max-width: 800px; /* Ancho máximo del contenedor */
+}
+
+.info-box {
+    background-color: #ececec; /* Fondo gris claro para los recuadros */
+    border: 1px solid #d8d8d8; /* Borde delgado */
+    border-radius: 8px; /* Bordes redondeados */
+    padding: 15px; /* Espaciado interno */
+    margin-bottom: 20px; /* Espaciado inferior */
+}
+
+.div_titulo_detalle_servicio {
+    color: #000000; /* Texto negro */
+    margin-bottom: 20px; /* Margen inferior */
+    text-align: center;
+}
+
+.titulo_detalle_servicio {
+    margin: 0; /* Elimina el margen predeterminado */
+    color: #000000; /* Texto negro */
+    font-size: 24px; /* Tamaño de fuente */
+    font-weight: bold; /* Texto en negrita */
+    text-transform: uppercase; /* Convierte el texto a mayúsculas */
+    letter-spacing: 2px; /* Espaciado entre letras */
+}
+
+.info-box h2 {
+    font-size: 18px; /* Tamaño de fuente para los títulos de los recuadros */
+    font-weight: bold; /* Texto en negrita para los títulos de los recuadros */
+    margin-bottom: 15px; /* Espaciado inferior */
+    text-decoration: underline;
+
+}
+
+.info-box h3 {
+    font-size: 15px; /* Tamaño de fuente para los títulos de los recuadros */
+    font-weight: bold; /* Texto en negrita para los títulos de los recuadros */
+    margin-bottom: 5px; /* Espaciado inferior */
+
+}
+
+.info-box .item_detalle_servicio {
+    margin: 5px 0; /* Ajuste para reducir el espacio entre h3 y p */
+    line-height: 1.6; /* Espaciado entre líneas */
+    font-weight: normal; /* Texto normal para los valores */
+}
+
+.btn-volver {
+    background-color: #505050; /* Fondo azul */
+    color: #ffffff; /* Texto blanco */
+    border: none; /* Sin borde */
+    border-radius: 4px; /* Bordes redondeados */
+    cursor: pointer; /* Cambia el cursor al pasar sobre el botón */
+    text-decoration: none; /* Sin subrayado */
+    padding: 8px 15px; /* Espaciado interno */
+    display: block; /* Hacer que el botón sea un bloque para ajustar el margen inferior */
+    margin-top: 20px; /* Margen superior */
+    margin-left: 0.5rem; /* Margen izquierdo automático */
+    margin-right: auto; /* Margen derecho automático */
+    width: 5rem;
+}
+
+.btn-volver:hover {
+    background-color: #ffbb1d; /* Cambia el color de fondo al pasar sobre el botón */
+    text-decoration: none;
+    color: #000000;
+}
+
+.estado-solicitud-btn {
+    display: inline-block;
+    padding: 8px 12px;
+    border-radius: 4px;
+    color: #ffffff;
+    font-weight: bold;
+}
+
+
+.btn_editar_servicio{
+    background-color: #505050 ;
+}
+
+.btn_editar_servicio:hover{
+    background-color: #ffbb1d; /* Cambia el color de fondo al pasar sobre el botón */
+    text-decoration: none;
+    color: #000000;
+}
+
+/* Estilos para el acordeón */
+.accordion-item {
+    background-color: #ececec;
+    border: 1px solid #d8d8d8;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.accordion-header button {
+    background-color: #ececec;
+    color: #000000;
+    border: none;
+    border-radius: 4px;
+    padding: 15px;
+    text-align: left;
+    font-weight: bold;
+}
+
+.accordion-header button.collapsed {
+    background-color: #ececec;
+}
+
+.accordion-collapse {
+    background-color: #ffffff;
+    border: 1px solid #d8d8d8;
+    border-radius: 8px;
+    padding: 15px;
+}
+
+.accordion-collapse h3 {
+    font-size: 15px;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.accordion-collapse a {
+    color: #000000;
+    text-decoration: underline;
+    display: block;
+    margin-top: 5px;
+}
+
+.accordion-collapse a.btn {
+    width: 5rem;
+    color: #ffffff;
+    background-color: #505050;
+    border: none;
+    border-radius: 4px;
+    padding: 1px 1px;
+    text-decoration: none;
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+
+.accordion-collapse a.btn:hover {
+    background-color: #ffbb1d;
+    text-decoration: none;
+    color: #000000;
+}
+
+.accordion-button:not(.collapsed) {
+    color: #000000;
+    background-color: #d8d8d8;
+}
+
+.accordion-button:focus {
+    border-color: #000000;
+}
+
+
+
+
+
+/* .table-header {
+    background-color: #000;
+    color: #ffd700;
+
+} */
+
+/* .table-body td {
+    text-align: center;
+}
+
+.box_servicio_id {
+    background-color: #505050;
+    height: 1.5rem;
+    width: 2.5rem;
+    text-align: center;
+    align-items: center;
+    border-radius: 5px;
+}
+
+.link_servicio_id {
+    text-decoration: none;
+    color: rgb(255, 254, 254);
+    text-align: center;
+}
+
+.box_servicio_id:hover {
+    background-color: #ffbb1d;
+}
+
+.link_servicio_id:hover {
+    color: #000;
+}
+
+ */
+
+ .estado-btn {
+    display: inline-block;
+    padding: 8px 15px;
+    border-radius: 4px;
+    color: #fff;
+    text-align: center;
+    text-decoration: none;
+}
+
+.estado-btn.rojo {
+    background-color: #ff0000; /* Rojo */
+}
+
+.estado-btn.verde {
+    background-color: #248024; /* Verde */
+}
+
+
+
+
+@media (min-width: 800px) and (max-width: 1199px) {
+    .container,
+    .container-lg,
+    .container-md,
+    .container-sm,
+    .container-xl {
+        max-width: 800px;
+    }
+}
+
+@media (min-width: 1200px) {
+    .container,
+    .container-lg,
+    .container-md,
+    .container-sm,
+    .container-xl {
+        max-width: 1140px;
+    }
+}
+
+
+<style>
+/* Add Bootstrap classes to your existing styles */
+form {
+    max-width: 500px;
+    margin: auto;
+    padding: 20px;
+}
+
+label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 600;
+}
+
+input, select, textarea {
+    width: 100%;
+    margin-bottom: 10px;
+    padding: 8px;
+    box-sizing: border-box;
+    border-radius: 5px;
+    /* Add Bootstrap form-control class */
+    border: 1px solid #ced4da; /* Add Bootstrap form-control border color */
+}
+
+textarea {
+    height: 4rem;
+}
+
+button, .boton_volver {
+    /* Add Bootstrap button class */
+    display: inline-block;
+    font-weight: 400;
+    color: #fff;
+    text-align: center;
+    vertical-align: middle;
+    user-select: none;
+    background-color: #414448;
+    padding: .375rem .75rem;
+    font-size: 1rem;
+    line-height: 1.5;
+    border-radius: .25rem;
+    /* Add Bootstrap button hover style */
+    transition: color .15s ease-in-out, background-color .15s ease-in-out, border-color .15s ease-in-out, box-shadow .15s ease-in-out;
+    cursor: pointer;
+    text-decoration: none;
+    margin-left: 2rem;
+}
+
+button:hover, .boton_volver:hover {
+    background-color: #ebc118;
+    color: black;
+    text-decoration: none;
+}
+
+#id_fecha_egreso, label[for="id_fecha_egreso"],
+#id_informe_servicio, label[for="id_informe_servicio"],
+#id_estado_solicitud, label[for="id_estado_solicitud"] {
+    display: none;
+}
+
+.titulo_detalle_servicio {
+    margin-top: 1rem;
+    margin-left: 2rem;
+}
+
+</style>
+
+
+<style>
+.container {
+    max-width: 600px;
+    margin: auto;
+}
+
+.display-6 {
+    font-size: 1.8rem;
+    margin-bottom: 15px;
+}
+
+.form-label {
+    font-weight: bold;
+}
+
+.form-control-static {
+    font-weight: bold;
+}
+
+.btn {
+    margin-bottom: 20px;
+}
+
+.cliente{
+    font-size: 20px;
+}
+
+.boton {
+    background-color: #505050; /* Fondo azul */
+    color: #ffffff; /* Texto blanco */
+    border: none; /* Sin borde */
+    border-radius: 4px; /* Bordes redondeados */
+    cursor: pointer; /* Cambia el cursor al pasar sobre el botón */
+    text-decoration: none; /* Sin subrayado */
+    display: block; /* Hacer que el botón sea un bloque para ajustar el margen inferior */
+    width: 5rem;
+}
+
+.boton:hover {
+    background-color: #ffd700;
+    color: black   ;
+}
+
+
+
+<!-- <style>
+    /* SERVICIOS TEMPLATE */
+    #contenido_servicios {
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        align-items:flex-start; /* Alinea los elementos a la izquierda */
+        text-align: center; /* Centra el texto */
+        margin-left: 20px; /* Añade margen izquierdo */
+    }
+
+    .titulo_contenido_servicios {
+        font-size: 32px;
+        font-weight: bold;
+        margin-bottom: 10px;
+  
+    }
+
+    .boton_agregar_servicio {
+        display: flex;
+        height: 2rem;
+        width: 2rem;
+        justify-content: center;
+        font-size: 24px;
+        text-align: center;
+        background-color: #343a40;
+        color: white;
+        text-decoration: none;
+        border: none;
+        border-radius: 5px;
+        margin-bottom: 1rem;
+     
+        transition: transform 0.5s ease;
+    }
+
+    .boton_agregar_servicio:hover {
+        color: #ffd700;
+        transform: scale(1.2);
+        background-color: #555;
+    }
+
+    .search-container {
+        #buscar_servicio {
+            margin-right: 1rem;
+        }
+
+        .input-group-append {
+            .botones {
+                background-color: #505050;
+                color: #ffffff;
+            }
+
+            .botones:hover {
+                background-color: #ffbb1d;
+                text-decoration: none;
+                color: #000000;
+            }
+        }
+    }
+
+    .table-responsive {
+        overflow-x: auto;
+        margin: 0 auto;
+        max-width: 100%;
+    }
+
+    #miTabla thead th {
+        background-color: #342e2e;
+        color: #ffbb1d;
+        border-top-left-radius: 3px;
+        border-top-right-radius: 3px;
+        cursor: default;
+    }
+
+    .fila-servicio:hover {
+        cursor: pointer;
+    }
+
+    .thead-no-hover:hover {
+        cursor: default;
+    }
+
+    div.dataTables_wrapper {
+        margin-bottom: 1rem;
+    }
+
+    div.dataTables_filter input {
+        margin-bottom: 5px;
+    }
+
+    .dataTables_paginate {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 10px;
+    }
+
+
+</style> -->

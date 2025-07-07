@@ -1,0 +1,227 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2>
+                <i class="bi bi-people me-2"></i>Clientes con Paquete: {{ paquete.nombre }}
+            </h2>
+            <p class="text-muted">Clientes que tienen asignado este paquete de servicios</p>
+        </div>
+        <div>
+            <a href="{% url 'crm:portfolio_paquetes' %}" class="btn btn-outline-secondary me-2">
+                <i class="fas fa-arrow-left me-2"></i>Volver a Portfolio
+            </a>
+            <a href="{% url 'crm:asignar_paquete_cliente' %}?paquete={{ paquete.id }}" class="btn btn-success">
+                <i class="fas fa-plus me-2"></i>Asignar Cliente
+            </a>
+        </div>
+    </div>
+
+    <!-- Información del Paquete -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">
+                <i class="bi bi-info-circle me-2"></i>Información del Paquete
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>Nombre:</strong> {{ paquete.nombre }}</p>
+                    <p><strong>Precio:</strong> ${{ paquete.precio|floatformat:0 }}</p>
+                    <p><strong>Estado:</strong> 
+                        <span class="badge {% if paquete.estado == 'ACTIVO' %}bg-success{% else %}bg-secondary{% endif %}">
+                            {{ paquete.get_estado_display }}
+                        </span>
+                    </p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>Servicios Incluidos:</strong> {{ paquete.servicios.count }}</p>
+                    <p><strong>Fecha Creación:</strong> {{ paquete.fecha_creacion|date:"d/m/Y" }}</p>
+                    <p><strong>Última Modificación:</strong> {{ paquete.fecha_modificacion|date:"d/m/Y" }}</p>
+                </div>
+            </div>
+            {% if paquete.descripcion %}
+            <div class="mt-3">
+                <strong>Descripción:</strong>
+                <p class="text-muted">{{ paquete.descripcion }}</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Estadísticas -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h6 class="card-title">Total Asignaciones</h6>
+                    <h3 class="mb-0">{{ asignaciones|length }}</h3>
+                    <small>Clientes con este paquete</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h6 class="card-title">Asignaciones Activas</h6>
+                    <h3 class="mb-0">{{ asignaciones_activas_count }}</h3>
+                    <small>Paquetes vigentes</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <h6 class="card-title">Ingresos Potenciales</h6>
+                    <h3 class="mb-0">${{ ingresos_potenciales|floatformat:0 }}</h3>
+                    <small>Por asignaciones activas</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-dark">
+                <div class="card-body">
+                    <h6 class="card-title">Promedio Duración</h6>
+                    <h3 class="mb-0">{{ asignaciones|length }}</h3>
+                    <small>Días promedio</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabla de Clientes -->
+    <div class="card shadow-sm">
+        <div class="card-header">
+            <h5 class="mb-0">
+                <i class="bi bi-table me-2"></i>Clientes Asignados
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Cliente</th>
+                            <th>Sucursal</th>
+                            <th>Fecha Inicio</th>
+                            <th>Fecha Fin</th>
+                            <th>Estado</th>
+                            <th>Duración</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for asignacion in asignaciones %}
+                        <tr>
+                            <td>
+                                <strong>{{ asignacion.cliente.razon_social }}</strong><br>
+                                <small class="text-muted">{{ asignacion.cliente.nombre_fantasia|default:"Sin nombre de fantasía" }}</small>
+                            </td>
+                            <td>
+                                <span class="badge bg-secondary">{{ asignacion.cliente.sucursal.nombre }}</span>
+                            </td>
+                            <td>
+                                {{ asignacion.fecha_inicio|date:"d/m/Y" }}
+                            </td>
+                            <td>
+                                {% if asignacion.fecha_fin %}
+                                    {{ asignacion.fecha_fin|date:"d/m/Y" }}
+                                {% else %}
+                                    <span class="text-muted">Sin fecha fin</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="badge {% if asignacion.estado == 'ACTIVO' %}bg-success{% else %}bg-secondary{% endif %}">
+                                    {{ asignacion.get_estado_display }}
+                                </span>
+                            </td>
+                            <td>
+                                {% if asignacion.fecha_fin %}
+                                    {% with dias=asignacion.fecha_fin|timeuntil:asignacion.fecha_inicio %}
+                                        <span class="badge bg-info">{{ dias }}</span>
+                                    {% endwith %}
+                                {% else %}
+                                    <span class="badge bg-warning">En curso</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="btn-group btn-group-sm">
+                                    <a href="#" class="btn btn-outline-primary" title="Ver Cliente">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    <button class="btn btn-outline-warning" title="Editar Asignación">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                    <button class="btn btn-outline-danger" title="Finalizar Asignación">
+                                        <i class="bi bi-x-circle"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="text-center text-muted">
+                                <i class="bi bi-inbox me-2"></i>No hay clientes asignados a este paquete
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Servicios Incluidos -->
+    {% if paquete.servicios.count > 0 %}
+    <div class="card shadow-sm mt-4">
+        <div class="card-header">
+            <h5 class="mb-0">
+                <i class="bi bi-gear me-2"></i>Servicios Incluidos en el Paquete
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                {% for servicio in paquete.servicios.all|slice:":6" %}
+                <div class="col-md-4 mb-3">
+                    <div class="card border">
+                        <div class="card-body">
+                            <h6 class="card-title">{{ servicio.tipo_servicio }}</h6>
+                            <p class="card-text">
+                                <small class="text-muted">
+                                    Cliente: {{ servicio.cliente.razon_social|truncatechars:30 }}<br>
+                                    Fecha: {{ servicio.fecha_servicio|date:"d/m/Y" }}
+                                </small>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% if paquete.servicios.count > 6 %}
+            <div class="text-center mt-3">
+                <small class="text-muted">Mostrando 6 de {{ paquete.servicios.count }} servicios incluidos</small>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+// Función para finalizar asignación (placeholder)
+function finalizarAsignacion(asignacionId) {
+    if (confirm('¿Estás seguro de que quieres finalizar esta asignación?')) {
+        alert('Función de finalización en desarrollo para asignación ID: ' + asignacionId);
+    }
+}
+
+// Función para editar asignación (placeholder)
+function editarAsignacion(asignacionId) {
+    alert('Función de edición en desarrollo para asignación ID: ' + asignacionId);
+}
+</script>
+{% endblock %} 

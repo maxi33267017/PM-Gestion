@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load date_extras %}
+
+{% block content %}
+<main class="container mt-4">
+    <h1>Resumen Semanal de Horas</h1>
+    
+    <form method="get" class="mb-4">
+        <label for="fecha_inicio">Seleccionar semana (lunes):</label>
+        <input type="date" id="fecha_inicio" name="fecha_inicio" value="{{ fecha_inicio|date:'Y-m-d' }}">
+        <button type="submit" class="btn btn-primary">Filtrar</button>
+    </form>
+
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Técnico</th>
+                {% for dia in dias %}
+                    <th>{{ fecha_inicio|add_days:dia|date:"l, d/m/Y" }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for tecnico in tecnicos %}
+                <tr>
+                    <td>{{ tecnico.nombre }}</td>
+                    {% for dia in dias %}
+                        {% with fecha=fecha_inicio|add_days:dia %}
+                            <td>
+                                {% for registro in datos_horas|get_item:tecnico|get_item:fecha %}
+                                    <div>
+                                        {{ registro.hora_inicio }} - {{ registro.hora_fin }}: {{ registro.actividad }}
+                                        <br>
+                                    </div>
+                                {% empty %}
+                                    <i>No hay registros</i>
+                                {% endfor %}
+                            </td>
+                        {% endwith %}
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    
+</main>
+{% endblock %}

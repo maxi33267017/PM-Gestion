@@ -1,0 +1,223 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Informe de Servicio Post Venta</title>
+    <style>
+        /* Reset de márgenes y paddings predeterminados */
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 12px;
+            color: #333;
+            margin: 0;
+        }
+        .header-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        .header-table td {
+            vertical-align: middle;
+        }
+        .header-table .left {
+            text-align: left;
+        }
+        .header-table .right {
+            text-align: right;
+        }
+        .header-table img {
+            height: 70px;
+            width: auto;
+            border: none; /* Elimina cualquier borde residual */
+        }
+
+        /* Clase específica para eliminar bordes de la tabla */
+        .no-border {
+            border: none;
+            border-collapse: collapse;
+        }
+        .no-border td {
+            border: none;
+        }
+
+        /* Título centrado */
+        .title {
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        /* Secciones */
+        .section {
+            margin-bottom: 15px;
+            padding: 5px 0;
+            border-top: 1px solid #ccc; /* Línea superior para dividir secciones */
+
+        }
+        .section-title {
+            background-color: #343a40;
+            color: white;
+            padding: 5px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .section p {
+            margin: 0 0 5px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+  
+        th, td {
+            border: 1px solid #000;
+            padding: 4px;
+            text-align: left;
+        }
+        th {
+            background-color: #f5f5f5;
+            text-align: center;
+        }
+
+        /* Firmas */
+        .signature {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        .signature img {
+            width: 150px;
+            border: 1px solid #000;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Encabezado con imágenes alineadas en los extremos -->
+    <table class="header-table no-border">
+        <tr>
+            <td class="left">
+                <img src="{% static 'img/logo_pm_fondo_blanco.png' %}" alt="Logo Izquierdo">
+            </td>
+            <td class="right">
+                <img src="{% static 'img/JDLOGOHORIZONTAL.png' %}" alt="Logo Derecho">
+            </td>
+        </tr>
+    </table>
+
+    <!-- Título -->
+    <div class="title">INFORME DE SERVICIO POST VENTA #{{ servicio.numero_orden }}</div>
+
+    <!-- Fecha del Servicio -->
+    <p style="text-align: right;"><strong>Fecha del Servicio:</strong> {{ servicio.fecha_servicio|date:"d/m/Y" }}</p>
+
+    <table style="width: 100%; margin-bottom: 15px; border-collapse: collapse; border: none;">
+        <tr>
+            <!-- Datos del Cliente -->
+            <td style="width: 50%; vertical-align: top; padding-right: 10px; border: none;">
+                <div class="section-title">Datos del Cliente</div>
+                <p><strong>Razón Social:</strong> {{ cliente.razon_social }}</p>
+                <p><strong>Domicilio:</strong> {{ cliente.direccion }}</p>
+                <p><strong>Ciudad:</strong> {{ cliente.ciudad }}</p>
+                <p><strong>Email:</strong> {{ cliente.email }}</p>
+            </td>
+        
+            <!-- Datos del Equipo -->
+            <td style="width: 50%; vertical-align: top; padding-left: 10px; border: none;">
+                <div class="section-title">Datos del Equipo</div>
+                <p><strong>Marca:</strong> {{ equipo.modelo.marca }}</p>
+                <p><strong>Modelo:</strong> {{ equipo.modelo }}</p>
+                <p><strong>Número de Serie:</strong> {{ equipo.numero_serie }}</p>
+                <p><strong>Horas:</strong> {{ servicio.horometro_servicio }}</p>
+            </td>
+        </tr>
+    </table>
+    
+
+    <!-- Trabajo, Tipo y Ubicación -->
+    <div class="section" style="page-break-before: auto;">
+        <div class="section-title">Trabajo, Tipo y Ubicación</div>
+        <p><strong>Trabajo:</strong> {{ trabajo }}</p>
+        <p><strong>Tipo:</strong> {{ servicio.preorden.tipo_trabajo }}</p>
+        <p><strong>Ubicación:</strong> {{ servicio.ubicacion }}</p>
+    </div>
+
+    <!-- Solicitud del Cliente -->
+    <div class="section" >
+        <div class="section-title">Solicitud del Cliente</div>
+        <p>{{ solicitud_cliente }}</p>
+    </div>
+
+    <!-- Causa -->
+    <div class="section" style="page-break-inside: avoid;">
+        <div class="section-title">Causa</div>
+        <p>{{ servicio.causa }}</p>
+    </div>
+
+    <!-- Acción Correctiva -->
+    <div class="section" style="page-break-inside: avoid;">
+        <div class="section-title">Acción Correctiva</div>
+        <p>{{ servicio.accion_correctiva }}</p>
+    </div>
+
+    <!-- Repuestos Utilizados -->
+    <div class="section" style="page-break-inside: avoid; page-break-before: always;">
+        <div class="section-title">Repuestos Utilizados</div>
+        <div class="no-page-break">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 30%;">Código</th>
+                        <th style="width: 50%;">Descripción</th>
+                        <th style="width: 20%;">Cantidad</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for repuesto in servicio.repuestos.all %}
+                    <tr>
+                        <td>{{ repuesto.codigo }}</td>
+                        <td>{{ repuesto.descripcion }}</td>
+                        <td style="text-align: center;">{{ repuesto.cantidad }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="3" style="text-align: center;">No hay repuestos utilizados en este servicio.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Observaciones -->
+    <div class="section" style="page-break-inside: avoid;">
+        <div class="section-title">Observaciones</div>
+        <p>{{ servicio.observaciones }}</p>
+    </div>
+
+    <!-- Firmas -->
+    <div class="signature">
+        <div>
+            <p><strong>Responsable del Servicio:</strong></p>
+            <p>
+                {% for tecnico in tecnicos %}
+                    {{ tecnico.nombre }} {{ tecnico.apellido }}{% if not forloop.last %}, {% endif %}
+                {% empty %}
+                    No hay técnicos responsables asignados.
+                {% endfor %}
+            </p>
+        </div>
+        <div>
+            <p><strong>Firma del Cliente:</strong></p>
+            {% if servicio.firma_cliente %}
+                <img src="{{ servicio.firma_cliente.url }}" alt="Firma del Cliente">
+            {% endif %}
+            <p><strong>Aclaración:</strong> {{ servicio.nombre_cliente }}</p>
+        </div>
+    </div>
+</body>
+</html>

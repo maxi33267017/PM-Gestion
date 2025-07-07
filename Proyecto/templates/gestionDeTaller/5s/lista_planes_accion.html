@@ -1,0 +1,592 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+    /* Variables CSS para consistencia */
+    :root {
+        --primary-gradient: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        --secondary-gradient: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        --success-gradient: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+        --warning-gradient: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+        --danger-gradient: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+        --info-gradient: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+        --dark-gradient: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        --light-gradient: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        --card-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        --hover-shadow: 0 15px 40px rgba(0,0,0,0.15);
+        --border-radius: 20px;
+        --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Header mejorado */
+    .plans-header {
+        background: var(--dark-gradient);
+        color: white;
+        padding: 3rem 2rem;
+        border-radius: var(--border-radius);
+        margin-bottom: 2.5rem;
+        box-shadow: var(--card-shadow);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .plans-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="dots" width="20" height="20" patternUnits="userSpaceOnUse"><circle cx="10" cy="10" r="1" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23dots)"/></svg>');
+        pointer-events: none;
+    }
+    
+    .plans-header h1 {
+        margin: 0;
+        font-weight: 800;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        font-size: 3rem;
+        position: relative;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+    
+    .header-actions {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    /* Botón de volver */
+    .back-btn {
+        border-radius: 25px;
+        padding: 0.8rem 1.5rem;
+        font-weight: 600;
+        transition: var(--transition);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-size: 0.9rem;
+        border: none;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        text-decoration: none;
+        background: var(--dark-gradient);
+        color: white;
+    }
+    
+    .back-btn:hover {
+        background: var(--dark-gradient);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(44, 62, 80, 0.4);
+        color: white;
+        text-decoration: none;
+    }
+
+    /* Mensajes de alerta mejorados */
+    .messages-container {
+        margin-bottom: 2rem;
+    }
+    
+    .custom-alert {
+        border-radius: var(--border-radius);
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        border: none;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        position: relative;
+        overflow: hidden;
+        font-weight: 500;
+    }
+    
+    .custom-alert.success {
+        background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+        color: #155724;
+        border-left: 4px solid #28a745;
+    }
+    
+    .custom-alert.error {
+        background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+        color: #721c24;
+        border-left: 4px solid #dc3545;
+    }
+    
+    .custom-alert.warning {
+        background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+        color: #856404;
+        border-left: 4px solid #ffc107;
+    }
+    
+    .custom-alert.info {
+        background: linear-gradient(135deg, #d1ecf1 0%, #bee5eb 100%);
+        color: #0c5460;
+        border-left: 4px solid #17a2b8;
+    }
+
+    /* Contenedor de la tabla */
+    .table-container {
+        background: white;
+        border-radius: var(--border-radius);
+        box-shadow: var(--card-shadow);
+        overflow: hidden;
+        border: 1px solid #e9ecef;
+        margin-bottom: 2rem;
+    }
+    
+    .table-header {
+        background: var(--dark-gradient);
+        color: white;
+        padding: 1.2rem 1.5rem;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .table-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="table-dots" width="20" height="20" patternUnits="userSpaceOnUse"><circle cx="10" cy="10" r="1" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23table-dots)"/></svg>');
+        pointer-events: none;
+    }
+    
+    .table-header h5 {
+        margin: 0;
+        font-weight: 700;
+        font-size: 1.2rem;
+        position: relative;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        gap: 0.8rem;
+    }
+
+    /* Tabla mejorada */
+    .plans-table {
+        margin: 0;
+        border: none;
+        width: 100%;
+    }
+    
+    .plans-table th {
+        background: var(--dark-gradient) !important;
+        color: white !important;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 1rem 0.8rem;
+        border: none;
+        font-size: 0.8rem;
+    }
+    
+    .plans-table td {
+        padding: 1rem 0.8rem;
+        border: none;
+        border-bottom: 1px solid #f0f0f0;
+        font-weight: 500;
+        font-size: 0.9rem;
+        vertical-align: middle;
+    }
+    
+    .plans-table tbody tr {
+        transition: var(--transition);
+    }
+    
+    .plans-table tbody tr:hover {
+        background: rgba(44, 62, 80, 0.05);
+        transform: translateY(-1px);
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    .plans-table tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    /* Fecha límite con estado */
+    .deadline-date {
+        font-weight: 600;
+        padding: 0.3rem 0.8rem;
+        border-radius: 15px;
+        font-size: 0.85rem;
+        display: inline-block;
+    }
+    
+    .deadline-date.overdue {
+        background: var(--danger-gradient);
+        color: white;
+        box-shadow: 0 2px 8px rgba(231, 76, 60, 0.3);
+    }
+    
+    .deadline-date.on-time {
+        background: var(--success-gradient);
+        color: white;
+        box-shadow: 0 2px 8px rgba(39, 174, 96, 0.3);
+    }
+
+    /* Badges de estado */
+    .status-badge {
+        border-radius: 20px;
+        padding: 0.5rem 1rem;
+        font-weight: 600;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border: none;
+        color: white;
+    }
+    
+    .status-badge.bg-success {
+        background: var(--success-gradient) !important;
+    }
+    
+    .status-badge.bg-warning {
+        background: var(--warning-gradient) !important;
+    }
+    
+    .status-badge.bg-danger {
+        background: var(--danger-gradient) !important;
+    }
+
+    /* Botones de acción */
+    .action-buttons {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+    
+    .action-btn {
+        border-radius: 20px;
+        padding: 0.5rem 1rem;
+        font-weight: 600;
+        transition: var(--transition);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-size: 0.8rem;
+        border: none;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 0.3rem;
+        color: white;
+    }
+    
+    .action-btn.info {
+        background: var(--info-gradient);
+    }
+    
+    .action-btn.info:hover {
+        background: var(--info-gradient);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4);
+        color: white;
+        text-decoration: none;
+    }
+    
+    .action-btn.warning {
+        background: var(--warning-gradient);
+    }
+    
+    .action-btn.warning:hover {
+        background: var(--warning-gradient);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(243, 156, 18, 0.4);
+        color: white;
+        text-decoration: none;
+    }
+
+    /* Mensaje de no registros */
+    .no-records {
+        padding: 3rem 2rem;
+        text-align: center;
+        color: #6c757d;
+        background: #f8f9fa;
+    }
+    
+    .no-records i {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+    }
+
+    /* Paginación mejorada */
+    .pagination-container {
+        background: white;
+        border-radius: var(--border-radius);
+        padding: 1.5rem;
+        box-shadow: var(--card-shadow);
+        border: 1px solid #e9ecef;
+        margin-top: 2rem;
+    }
+    
+    .pagination {
+        margin: 0;
+        gap: 0.5rem;
+    }
+    
+    .page-link {
+        border-radius: 15px;
+        border: none;
+        padding: 0.8rem 1rem;
+        color: #2c3e50;
+        font-weight: 600;
+        transition: var(--transition);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    .page-link:hover {
+        background: var(--dark-gradient);
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(44, 62, 80, 0.3);
+        text-decoration: none;
+    }
+    
+    .page-item.active .page-link {
+        background: var(--dark-gradient);
+        color: white;
+        box-shadow: 0 4px 15px rgba(44, 62, 80, 0.3);
+    }
+
+    /* Animaciones */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .plans-header, .table-container, .pagination-container {
+        animation: fadeInUp 0.6s ease-out;
+    }
+    
+    .table-container { animation-delay: 0.1s; }
+    .pagination-container { animation-delay: 0.2s; }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .plans-header {
+            padding: 2rem 1.5rem;
+            text-align: center;
+        }
+        
+        .plans-header h1 {
+            font-size: 2rem;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .header-actions {
+            justify-content: center;
+            margin-top: 1rem;
+        }
+        
+        .back-btn {
+            padding: 0.7rem 1.2rem;
+            font-size: 0.85rem;
+        }
+        
+        .plans-table th,
+        .plans-table td {
+            padding: 0.5rem 0.4rem;
+            font-size: 0.75rem;
+        }
+        
+        .action-buttons {
+            flex-direction: column;
+        }
+        
+        .action-btn {
+            padding: 0.4rem 0.8rem;
+            font-size: 0.75rem;
+        }
+        
+        .deadline-date {
+            padding: 0.2rem 0.6rem;
+            font-size: 0.75rem;
+        }
+    }
+</style>
+
+<main class="container-fluid mt-4">
+    <!-- Header mejorado -->
+    <div class="plans-header">
+        <div class="d-flex justify-content-between align-items-center">
+            <h1>
+                <i class="bi bi-clipboard-list"></i>
+                Planes de Acción 5S
+            </h1>
+            <div class="header-actions">
+                <a href="{% url 'gestionDeTaller:lista_revisiones_5s' %}" class="back-btn">
+                    <i class="bi bi-arrow-left"></i>
+                    Volver a Revisiones
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mensajes de alerta -->
+    {% if messages %}
+    <div class="messages-container">
+        {% for message in messages %}
+        <div class="custom-alert {{ message.tags }}">
+            <i class="bi bi-{% if message.tags == 'success' %}check-circle{% elif message.tags == 'error' %}exclamation-triangle{% elif message.tags == 'warning' %}exclamation-triangle{% else %}info-circle{% endif %}"></i>
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Contenedor de la tabla -->
+    <div class="table-container">
+        <div class="table-header">
+            <h5>
+                <i class="bi bi-table"></i>
+                Lista de Planes de Acción
+            </h5>
+        </div>
+        <div class="table-responsive">
+            <table class="table plans-table">
+                <thead>
+                    <tr>
+                        <th><i class="bi bi-building me-2"></i>Sucursal</th>
+                        <th><i class="bi bi-calendar-date me-2"></i>Fecha Revisión</th>
+                        <th><i class="bi bi-exclamation-triangle me-2"></i>Item No Conforme</th>
+                        <th><i class="bi bi-person-check me-2"></i>Responsable</th>
+                        <th><i class="bi bi-calendar-event me-2"></i>Fecha Límite</th>
+                        <th><i class="bi bi-flag me-2"></i>Estado</th>
+                        <th><i class="bi bi-gear me-2"></i>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for plan in planes_accion %}
+                    <tr>
+                        <td>
+                            <strong>{{ plan.revision.sucursal }}</strong>
+                        </td>
+                        <td>
+                            <i class="bi bi-calendar3 me-1"></i>
+                            {{ plan.revision.fecha_revision|date:"d/m/Y" }}
+                        </td>
+                        <td>
+                            <div class="text-wrap" style="max-width: 200px;">
+                                {{ plan.item_no_conforme }}
+                            </div>
+                        </td>
+                        <td>
+                            <i class="bi bi-person me-1"></i>
+                            {{ plan.responsable.get_nombre_completo }}
+                        </td>
+                        <td>
+                            <span class="deadline-date {% if plan.fecha_limite < today %}overdue{% else %}on-time{% endif %}">
+                                <i class="bi bi-{% if plan.fecha_limite < today %}exclamation-triangle{% else %}check-circle{% endif %} me-1"></i>
+                                {{ plan.fecha_limite|date:"d/m/Y" }}
+                            </span>
+                        </td>
+                        <td>
+                            {% if plan.estado == 'COMPLETADO' %}
+                            <span class="status-badge bg-success">
+                                <i class="bi bi-check-circle me-1"></i>Completado
+                            </span>
+                            {% elif plan.estado == 'EN_PROCESO' %}
+                            <span class="status-badge bg-warning">
+                                <i class="bi bi-clock me-1"></i>En Proceso
+                            </span>
+                            {% else %}
+                            <span class="status-badge bg-danger">
+                                <i class="bi bi-exclamation-triangle me-1"></i>Pendiente
+                            </span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="action-buttons">
+                                <a href="{% url 'gestionDeTaller:detalle_plan_accion_5s' plan.id %}" 
+                                   class="action-btn info" 
+                                   title="Ver Detalles">
+                                    <i class="bi bi-eye"></i>
+                                    Ver
+                                </a>
+                                {% if plan.estado != 'COMPLETADO' %}
+                                <a href="{% url 'gestionDeTaller:editar_plan_accion_5s' plan.id %}" 
+                                   class="action-btn warning" 
+                                   title="Editar Plan">
+                                    <i class="bi bi-pencil"></i>
+                                    Editar
+                                </a>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="no-records">
+                            <i class="bi bi-inbox"></i>
+                            <p>No hay planes de acción registrados.</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Paginación mejorada -->
+    {% if is_paginated %}
+    <div class="pagination-container">
+        <nav aria-label="Navegación de páginas">
+            <ul class="pagination justify-content-center">
+                {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page=1" aria-label="Primera">
+                        <i class="bi bi-chevron-double-left"></i>
+                    </a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}" aria-label="Anterior">
+                        <i class="bi bi-chevron-left"></i>
+                    </a>
+                </li>
+                {% endif %}
+
+                {% for num in page_obj.paginator.page_range %}
+                    {% if page_obj.number == num %}
+                    <li class="page-item active">
+                        <span class="page-link">{{ num }}</span>
+                    </li>
+                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                    </li>
+                    {% endif %}
+                {% endfor %}
+
+                {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}" aria-label="Siguiente">
+                        <i class="bi bi-chevron-right"></i>
+                    </a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}" aria-label="Última">
+                        <i class="bi bi-chevron-double-right"></i>
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+    {% endif %}
+</main>
+{% endblock %} 

@@ -1,0 +1,274 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2>
+                <i class="bi bi-graph-up me-2"></i>Análisis de Clientes
+            </h2>
+            <p class="text-muted">Dashboard general de comportamiento y rendimiento de clientes</p>
+        </div>
+        <div>
+            <a href="{% url 'crm:analisis_clientes' %}" class="btn btn-outline-secondary me-2">
+                <i class="fas fa-arrow-left me-2"></i>Volver al Análisis
+            </a>
+            <a href="{% url 'crm:oportunidades_venta' %}" class="btn btn-warning">
+                <i class="fas fa-chart-line me-2"></i>Oportunidades
+            </a>
+        </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">
+                <i class="bi bi-funnel me-2"></i>Filtros de Análisis
+            </h5>
+        </div>
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-3">
+                    <label for="periodo" class="form-label">Período de Análisis</label>
+                    <select name="periodo" id="periodo" class="form-select">
+                        <option value="90" {% if periodo_dias == 90 %}selected{% endif %}>Últimos 3 meses</option>
+                        <option value="180" {% if periodo_dias == 180 %}selected{% endif %}>Últimos 6 meses</option>
+                        <option value="365" {% if periodo_dias == 365 %}selected{% endif %}>Último año</option>
+                        <option value="730" {% if periodo_dias == 730 %}selected{% endif %}>Últimos 2 años</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="segmento" class="form-label">Segmento</label>
+                    <select name="segmento" id="segmento" class="form-select">
+                        <option value="">Todos los segmentos</option>
+                        <option value="A" {% if segmento_filtro == 'A' %}selected{% endif %}>Segmento A</option>
+                        <option value="B" {% if segmento_filtro == 'B' %}selected{% endif %}>Segmento B</option>
+                        <option value="C" {% if segmento_filtro == 'C' %}selected{% endif %}>Segmento C</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="comportamiento" class="form-label">Comportamiento</label>
+                    <select name="comportamiento" id="comportamiento" class="form-select">
+                        <option value="">Todos los comportamientos</option>
+                        <option value="ACTIVO" {% if comportamiento_filtro == 'ACTIVO' %}selected{% endif %}>Activo</option>
+                        <option value="CRECIMIENTO" {% if comportamiento_filtro == 'CRECIMIENTO' %}selected{% endif %}>Crecimiento</option>
+                        <option value="COMPORTAMIENTO_BAJISTA" {% if comportamiento_filtro == 'COMPORTAMIENTO_BAJISTA' %}selected{% endif %}>Comportamiento Bajista</option>
+                        <option value="INACTIVO" {% if comportamiento_filtro == 'INACTIVO' %}selected{% endif %}>Inactivo</option>
+                    </select>
+                </div>
+                <div class="col-md-3 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary me-2">
+                        <i class="bi bi-search me-2"></i>Filtrar
+                    </button>
+                    <a href="{% url 'crm:analisis_clientes' %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-clockwise me-2"></i>Limpiar
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Estadísticas Generales -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h6 class="card-title">Total Clientes</h6>
+                    <h3 class="mb-0">{{ total_clientes }}</h3>
+                    <small>Analizados</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h6 class="card-title">Clientes Activos</h6>
+                    <h3 class="mb-0">{{ clientes_activos }}</h3>
+                    <small>{{ clientes_activos|floatformat:1 }}% del total</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-dark">
+                <div class="card-body">
+                    <h6 class="card-title">Clientes Inactivos</h6>
+                    <h3 class="mb-0">{{ clientes_inactivos }}</h3>
+                    <small>{{ clientes_inactivos|floatformat:1 }}% del total</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <h6 class="card-title">Facturación Total</h6>
+                    <h3 class="mb-0">${{ facturacion_total|floatformat:0 }}</h3>
+                    <small>En el período</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Distribución por Comportamiento -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-pie-chart me-2"></i>Distribución por Comportamiento
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="bg-success rounded-circle me-3" style="width: 20px; height: 20px;"></div>
+                                <div>
+                                    <strong>Activos</strong><br>
+                                    <small class="text-muted">{{ distribucion_comportamiento.ACTIVO|default:0 }} clientes</small>
+                                </div>
+                            </div>
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="bg-info rounded-circle me-3" style="width: 20px; height: 20px;"></div>
+                                <div>
+                                    <strong>Crecimiento</strong><br>
+                                    <small class="text-muted">{{ distribucion_comportamiento.CRECIMIENTO|default:0 }} clientes</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="bg-warning rounded-circle me-3" style="width: 20px; height: 20px;"></div>
+                                <div>
+                                    <strong>Comportamiento Bajista</strong><br>
+                                    <small class="text-muted">{{ distribucion_comportamiento.COMPORTAMIENTO_BAJISTA|default:0 }} clientes</small>
+                                </div>
+                            </div>
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="bg-danger rounded-circle me-3" style="width: 20px; height: 20px;"></div>
+                                <div>
+                                    <strong>Inactivos</strong><br>
+                                    <small class="text-muted">{{ distribucion_comportamiento.INACTIVO|default:0 }} clientes</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-trophy me-2"></i>Top 5 Clientes por Facturación
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% for cliente_data in top_clientes|slice:":5" %}
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <div>
+                            <strong>{{ cliente_data.cliente.razon_social }}</strong><br>
+                            <small class="text-muted">
+                                <span class="badge {% if cliente_data.comportamiento == 'ACTIVO' %}bg-success{% elif cliente_data.comportamiento == 'CRECIMIENTO' %}bg-info{% elif cliente_data.comportamiento == 'COMPORTAMIENTO_BAJISTA' %}bg-warning{% else %}bg-danger{% endif %}">
+                                    {{ cliente_data.comportamiento }}
+                                </span>
+                            </small>
+                        </div>
+                        <div class="text-end">
+                            <strong>${{ cliente_data.cliente.total_facturacion|floatformat:0 }}</strong><br>
+                            <small class="text-muted">{{ cliente_data.cliente.total_servicios }} servicios</small>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <p class="text-muted text-center">No hay datos disponibles</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabla de Clientes -->
+    <div class="card shadow-sm">
+        <div class="card-header">
+            <h5 class="mb-0">
+                <i class="bi bi-table me-2"></i>Lista de Clientes Analizados
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Cliente</th>
+                            <th>Segmento</th>
+                            <th>Comportamiento</th>
+                            <th>Facturación</th>
+                            <th>Servicios</th>
+                            <th>Equipos</th>
+                            <th>Paquetes</th>
+                            <th>Último Servicio</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for cliente_data in clientes_analizados %}
+                        <tr>
+                            <td>
+                                <strong>{{ cliente_data.cliente.razon_social }}</strong><br>
+                                <small class="text-muted">{{ cliente_data.cliente.email|default:"Sin email" }}</small>
+                            </td>
+                            <td>
+                                {% if cliente_data.cliente.analisiscliente %}
+                                    <span class="badge {% if cliente_data.cliente.analisiscliente.categoria == 'A' %}bg-success{% elif cliente_data.cliente.analisiscliente.categoria == 'B' %}bg-warning{% else %}bg-secondary{% endif %}">
+                                        Segmento {{ cliente_data.cliente.analisiscliente.categoria }}
+                                    </span>
+                                {% else %}
+                                    <span class="badge bg-secondary">Nuevo</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="badge {% if cliente_data.comportamiento == 'ACTIVO' %}bg-success{% elif cliente_data.comportamiento == 'CRECIMIENTO' %}bg-info{% elif cliente_data.comportamiento == 'COMPORTAMIENTO_BAJISTA' %}bg-warning{% else %}bg-danger{% endif %}">
+                                    {{ cliente_data.comportamiento }}
+                                </span>
+                            </td>
+                            <td>
+                                <strong>${{ cliente_data.cliente.total_facturacion|floatformat:0 }}</strong>
+                            </td>
+                            <td>
+                                <span class="badge bg-primary">{{ cliente_data.cliente.total_servicios }}</span>
+                            </td>
+                            <td>
+                                <span class="badge bg-secondary">{{ cliente_data.cliente.equipos_activos }}</span>
+                            </td>
+                            <td>
+                                <span class="badge bg-info">{{ cliente_data.cliente.paquetes_activos }}</span>
+                            </td>
+                            <td>
+                                {% if cliente_data.cliente.ultimo_servicio %}
+                                {{ cliente_data.cliente.ultimo_servicio|date:"d/m/Y" }}<br>
+                                <small class="text-muted">{{ cliente_data.dias_desde_ultimo }} días</small>
+                                {% else %}
+                                <span class="text-muted">Sin servicios</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="{% url 'crm:dashboard_cliente' cliente_data.cliente.id %}" class="btn btn-outline-primary btn-sm" title="Ver Dashboard">
+                                    <i class="fas fa-chart-bar"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="9" class="text-center text-muted">
+                                <i class="bi bi-inbox me-2"></i>No hay clientes que coincidan con los filtros
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

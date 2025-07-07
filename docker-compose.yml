@@ -1,0 +1,39 @@
+services:
+  database:
+    image: mysql:8.0
+    volumes:
+      - database:/var/lib/mysql
+    environment:
+      - MYSQL_DATABASE=patagonia
+      - MYSQL_USER=patagonia
+      - MYSQL_PASSWORD=patagonia123
+      - MYSQL_ROOT_PASSWORD=patagonia123
+  backend:
+    build: .
+    working_dir: /app/Proyecto
+    command: python manage.py runserver 0.0.0.0:8000
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+    depends_on:
+      - database
+  migration:
+    build: .
+    working_dir: /app/Proyecto
+    command: python manage.py migrate --noinput
+    volumes:
+      - .:/app
+    depends_on:
+      - database
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    restart: always
+    environment:
+      PMA_HOST: database
+    depends_on:
+      - database
+    ports:
+      - "8080:80"
+volumes:
+  database:

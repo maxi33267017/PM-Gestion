@@ -1,0 +1,250 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2>
+                <i class="bi bi-people me-2"></i>Gestionar Contactos: {{ campania.nombre }}
+            </h2>
+            <p class="text-muted">Registra y gestiona contactos de la campaña de marketing</p>
+        </div>
+        <div>
+            <a href="{% url 'crm:campanias_marketing' %}" class="btn btn-outline-secondary me-2">
+                <i class="bi bi-arrow-left me-2"></i>Volver a Campañas
+            </a>
+            <a href="{% url 'crm:dashboard_campania' campania.id %}" class="btn btn-info">
+                <i class="fas fa-chart-bar me-2"></i>Dashboard de Campaña
+            </a>
+        </div>
+    </div>
+
+    <!-- Estadísticas de la Campaña -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body text-center">
+                    <h6 class="card-title">Total Contactos</h6>
+                    <h3 class="mb-0">{{ total_contactos }}</h3>
+                    <small>Registrados</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body text-center">
+                    <h6 class="card-title">Ventas Exitosas</h6>
+                    <h3 class="mb-0">{{ ventas_exitosas }}</h3>
+                    <small>Conversiones</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-danger text-white">
+                <div class="card-body text-center">
+                    <h6 class="card-title">Ventas Perdidas</h6>
+                    <h3 class="mb-0">{{ ventas_perdidas }}</h3>
+                    <small>Sin éxito</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body text-center">
+                    <h6 class="card-title">Valor Total</h6>
+                    <h3 class="mb-0">${{ valor_total_ventas|floatformat:0 }}</h3>
+                    <small>Ventas exitosas</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Formulario para Nuevo Contacto -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-plus-circle me-2"></i>Registrar Nuevo Contacto
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label for="cliente" class="form-label">Cliente *</label>
+                                <select class="form-select" id="cliente" name="cliente" required>
+                                    <option value="">Seleccionar cliente...</option>
+                                    {% for cliente in clientes %}
+                                    <option value="{{ cliente.id }}">{{ cliente.razon_social }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="fecha_contacto" class="form-label">Fecha de Contacto *</label>
+                                <input type="date" class="form-control" id="fecha_contacto" name="fecha_contacto" required>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="responsable" class="form-label">Responsable *</label>
+                                <select class="form-select" id="responsable" name="responsable" required>
+                                    <option value="">Seleccionar responsable...</option>
+                                    {% for responsable in responsables %}
+                                    <option value="{{ responsable.id }}">{{ responsable.nombre }} {{ responsable.apellido }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label for="resultado" class="form-label">Resultado *</label>
+                                <select class="form-select" id="resultado" name="resultado" required>
+                                    <option value="">Seleccionar resultado...</option>
+                                    <option value="VENTA_EXITOSA">Venta Exitosa</option>
+                                    <option value="VENTA_PERDIDA">Venta Perdida</option>
+                                    <option value="PENDIENTE">Pendiente</option>
+                                    <option value="REPROGRAMADO">Reprogramado</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="valor_venta" class="form-label">Valor de Venta (USD)</label>
+                                <input type="number" class="form-control" id="valor_venta" name="valor_venta" step="0.01" min="0">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="fecha_seguimiento" class="form-label">Fecha de Seguimiento</label>
+                                <input type="date" class="form-control" id="fecha_seguimiento" name="fecha_seguimiento">
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="observaciones" class="form-label">Observaciones</label>
+                            <textarea class="form-control" id="observaciones" name="observaciones" rows="3" placeholder="Detalles del contacto, propuesta, etc..."></textarea>
+                        </div>
+                        
+                        <div class="d-flex justify-content-end">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-circle me-2"></i>Registrar Contacto
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lista de Contactos -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-list-ul me-2"></i>Contactos Registrados
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Fecha</th>
+                                    <th>Cliente</th>
+                                    <th>Responsable</th>
+                                    <th>Resultado</th>
+                                    <th>Valor Venta</th>
+                                    <th>Seguimiento</th>
+                                    <th>Observaciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for contacto in contactos %}
+                                <tr>
+                                    <td>{{ contacto.fecha_contacto|date:"d/m/Y" }}</td>
+                                    <td>
+                                        <strong>{{ contacto.cliente.razon_social }}</strong><br>
+                                        <small class="text-muted">{{ contacto.cliente.email|default:"Sin email" }}</small>
+                                    </td>
+                                    <td>
+                                        {{ contacto.responsable.nombre }} {{ contacto.responsable.apellido }}
+                                    </td>
+                                    <td>
+                                        <span class="badge {% if contacto.resultado == 'VENTA_EXITOSA' %}bg-success{% elif contacto.resultado == 'VENTA_PERDIDA' %}bg-danger{% elif contacto.resultado == 'PENDIENTE' %}bg-warning{% else %}bg-info{% endif %}">
+                                            {{ contacto.get_resultado_display }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% if contacto.valor_venta %}
+                                        <strong>${{ contacto.valor_venta|floatformat:0 }}</strong>
+                                        {% else %}
+                                        <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if contacto.fecha_seguimiento %}
+                                        {{ contacto.fecha_seguimiento|date:"d/m/Y" }}
+                                        {% else %}
+                                        <span class="text-muted">Sin seguimiento</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if contacto.observaciones %}
+                                        {{ contacto.observaciones|truncatewords:10 }}
+                                        {% else %}
+                                        <span class="text-muted">Sin observaciones</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="7" class="text-center text-muted">
+                                        <i class="bi bi-inbox me-2"></i>No hay contactos registrados para esta campaña
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Establecer fecha de contacto por defecto como hoy
+document.getElementById('fecha_contacto').value = new Date().toISOString().split('T')[0];
+
+// Función para validar el formulario
+document.querySelector('form').addEventListener('submit', function(e) {
+    const cliente = document.getElementById('cliente').value;
+    const fechaContacto = document.getElementById('fecha_contacto').value;
+    const responsable = document.getElementById('responsable').value;
+    const resultado = document.getElementById('resultado').value;
+    
+    if (!cliente) {
+        e.preventDefault();
+        alert('Por favor selecciona un cliente.');
+        return;
+    }
+    
+    if (!fechaContacto) {
+        e.preventDefault();
+        alert('Por favor ingresa la fecha de contacto.');
+        return;
+    }
+    
+    if (!responsable) {
+        e.preventDefault();
+        alert('Por favor selecciona un responsable.');
+        return;
+    }
+    
+    if (!resultado) {
+        e.preventDefault();
+        alert('Por favor selecciona un resultado.');
+        return;
+    }
+});
+</script>
+{% endblock %} 

@@ -1,0 +1,563 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Calendario de Preórdenes{% endblock %}
+
+{% block extra_css %}
+<link href='https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.10/main.min.css' rel='stylesheet' />
+{% endblock %}
+
+{% block content %}
+<style>
+    /* Variables CSS para consistencia */
+    :root {
+        --primary-gradient: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        --secondary-gradient: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        --success-gradient: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+        --warning-gradient: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+        --danger-gradient: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+        --dark-gradient: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        --light-gradient: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        --card-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        --hover-shadow: 0 15px 40px rgba(0,0,0,0.15);
+        --border-radius: 20px;
+        --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Header mejorado */
+    .calendar-header {
+        background: var(--dark-gradient);
+        color: white;
+        padding: 3rem 2rem;
+        border-radius: var(--border-radius);
+        margin-bottom: 2.5rem;
+        box-shadow: var(--card-shadow);
+        position: relative;
+        overflow: hidden;
+        text-align: center;
+    }
+    
+    .calendar-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="dots" width="20" height="20" patternUnits="userSpaceOnUse"><circle cx="10" cy="10" r="1" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23dots)"/></svg>');
+        pointer-events: none;
+    }
+    
+    .calendar-header h1 {
+        margin: 0;
+        font-weight: 800;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        font-size: 3rem;
+        position: relative;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 1rem;
+    }
+    
+    .calendar-header .subtitle {
+        font-size: 1.2rem;
+        opacity: 0.9;
+        margin-top: 1rem;
+        position: relative;
+        z-index: 1;
+    }
+
+    /* Contenedor del calendario */
+    .calendar-container {
+        background: white;
+        border-radius: var(--border-radius);
+        box-shadow: var(--card-shadow);
+        overflow: hidden;
+        border: 1px solid #e9ecef;
+        margin-bottom: 2rem;
+    }
+
+    /* Header del calendario */
+    .calendar-card-header {
+        background: var(--dark-gradient);
+        color: white;
+        padding: 1.5rem 2rem;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .calendar-card-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="calendar-dots" width="20" height="20" patternUnits="userSpaceOnUse"><circle cx="10" cy="10" r="1" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23calendar-dots)"/></svg>');
+        pointer-events: none;
+    }
+    
+    .calendar-card-header h3 {
+        margin: 0;
+        font-weight: 700;
+        font-size: 1.5rem;
+        position: relative;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        gap: 0.8rem;
+    }
+
+    /* Leyenda mejorada */
+    .legend-container {
+        background: #f8f9fa;
+        border-radius: 15px;
+        padding: 1.5rem;
+        margin: 1.5rem;
+        border: 1px solid #e9ecef;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    }
+    
+    .legend-title {
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 1rem;
+        font-size: 1rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .legend-items {
+        display: flex;
+        gap: 2rem;
+        flex-wrap: wrap;
+        align-items: center;
+    }
+    
+    .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+        background: white;
+        border-radius: 25px;
+        border: 1px solid #e9ecef;
+        transition: var(--transition);
+        font-weight: 500;
+        color: #2c3e50;
+    }
+    
+    .legend-item:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    
+    .legend-badge {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        display: inline-block;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+    
+    .legend-badge.taller {
+        background: var(--success-gradient);
+    }
+    
+    .legend-badge.campo {
+        background: var(--danger-gradient);
+    }
+
+    /* Contenedor del calendario */
+    .calendar-body {
+        padding: 1.5rem;
+        background: #fafbfc;
+    }
+
+    /* Personalización de FullCalendar */
+    .fc {
+        background: white;
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+        border: 1px solid #e9ecef;
+    }
+    
+    .fc-header-toolbar {
+        background: var(--dark-gradient);
+        color: white;
+        padding: 1rem 1.5rem;
+        margin: 0;
+        border-radius: 15px 15px 0 0;
+    }
+    
+    .fc-toolbar-title {
+        color: white !important;
+        font-weight: 700;
+        font-size: 1.3rem;
+    }
+    
+    .fc-button {
+        background: rgba(255,255,255,0.2) !important;
+        border: 1px solid rgba(255,255,255,0.3) !important;
+        color: white !important;
+        border-radius: 25px !important;
+        padding: 0.5rem 1rem !important;
+        font-weight: 600 !important;
+        transition: var(--transition) !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.5px !important;
+        font-size: 0.85rem !important;
+    }
+    
+    .fc-button:hover {
+        background: rgba(255,255,255,0.3) !important;
+        transform: translateY(-2px) !important;
+        box-shadow: 0 4px 15px rgba(255,255,255,0.2) !important;
+    }
+    
+    .fc-button-active {
+        background: rgba(255,255,255,0.4) !important;
+        box-shadow: 0 2px 10px rgba(255,255,255,0.3) !important;
+    }
+    
+    .fc-daygrid-day {
+        transition: var(--transition);
+    }
+    
+    .fc-daygrid-day:hover {
+        background: rgba(44, 62, 80, 0.05);
+    }
+    
+    .fc-daygrid-day-number {
+        font-weight: 600;
+        color: #2c3e50 !important;
+        padding: 0.5rem;
+        border-radius: 50%;
+        transition: var(--transition);
+        text-decoration: none !important;
+    }
+    
+    .fc-daygrid-day:hover .fc-daygrid-day-number {
+        background: var(--dark-gradient);
+        color: white !important;
+        transform: scale(1.1);
+    }
+    
+    .fc-col-header-cell {
+        background: var(--dark-gradient) !important;
+        color: white !important;
+        font-weight: 700 !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.5px !important;
+        padding: 1rem 0.5rem !important;
+    }
+    
+    .fc-day-today {
+        background: rgba(39, 174, 96, 0.1) !important;
+    }
+    
+    .fc-day-today .fc-daygrid-day-number {
+        background: var(--success-gradient);
+        color: white !important;
+        box-shadow: 0 4px 15px rgba(39, 174, 96, 0.3);
+    }
+    
+    /* Quitar color azul de enlaces en días */
+    .fc-daygrid-day a {
+        color: #2c3e50 !important;
+        text-decoration: none !important;
+    }
+    
+    .fc-daygrid-day a:hover {
+        color: #2c3e50 !important;
+        text-decoration: none !important;
+    }
+
+    /* Eventos del calendario */
+    .fc-event {
+        cursor: pointer;
+        border-radius: 8px !important;
+        border: none !important;
+        padding: 0.3rem 0.5rem !important;
+        font-weight: 600 !important;
+        font-size: 0.85rem !important;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.2) !important;
+        transition: var(--transition) !important;
+        margin: 1px 0 !important;
+    }
+    
+    .fc-event:hover {
+        transform: translateY(-2px) !important;
+        box-shadow: 0 6px 20px rgba(0,0,0,0.3) !important;
+    }
+    
+    .fc-event-title {
+        font-weight: bold;
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+    }
+    
+    .fc-event-dot {
+        display: none !important;
+    }
+
+    /* Tooltip personalizado mejorado */
+    .custom-tooltip {
+        position: absolute;
+        background: white;
+        border: none;
+        border-radius: 15px;
+        padding: 1.5rem;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        z-index: 1000;
+        max-width: 350px;
+        font-size: 0.9em;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255,255,255,0.2);
+        animation: tooltipFadeIn 0.3s ease-out;
+    }
+    
+    @keyframes tooltipFadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(10px) scale(0.95);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+    
+    .custom-tooltip h6 {
+        margin-bottom: 0.8rem;
+        color: #2c3e50;
+        font-weight: 700;
+        font-size: 1.1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid #e9ecef;
+    }
+    
+    .custom-tooltip p {
+        margin: 0.5rem 0;
+        color: #495057;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .custom-tooltip .tooltip-label {
+        font-weight: 600;
+        color: #2c3e50;
+        min-width: 80px;
+    }
+    
+    .custom-tooltip .tooltip-value {
+        color: #6c757d;
+    }
+
+    /* Animaciones */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .calendar-header, .calendar-container {
+        animation: fadeInUp 0.6s ease-out;
+    }
+    
+    .calendar-container { animation-delay: 0.1s; }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .calendar-header {
+            padding: 2rem 1.5rem;
+        }
+        
+        .calendar-header h1 {
+            font-size: 2rem;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .legend-items {
+            flex-direction: column;
+            gap: 1rem;
+            align-items: flex-start;
+        }
+        
+        .legend-item {
+            width: 100%;
+            justify-content: flex-start;
+        }
+        
+        .fc-header-toolbar {
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .fc-toolbar-chunk {
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        
+        .fc-button {
+            padding: 0.4rem 0.8rem !important;
+            font-size: 0.8rem !important;
+        }
+    }
+</style>
+
+<main class="container-fluid mt-4">
+    <!-- Header mejorado -->
+    <div class="calendar-header">
+        <h1>
+            <i class="bi bi-calendar-week"></i>
+            Calendario de Preórdenes
+        </h1>
+        <div class="subtitle">
+            Visualice y gestione todas las preórdenes programadas
+        </div>
+    </div>
+
+    <!-- Contenedor del Calendario -->
+    <div class="calendar-container">
+        <div class="calendar-card-header">
+            <h3>
+                <i class="bi bi-calendar-event"></i>
+                Vista de Calendario
+            </h3>
+        </div>
+        
+        <div class="calendar-body">
+            <!-- Leyenda de colores mejorada -->
+            <div class="legend-container">
+                <div class="legend-title">
+                    <i class="bi bi-info-circle"></i>
+                    Leyenda de Tipos de Servicio
+                </div>
+                <div class="legend-items">
+                    <div class="legend-item">
+                        <span class="legend-badge taller"></span>
+                        <span>Servicio en Taller</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-badge campo"></span>
+                        <span>Servicio en Campo</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Calendario -->
+            <div id="calendario"></div>
+        </div>
+    </div>
+</main>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src='https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.10/index.global.min.js'></script>
+<script src='https://cdn.jsdelivr.net/npm/@fullcalendar/daygrid@6.1.10/index.global.min.js'></script>
+<script src='https://cdn.jsdelivr.net/npm/@fullcalendar/timegrid@6.1.10/index.global.min.js'></script>
+<script src='https://cdn.jsdelivr.net/npm/@fullcalendar/interaction@6.1.10/index.global.min.js'></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var calendarEl = document.getElementById('calendario');
+    var tooltip = null;
+
+    var calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'dayGridMonth',
+        locale: 'es',
+        headerToolbar: {
+            left: 'prev,next today',
+            center: 'title',
+            right: 'dayGridMonth,timeGridWeek,timeGridDay'
+        },
+        buttonText: {
+            today: 'Hoy',
+            month: 'Mes',
+            week: 'Semana',
+            day: 'Día'
+        },
+        events: '/gestion_de_taller/preordenes_json/',
+        eventDidMount: function(info) {
+            // Crear tooltip personalizado
+            info.el.addEventListener('mouseenter', function(e) {
+                if (tooltip) {
+                    tooltip.remove();
+                }
+                
+                tooltip = document.createElement('div');
+                tooltip.className = 'custom-tooltip';
+                
+                var props = info.event.extendedProps;
+                tooltip.innerHTML = `
+                    <h6>
+                        <i class="bi bi-clipboard-list"></i>
+                        Preorden #${props.numero}
+                    </h6>
+                    <p>
+                        <span class="tooltip-label">
+                            <i class="bi bi-gear"></i>Equipo:
+                        </span>
+                        <span class="tooltip-value">${props.equipo}</span>
+                    </p>
+                    <p>
+                        <span class="tooltip-label">
+                            <i class="bi bi-briefcase"></i>Tipo:
+                        </span>
+                        <span class="tooltip-value">${props.tipo_trabajo}</span>
+                    </p>
+                    <p>
+                        <span class="tooltip-label">
+                            <i class="bi bi-chat-text"></i>Solicitud:
+                        </span>
+                        <span class="tooltip-value">${props.solicitud}</span>
+                    </p>
+                    <p>
+                        <span class="tooltip-label">
+                            <i class="bi bi-people"></i>Técnicos:
+                        </span>
+                        <span class="tooltip-value">${props.tecnicos}</span>
+                    </p>
+                `;
+                
+                document.body.appendChild(tooltip);
+                
+                var rect = info.el.getBoundingClientRect();
+                tooltip.style.top = rect.bottom + window.scrollY + 5 + 'px';
+                tooltip.style.left = rect.left + window.scrollX + 'px';
+            });
+            
+            info.el.addEventListener('mouseleave', function() {
+                if (tooltip) {
+                    tooltip.remove();
+                    tooltip = null;
+                }
+            });
+        },
+        eventClick: function(info) {
+            window.location.href = info.event.url;
+        }
+    });
+
+    calendar.render();
+});
+</script>
+{% endblock %}

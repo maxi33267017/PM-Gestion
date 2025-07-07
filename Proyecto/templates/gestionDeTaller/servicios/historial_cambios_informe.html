@@ -1,0 +1,148 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Historial de Cambios del Informe - Servicio {{ servicio.id }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="card-title">
+                        <i class="fas fa-file-alt"></i>
+                        Historial de Cambios del Informe - Servicio #{{ servicio.id }}
+                    </h4>
+                    <p class="text-muted">
+                        Cliente: {{ servicio.preorden.cliente.razon_social }} | 
+                        Estado: <span class="badge bg-primary">{{ servicio.get_estado_display }}</span>
+                    </p>
+                </div>
+                <div class="card-body">
+                    {% if logs_cambios %}
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Fecha y Hora</th>
+                                        <th>Usuario</th>
+                                        <th>Campo Modificado</th>
+                                        <th>Valor Anterior</th>
+                                        <th>Valor Nuevo</th>
+                                        <th>Motivo</th>
+                                        <th>IP</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for log in logs_cambios %}
+                                    <tr>
+                                        <td>
+                                            <i class="fas fa-clock"></i>
+                                            {{ log.fecha_cambio|date:"d/m/Y H:i" }}
+                                            <br>
+                                            <small class="text-muted">
+                                                {{ log.tiempo_transcurrido.days }} días, 
+                                                {{ log.tiempo_transcurrido.seconds|floatformat:0 }} segundos atrás
+                                            </small>
+                                        </td>
+                                        <td>
+                                            <i class="fas fa-user"></i>
+                                            {{ log.usuario.nombre }}
+                                            <br>
+                                            <small class="text-muted">{{ log.usuario.get_rol_display }}</small>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-info">
+                                                {{ log.campo_modificado|title }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            {% if log.valor_anterior %}
+                                                <div class="text-truncate" style="max-width: 200px;" title="{{ log.valor_anterior }}">
+                                                    {{ log.valor_anterior|truncatechars:50 }}
+                                                </div>
+                                            {% else %}
+                                                <span class="text-muted">Vacío</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if log.valor_nuevo %}
+                                                <div class="text-truncate" style="max-width: 200px;" title="{{ log.valor_nuevo }}">
+                                                    {{ log.valor_nuevo|truncatechars:50 }}
+                                                </div>
+                                            {% else %}
+                                                <span class="text-muted">Vacío</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if log.motivo %}
+                                                <i class="fas fa-comment"></i>
+                                                {{ log.motivo }}
+                                            {% else %}
+                                                <span class="text-muted">Sin motivo especificado</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if log.ip_address %}
+                                                <code>{{ log.ip_address }}</code>
+                                            {% else %}
+                                                <span class="text-muted">No registrada</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <div class="row mt-4">
+                            <div class="col-md-6">
+                                <div class="card bg-light">
+                                    <div class="card-body">
+                                        <h6><i class="fas fa-chart-line"></i> Resumen de Cambios:</h6>
+                                        <ul class="list-unstyled">
+                                            <li><strong>Total de cambios:</strong> {{ logs_cambios.count }}</li>
+                                            <li><strong>Primer cambio:</strong> {{ logs_cambios.last.fecha_cambio|date:"d/m/Y H:i" }}</li>
+                                            <li><strong>Último cambio:</strong> {{ logs_cambios.first.fecha_cambio|date:"d/m/Y H:i" }}</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="card bg-light">
+                                    <div class="card-body">
+                                        <h6><i class="fas fa-users"></i> Usuarios que han hecho cambios:</h6>
+                                        <ul class="list-unstyled">
+                                            {% for usuario in usuarios_unicos %}
+                                                <li><i class="fas fa-user"></i> {{ usuario }}</li>
+                                            {% endfor %}
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-file-alt fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">No hay cambios registrados</h5>
+                            <p class="text-muted">Este informe no ha tenido modificaciones registradas.</p>
+                        </div>
+                    {% endif %}
+                    
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <a href="{% url 'gestionDeTaller:detalle_servicio' servicio.id %}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> Volver al Servicio
+                            </a>
+                            <a href="{% url 'gestionDeTaller:editar_informe' servicio.id %}" class="btn btn-primary">
+                                <i class="fas fa-edit"></i> Editar Informe
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

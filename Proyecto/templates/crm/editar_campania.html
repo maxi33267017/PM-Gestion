@@ -1,0 +1,160 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="bi bi-pencil-square me-2"></i>Editar Campaña: {{ campania.nombre }}
+                        </h5>
+                        <a href="{% url 'crm:campanias_marketing' %}" class="btn btn-outline-secondary btn-sm">
+                            <i class="bi bi-arrow-left me-2"></i>Volver
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="nombre" class="form-label">Nombre de la Campaña *</label>
+                                <input type="text" class="form-control" id="nombre" name="nombre" value="{{ campania.nombre }}" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="estado" class="form-label">Estado</label>
+                                <select class="form-select" id="estado" name="estado">
+                                    <option value="PLANIFICADA" {% if campania.estado == 'PLANIFICADA' %}selected{% endif %}>Planificada</option>
+                                    <option value="EN_CURSO" {% if campania.estado == 'EN_CURSO' %}selected{% endif %}>En Curso</option>
+                                    <option value="FINALIZADA" {% if campania.estado == 'FINALIZADA' %}selected{% endif %}>Finalizada</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="descripcion" class="form-label">Descripción</label>
+                            <textarea class="form-control" id="descripcion" name="descripcion" rows="3" placeholder="Describe el objetivo y estrategia de la campaña...">{{ campania.descripcion }}</textarea>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="fecha_inicio" class="form-label">Fecha de Inicio *</label>
+                                <input type="date" class="form-control" id="fecha_inicio" name="fecha_inicio" value="{{ campania.fecha_inicio|date:'Y-m-d' }}" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="fecha_fin" class="form-label">Fecha de Fin *</label>
+                                <input type="date" class="form-control" id="fecha_fin" name="fecha_fin" value="{{ campania.fecha_fin|date:'Y-m-d' }}" required>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="valor_paquete" class="form-label">Valor del Paquete (USD) *</label>
+                                <input type="number" class="form-control" id="valor_paquete" name="valor_paquete" step="0.01" min="0" value="{{ campania.valor_paquete }}" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="objetivo_paquetes" class="form-label">Objetivo de Paquetes *</label>
+                                <input type="number" class="form-control" id="objetivo_paquetes" name="objetivo_paquetes" min="1" value="{{ campania.objetivo_paquetes }}" required>
+                            </div>
+                        </div>
+                        
+                        <!-- Información de la campaña -->
+                        <div class="alert alert-info">
+                            <h6>Información de la Campaña</h6>
+                            <p><strong>Objetivo Total:</strong> <span id="objetivo_total">${{ campania.valor_paquete|floatformat:0 }}</span></p>
+                            <p><strong>Duración:</strong> <span id="duracion">{{ campania.fecha_inicio|timesince:campania.fecha_fin }}</span></p>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'crm:campanias_marketing' %}" class="btn btn-outline-secondary">
+                                <i class="bi bi-x-circle me-2"></i>Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-circle me-2"></i>Actualizar Campaña
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Función para calcular objetivo total y duración
+function calcularObjetivo() {
+    const valorPaquete = parseFloat(document.getElementById('valor_paquete').value) || 0;
+    const objetivoPaquetes = parseInt(document.getElementById('objetivo_paquetes').value) || 0;
+    const objetivoTotal = valorPaquete * objetivoPaquetes;
+    
+    document.getElementById('objetivo_total').textContent = '$' + objetivoTotal.toLocaleString();
+}
+
+function calcularDuracion() {
+    const fechaInicio = new Date(document.getElementById('fecha_inicio').value);
+    const fechaFin = new Date(document.getElementById('fecha_fin').value);
+    
+    if (fechaInicio && fechaFin && fechaFin >= fechaInicio) {
+        const diferencia = fechaFin - fechaInicio;
+        const dias = Math.ceil(diferencia / (1000 * 60 * 60 * 24));
+        document.getElementById('duracion').textContent = dias + ' días';
+    } else {
+        document.getElementById('duracion').textContent = '0 días';
+    }
+}
+
+// Calcular valores iniciales al cargar la página
+document.addEventListener('DOMContentLoaded', function() {
+    calcularObjetivo();
+    calcularDuracion();
+});
+
+// Event listeners
+document.getElementById('valor_paquete').addEventListener('input', calcularObjetivo);
+document.getElementById('objetivo_paquetes').addEventListener('input', calcularObjetivo);
+document.getElementById('fecha_inicio').addEventListener('change', calcularDuracion);
+document.getElementById('fecha_fin').addEventListener('change', calcularDuracion);
+
+// Función para validar el formulario
+document.querySelector('form').addEventListener('submit', function(e) {
+    const nombre = document.getElementById('nombre').value.trim();
+    const fechaInicio = document.getElementById('fecha_inicio').value;
+    const fechaFin = document.getElementById('fecha_fin').value;
+    const valorPaquete = document.getElementById('valor_paquete').value;
+    const objetivoPaquetes = document.getElementById('objetivo_paquetes').value;
+    
+    if (!nombre) {
+        e.preventDefault();
+        alert('Por favor ingresa el nombre de la campaña.');
+        return;
+    }
+    
+    if (!fechaInicio || !fechaFin) {
+        e.preventDefault();
+        alert('Por favor ingresa las fechas de inicio y fin.');
+        return;
+    }
+    
+    if (new Date(fechaFin) < new Date(fechaInicio)) {
+        e.preventDefault();
+        alert('La fecha de fin no puede ser anterior a la fecha de inicio.');
+        return;
+    }
+    
+    if (!valorPaquete || valorPaquete <= 0) {
+        e.preventDefault();
+        alert('Por favor ingresa un valor de paquete válido mayor a 0.');
+        return;
+    }
+    
+    if (!objetivoPaquetes || objetivoPaquetes <= 0) {
+        e.preventDefault();
+        alert('Por favor ingresa un objetivo de paquetes válido mayor a 0.');
+        return;
+    }
+});
+</script>
+{% endblock %} 

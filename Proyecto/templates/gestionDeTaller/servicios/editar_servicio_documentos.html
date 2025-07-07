@@ -1,0 +1,142 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Editar Documentos - Servicio #{{ servicio.id }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="card-title">
+                        <i class="fas fa-file-alt"></i>
+                        Editar Documentos del Servicio #{{ servicio.id }}
+                    </h4>
+                    <p class="text-muted">
+                        Cliente: {{ servicio.preorden.cliente.razon_social }} | 
+                        Estado: <span class="badge bg-primary">{{ servicio.get_estado_display }}</span>
+                    </p>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h5><i class="fas fa-file-invoice"></i> Facturación</h5>
+                                <div class="form-group mb-3">
+                                    <label for="{{ form.numero_factura.id_for_label }}" class="form-label">
+                                        <strong>Número de Factura:</strong>
+                                    </label>
+                                    {{ form.numero_factura }}
+                                    {% if form.numero_factura.errors %}
+                                        <div class="text-danger">
+                                            {{ form.numero_factura.errors }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="form-group mb-3">
+                                    <label for="{{ form.archivo_factura.id_for_label }}" class="form-label">
+                                        <strong>Archivo de Factura (PDF):</strong>
+                                    </label>
+                                    {{ form.archivo_factura }}
+                                    {% if form.archivo_factura.errors %}
+                                        <div class="text-danger">
+                                            {{ form.archivo_factura.errors }}
+                                        </div>
+                                    {% endif %}
+                                    <small class="form-text text-muted">Solo se permiten archivos PDF</small>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <h5><i class="fas fa-file-contract"></i> Cotización</h5>
+                                <div class="form-group mb-3">
+                                    <label for="{{ form.numero_cotizacion.id_for_label }}" class="form-label">
+                                        <strong>Número de Cotización:</strong>
+                                    </label>
+                                    {{ form.numero_cotizacion }}
+                                    {% if form.numero_cotizacion.errors %}
+                                        <div class="text-danger">
+                                            {{ form.numero_cotizacion.errors }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="form-group mb-3">
+                                    <label for="{{ form.archivo_cotizacion.id_for_label }}" class="form-label">
+                                        <strong>Archivo de Cotización (PDF):</strong>
+                                    </label>
+                                    {{ form.archivo_cotizacion }}
+                                    {% if form.archivo_cotizacion.errors %}
+                                        <div class="text-danger">
+                                            {{ form.archivo_cotizacion.errors }}
+                                        </div>
+                                    {% endif %}
+                                    <small class="form-text text-muted">Solo se permiten archivos PDF</small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <h5><i class="fas fa-file-text"></i> Informe de Servicio</h5>
+                                <div class="form-group mb-3">
+                                    <label for="{{ form.archivo_informe.id_for_label }}" class="form-label">
+                                        <strong>Archivo de Informe (PDF):</strong>
+                                    </label>
+                                    {{ form.archivo_informe }}
+                                    {% if form.archivo_informe.errors %}
+                                        <div class="text-danger">
+                                            {{ form.archivo_informe.errors }}
+                                        </div>
+                                    {% endif %}
+                                    <small class="form-text text-muted">Solo se permiten archivos PDF</small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <div class="alert alert-info">
+                                    <h6><i class="fas fa-info-circle"></i> Información:</h6>
+                                    <ul class="mb-0">
+                                        <li>Si el informe ya fue firmado por el cliente, solo un gerente puede modificarlo</li>
+                                        <li>Los archivos deben estar en formato PDF</li>
+                                        <li>Los cambios se guardarán inmediatamente al enviar el formulario</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        {% if form.non_field_errors %}
+                            <div class="row mt-3">
+                                <div class="col-12">
+                                    <div class="alert alert-danger">
+                                        {% for error in form.non_field_errors %}
+                                            <p class="mb-0">{{ error }}</p>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}
+                        
+                        <div class="row mt-3">
+                            <div class="col-12">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save"></i> Guardar Documentos
+                                </button>
+                                <a href="{% url 'gestionDeTaller:detalle_servicio' servicio.id %}" class="btn btn-secondary">
+                                    <i class="fas fa-arrow-left"></i> Volver
+                                </a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

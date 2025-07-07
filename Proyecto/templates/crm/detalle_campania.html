@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-5">
+    <h1>Detalle de Campaña: {{ campania.nombre }}</h1>
+    <p>{{ campania.descripcion }}</p>
+    <p>Fecha de Inicio: {{ campania.fecha_inicio }}</p>
+    <p>Fecha de Fin: {{ campania.fecha_fin }}</p>
+
+    <h2>Registrar Interacción</h2>
+    <form method="POST">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-primary">Guardar Interacción</button>
+    </form>
+
+    <h2 class="mt-5">Interacciones Registradas</h2>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Cliente</th>
+                <th>Tipo de Interacción</th>
+                <th>Fecha de Interacción</th>
+                <th>Fecha de Reprogramación</th>
+                <th>Comentarios</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for interaccion in interacciones %}
+                <tr>
+                    <td>{{ interaccion.cliente.razon_social }}</td>
+                    <td>{{ interaccion.get_tipo_interaccion_display }}</td>
+                    <td>{{ interaccion.fecha_interaccion }}</td>
+                    <td>{{ interaccion.fecha_reprogramacion|default:"-" }}</td>
+                    <td>{{ interaccion.comentarios|default:"-" }}</td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="5">No hay interacciones registradas para esta campaña.</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Si hay interacciones para hoy, muestra una alerta o popup
+        {% if interacciones_hoy %}
+            let mensaje = "Tienes interacciones reprogramadas para hoy:\n";
+            {% for interaccion in interacciones_hoy %}
+                mensaje += "- {{ interaccion.cliente.razon_social }}: Contacto reprogramado para hoy.\n";
+            {% endfor %}
+            alert(mensaje);  // Muestra una alerta con el mensaje
+        {% endif %}
+    });
+</script>
+{% endblock %}

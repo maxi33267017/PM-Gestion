@@ -1,0 +1,201 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2>
+                <i class="bi bi-gear-fill me-2"></i>Panel Admin
+            </h2>
+            <p class="text-muted">Centro de administración y reportes del sistema</p>
+        </div>
+        <a href="{% url 'crm:crm' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Volver al CRM
+        </a>
+    </div>
+
+    <!-- Estadísticas Rápidas -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h6 class="card-title">Total Sugerencias</h6>
+                    <h3 class="mb-0">{{ total_sugerencias }}</h3>
+                    <small>En el sistema</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-dark">
+                <div class="card-body">
+                    <h6 class="card-title">Pendientes</h6>
+                    <h3 class="mb-0">{{ sugerencias_pendientes }}</h3>
+                    <small>Por revisar</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h6 class="card-title">Implementadas</h6>
+                    <h3 class="mb-0">{{ sugerencias_implementadas }}</h3>
+                    <small>Mejoras aplicadas</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <h6 class="card-title">Reportes</h6>
+                    <h3 class="mb-0">Próximamente</h3>
+                    <small>En desarrollo</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Módulos del Panel Admin -->
+    <div class="row">
+        <!-- Buzón de Sugerencias -->
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-chat-dots me-2"></i>Buzón de Sugerencias
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">
+                        Sistema anónimo para que todos los usuarios puedan sugerir mejoras para el taller.
+                    </p>
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'crm:buzon_sugerencias' %}" class="btn btn-primary">
+                            <i class="fas fa-inbox me-2"></i>Buzón de Sugerencias
+                        </a>
+                        {% if user.is_staff or user.rol in 'GERENTE,ADMINISTRADOR' %}
+                        <a href="{% url 'crm:gestionar_sugerencias' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-cog me-2"></i>Gestionar Sugerencias
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Reportes de Facturación -->
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-graph-up me-2"></i>Reportes de Facturación
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">
+                        Reportes mensuales de facturación total y discriminada por sucursal, mano de obra, repuestos, etc.
+                    </p>
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-primary" disabled>
+                            <i class="bi bi-file-earmark-text me-2"></i>Reporte Mensual
+                        </button>
+                        <button class="btn btn-outline-secondary" disabled>
+                            <i class="bi bi-pie-chart me-2"></i>Análisis por Sucursal
+                        </button>
+                    </div>
+                    <small class="text-muted">Próximamente disponible</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Gestión de Usuarios -->
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-people me-2"></i>Gestión de Usuarios
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">
+                        Administración de usuarios, roles y permisos del sistema.
+                    </p>
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-primary" disabled>
+                            <i class="bi bi-person-plus me-2"></i>Gestionar Usuarios
+                        </button>
+                        <button class="btn btn-outline-secondary" disabled>
+                            <i class="bi bi-shield-check me-2"></i>Roles y Permisos
+                        </button>
+                    </div>
+                    <small class="text-muted">Próximamente disponible</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Configuración del Sistema -->
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-sliders me-2"></i>Configuración del Sistema
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">
+                        Configuraciones generales, parámetros del sistema y mantenimiento.
+                    </p>
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-primary" disabled>
+                            <i class="bi bi-gear me-2"></i>Configuración General
+                        </button>
+                        <button class="btn btn-outline-secondary" disabled>
+                            <i class="bi bi-tools me-2"></i>Mantenimiento
+                        </button>
+                    </div>
+                    <small class="text-muted">Próximamente disponible</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Acceso Rápido para Administradores -->
+    {% if user.is_staff or user.rol in 'GERENTE,ADMINISTRADOR' %}
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-speedometer2 me-2"></i>Acceso Rápido - Administradores
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <a href="{% url 'crm:gestionar_sugerencias' %}" class="btn btn-outline-primary w-100 mb-2">
+                                <i class="bi bi-list-check me-2"></i>Gestionar Sugerencias
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <button class="btn btn-outline-secondary w-100 mb-2" disabled>
+                                <i class="bi bi-database me-2"></i>Backup del Sistema
+                            </button>
+                        </div>
+                        <div class="col-md-3">
+                            <button class="btn btn-outline-secondary w-100 mb-2" disabled>
+                                <i class="bi bi-graph-up me-2"></i>Métricas del Sistema
+                            </button>
+                        </div>
+                        <div class="col-md-3">
+                            <button class="btn btn-outline-secondary w-100 mb-2" disabled>
+                                <i class="bi bi-shield-exclamation me-2"></i>Logs del Sistema
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %} 
