@@ -1,0 +1,96 @@
+.boton_agregar_equipo_pm {
+    background-color: rgb(0, 0, 0);
+    color: white;
+    width: 10rem;
+    margin-bottom: 0.5rem;
+    padding: 5px;
+    border-radius: 5px;
+    text-decoration: none;
+
+}
+
+.boton_agregar_equipo_pm:hover {
+    background-color: rgb(0, 0, 0);
+    color: #fbd323;
+    font-weight: bold;
+}
+
+.fila-equipo:hover {
+    cursor: pointer;
+    background-color: #f8f9fa; /* Cambia el color de fondo en hover si lo deseas */
+}
+
+.boton_agregar_alquiler {
+    background-color: rgb(0, 0, 0);
+    color: white;
+    width: 10rem;
+    margin-bottom: 0.5rem;
+    padding: 5px;
+    border-radius: 5px;
+    text-decoration: none;
+}
+
+.boton_agregar_alquiler:hover {
+    background-color: rgb(0, 0, 0);
+    color: #fbd323;
+    font-weight: bold;
+}
+
+.boton_mantenimiento {
+    background-color: rgb(0, 0, 0);
+    color: white;
+    width: 10rem;
+    margin-bottom: 0.5rem;
+    padding: 5px;
+    border-radius: 5px;
+    text-decoration: none;
+}
+
+.boton_mantenimiento:hover {
+    background-color: rgb(0, 0, 0);
+    color: #fbd323;
+    font-weight: bold;
+}
+
+.boton_guardar_alquiler_en_editar_alquiler {
+    background-color: rgb(0, 0, 0);
+    color: white;
+    width: 10rem;
+    margin-bottom: 0.5rem;
+    padding: 5px;
+    border-radius: 5px;
+    text-decoration: none;
+}
+
+.boton_guardar_alquiler_en_editar_alquiler:hover {
+    background-color: rgb(0, 0, 0);
+    color: #fbd323;
+    font-weight: bold;
+}
+
+.boton_remitos {
+    background-color: rgb(0, 0, 0);
+    color: white;
+    width: 10rem;
+    margin-bottom: 0.5rem;
+    padding: 5px;
+    border-radius: 5px;
+    text-decoration: none;
+}
+
+.boton_remitos:hover {
+    background-color: rgb(0, 0, 0);
+    color: #fbd323;
+    font-weight: bold;
+}
+
+input, select, textarea {
+    width: 100%;
+    margin-bottom: 10px;
+    padding: 8px;
+    box-sizing: border-box;
+    border-radius: 5px;
+    /* Add Bootstrap form-control class */
+    border: 1px solid #ced4da; /* Add Bootstrap form-control border color */
+}
+

@@ -1,0 +1,75 @@
+body {
+    background-color: #f8f9fa; /* Color de fondo */
+}
+
+#contenido_parque {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    background-color: #ffffff; /* Color de fondo del contenido */
+    border: 1px solid #dee2e6; /* Borde del contenido */
+    border-radius: 10px; /* Bordes redondeados */
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Sombreado gris */
+    margin: 20px; /* Márgenes alrededor del contenido */
+}
+
+.titulo_parque {
+    font-size: 36px;
+    font-weight: bold;
+    text-shadow: 3px 3px 4px #9c9b96; 
+    margin-bottom: 1rem;
+}
+
+
+.link_parque {
+    text-decoration: none;
+    color: #000000;
+}
+
+.link_parque:hover {
+    text-decoration: none;
+    color: #fbd323;
+    text-shadow: 1px 1px 1px #0b0b0b; 
+}
+
+/* Cambiar el cursor a 'pointer' al hacer hover sobre las filas de la tabla, excluyendo la fila del encabezado */
+#miTabla tbody tr:hover {
+    cursor: pointer;
+}
+
+/* Mantener el cursor predeterminado para la fila del encabezado */
+#miTabla thead tr {
+    cursor: default;
+}
+
+#miTabla thead th {
+    color: #fbd323;
+}
+
+.primer_th {
+    border-top-left-radius: 5px;
+    border-bottom-left-radius: 5px;
+}
+.ultimo_th {
+    border-top-right-radius: 5px;
+    border-bottom-right-radius: 5px;
+}
+
+ul.pagination .page-link {
+    color: #000000;
+    box-shadow: none;
+  }
+
+  ul.pagination .page-item.active .page-link {
+    background-color: #000000; /* Color de fondo para la página activa */
+    color: #ffffff; /* Color del texto para la página activa */
+    border: none; /* Quita el borde para la página activa si es necesario */
+    box-shadow: none;
+}
+
+
+/* Estilo para el input de búsqueda cuando está enfocado */
+#miTabla_filter input:focus {
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.5); /* Sombreado cuando está enfocado */
+    border-color: #000000; /* Color del borde cuando está enfocado */
+}

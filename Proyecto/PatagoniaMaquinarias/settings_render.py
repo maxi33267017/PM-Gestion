@@ -56,7 +56,13 @@ STATICFILES_DIRS = [
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 # Configuración de archivos estáticos para producción
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+# Usar CompressedStaticFilesStorage en lugar de CompressedManifestStaticFilesStorage
+# para evitar problemas con el manifest file
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
+
+# Configuración adicional de WhiteNoise
+WHITENOISE_USE_FINDERS = True
+WHITENOISE_AUTOREFRESH = True
 
 # Agregar WhiteNoise al middleware
 MIDDLEWARE = [
