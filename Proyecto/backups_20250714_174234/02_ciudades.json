@@ -1,0 +1,57 @@
+[
+{
+  "model": "recursosHumanos.ciudad",
+  "pk": 1,
+  "fields": {
+    "nombre": "Rio Grande",
+    "provincia": 1,
+    "activo": true,
+    "fecha_creacion": "2024-11-04T03:40:59.234Z",
+    "fecha_modificacion": "2024-11-04T16:21:10.976Z"
+  }
+},
+{
+  "model": "recursosHumanos.ciudad",
+  "pk": 2,
+  "fields": {
+    "nombre": "Comodoro Rivadavia",
+    "provincia": 3,
+    "activo": true,
+    "fecha_creacion": "2024-11-04T12:25:57.290Z",
+    "fecha_modificacion": "2024-11-04T16:21:07.428Z"
+  }
+},
+{
+  "model": "recursosHumanos.ciudad",
+  "pk": 3,
+  "fields": {
+    "nombre": "Ushuaia",
+    "provincia": 1,
+    "activo": true,
+    "fecha_creacion": "2024-11-04T16:21:19.289Z",
+    "fecha_modificacion": "2024-11-04T16:21:19.289Z"
+  }
+},
+{
+  "model": "recursosHumanos.ciudad",
+  "pk": 4,
+  "fields": {
+    "nombre": "Caleta Oliva",
+    "provincia": 2,
+    "activo": true,
+    "fecha_creacion": "2024-11-04T16:21:26.486Z",
+    "fecha_modificacion": "2024-11-04T16:21:26.486Z"
+  }
+},
+{
+  "model": "recursosHumanos.ciudad",
+  "pk": 5,
+  "fields": {
+    "nombre": "Rio Gallegos",
+    "provincia": 2,
+    "activo": true,
+    "fecha_creacion": "2024-11-04T16:21:31.547Z",
+    "fecha_modificacion": "2024-11-04T16:21:31.547Z"
+  }
+}
+]
