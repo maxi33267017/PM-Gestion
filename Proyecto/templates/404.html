@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+
+{% block title %}Página no encontrada{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 text-center">
+            <h1 class="display-1">404</h1>
+            <h2>Página no encontrada</h2>
+            <p class="lead">Lo sentimos, la página que buscas no existe.</p>
+            <a href="{% url 'gestionDeTaller:gestion_de_taller' %}" class="btn btn-primary">Volver al inicio</a>
+        </div>
+    </div>
+</div>
+{% endblock %} 

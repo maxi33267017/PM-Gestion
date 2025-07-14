@@ -21,12 +21,12 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-rr%o!9z(2r-o&l-#ca0fddq38*583@b%m@+wfwgcvyyu)4_4k&'
+SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-rr%o!9z(2r-o&l-#ca0fddq38*583@b%m@+wfwgcvyyu)4_4k&')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get('DEBUG', 'True').lower() == 'true'
 
-ALLOWED_HOSTS = ["localhost", "0.0.0.0", "192.168.1.32", "192.168.1.58", "192.168.1.104"]
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,0.0.0.0,192.168.1.32,192.168.1.58,192.168.1.104').split(',')
 
 
 # Application definition
@@ -90,15 +90,24 @@ WSGI_APPLICATION = 'PatagoniaMaquinarias.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        "ENGINE": "django.db.backends.mysql",
-        "NAME": "patagonia",
-        "USER": "patagonia",
-        "PASSWORD": "patagonia123",
-        "HOST": "database"
+# Database configuration
+if os.environ.get('DATABASE_URL'):
+    # Production database (PostgreSQL)
+    import dj_database_url
+    DATABASES = {
+        'default': dj_database_url.parse(os.environ.get('DATABASE_URL'))
     }
-}
+else:
+    # Development database (MySQL)
+    DATABASES = {
+        'default': {
+            "ENGINE": "django.db.backends.mysql",
+            "NAME": "patagonia",
+            "USER": "patagonia",
+            "PASSWORD": "patagonia123",
+            "HOST": "database"
+        }
+    }
 
 
 
@@ -148,6 +157,15 @@ STATICFILES_DIRS = [
 ]
 
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+# Configuración de archivos estáticos para producción
+if not DEBUG:
+    STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+    
+    # Agregar WhiteNoise al middleware
+    MIDDLEWARE = [
+        'whitenoise.middleware.WhiteNoiseMiddleware',  # Debe ir después de SecurityMiddleware
+    ] + MIDDLEWARE
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
