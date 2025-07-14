@@ -78,8 +78,11 @@ SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 SECURE_HSTS_PRELOAD = True
 
 # Configuración de sesiones para producción
-SESSION_COOKIE_SECURE = True
-CSRF_COOKIE_SECURE = True
+# SESSION_COOKIE_SECURE = True
+# CSRF_COOKIE_SECURE = True
+
+# Para desarrollo local, comentar las líneas anteriores
+# Para producción en Render.com, descomentar las líneas anteriores
 
 # Configuración de logging
 LOGGING = {
@@ -117,3 +120,7 @@ CACHES = {
         'LOCATION': 'unique-snowflake',
     }
 } 
+
+CSRF_TRUSTED_ORIGINS = [
+    "https://pm-gestion.onrender.com"
+]

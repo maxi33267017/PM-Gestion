@@ -1,0 +1,22 @@
+{
+  "fecha_backup": "2025-07-14T17:42:34.149279",
+  "directorio": "backups_20250714_174234",
+  "resumen": {
+    "provincias": {
+      "archivo": "backups_20250714_174234/01_provincias.json",
+      "registros": 3
+    },
+    "ciudades": {
+      "archivo": "backups_20250714_174234/02_ciudades.json",
+      "registros": 5
+    },
+    "sucursales": {
+      "archivo": "backups_20250714_174234/03_sucursales.json",
+      "registros": 2
+    },
+    "usuarios": {
+      "archivo": "backups_20250714_174234/04_usuarios.json",
+      "registros": 10
+    }
+  }
+}

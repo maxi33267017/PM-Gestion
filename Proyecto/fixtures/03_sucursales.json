@@ -1,0 +1,28 @@
+[
+{
+  "model": "recursosHumanos.sucursal",
+  "pk": 1,
+  "fields": {
+    "nombre": "Casa Central",
+    "direccion": "Ruta 3 KM 2815",
+    "ciudad": 1,
+    "provincia": 1,
+    "activo": true,
+    "fecha_creacion": "2024-11-04T03:42:01.496Z",
+    "fecha_modificacion": "2024-11-04T12:26:42.421Z"
+  }
+},
+{
+  "model": "recursosHumanos.sucursal",
+  "pk": 2,
+  "fields": {
+    "nombre": "Comodoro Rivadavia",
+    "direccion": "Manuel de Arburua 3175",
+    "ciudad": 2,
+    "provincia": 3,
+    "activo": true,
+    "fecha_creacion": "2024-11-04T12:27:22.990Z",
+    "fecha_modificacion": "2024-11-04T12:27:22.990Z"
+  }
+}
+]
