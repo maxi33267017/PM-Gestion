@@ -23,12 +23,24 @@ Hacer que todas las tablas en los templates de la aplicación sean scrolleables 
 #### Gestión de Taller
 - `templates/gestionDeTaller/ver_informe.html` - Agregada clase `table-responsive`
 - `templates/gestionDeTaller/tecnicos/revisar_horas.html` - Agregada clase `table-responsive`
+- `templates/gestionDeTaller/lista_preordenes.html` - Corregido CSS que bloqueaba scroll
 
 #### Venta de Maquinarias
 - `templates/ventaMaquinarias/detalle_equipo_stock.html` - Agregada clase `table-responsive`
 - `templates/ventaMaquinarias/detalle_venta.html` - Agregada clase `table-responsive`
 
-### 3. Templates que Ya Tenían table-responsive
+### 3. Templates con CSS Corregido
+
+#### Clientes
+- `templates/clientes/detalle_cliente.html` - Corregido CSS que bloqueaba scroll
+- `templates/clientes/detalle_equipo.html` - Corregido CSS que bloqueaba scroll
+- `templates/clientes/parque_equipos/parque.html` - Corregido CSS que bloqueaba scroll
+
+#### CRM
+- `templates/crm/segmentacion_clientes.html` - Corregido CSS que bloqueaba scroll
+- `templates/gestionDeTaller/tecnicos/tecnicos.html` - Corregido CSS que bloqueaba scroll
+
+### 4. Templates que Ya Tenían table-responsive
 
 Los siguientes templates ya contaban con la clase `table-responsive` y no requirieron modificaciones:
 
@@ -129,14 +141,20 @@ Para verificar que los cambios funcionan correctamente:
 - `hacer_tablas_responsivas.py` - Script inicial para procesamiento automático
 - `hacer_tablas_responsivas_simple.py` - Versión simplificada del script
 - `procesar_tablas_restantes.py` - Script final que procesó todos los templates
+- `corregir_overflow_tablas.py` - Script para corregir CSS que bloqueaba scroll
 
 ## Estadísticas Finales
 
 - **Total de archivos procesados**: 122 templates HTML
 - **Archivos modificados**: 8 templates
-- **Archivos que ya tenían table-responsive**: 114 templates
+- **Archivos con CSS corregido**: 6 templates
+- **Archivos que ya tenían table-responsive**: 108 templates
 - **Cobertura**: 100% de las tablas en la aplicación
 
 ## Conclusión
 
-Se ha logrado exitosamente hacer que todas las tablas en la aplicación sean responsivas y scrolleables horizontalmente, mejorando significativamente la experiencia de usuario en dispositivos móviles sin afectar la funcionalidad existente. 
+Se ha logrado exitosamente hacer que todas las tablas en la aplicación sean responsivas y scrolleables horizontalmente, mejorando significativamente la experiencia de usuario en dispositivos móviles sin afectar la funcionalidad existente.
+
+### Problema Específico Resuelto
+
+El problema reportado en la vista de técnicos donde no se podía hacer scroll horizontal en la tabla ha sido completamente resuelto. El problema se debía a estilos CSS personalizados que aplicaban `overflow: hidden` a la clase `.table-responsive`, lo cual bloqueaba el scroll horizontal. Se corrigió cambiando estos estilos a `overflow-x: auto` y `overflow-y: hidden` para permitir el scroll horizontal mientras se mantiene el diseño visual. 
