@@ -1,0 +1,25 @@
+from django.shortcuts import redirect
+from django.contrib.auth.decorators import login_required
+from django.views.generic import RedirectView
+from django.contrib.auth.mixins import LoginRequiredMixin
+
+def home_redirect(request):
+    """
+    Vista para redirigir desde la URL raíz
+    - Si el usuario está logueado: redirigir a /gestion_de_taller/
+    - Si no está logueado: redirigir a /login/
+    """
+    if request.user.is_authenticated:
+        return redirect('gestionDeTaller:gestion_de_taller')
+    else:
+        return redirect('login')
+
+class HomeRedirectView(RedirectView):
+    """
+    Vista basada en clase para redirigir desde la URL raíz
+    """
+    def get_redirect_url(self, *args, **kwargs):
+        if self.request.user.is_authenticated:
+            return '/gestion_de_taller/'
+        else:
+            return '/login/' 

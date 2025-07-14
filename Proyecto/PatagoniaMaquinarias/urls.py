@@ -3,10 +3,14 @@ from django.urls import include, path
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib.auth import views as auth_views
+from .views import home_redirect
 
 
 
 urlpatterns = [
+    # URL raíz - redirigir según estado de autenticación
+    path('', home_redirect, name='home'),
+    
     path('clientes/', include('clientes.urls')),
     path('crm/', include('crm.urls')),
     path('gestion_de_taller/', include('gestionDeTaller.urls')),
