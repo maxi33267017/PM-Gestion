@@ -1340,7 +1340,7 @@ def detalle_tecnico(request, tecnico_id):
                 When(tipo_hora__disponibilidad='DISPONIBLE', 
                      then=ExpressionWrapper(F('hora_fin') - F('hora_inicio'), 
                      output_field=DurationField())),
-                default=timedelta(),
+                default=Value(timedelta()),
                 output_field=DurationField()
             )
         ),
@@ -1350,7 +1350,7 @@ def detalle_tecnico(request, tecnico_id):
                      tipo_hora__genera_ingreso='INGRESO',
                      then=ExpressionWrapper(F('hora_fin') - F('hora_inicio'), 
                      output_field=DurationField())),
-                default=timedelta(),
+                default=Value(timedelta()),
                 output_field=DurationField()
             )
         ),
@@ -1361,7 +1361,7 @@ def detalle_tecnico(request, tecnico_id):
                      tipo_hora__categoria_facturacion='FACTURABLE',
                      then=ExpressionWrapper(F('hora_fin') - F('hora_inicio'), 
                      output_field=DurationField())),
-                default=timedelta(),
+                default=Value(timedelta()),
                 output_field=DurationField()
             )
         )
