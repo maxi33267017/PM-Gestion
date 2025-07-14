@@ -71,10 +71,15 @@ WHITENOISE_AUTOREFRESH = True
 # Configurar WhiteNoise para servir archivos media
 WHITENOISE_ROOT = os.path.join(BASE_DIR, 'media')
 
+# Agregar directorio media a STATICFILES_DIRS para que WhiteNoise lo sirva
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'static'),
+    os.path.join(BASE_DIR, 'media'),  # Agregar media como archivos estáticos
+]
+
 # Agregar WhiteNoise al middleware
 MIDDLEWARE = [
     'whitenoise.middleware.WhiteNoiseMiddleware',  # Debe ir después de SecurityMiddleware
-    'PatagoniaMaquinarias.middleware.MediaFilesMiddleware',  # Middleware personalizado para archivos media
 ] + MIDDLEWARE
 
 # Configuración de seguridad para producción
