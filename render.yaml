@@ -3,7 +3,7 @@ services:
     name: patagonia-maquinarias
     env: python
     buildCommand: ./build.sh
-    startCommand: ./start_fallback.sh
+    startCommand: ./start_production.sh
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.0

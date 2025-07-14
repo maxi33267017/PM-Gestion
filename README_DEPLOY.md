@@ -15,7 +15,7 @@ Configura las siguientes variables de entorno en tu servicio web de Render.com:
 ### 2. Configuración del Servicio Web
 
 - **Build Command**: `./build.sh`
-- **Start Command**: `./start_fallback.sh`
+- **Start Command**: `./start_production.sh`
 
 ### 3. Cambios Realizados
 

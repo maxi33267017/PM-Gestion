@@ -27,6 +27,7 @@ COPY . .
 RUN chmod +x build.sh
 RUN chmod +x start.sh
 RUN chmod +x start_fallback.sh
+RUN chmod +x start_production.sh
 
 # Crear directorio para archivos estáticos
 RUN mkdir -p /app/Proyecto/staticfiles
@@ -34,4 +35,4 @@ RUN mkdir -p /app/Proyecto/staticfiles
 EXPOSE 8000
 
 # Comando para ejecutar la aplicación
-CMD ["./start_fallback.sh"]
+CMD ["./start_production.sh"]

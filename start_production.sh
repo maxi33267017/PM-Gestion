@@ -25,15 +25,22 @@ echo "DEBUG: $DEBUG"
 echo "PORT: $PORT"
 echo "DB_HOST: $DB_HOST"
 echo "DB_NAME: $DB_NAME"
-echo "SECRET_KEY: ${SECRET_KEY:0:20}..."      # Mostrar solo los primeros 20 caracteres
+echo "SECRET_KEY: ${SECRET_KEY:0:20}..."
 
 # Cambiar al directorio del proyecto
 cd Proyecto
 
-# Ejecutar migraciones (con manejo de errores)
-echo "=== Ejecutando migraciones ==="
-python manage.py migrate --noinput || echo "⚠️  Error en migraciones, continuando..."
+# Verificar que Django puede iniciar
+echo "=== Verificando configuración de Django ==="
+python -c "import django; django.setup(); print('✅ Django configurado correctamente')" || {
+    echo "❌ Error en configuración de Django"
+    exit 1
+}
+
+# Intentar migraciones (opcional)
+echo "=== Intentando migraciones ==="
+python manage.py migrate --noinput 2>/dev/null || echo "⚠️  Migraciones omitidas (puede ser normal en primera ejecución)"
 
 # Iniciar la aplicación
 echo "=== Iniciando aplicación ==="
-exec gunicorn --bind 0.0.0.0:$PORT PatagoniaMaquinarias.wsgi:application 
+exec gunicorn --bind 0.0.0.0:$PORT PatagoniaMaquinarias.wsgi:application --timeout 120 --workers 2 

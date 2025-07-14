@@ -44,9 +44,6 @@ DATABASES = {
 
 # Configuración de conexión a la base de datos para producción
 DATABASES['default']['CONN_MAX_AGE'] = 600  # 10 minutos
-DATABASES['default']['OPTIONS'] = {
-    'MAX_CONNS': 20,
-}
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
