@@ -4,6 +4,7 @@
 export DJANGO_SETTINGS_MODULE=${DJANGO_SETTINGS_MODULE:-PatagoniaMaquinarias.settings_render}
 export DEBUG=${DEBUG:-False}
 export PORT=${PORT:-8000}
+export ALLOWED_HOSTS=${ALLOWED_HOSTS:-pm-gestion.onrender.com}
 
 # Configurar variables de entorno para la base de datos
 export DB_NAME="patagonia_81l3"

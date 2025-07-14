@@ -25,7 +25,7 @@ logger.info(f"DATABASE_URL definida: {'SÍ' if os.environ.get('DATABASE_URL') el
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1,0.0.0.0').split(',')
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1,0.0.0.0,pm-gestion.onrender.com').split(',')
 
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
