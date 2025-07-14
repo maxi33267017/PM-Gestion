@@ -274,26 +274,34 @@
             fechaInput.value = today;
         }
         
-        // Función para recopilar datos del checklist
+        // Función para recopilar datos del checklist general (no items)
         function collectChecklistData() {
             const detalles = [];
-            const checklistItems = document.querySelectorAll('.checklist-item');
+            const checklistItems = document.querySelectorAll('.checklist-item:not(.item-audit)');
             
             checklistItems.forEach((item, index) => {
-                const campo = item.querySelector('[data-campo]').getAttribute('data-campo');
-                const tipo = item.querySelector('[data-tipo]').getAttribute('data-tipo');
-                const observaciones = item.querySelector('input[placeholder*="Observaciones"]').value;
+                const campoElement = item.querySelector('[data-campo]');
+                const tipoElement = item.querySelector('[data-tipo]');
+                
+                if (!campoElement || !tipoElement) {
+                    return; // Skip items without required data attributes
+                }
+                
+                const campo = campoElement.getAttribute('data-campo');
+                const tipo = tipoElement.getAttribute('data-tipo');
+                const observacionesElement = item.querySelector('input[placeholder*="Observaciones"]');
+                const observaciones = observacionesElement ? observacionesElement.value : '';
                 
                 let valorEncontrado = '';
                 let cumple = false;
                 
                 if (tipo === 'boolean') {
                     const checkbox = item.querySelector('input[type="checkbox"]');
-                    cumple = checkbox.checked;
+                    cumple = checkbox ? checkbox.checked : false;
                     valorEncontrado = cumple ? 'Cumple' : 'No cumple';
                 } else {
                     const input = item.querySelector('input[data-tipo]');
-                    valorEncontrado = input.value;
+                    valorEncontrado = input ? input.value : '';
                     cumple = valorEncontrado.trim() !== '';
                 }
                 
@@ -308,29 +316,6 @@
             
             return detalles;
         }
-        
-        // Validación del formulario
-        const auditForm = document.getElementById('auditForm');
-        auditForm.addEventListener('submit', function(e) {
-            const fecha = document.getElementById('fecha_auditoria').value;
-            const tipo = document.getElementById('tipo_auditoria').value;
-            
-            if (!fecha || !tipo) {
-                e.preventDefault();
-                alert('Por favor complete todos los campos obligatorios.');
-                return false;
-            }
-            
-            // Recopilar datos del checklist
-            const detalles = collectChecklistData();
-            document.getElementById('detalles').value = JSON.stringify(detalles);
-            
-            // Confirmar envío
-            if (!confirm('¿Está seguro de que desea guardar esta auditoría?')) {
-                e.preventDefault();
-                return false;
-            }
-        });
         
         // Actualizar estado de checkboxes para campos boolean
         document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
@@ -394,7 +379,8 @@
             });
         });
 
-        // Modificar la validación del formulario para incluir items
+        // Validación del formulario (único event listener)
+        const auditForm = document.getElementById('auditForm');
         auditForm.addEventListener('submit', function(e) {
             const fecha = document.getElementById('fecha_auditoria').value;
             const tipo = document.getElementById('tipo_auditoria').value;
@@ -407,11 +393,15 @@
             
             // Recopilar datos del checklist general
             const detalles = collectChecklistData();
-            document.getElementById('detalles').value = JSON.stringify(detalles);
+            const detallesJson = JSON.stringify(detalles);
+            document.getElementById('detalles').value = detallesJson;
+            console.log('DEBUG: detalles =', detallesJson);
             
             // Recopilar datos de items
             const itemsData = collectItemsData();
-            document.getElementById('items_data').value = JSON.stringify(itemsData);
+            const itemsJson = JSON.stringify(itemsData);
+            document.getElementById('items_data').value = itemsJson;
+            console.log('DEBUG: items_data =', itemsJson);
             
             // Confirmar envío
             if (!confirm('¿Está seguro de que desea guardar esta auditoría? Se actualizarán los estados de todos los items.')) {

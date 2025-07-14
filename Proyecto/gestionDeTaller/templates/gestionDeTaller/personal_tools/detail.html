@@ -282,54 +282,30 @@
                 <div class="tab-pane fade" id="auditorias" role="tabpanel">
                     <div class="card detail-card mt-3">
                         <div class="card-body">
-                            {% if detalles_auditoria %}
+                            {% if auditorias %}
                             <div class="timeline">
-                                {% for detalle in detalles_auditoria %}
+                                {% for auditoria in auditorias %}
                                 <div class="timeline-item">
                                     <div class="d-flex justify-content-between align-items-start">
                                         <div>
                                             <h6 class="mb-1">
-                                                Auditoría {{ detalle.auditoria.get_tipo_auditoria_display }}
+                                                Auditoría {{ auditoria.get_tipo_auditoria_display }}
                                             </h6>
                                             <p class="text-muted mb-1">
                                                 <i class="fas fa-calendar"></i> 
-                                                {{ detalle.auditoria.fecha_auditoria }}
+                                                {{ auditoria.fecha_auditoria }}
                                             </p>
                                             <p class="text-muted mb-1">
                                                 <i class="fas fa-user"></i> 
-                                                Auditor: {{ detalle.auditoria.auditor.get_full_name }}
+                                                Auditor: {{ auditoria.auditor.get_full_name }}
                                             </p>
                                             <p class="text-muted mb-1">
                                                 <i class="fas fa-user-tie"></i> 
-                                                Técnico: {{ detalle.auditoria.tecnico.get_full_name }}
+                                                Técnico: {{ auditoria.tecnico.get_full_name }}
                                             </p>
-                                            {% if detalle.auditoria.observaciones_generales %}
-                                            <p class="mb-1">{{ detalle.auditoria.observaciones_generales }}</p>
+                                            {% if auditoria.observaciones_generales %}
+                                            <p class="mb-1">{{ auditoria.observaciones_generales }}</p>
                                             {% endif %}
-                                            
-                                            <!-- Detalle específico de la herramienta -->
-                                            <div class="mt-2">
-                                                <small class="text-muted">Estado de la herramienta:</small>
-                                                <div class="d-flex justify-content-between align-items-center mt-1">
-                                                    <span>Estado:</span>
-                                                    <span class="badge 
-                                                        {% if detalle.estado_herramienta == 'PRESENTE' %}bg-success
-                                                        {% elif detalle.estado_herramienta == 'AUSENTE' %}bg-danger
-                                                        {% elif detalle.estado_herramienta == 'DAÑADA' %}bg-warning
-                                                        {% else %}bg-secondary{% endif %}">
-                                                        {{ detalle.get_estado_herramienta_display }}
-                                                    </span>
-                                                </div>
-                                                {% if detalle.accion_requerida != 'NINGUNA' %}
-                                                <div class="d-flex justify-content-between align-items-center mt-1">
-                                                    <span>Acción requerida:</span>
-                                                    <span class="badge bg-info">{{ detalle.get_accion_requerida_display }}</span>
-                                                </div>
-                                                {% endif %}
-                                                {% if detalle.observaciones %}
-                                                <p class="mb-1 mt-2"><small>{{ detalle.observaciones }}</small></p>
-                                                {% endif %}
-                                            </div>
                                         </div>
                                     </div>
                                 </div>

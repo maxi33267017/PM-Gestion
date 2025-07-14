@@ -43,7 +43,7 @@ from .models import (
     RespuestaEncuesta, InsatisfaccionCliente, ObservacionServicio, Repuesto,
     HerramientaEspecial, ReservaHerramienta, LogHerramienta,
     HerramientaPersonal, AsignacionHerramientaPersonal, AuditoriaHerramientaPersonal,
-    DetalleAuditoriaHerramienta
+    DetalleAuditoriaHerramienta, ItemHerramientaPersonal, LogCambioItemHerramienta
 )
 from recursosHumanos.models import Usuario
 from .models import EvidenciaPlanAccion5S
@@ -2834,9 +2834,24 @@ def personal_tool_detail(request, tool_id):
         'auditoria__tecnico'
     ).order_by('-auditoria__fecha_auditoria')
     
+    # Obtener auditorías realizadas sobre la herramienta
+    auditorias = AuditoriaHerramientaPersonal.objects.filter(
+        detalles_auditoria__herramienta=tool
+    ).distinct().select_related(
+        'auditor',
+        'tecnico'
+    ).order_by('-fecha_auditoria')
+    
+    # Debug: Imprimir información sobre las auditorías encontradas
+    print(f"DEBUG: Herramienta ID: {tool.id}, Nombre: {tool.nombre}")
+    print(f"DEBUG: Auditorías encontradas: {auditorias.count()}")
+    for aud in auditorias:
+        print(f"DEBUG: Auditoría ID: {aud.id}, Tipo: {aud.tipo_auditoria}, Fecha: {aud.fecha_auditoria}")
+    
     context = {
         'tool': tool,
         'asignaciones': tool.asignaciones.all().order_by('-fecha_asignacion'),
+        'auditorias': auditorias,
         'detalles_auditoria': detalles_auditoria,
     }
     return render(request, 'gestionDeTaller/personal_tools/detail.html', context)
@@ -2951,50 +2966,85 @@ def audit_personal_tool(request, tool_id):
         else:
             # Crear auditoría
             auditoria = AuditoriaHerramientaPersonal.objects.create(
-                herramienta=tool,
+                tecnico=tool.asignacion_actual.tecnico if tool.asignacion_actual else request.user,
                 auditor=request.user,
                 fecha_auditoria=fecha_auditoria,
                 tipo_auditoria=tipo_auditoria,
-                observaciones=observaciones
+                estado_general='BUENO',  # Valor por defecto
+                observaciones_generales=observaciones
             )
             
             # Procesar detalles de auditoría
-            detalles_data = json.loads(request.POST.get('detalles', '[]'))
-            for detalle in detalles_data:
-                DetalleAuditoriaHerramientaPersonal.objects.create(
+            detalles_raw = request.POST.get('detalles', '[]')
+            print(f"DEBUG: detalles_raw = '{detalles_raw}'")  # Debug line
+            if detalles_raw and detalles_raw.strip():
+                try:
+                    detalles_data = json.loads(detalles_raw)
+                    # Crear un detalle de auditoría para la herramienta
+                    # Basado en los resultados del checklist
+                    cumple_todos = all(detalle.get('cumple', False) for detalle in detalles_data)
+                    estado_herramienta = 'PRESENTE' if cumple_todos else 'DAÑADA'
+                    
+                    DetalleAuditoriaHerramienta.objects.create(
+                        auditoria=auditoria,
+                        herramienta=tool,
+                        estado_herramienta=estado_herramienta,
+                        observaciones=f"Auditoría {tipo_auditoria}. Resultados del checklist: {len([d for d in detalles_data if d.get('cumple')])}/{len(detalles_data)} campos cumplen.",
+                        accion_requerida='NINGUNA' if cumple_todos else 'MANTENIMIENTO'
+                    )
+                except json.JSONDecodeError as e:
+                    print(f"DEBUG: JSON decode error for detalles: {e}")  # Debug line
+                    # Si hay error en el JSON, crear un detalle básico
+                    DetalleAuditoriaHerramienta.objects.create(
+                        auditoria=auditoria,
+                        herramienta=tool,
+                        estado_herramienta='PRESENTE',
+                        observaciones=f"Auditoría {tipo_auditoria} realizada sin detalles específicos.",
+                        accion_requerida='NINGUNA'
+                    )
+            else:
+                # Si no hay detalles, crear un detalle básico
+                DetalleAuditoriaHerramienta.objects.create(
                     auditoria=auditoria,
-                    campo=detalle['campo'],
-                    valor_esperado=detalle['esperado'],
-                    valor_encontrado=detalle['encontrado'],
-                    cumple=detalle['cumple'],
-                    observaciones=detalle.get('observaciones', '')
+                    herramienta=tool,
+                    estado_herramienta='PRESENTE',
+                    observaciones=f"Auditoría {tipo_auditoria} realizada.",
+                    accion_requerida='NINGUNA'
                 )
             
             # Procesar auditoría de items
-            items_data = json.loads(request.POST.get('items_data', '[]'))
-            for item_data in items_data:
+            items_raw = request.POST.get('items_data', '[]')
+            print(f"DEBUG: items_raw = '{items_raw}'")  # Debug line
+            if items_raw and items_raw.strip():
                 try:
-                    item = ItemHerramientaPersonal.objects.get(
-                        id=item_data['item_id'],
-                        herramienta=tool
-                    )
-                    estado_anterior = item.estado
-                    item.estado = item_data['estado']
-                    if item_data.get('observaciones'):
-                        item.observaciones = item_data['observaciones']
-                    item.save()
-                    
-                    # Registrar cambio de estado si hubo cambio
-                    if estado_anterior != item.estado:
-                        LogCambioItemHerramienta.objects.create(
-                            item=item,
-                            auditoria=auditoria,
-                            estado_anterior=estado_anterior,
-                            estado_nuevo=item.estado,
-                            observaciones=item_data.get('observaciones', '')
-                        )
-                except ItemHerramientaPersonal.DoesNotExist:
-                    continue
+                    items_data = json.loads(items_raw)
+                    for item_data in items_data:
+                        try:
+                            item = ItemHerramientaPersonal.objects.get(
+                                id=item_data['item_id'],
+                                herramienta=tool
+                            )
+                            estado_anterior = item.estado
+                            item.estado = item_data['estado']
+                            if item_data.get('observaciones'):
+                                item.observaciones = item_data['observaciones']
+                            item.save()
+                            
+                            # Registrar cambio de estado si hubo cambio
+                            if estado_anterior != item.estado:
+                                LogCambioItemHerramienta.objects.create(
+                                    item=item,
+                                    auditoria=auditoria,
+                                    estado_anterior=estado_anterior,
+                                    estado_nuevo=item.estado,
+                                    observaciones=item_data.get('observaciones', '')
+                                )
+                        except ItemHerramientaPersonal.DoesNotExist:
+                            continue
+                except json.JSONDecodeError as e:
+                    print(f"DEBUG: JSON decode error for items: {e}")  # Debug line
+                    # Si hay error en el JSON, continuar sin procesar items
+                    pass
             
             # Actualizar estado de la herramienta si es necesario
             if tipo_auditoria == 'MANTENIMIENTO' and any(not d.cumple for d in auditoria.detalles.all()):
@@ -3216,7 +3266,7 @@ def update_certification(request, tool_id):
         tool = HerramientaPersonal.objects.get(id=tool_id)
     except HerramientaPersonal.DoesNotExist:
         messages.error(request, 'Herramienta no encontrada')
-        return redirect('personal_tools_list')
+        return redirect('gestionDeTaller:personal_tools_list')
     
     if request.method == 'POST':
         fecha_certificacion = request.POST.get('fecha_certificacion')
@@ -3231,7 +3281,7 @@ def update_certification(request, tool_id):
         # Validar que si hay fecha de vencimiento, debe haber fecha de certificación
         if fecha_vencimiento and not fecha_certificacion:
             messages.error(request, 'Si se especifica una fecha de vencimiento, debe especificar también la fecha de certificación')
-            return redirect('personal_tool_detail', tool_id=tool.id)
+            return redirect('gestionDeTaller:personal_tool_detail', tool_id=tool.id)
         
         # Validar que la fecha de vencimiento no sea anterior a la fecha de certificación
         if fecha_certificacion and fecha_vencimiento:
@@ -3240,7 +3290,7 @@ def update_certification(request, tool_id):
             fecha_venc = datetime.strptime(fecha_vencimiento, '%Y-%m-%d').date()
             if fecha_venc < fecha_cert:
                 messages.error(request, 'La fecha de vencimiento no puede ser anterior a la fecha de certificación')
-                return redirect('personal_tool_detail', tool_id=tool.id)
+                return redirect('gestionDeTaller:personal_tool_detail', tool_id=tool.id)
         
         # Actualizar la herramienta
         tool.fecha_certificacion = fecha_certificacion
@@ -3248,10 +3298,10 @@ def update_certification(request, tool_id):
         tool.save()
         
         messages.success(request, 'Información de certificación actualizada exitosamente')
-        return redirect('personal_tool_detail', tool_id=tool.id)
+        return redirect('gestionDeTaller:personal_tool_detail', tool_id=tool.id)
     
     # Si no es POST, redirigir al detalle
-    return redirect('personal_tool_detail', tool_id=tool.id)
+    return redirect('gestionDeTaller:personal_tool_detail', tool_id=tool.id)
 
 
 @login_required
@@ -3289,10 +3339,10 @@ def add_item(request, tool_id):
                     )
                     
                     messages.success(request, f'Item "{nombre}" agregado exitosamente')
-                    return redirect('personal_tool_detail', tool_id=tool.id)
+                    return redirect('gestionDeTaller:personal_tool_detail', tool_id=tool.id)
                     
             except Exception as e:
                 messages.error(request, f'Error al crear el item: {str(e)}')
     
     # Si no es POST, redirigir al detalle
-    return redirect('personal_tool_detail', tool_id=tool.id)
+    return redirect('gestionDeTaller:personal_tool_detail', tool_id=tool.id)
