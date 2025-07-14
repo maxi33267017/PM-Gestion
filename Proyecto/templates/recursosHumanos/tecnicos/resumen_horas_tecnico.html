@@ -1,26 +1,28 @@
-<table class="table">
-    <thead>
-        <tr>
-            <th>Técnico</th>
-            <th>Fecha</th>
-            <th>Horas Registradas</th>
-            <th>Horas Pendientes</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for registro in registros_por_dia %}
-        <tr>
-            <td>{{ registro.tecnico.nombre }}</td>
-            <td>{{ registro.fecha }}</td>
-            <td>{{ registro.total_horas_registradas }} horas</td>
-            <td>
-                {% if registro.horas_pendientes > 0 %}
-                    <span class="text-danger">{{ registro.horas_pendientes }} horas pendientes</span>
-                {% else %}
-                    <span class="text-success">Completo</span>
-                {% endif %}
-            </td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Técnico</th>
+                <th>Fecha</th>
+                <th>Horas Registradas</th>
+                <th>Horas Pendientes</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for registro in registros_por_dia %}
+            <tr>
+                <td>{{ registro.tecnico.nombre }}</td>
+                <td>{{ registro.fecha }}</td>
+                <td>{{ registro.total_horas_registradas }} horas</td>
+                <td>
+                    {% if registro.horas_pendientes > 0 %}
+                        <span class="text-danger">{{ registro.horas_pendientes }} horas pendientes</span>
+                    {% else %}
+                        <span class="text-success">Completo</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>

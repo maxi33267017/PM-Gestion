@@ -16,40 +16,42 @@
         {% endif %}
 
         <!-- Tabla de horas registradas -->
-        <table class="table table-bordered">
-            <thead class="table-light">
-                <tr>
-                    <th>Hora Inicio</th>
-                    <th>Hora Fin</th>
-                    <th>Actividad</th>
-                    <th>Servicio</th>
-                    <th>Aprobado</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for registro in registros %}
-                    <tr>
-                        <td>{{ registro.hora_inicio }}</td>
-                        <td>{{ registro.hora_fin }}</td>
-                        <td>{{ registro.tipo_hora.nombre }}</td>
-                        <td>
-                            {% if registro.servicio %}
-                                {{ registro.servicio.numero_orden }}
-                            {% else %}
-                                -
-                            {% endif %}
-                        </td>
-                        <td>
-                            {% if registro.aprobado %}
-                                <span class="badge bg-success">Aprobado</span>
-                            {% else %}
-                                <span class="badge bg-danger">Pendiente</span>
-                            {% endif %}
-                        </td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+                <div class="table-responsive">
+                            <table class="table table-bordered">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Hora Inicio</th>
+                                        <th>Hora Fin</th>
+                                        <th>Actividad</th>
+                                        <th>Servicio</th>
+                                        <th>Aprobado</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for registro in registros %}
+                                        <tr>
+                                            <td>{{ registro.hora_inicio }}</td>
+                                            <td>{{ registro.hora_fin }}</td>
+                                            <td>{{ registro.tipo_hora.nombre }}</td>
+                                            <td>
+                                                {% if registro.servicio %}
+                                                    {{ registro.servicio.numero_orden }}
+                                                {% else %}
+                                                    -
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if registro.aprobado %}
+                                                    <span class="badge bg-success">Aprobado</span>
+                                                {% else %}
+                                                    <span class="badge bg-danger">Pendiente</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                </div>
 
         <!-- Botón para aprobar todas las horas -->
         <form method="post">

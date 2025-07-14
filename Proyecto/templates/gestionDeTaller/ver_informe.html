@@ -64,28 +64,30 @@
     <!-- Repuestos Utilizados -->
     <div class="border p-3 mb-4">
         <h4 class="bg-dark text-white p-2">Repuestos Utilizados</h4>
-        <table class="table table-bordered">
-            <thead>
-                <tr>
-                    <th>Código</th>
-                    <th>Descripción</th>
-                    <th>Cantidad</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for repuesto in servicio.repuestos.all %}
-                    <tr>
-                        <td>{{ repuesto.codigo }}</td>
-                        <td>{{ repuesto.descripcion }}</td>
-                        <td>{{ repuesto.cantidad }}</td>
-                    </tr>
-                {% empty %}
-                    <tr>
-                        <td colspan="6" class="text-center">No hay repuestos utilizados en este servicio.</td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+                <div class="table-responsive">
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>Código</th>
+                                        <th>Descripción</th>
+                                        <th>Cantidad</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for repuesto in servicio.repuestos.all %}
+                                        <tr>
+                                            <td>{{ repuesto.codigo }}</td>
+                                            <td>{{ repuesto.descripcion }}</td>
+                                            <td>{{ repuesto.cantidad }}</td>
+                                        </tr>
+                                    {% empty %}
+                                        <tr>
+                                            <td colspan="6" class="text-center">No hay repuestos utilizados en este servicio.</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                </div>
     </div>
 
     <!-- Observaciones -->

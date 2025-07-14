@@ -12,37 +12,39 @@
         <button type="submit" class="btn btn-primary">Filtrar</button>
     </form>
 
-    <table class="table table-bordered">
-        <thead>
-            <tr>
-                <th>Técnico</th>
-                {% for dia in dias %}
-                    <th>{{ fecha_inicio|add_days:dia|date:"l, d/m/Y" }}</th>
-                {% endfor %}
-            </tr>
-        </thead>
-        <tbody>
-            {% for tecnico in tecnicos %}
+    <div class="table-responsive">
+        <table class="table table-bordered">
+            <thead>
                 <tr>
-                    <td>{{ tecnico.nombre }}</td>
+                    <th>Técnico</th>
                     {% for dia in dias %}
-                        {% with fecha=fecha_inicio|add_days:dia %}
-                            <td>
-                                {% for registro in datos_horas|get_item:tecnico|get_item:fecha %}
-                                    <div>
-                                        {{ registro.hora_inicio }} - {{ registro.hora_fin }}: {{ registro.actividad }}
-                                        <br>
-                                    </div>
-                                {% empty %}
-                                    <i>No hay registros</i>
-                                {% endfor %}
-                            </td>
-                        {% endwith %}
+                        <th>{{ fecha_inicio|add_days:dia|date:"l, d/m/Y" }}</th>
                     {% endfor %}
                 </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                {% for tecnico in tecnicos %}
+                    <tr>
+                        <td>{{ tecnico.nombre }}</td>
+                        {% for dia in dias %}
+                            {% with fecha=fecha_inicio|add_days:dia %}
+                                <td>
+                                    {% for registro in datos_horas|get_item:tecnico|get_item:fecha %}
+                                        <div>
+                                            {{ registro.hora_inicio }} - {{ registro.hora_fin }}: {{ registro.actividad }}
+                                            <br>
+                                        </div>
+                                    {% empty %}
+                                        <i>No hay registros</i>
+                                    {% endfor %}
+                                </td>
+                            {% endwith %}
+                        {% endfor %}
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
     
 </main>
 {% endblock %}

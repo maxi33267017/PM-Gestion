@@ -14,32 +14,34 @@
     </form>
 
     <h2 class="mt-5">Interacciones Registradas</h2>
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Cliente</th>
-                <th>Tipo de Interacción</th>
-                <th>Fecha de Interacción</th>
-                <th>Fecha de Reprogramación</th>
-                <th>Comentarios</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for interaccion in interacciones %}
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
                 <tr>
-                    <td>{{ interaccion.cliente.razon_social }}</td>
-                    <td>{{ interaccion.get_tipo_interaccion_display }}</td>
-                    <td>{{ interaccion.fecha_interaccion }}</td>
-                    <td>{{ interaccion.fecha_reprogramacion|default:"-" }}</td>
-                    <td>{{ interaccion.comentarios|default:"-" }}</td>
+                    <th>Cliente</th>
+                    <th>Tipo de Interacción</th>
+                    <th>Fecha de Interacción</th>
+                    <th>Fecha de Reprogramación</th>
+                    <th>Comentarios</th>
                 </tr>
-            {% empty %}
-                <tr>
-                    <td colspan="5">No hay interacciones registradas para esta campaña.</td>
-                </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                {% for interaccion in interacciones %}
+                    <tr>
+                        <td>{{ interaccion.cliente.razon_social }}</td>
+                        <td>{{ interaccion.get_tipo_interaccion_display }}</td>
+                        <td>{{ interaccion.fecha_interaccion }}</td>
+                        <td>{{ interaccion.fecha_reprogramacion|default:"-" }}</td>
+                        <td>{{ interaccion.comentarios|default:"-" }}</td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="5">No hay interacciones registradas para esta campaña.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 </div>
 
 <script>

@@ -11,34 +11,36 @@
         <button type="submit" class="btn btn-primary">Filtrar</button>
     </form>
 
-    <table class="table table-bordered">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Cliente</th>
-                <th>Fecha Ingreso</th>
-                <th>IS</th>
-                <th>Valor Mano de Obra</th>
-                <th>Gastos de Asistencia</th>
-                <th>Venta de Repuestos</th>
-                <th>Total Valor</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for servicio in servicios %}
-            <tr>
-                <td>{{ servicio.id }}</td>
-                <td>{{ servicio.preorden.cliente }}</td>
-                <td>{{ servicio.fecha_ingreso }}</td>
-                <td>{{ servicio.informe_servicio }}</td>
-                <td>{{ servicio.valor_mano_obra }} USD</td>
-                <td>{{ servicio.total_gastos }} USD</td>
-                <td>{{ servicio.total_ventas }} USD</td>
-                <td>{{ servicio.total_valor }} USD</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+    <div class="table-responsive">
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Cliente</th>
+                    <th>Fecha Ingreso</th>
+                    <th>IS</th>
+                    <th>Valor Mano de Obra</th>
+                    <th>Gastos de Asistencia</th>
+                    <th>Venta de Repuestos</th>
+                    <th>Total Valor</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for servicio in servicios %}
+                <tr>
+                    <td>{{ servicio.id }}</td>
+                    <td>{{ servicio.preorden.cliente }}</td>
+                    <td>{{ servicio.fecha_ingreso }}</td>
+                    <td>{{ servicio.informe_servicio }}</td>
+                    <td>{{ servicio.valor_mano_obra }} USD</td>
+                    <td>{{ servicio.total_gastos }} USD</td>
+                    <td>{{ servicio.total_ventas }} USD</td>
+                    <td>{{ servicio.total_valor }} USD</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 
     <h2>Total Mensual: {{ total_mensual }} USD</h2>
 
