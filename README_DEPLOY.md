@@ -10,11 +10,12 @@ Configura las siguientes variables de entorno en tu servicio web de Render.com:
 - `DEBUG`: `False`
 - `ALLOWED_HOSTS`: `tu-dominio.onrender.com`
 - `DATABASE_URL`: `postgresql://patagonia:MyE8vlJgKi4ADY7NRgysAUTynAbQ0DF7@dpg-d1qhtk6r433s73edhccg-a.oregon-postgres.render.com/patagonia_81l3`
+- `DJANGO_SETTINGS_MODULE`: `Proyecto.PatagoniaMaquinarias.settings_render`
 
 ### 2. Configuración del Servicio Web
 
 - **Build Command**: `./build.sh`
-- **Start Command**: `gunicorn --bind 0.0.0.0:$PORT Proyecto.PatagoniaMaquinarias.wsgi:application --settings=Proyecto.PatagoniaMaquinarias.settings_render`
+- **Start Command**: `./start.sh`
 
 ### 3. Cambios Realizados
 

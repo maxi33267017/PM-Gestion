@@ -23,8 +23,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-# Hacer el script ejecutable
+# Hacer los scripts ejecutables
 RUN chmod +x build.sh
+RUN chmod +x start.sh
 
 # Crear directorio para archivos estáticos
 RUN mkdir -p /app/Proyecto/staticfiles
@@ -32,4 +33,4 @@ RUN mkdir -p /app/Proyecto/staticfiles
 EXPOSE 8000
 
 # Comando para ejecutar la aplicación
-CMD ["gunicorn", "--bind", "0.0.0.0:8000", "Proyecto.PatagoniaMaquinarias.wsgi:application", "--settings=Proyecto.PatagoniaMaquinarias.settings_render"]
+CMD ["./start.sh"]

@@ -3,7 +3,7 @@ services:
     name: patagonia-maquinarias
     env: python
     buildCommand: ./build.sh
-    startCommand: gunicorn --bind 0.0.0.0:$PORT Proyecto.PatagoniaMaquinarias.wsgi:application --settings=Proyecto.PatagoniaMaquinarias.settings_render
+    startCommand: ./start.sh
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.0
@@ -14,4 +14,6 @@ services:
       - key: ALLOWED_HOSTS
         value: patagonia-maquinarias.onrender.com
       - key: DATABASE_URL
-        value: postgresql://patagonia:MyE8vlJgKi4ADY7NRgysAUTynAbQ0DF7@dpg-d1qhtk6r433s73edhccg-a.oregon-postgres.render.com/patagonia_81l3 
+        value: postgresql://patagonia:MyE8vlJgKi4ADY7NRgysAUTynAbQ0DF7@dpg-d1qhtk6r433s73edhccg-a.oregon-postgres.render.com/patagonia_81l3
+      - key: DJANGO_SETTINGS_MODULE
+        value: Proyecto.PatagoniaMaquinarias.settings_render 
