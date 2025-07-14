@@ -26,6 +26,7 @@ COPY . .
 # Hacer los scripts ejecutables
 RUN chmod +x build.sh
 RUN chmod +x start.sh
+RUN chmod +x start_fallback.sh
 
 # Crear directorio para archivos estáticos
 RUN mkdir -p /app/Proyecto/staticfiles
@@ -33,4 +34,4 @@ RUN mkdir -p /app/Proyecto/staticfiles
 EXPOSE 8000
 
 # Comando para ejecutar la aplicación
-CMD ["./start.sh"]
+CMD ["./start_fallback.sh"]

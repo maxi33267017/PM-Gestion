@@ -5,9 +5,18 @@ export DJANGO_SETTINGS_MODULE=${DJANGO_SETTINGS_MODULE:-Proyecto.PatagoniaMaquin
 export DEBUG=${DEBUG:-False}
 export PORT=${PORT:-8000}
 
+# Mostrar variables de entorno para debugging (sin mostrar valores sensibles)
+echo "DJANGO_SETTINGS_MODULE: $DJANGO_SETTINGS_MODULE"
+echo "DEBUG: $DEBUG"
+echo "PORT: $PORT"
+echo "DATABASE_URL está definida: $([ -n "$DATABASE_URL" ] && echo "SÍ" || echo "NO")"
+echo "SECRET_KEY está definida: $([ -n "$SECRET_KEY" ] && echo "SÍ" || echo "NO")"
+
 # Verificar que las variables críticas estén definidas
 if [ -z "$DATABASE_URL" ]; then
     echo "Error: DATABASE_URL no está definida"
+    echo "Variables de entorno disponibles:"
+    env | grep -E "(DATABASE|SECRET|DJANGO)" || echo "No se encontraron variables relacionadas"
     exit 1
 fi
 

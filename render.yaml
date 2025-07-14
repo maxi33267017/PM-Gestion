@@ -3,17 +3,11 @@ services:
     name: patagonia-maquinarias
     env: python
     buildCommand: ./build.sh
-    startCommand: ./start.sh
+    startCommand: ./start_fallback.sh
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.0
-      - key: SECRET_KEY
-        generateValue: true
       - key: DEBUG
         value: False
       - key: ALLOWED_HOSTS
-        value: patagonia-maquinarias.onrender.com
-      - key: DATABASE_URL
-        value: postgresql://patagonia:MyE8vlJgKi4ADY7NRgysAUTynAbQ0DF7@dpg-d1qhtk6r433s73edhccg-a.oregon-postgres.render.com/patagonia_81l3
-      - key: DJANGO_SETTINGS_MODULE
-        value: Proyecto.PatagoniaMaquinarias.settings_render 
+        value: patagonia-maquinarias.onrender.com 

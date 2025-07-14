@@ -12,6 +12,16 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-rr%o!9z(2r-o&l-#ca0fddq38*583@b%m@+wfwgcvyyu)4_4k&')
 
+# Configuración de logging para debugging
+import logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+# Log de configuración
+logger.info(f"DEBUG: {DEBUG}")
+logger.info(f"ALLOWED_HOSTS: {ALLOWED_HOSTS}")
+logger.info(f"DATABASE_URL definida: {'SÍ' if os.environ.get('DATABASE_URL') else 'NO'}")
+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 

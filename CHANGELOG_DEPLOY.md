@@ -55,6 +55,7 @@
 ### Nuevos Archivos:
 - `build.sh` - Script de build para Render.com
 - `start.sh` - Script de inicio para Render.com
+- `start_fallback.sh` - Script de inicio con valores por defecto
 - `render.yaml` - Configuración de Render.com
 - `README_DEPLOY.md` - Guía de deploy
 - `CHANGELOG_DEPLOY.md` - Este archivo
@@ -83,7 +84,7 @@ DJANGO_SETTINGS_MODULE=Proyecto.PatagoniaMaquinarias.settings_render
 ## Comandos de Deploy
 
 1. **Build Command**: `./build.sh`
-2. **Start Command**: `./start.sh`
+2. **Start Command**: `./start_fallback.sh`
 
 ## Próximos Pasos
 
