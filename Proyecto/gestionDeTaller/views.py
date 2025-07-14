@@ -1331,7 +1331,7 @@ def detalle_tecnico(request, tecnico_id):
         total_horas_aprobadas=Sum(
             Case(
                 When(aprobado=True, then=ExpressionWrapper(F('hora_fin') - F('hora_inicio'), output_field=DurationField())),
-                default=Value(0),
+                default=Value(timedelta()),
                 output_field=DurationField()
             )
         ),
