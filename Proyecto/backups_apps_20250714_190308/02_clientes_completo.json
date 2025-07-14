@@ -1,0 +1,7159 @@
+[
+{
+  "model": "clientes.cliente",
+  "pk": 5,
+  "fields": {
+    "tipo": "EMPRESA",
+    "sucursal": 1,
+    "razon_social": "VCA SRL",
+    "nombre_fantasia": "",
+    "cuit": "30714421057",
+    "email": "ilc800@live.com",
+    "telefono": "5492964459754",
+    "direccion": "FORGACS 1509",
+    "codigo_postal": "9420",
+    "ciudad": 1,
+    "provincia": 1,
+    "observaciones": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-01T13:32:49.984Z",
+    "fecha_modificacion": "2025-07-08T14:19:09.466Z"
+  }
+},
+{
+  "model": "clientes.cliente",
+  "pk": 6,
+  "fields": {
+    "tipo": "EMPRESA",
+    "sucursal": 1,
+    "razon_social": "Constructora Vial Fueguina SA",
+    "nombre_fantasia": "Convialfue",
+    "cuit": "30709297909",
+    "email": "convialfuesa909@yahoo.com.ar",
+    "telefono": "5492901415493",
+    "direccion": "Cabo Nicolas Flores 221",
+    "codigo_postal": "9410",
+    "ciudad": 3,
+    "provincia": 1,
+    "observaciones": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-01T13:43:14.120Z",
+    "fecha_modificacion": "2025-07-08T14:17:32.837Z"
+  }
+},
+{
+  "model": "clientes.cliente",
+  "pk": 7,
+  "fields": {
+    "tipo": "EMPRESA",
+    "sucursal": 1,
+    "razon_social": "Patagonia Maquinarias SRL",
+    "nombre_fantasia": "",
+    "cuit": "30712284710",
+    "email": "administracion@patagoniamaquinarias.com",
+    "telefono": "2964571905",
+    "direccion": "Ruta 3 Km 2815",
+    "codigo_postal": "9420",
+    "ciudad": 1,
+    "provincia": 1,
+    "observaciones": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-01T13:45:51.420Z",
+    "fecha_modificacion": "2025-07-08T14:19:19.400Z"
+  }
+},
+{
+  "model": "clientes.cliente",
+  "pk": 8,
+  "fields": {
+    "tipo": "EMPRESA",
+    "sucursal": 1,
+    "razon_social": "Alenk SRL",
+    "nombre_fantasia": "",
+    "cuit": "30710656483",
+    "email": "mann.charlie@alenk.com.ar",
+    "telefono": "5492964481706",
+    "direccion": "EX CAMPAMENTO YPF 7239",
+    "codigo_postal": "9420",
+    "ciudad": 1,
+    "provincia": 1,
+    "observaciones": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-01T13:52:09.817Z",
+    "fecha_modificacion": "2025-07-08T14:17:40.443Z"
+  }
+},
+{
+  "model": "clientes.cliente",
+  "pk": 9,
+  "fields": {
+    "tipo": "ORGANISMO_PUBLICO",
+    "sucursal": 1,
+    "razon_social": "Direccion Provincial de Obras Publicas",
+    "nombre_fantasia": "DPOSS",
+    "cuit": "30-70754185-3",
+    "email": "marcela.padin@dposs.gov.ar",
+    "telefono": "2901421421",
+    "direccion": "Gobernador Campos 133",
+    "codigo_postal": "9410",
+    "ciudad": 3,
+    "provincia": 1,
+    "observaciones": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-01T14:11:08.075Z",
+    "fecha_modificacion": "2025-07-08T14:17:26.392Z"
+  }
+},
+{
+  "model": "clientes.cliente",
+  "pk": 10,
+  "fields": {
+    "tipo": "ORGANISMO_PUBLICO",
+    "sucursal": 1,
+    "razon_social": "Municipalidad Rio Grande",
+    "nombre_fantasia": "MCRG",
+    "cuit": "30-54666298-1",
+    "email": "unk@unk.com",
+    "telefono": "1",
+    "direccion": "EL CANO 203",
+    "codigo_postal": "9420",
+    "ciudad": 1,
+    "provincia": 1,
+    "observaciones": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-01T14:17:14.657Z",
+    "fecha_modificacion": "2025-07-08T14:19:24.795Z"
+  }
+},
+{
+  "model": "clientes.cliente",
+  "pk": 11,
+  "fields": {
+    "tipo": "EMPRESA",
+    "sucursal": 1,
+    "razon_social": "Angel Masciotra SA",
+    "nombre_fantasia": "",
+    "cuit": "33-70930526-9",
+    "email": "masciotraadministracion@gmail.com",
+    "telefono": "02901 60-2776",
+    "direccion": "HEROES DE MALVINAS 3551",
+    "codigo_postal": "9410",
+    "ciudad": 3,
+    "provincia": 1,
+    "observaciones": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-01T14:21:22.208Z",
+    "fecha_modificacion": "2025-07-08T14:17:37.183Z"
+  }
+},
+{
+  "model": "clientes.cliente",
+  "pk": 12,
+  "fields": {
+    "tipo": "PARTICULAR",
+    "sucursal": 1,
+    "razon_social": "Gallardo Manuel Reinaldo",
+    "nombre_fantasia": "",
+    "cuit": "20-26418034-2",
+    "email": "manuel.gallardo@hotmail.com.ar",
+    "telefono": "5492964452465",
+    "direccion": "SANTOME Nro.: 298",
+    "codigo_postal": "9420",
+    "ciudad": 1,
+    "provincia": 1,
+    "observaciones": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-01T14:28:56.429Z",
+    "fecha_modificacion": "2025-07-08T14:19:27.747Z"
+  }
+},
+{
+  "model": "clientes.cliente",
+  "pk": 13,
+  "fields": {
+    "tipo": "PARTICULAR",
+    "sucursal": 1,
+    "razon_social": "EUGENIO MANCILLA LUIS RUBEN",
+    "nombre_fantasia": "CTS Group",
+    "cuit": "23-18830732-9",
+    "email": "admin@ctsgroup.com.ar",
+    "telefono": "02964 - 425362",
+    "direccion": "ECHELAINE 897",
+    "codigo_postal": "9420",
+    "ciudad": 1,
+    "provincia": 1,
+    "observaciones": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-01T17:01:05.806Z",
+    "fecha_modificacion": "2025-07-08T14:19:31.044Z"
+  }
+},
+{
+  "model": "clientes.cliente",
+  "pk": 14,
+  "fields": {
+    "tipo": "EMPRESA",
+    "sucursal": 1,
+    "razon_social": "Sartini Gas SRL",
+    "nombre_fantasia": "",
+    "cuit": "30-59748997-4",
+    "email": "administracion@sartinigas.com",
+    "telefono": "54 2901652157",
+    "direccion": "AVENIDA HEROES DE MALVINAS 4620",
+    "codigo_postal": "9420",
+    "ciudad": 1,
+    "provincia": 1,
+    "observaciones": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-01T17:03:48.866Z",
+    "fecha_modificacion": "2025-07-08T14:19:14.748Z"
+  }
+},
+{
+  "model": "clientes.cliente",
+  "pk": 15,
+  "fields": {
+    "tipo": "EMPRESA",
+    "sucursal": 1,
+    "razon_social": "Paone y Cia SA",
+    "nombre_fantasia": "",
+    "cuit": "30-70836044-5",
+    "email": "administracion@paoneycia.com.ar",
+    "telefono": "02964 42-7611",
+    "direccion": "DON BOSCO 1042",
+    "codigo_postal": "9420",
+    "ciudad": 1,
+    "provincia": 1,
+    "observaciones": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-01T17:06:03.618Z",
+    "fecha_modificacion": "2025-07-08T14:19:22.165Z"
+  }
+},
+{
+  "model": "clientes.cliente",
+  "pk": 16,
+  "fields": {
+    "tipo": "EMPRESA",
+    "sucursal": 1,
+    "razon_social": "YPF SA",
+    "nombre_fantasia": "",
+    "cuit": "30-54668997-9",
+    "email": "g.diaz@ypf.com",
+    "telefono": "1",
+    "direccion": "Macacha Güemes 515",
+    "codigo_postal": "9000",
+    "ciudad": 1,
+    "provincia": 1,
+    "observaciones": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-01T18:00:20.854Z",
+    "fecha_modificacion": "2025-07-08T14:19:06.941Z"
+  }
+},
+{
+  "model": "clientes.cliente",
+  "pk": 17,
+  "fields": {
+    "tipo": "EMPRESA",
+    "sucursal": 1,
+    "razon_social": "SKY TOP SRL",
+    "nombre_fantasia": "SKY TOP SRL",
+    "cuit": "30-71602673-2",
+    "email": "skytop_adm@yahoo.com",
+    "telefono": "2964 46-7142",
+    "direccion": "9 DE JULIO 669",
+    "codigo_postal": "9420",
+    "ciudad": 1,
+    "provincia": 1,
+    "observaciones": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-03T19:56:24.574Z",
+    "fecha_modificacion": "2025-07-08T14:19:11.861Z"
+  }
+},
+{
+  "model": "clientes.cliente",
+  "pk": 18,
+  "fields": {
+    "tipo": "EMPRESA",
+    "sucursal": 1,
+    "razon_social": "DOR SA",
+    "nombre_fantasia": "DOR SA",
+    "cuit": "30-71838070-3",
+    "email": "d.rodriguez@vitalcan.com.ar",
+    "telefono": "2964690335",
+    "direccion": "SARMIENTO Nro.: 3376",
+    "codigo_postal": "9420",
+    "ciudad": 1,
+    "provincia": 1,
+    "observaciones": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-07T13:04:45.785Z",
+    "fecha_modificacion": "2025-07-08T14:19:38.365Z"
+  }
+},
+{
+  "model": "clientes.cliente",
+  "pk": 19,
+  "fields": {
+    "tipo": "EMPRESA",
+    "sucursal": 1,
+    "razon_social": "ESTANCIA MARIA BEHETY S.A.",
+    "nombre_fantasia": "ESTANCIA MARIA BEHETY S.A.",
+    "cuit": "30-56799035-0",
+    "email": "alejandra@maribety.com",
+    "telefono": "2964473633",
+    "direccion": "RUTA COMPLMENTARIA   C   Km 17",
+    "codigo_postal": "9420",
+    "ciudad": 1,
+    "provincia": 1,
+    "observaciones": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-07T13:37:44.353Z",
+    "fecha_modificacion": "2025-07-08T14:19:34.362Z"
+  }
+},
+{
+  "model": "clientes.cliente",
+  "pk": 20,
+  "fields": {
+    "tipo": "EMPRESA",
+    "sucursal": 1,
+    "razon_social": "HUELLAS DEL SUR SRL",
+    "nombre_fantasia": "HUELLAS DEL SUR SRL",
+    "cuit": "30-71631190-9",
+    "email": "Lucasfarias10@hotmail.com",
+    "telefono": "5493416008007",
+    "direccion": "Verificar",
+    "codigo_postal": "9420",
+    "ciudad": 1,
+    "provincia": 1,
+    "observaciones": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T12:32:18.284Z",
+    "fecha_modificacion": "2025-07-10T12:36:30.845Z"
+  }
+},
+{
+  "model": "clientes.cliente",
+  "pk": 21,
+  "fields": {
+    "tipo": "EMPRESA",
+    "sucursal": 1,
+    "razon_social": "AEROPUERTOS ARGENTINA 2000 S.A.",
+    "nombre_fantasia": "AEROPUERTOS ARGENTINA 2000 S.A.",
+    "cuit": "30-69617058-0",
+    "email": "ddediego@aeropuertosargentina.com",
+    "telefono": "1",
+    "direccion": "Verificar",
+    "codigo_postal": "9420",
+    "ciudad": 1,
+    "provincia": 1,
+    "observaciones": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:25.462Z",
+    "fecha_modificacion": "2025-07-10T13:19:57.898Z"
+  }
+},
+{
+  "model": "clientes.cliente",
+  "pk": 22,
+  "fields": {
+    "tipo": "EMPRESA",
+    "sucursal": 1,
+    "razon_social": "AGUAS DE USHUAIA SRL",
+    "nombre_fantasia": "AGUAS DE USHUAIA SRL",
+    "cuit": "30-71451941-3",
+    "email": "jose.sander@anoka.com.ar",
+    "telefono": "1",
+    "direccion": "Verificar",
+    "codigo_postal": "9420",
+    "ciudad": 1,
+    "provincia": 1,
+    "observaciones": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:25.489Z",
+    "fecha_modificacion": "2025-07-10T13:19:57.913Z"
+  }
+},
+{
+  "model": "clientes.cliente",
+  "pk": 23,
+  "fields": {
+    "tipo": "EMPRESA",
+    "sucursal": 1,
+    "razon_social": "AIRES DEL GRANDE S.A.",
+    "nombre_fantasia": "AIRES DEL GRANDE S.A.",
+    "cuit": "30-70998947-9",
+    "email": "martinpazm@gmail.com",
+    "telefono": "5491145592220",
+    "direccion": "Espora 537",
+    "codigo_postal": "9420",
+    "ciudad": 1,
+    "provincia": 1,
+    "observaciones": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:25.497Z",
+    "fecha_modificacion": "2025-07-10T13:19:57.925Z"
+  }
+},
+{
+  "model": "clientes.cliente",
+  "pk": 24,
+  "fields": {
+    "tipo": "EMPRESA",
+    "sucursal": 1,
+    "razon_social": "ALFA 80 SRL",
+    "nombre_fantasia": "ALFA 80 SRL",
+    "cuit": "30-67067800-4",
+    "email": "alfa80srl@speedy.com.ar",
+    "telefono": "5492964458425",
+    "direccion": "José A. Finocchio 1062",
+    "codigo_postal": "9420",
+    "ciudad": 1,
+    "provincia": 1,
+    "observaciones": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:25.509Z",
+    "fecha_modificacion": "2025-07-10T13:19:57.953Z"
+  }
+},
+{
+  "model": "clientes.cliente",
+  "pk": 25,
+  "fields": {
+    "tipo": "EMPRESA",
+    "sucursal": 1,
+    "razon_social": "AMBIENTE SUR INGENIERIA SRL",
+    "nombre_fantasia": "AMBIENTE SUR INGENIERIA SRL",
+    "cuit": "30-71093092-5",
+    "email": "ambientesuringenieria@hotmail.com",
+    "telefono": "5492901560546",
+    "direccion": "Santiago del Estero 2418",
+    "codigo_postal": "9420",
+    "ciudad": 1,
+    "provincia": 1,
+    "observaciones": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:25.521Z",
+    "fecha_modificacion": "2025-07-10T13:19:57.974Z"
+  }
+},
+{
+  "model": "clientes.cliente",
+  "pk": 26,
+  "fields": {
+    "tipo": "PARTICULAR",
+    "sucursal": 1,
+    "razon_social": "APOLINAIRE JUAN CARLOS ANGEL",
+    "nombre_fantasia": "APOLINAIRE JUAN CARLOS ANGEL",
+    "cuit": "20-05513755-3",
+    "email": "gbascougnet@yahoo.com.ar",
+    "telefono": "5492964496860",
+    "direccion": "Verificar",
+    "codigo_postal": "9420",
+    "ciudad": 1,
+    "provincia": 1,
+    "observaciones": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:25.540Z",
+    "fecha_modificacion": "2025-07-10T13:19:57.986Z"
+  }
+},
+{
+  "model": "clientes.cliente",
+  "pk": 27,
+  "fields": {
+    "tipo": "EMPRESA",
+    "sucursal": 1,
+    "razon_social": "ASOCIACION CIVIL USHUAIA GOLF CLUB",
+    "nombre_fantasia": "ASOCIACION CIVIL USHUAIA GOLF CLUB",
+    "cuit": "30-67574166-9",
+    "email": "ushuaiagolfclub@gmail.com",
+    "telefono": "1",
+    "direccion": "Verificar",
+    "codigo_postal": "9420",
+    "ciudad": 1,
+    "provincia": 1,
+    "observaciones": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:25.552Z",
+    "fecha_modificacion": "2025-07-10T13:19:58.001Z"
+  }
+},
+{
+  "model": "clientes.cliente",
+  "pk": 28,
+  "fields": {
+    "tipo": "EMPRESA",
+    "sucursal": 1,
+    "razon_social": "AUSTRALTEX S A",
+    "nombre_fantasia": "AUSTRALTEX S A",
+    "cuit": "30-58739747-8",
+    "email": "lavalos@australtex.com.ar",
+    "telefono": "1",
+    "direccion": "Combate de Montevideo 1348",
+    "codigo_postal": "9420",
+    "ciudad": 1,
+    "provincia": 1,
+    "observaciones": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:25.563Z",
+    "fecha_modificacion": "2025-07-10T13:19:58.015Z"
+  }
+},
+{
+  "model": "clientes.cliente",
+  "pk": 29,
+  "fields": {
+    "tipo": "EMPRESA",
+    "sucursal": 1,
+    "razon_social": "AUTOSUR RIO GRANDE S.A.",
+    "nombre_fantasia": "AUTOSUR RIO GRANDE S.A.",
+    "cuit": "30-54706763-7",
+    "email": "mguzzardo@autosursa.com.ar",
+    "telefono": "5492964411074",
+    "direccion": "Verificar",
+    "codigo_postal": "9420",
+    "ciudad": 1,
+    "provincia": 1,
+    "observaciones": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:25.579Z",
+    "fecha_modificacion": "2025-07-10T13:19:58.027Z"
+  }
+},
+{
+  "model": "clientes.cliente",
+  "pk": 30,
+  "fields": {
+    "tipo": "PARTICULAR",
+    "sucursal": 1,
+    "razon_social": "AVILA NAVIA OSCAR",
+    "nombre_fantasia": "AVILA NAVIA OSCAR",
+    "cuit": "20-31066867-3",
+    "email": "avilanaviaoscar28@gmail.com",
+    "telefono": "1",
+    "direccion": "Verificar",
+    "codigo_postal": "9420",
+    "ciudad": 1,
+    "provincia": 1,
+    "observaciones": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:25.599Z",
+    "fecha_modificacion": "2025-07-10T13:19:58.038Z"
+  }
+},
+{
+  "model": "clientes.cliente",
+  "pk": 31,
+  "fields": {
+    "tipo": "ORGANISMO_PUBLICO",
+    "sucursal": 1,
+    "razon_social": "BANCO TIERRA DEL FUEGO",
+    "nombre_fantasia": "BANCO TIERRA DEL FUEGO",
+    "cuit": "30-57565578-1",
+    "email": "Natalia.Brozek@btf.com.ar",
+    "telefono": "1",
+    "direccion": "Verificar",
+    "codigo_postal": "9420",
+    "ciudad": 1,
+    "provincia": 1,
+    "observaciones": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:25.614Z",
+    "fecha_modificacion": "2025-07-10T13:19:58.051Z"
+  }
+},
+{
+  "model": "clientes.cliente",
+  "pk": 32,
+  "fields": {
+    "tipo": "PARTICULAR",
+    "sucursal": 1,
+    "razon_social": "BELTRAN PORFIDIO DIONISIO",
+    "nombre_fantasia": "BELTRAN PORFIDIO DIONISIO",
+    "cuit": "20-18055695-9",
+    "email": "desconocido@desconocido.com",
+    "telefono": "1",
+    "direccion": "Verificar",
+    "codigo_postal": "9420",
+    "ciudad": 1,
+    "provincia": 1,
+    "observaciones": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:25.628Z",
+    "fecha_modificacion": "2025-07-10T13:19:58.062Z"
+  }
+},
+{
+  "model": "clientes.cliente",
+  "pk": 33,
+  "fields": {
+    "tipo": "PARTICULAR",
+    "sucursal": 1,
+    "razon_social": "BETANCOURT RODOLFO",
+    "nombre_fantasia": "BETANCOURT RODOLFO",
+    "cuit": "20-14312751-7",
+    "email": "rbetancourt@gmail.com",
+    "telefono": "5492901466172",
+    "direccion": "Verificar",
+    "codigo_postal": "9420",
+    "ciudad": 1,
+    "provincia": 1,
+    "observaciones": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:25.641Z",
+    "fecha_modificacion": "2025-07-10T13:19:58.077Z"
+  }
+},
+{
+  "model": "clientes.cliente",
+  "pk": 34,
+  "fields": {
+    "tipo": "EMPRESA",
+    "sucursal": 1,
+    "razon_social": "BRIDGE SRL",
+    "nombre_fantasia": "BRIDGE SRL",
+    "cuit": "30-65908062-8",
+    "email": "florencia.boggio@bridgetdf.com",
+    "telefono": "1",
+    "direccion": "Rafael Obligado 1445",
+    "codigo_postal": "9420",
+    "ciudad": 1,
+    "provincia": 1,
+    "observaciones": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:25.653Z",
+    "fecha_modificacion": "2025-07-10T13:19:58.088Z"
+  }
+},
+{
+  "model": "clientes.cliente",
+  "pk": 35,
+  "fields": {
+    "tipo": "EMPRESA",
+    "sucursal": 1,
+    "razon_social": "BRIGHTSTAR FUEGUINA SA",
+    "nombre_fantasia": "BRIGHTSTAR FUEGUINA SA",
+    "cuit": "30-70857479-8",
+    "email": "Alejandra.Sarabia@mirgor.com.a",
+    "telefono": "542964618132",
+    "direccion": "Islas Malvinas 2150",
+    "codigo_postal": "9420",
+    "ciudad": 1,
+    "provincia": 1,
+    "observaciones": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:25.667Z",
+    "fecha_modificacion": "2025-07-10T13:19:58.098Z"
+  }
+},
+{
+  "model": "clientes.cliente",
+  "pk": 36,
+  "fields": {
+    "tipo": "EMPRESA",
+    "sucursal": 1,
+    "razon_social": "CAMUZZI GAS DEL SUR",
+    "nombre_fantasia": "CAMUZZI GAS DEL SUR",
+    "cuit": "30-65786442-7",
+    "email": "fernando.heredia@camuzzigas.com.ar",
+    "telefono": "2964699674",
+    "direccion": "Verificar",
+    "codigo_postal": "9420",
+    "ciudad": 1,
+    "provincia": 1,
+    "observaciones": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:25.683Z",
+    "fecha_modificacion": "2025-07-10T13:19:58.109Z"
+  }
+},
+{
+  "model": "clientes.cliente",
+  "pk": 37,
+  "fields": {
+    "tipo": "EMPRESA",
+    "sucursal": 1,
+    "razon_social": "CANTERAS DEL LAGO S.A",
+    "nombre_fantasia": "CANTERAS DEL LAGO S.A",
+    "cuit": "30-71025192-0",
+    "email": "fedegb07@hotmail.com",
+    "telefono": "5492901648323",
+    "direccion": "Verificar",
+    "codigo_postal": "9420",
+    "ciudad": 1,
+    "provincia": 1,
+    "observaciones": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:25.700Z",
+    "fecha_modificacion": "2025-07-10T13:19:58.120Z"
+  }
+},
+{
+  "model": "clientes.cliente",
+  "pk": 38,
+  "fields": {
+    "tipo": "EMPRESA",
+    "sucursal": 1,
+    "razon_social": "CARRIER FUEGUINA S.A.",
+    "nombre_fantasia": "CARRIER FUEGUINA S.A.",
+    "cuit": "30-70943921-5",
+    "email": "lcarou@mideacarrier.com",
+    "telefono": "1",
+    "direccion": "Ruta 3 - Km 2.832",
+    "codigo_postal": "9420",
+    "ciudad": 1,
+    "provincia": 1,
+    "observaciones": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:25.714Z",
+    "fecha_modificacion": "2025-07-10T13:19:58.131Z"
+  }
+},
+{
+  "model": "clientes.cliente",
+  "pk": 39,
+  "fields": {
+    "tipo": "PARTICULAR",
+    "sucursal": 1,
+    "razon_social": "CARRILLO MABEL NELIDA",
+    "nombre_fantasia": "CARRILLO MABEL NELIDA",
+    "cuit": "27-05623777-7",
+    "email": "ale_berrog_@hotmail.com",
+    "telefono": "5492964603934",
+    "direccion": "Verificar",
+    "codigo_postal": "9420",
+    "ciudad": 1,
+    "provincia": 1,
+    "observaciones": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:25.729Z",
+    "fecha_modificacion": "2025-07-10T13:19:58.150Z"
+  }
+},
+{
+  "model": "clientes.cliente",
+  "pk": 40,
+  "fields": {
+    "tipo": "EMPRESA",
+    "sucursal": 1,
+    "razon_social": "CERRO CASTOR S.A",
+    "nombre_fantasia": "CERRO CASTOR S.A",
+    "cuit": "30-67578977-7",
+    "email": "administracion@cerrocastor.com",
+    "telefono": "1",
+    "direccion": "Verificar",
+    "codigo_postal": "9420",
+    "ciudad": 1,
+    "provincia": 1,
+    "observaciones": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:25.747Z",
+    "fecha_modificacion": "2025-07-10T13:19:58.173Z"
+  }
+},
+{
+  "model": "clientes.cliente",
+  "pk": 41,
+  "fields": {
+    "tipo": "PARTICULAR",
+    "sucursal": 1,
+    "razon_social": "CHAVARRIA CHOQUE FLORENCIO",
+    "nombre_fantasia": "CHAVARRIA CHOQUE FLORENCIO",
+    "cuit": "20-93910497-7",
+    "email": "desconocido@desconocido.com",
+    "telefono": "5492901468974",
+    "direccion": "Verificar",
+    "codigo_postal": "9420",
+    "ciudad": 1,
+    "provincia": 1,
+    "observaciones": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:25.758Z",
+    "fecha_modificacion": "2025-07-10T13:19:58.190Z"
+  }
+},
+{
+  "model": "clientes.cliente",
+  "pk": 42,
+  "fields": {
+    "tipo": "EMPRESA",
+    "sucursal": 1,
+    "razon_social": "CHIMEN AIKE S.A.",
+    "nombre_fantasia": "CHIMEN AIKE S.A.",
+    "cuit": "30-70755202-2",
+    "email": "ctasctes@chimenaike.com.ar",
+    "telefono": "1",
+    "direccion": "Verificar",
+    "codigo_postal": "9420",
+    "ciudad": 1,
+    "provincia": 1,
+    "observaciones": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:25.772Z",
+    "fecha_modificacion": "2025-07-10T13:19:58.206Z"
+  }
+},
+{
+  "model": "clientes.cliente",
+  "pk": 43,
+  "fields": {
+    "tipo": "EMPRESA",
+    "sucursal": 1,
+    "razon_social": "COCCARO HERMANOS CONSTRUCCIONES S.A.",
+    "nombre_fantasia": "COCCARO HERMANOS CONSTRUCCIONES S.A.",
+    "cuit": "33-62327468-9",
+    "email": "beatriz_77@live.com.ar",
+    "telefono": "2964481365",
+    "direccion": "Verificar",
+    "codigo_postal": "9420",
+    "ciudad": 1,
+    "provincia": 1,
+    "observaciones": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:25.782Z",
+    "fecha_modificacion": "2025-07-10T13:19:58.217Z"
+  }
+},
+{
+  "model": "clientes.cliente",
+  "pk": 44,
+  "fields": {
+    "tipo": "ORGANISMO_PUBLICO",
+    "sucursal": 1,
+    "razon_social": "COMISION NACIONAL DE ACTIVIDADES ESPACIALES",
+    "nombre_fantasia": "COMISION NACIONAL DE ACTIVIDADES ESPACIALES",
+    "cuit": "30-65302222-7",
+    "email": "grebola@conae.gov.ar",
+    "telefono": "5493547655225",
+    "direccion": "Verificar",
+    "codigo_postal": "9420",
+    "ciudad": 1,
+    "provincia": 1,
+    "observaciones": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:25.792Z",
+    "fecha_modificacion": "2025-07-10T13:19:58.230Z"
+  }
+},
+{
+  "model": "clientes.cliente",
+  "pk": 45,
+  "fields": {
+    "tipo": "EMPRESA",
+    "sucursal": 1,
+    "razon_social": "CONSTRUCTORA KHAMY S.A",
+    "nombre_fantasia": "CONSTRUCTORA KHAMY S.A",
+    "cuit": "30-71164529-9",
+    "email": "faviopaez@gmail.com",
+    "telefono": "5492901609223",
+    "direccion": "Verificar",
+    "codigo_postal": "9420",
+    "ciudad": 1,
+    "provincia": 1,
+    "observaciones": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:25.803Z",
+    "fecha_modificacion": "2025-07-10T13:19:58.240Z"
+  }
+},
+{
+  "model": "clientes.cliente",
+  "pk": 46,
+  "fields": {
+    "tipo": "ORGANISMO_PUBLICO",
+    "sucursal": 1,
+    "razon_social": "COOP. SERV.. PUB. ASIST. CONS. RIO GRANDE",
+    "nombre_fantasia": "COOP. SERV.. PUB. ASIST. CONS. RIO GRANDE",
+    "cuit": "30-54581908-9",
+    "email": "cpuccio@cooprg.org",
+    "telefono": "1",
+    "direccion": "Verificar",
+    "codigo_postal": "9420",
+    "ciudad": 1,
+    "provincia": 1,
+    "observaciones": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:25.814Z",
+    "fecha_modificacion": "2025-07-10T13:19:58.253Z"
+  }
+},
+{
+  "model": "clientes.cliente",
+  "pk": 47,
+  "fields": {
+    "tipo": "EMPRESA",
+    "sucursal": 1,
+    "razon_social": "CRESPO FLORES CESILIO",
+    "nombre_fantasia": "CRESPO FLORES CESILIO",
+    "cuit": "20-18830383-9",
+    "email": "cesiliocrespo2016@gmail.com",
+    "telefono": "1",
+    "direccion": "Verificar",
+    "codigo_postal": "9420",
+    "ciudad": 1,
+    "provincia": 1,
+    "observaciones": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:25.825Z",
+    "fecha_modificacion": "2025-07-10T13:19:58.264Z"
+  }
+},
+{
+  "model": "clientes.cliente",
+  "pk": 48,
+  "fields": {
+    "tipo": "EMPRESA",
+    "sucursal": 1,
+    "razon_social": "CUIDADOS INTEGRALES SANITARIOS SRL",
+    "nombre_fantasia": "CUIDADOS INTEGRALES SANITARIOS SRL",
+    "cuit": "33-71549760-9",
+    "email": "ignacio.maldonado@sanatoriosanjorge.com.ar",
+    "telefono": "1",
+    "direccion": "Verificar",
+    "codigo_postal": "9420",
+    "ciudad": 1,
+    "provincia": 1,
+    "observaciones": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:25.835Z",
+    "fecha_modificacion": "2025-07-10T13:19:58.277Z"
+  }
+},
+{
+  "model": "clientes.cliente",
+  "pk": 49,
+  "fields": {
+    "tipo": "EMPRESA",
+    "sucursal": 1,
+    "razon_social": "DALMAS S.R.L.",
+    "nombre_fantasia": "DALMAS S.R.L.",
+    "cuit": "30-71545169-3",
+    "email": "gerencia@dalmas.com.ar",
+    "telefono": "5492964465136",
+    "direccion": "Verificar",
+    "codigo_postal": "9420",
+    "ciudad": 1,
+    "provincia": 1,
+    "observaciones": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:25.851Z",
+    "fecha_modificacion": "2025-07-10T13:19:58.289Z"
+  }
+},
+{
+  "model": "clientes.cliente",
+  "pk": 50,
+  "fields": {
+    "tipo": "EMPRESA",
+    "sucursal": 1,
+    "razon_social": "DANNA PABLO SEBASTIAN",
+    "nombre_fantasia": "DANNA PABLO SEBASTIAN",
+    "cuit": "20-29573184-3",
+    "email": "vial@emcode.com.ar",
+    "telefono": "5492901612916",
+    "direccion": "Verificar",
+    "codigo_postal": "9420",
+    "ciudad": 1,
+    "provincia": 1,
+    "observaciones": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:25.866Z",
+    "fecha_modificacion": "2025-07-10T13:19:58.302Z"
+  }
+},
+{
+  "model": "clientes.cliente",
+  "pk": 51,
+  "fields": {
+    "tipo": "EMPRESA",
+    "sucursal": 1,
+    "razon_social": "DAPCO S.R.L.",
+    "nombre_fantasia": "DAPCO S.R.L.",
+    "cuit": "30-67579673-0",
+    "email": "admin@zapco.com.ar",
+    "telefono": "5492964565040",
+    "direccion": "Verificar",
+    "codigo_postal": "9420",
+    "ciudad": 1,
+    "provincia": 1,
+    "observaciones": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:25.886Z",
+    "fecha_modificacion": "2025-07-10T13:19:58.312Z"
+  }
+},
+{
+  "model": "clientes.cliente",
+  "pk": 52,
+  "fields": {
+    "tipo": "EMPRESA",
+    "sucursal": 1,
+    "razon_social": "DEPOSITOS FISCALES AUSTRALES SOCIEDAD ANONIMA",
+    "nombre_fantasia": "DEPOSITOS FISCALES AUSTRALES SOCIEDAD ANONIMA",
+    "cuit": "30-71147466-4",
+    "email": "cmasciotra@dfaushuaia.com.ar",
+    "telefono": "1",
+    "direccion": "Verificar",
+    "codigo_postal": "9420",
+    "ciudad": 1,
+    "provincia": 1,
+    "observaciones": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:25.910Z",
+    "fecha_modificacion": "2025-07-10T13:19:58.321Z"
+  }
+},
+{
+  "model": "clientes.cliente",
+  "pk": 53,
+  "fields": {
+    "tipo": "EMPRESA",
+    "sucursal": 1,
+    "razon_social": "DICON SRL",
+    "nombre_fantasia": "DICON SRL",
+    "cuit": "30-65761964-3",
+    "email": "diconrg@diconsrl.com.ar",
+    "telefono": "1",
+    "direccion": "Verificar",
+    "codigo_postal": "9420",
+    "ciudad": 1,
+    "provincia": 1,
+    "observaciones": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:25.920Z",
+    "fecha_modificacion": "2025-07-10T13:19:58.333Z"
+  }
+},
+{
+  "model": "clientes.cliente",
+  "pk": 54,
+  "fields": {
+    "tipo": "EMPRESA",
+    "sucursal": 1,
+    "razon_social": "EDISUD SA",
+    "nombre_fantasia": "EDISUD SA",
+    "cuit": "30-65840737-2",
+    "email": "proveedores@edisud.com.ar",
+    "telefono": "1",
+    "direccion": "Verificar",
+    "codigo_postal": "9420",
+    "ciudad": 1,
+    "provincia": 1,
+    "observaciones": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:25.938Z",
+    "fecha_modificacion": "2025-07-10T13:19:58.345Z"
+  }
+},
+{
+  "model": "clientes.cliente",
+  "pk": 55,
+  "fields": {
+    "tipo": "EMPRESA",
+    "sucursal": 1,
+    "razon_social": "EMPRESA INGENIERO LISARDO V CANGA S.A.",
+    "nombre_fantasia": "EMPRESA INGENIERO LISARDO V CANGA S.A.",
+    "cuit": "30-67065118-1",
+    "email": "canga.administracion@canga.com.ar",
+    "telefono": "1",
+    "direccion": "Verificar",
+    "codigo_postal": "9420",
+    "ciudad": 1,
+    "provincia": 1,
+    "observaciones": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:25.952Z",
+    "fecha_modificacion": "2025-07-10T13:19:58.357Z"
+  }
+},
+{
+  "model": "clientes.cliente",
+  "pk": 56,
+  "fields": {
+    "tipo": "EMPRESA",
+    "sucursal": 1,
+    "razon_social": "ESTANCIA LAURA SA",
+    "nombre_fantasia": "ESTANCIA LAURA SA",
+    "cuit": "30-67066470-4",
+    "email": "desconocido@desconocido.com",
+    "telefono": "1",
+    "direccion": "Verificar",
+    "codigo_postal": "9420",
+    "ciudad": 1,
+    "provincia": 1,
+    "observaciones": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:25.964Z",
+    "fecha_modificacion": "2025-07-10T13:19:58.369Z"
+  }
+},
+{
+  "model": "clientes.cliente",
+  "pk": 57,
+  "fields": {
+    "tipo": "EMPRESA",
+    "sucursal": 1,
+    "razon_social": "ESTANCIA MANANTIAL ESPEJO S.A.",
+    "nombre_fantasia": "ESTANCIA MANANTIAL ESPEJO S.A.",
+    "cuit": "30-67371620-9",
+    "email": "desconocido@desconocido.com",
+    "telefono": "1",
+    "direccion": "Verificar",
+    "codigo_postal": "9420",
+    "ciudad": 1,
+    "provincia": 1,
+    "observaciones": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:25.980Z",
+    "fecha_modificacion": "2025-07-10T13:19:58.384Z"
+  }
+},
+{
+  "model": "clientes.cliente",
+  "pk": 58,
+  "fields": {
+    "tipo": "EMPRESA",
+    "sucursal": 1,
+    "razon_social": "ESTANCIA SARA BRAUN S.A.",
+    "nombre_fantasia": "ESTANCIA SARA BRAUN S.A.",
+    "cuit": "30-52710652-0",
+    "email": "barria.jorge@sarabraun.com.ar",
+    "telefono": "1",
+    "direccion": "Verificar",
+    "codigo_postal": "9420",
+    "ciudad": 1,
+    "provincia": 1,
+    "observaciones": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:25.992Z",
+    "fecha_modificacion": "2025-07-10T13:19:58.398Z"
+  }
+},
+{
+  "model": "clientes.cliente",
+  "pk": 59,
+  "fields": {
+    "tipo": "EMPRESA",
+    "sucursal": 1,
+    "razon_social": "ESTANCIA VIOLETA SRL",
+    "nombre_fantasia": "ESTANCIA VIOLETA SRL",
+    "cuit": "30-67067329-0",
+    "email": "ofrviole@hotmail.com.ar",
+    "telefono": "1",
+    "direccion": "Verificar",
+    "codigo_postal": "9420",
+    "ciudad": 1,
+    "provincia": 1,
+    "observaciones": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:26.005Z",
+    "fecha_modificacion": "2025-07-10T13:19:58.414Z"
+  }
+},
+{
+  "model": "clientes.cliente",
+  "pk": 60,
+  "fields": {
+    "tipo": "EMPRESA",
+    "sucursal": 1,
+    "razon_social": "ETYS SRL",
+    "nombre_fantasia": "ETYS SRL",
+    "cuit": "30-70796359-6",
+    "email": "administracionrg@etys.com.ar",
+    "telefono": "1",
+    "direccion": "Verificar",
+    "codigo_postal": "9420",
+    "ciudad": 1,
+    "provincia": 1,
+    "observaciones": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:26.015Z",
+    "fecha_modificacion": "2025-07-10T13:19:58.427Z"
+  }
+},
+{
+  "model": "clientes.cliente",
+  "pk": 61,
+  "fields": {
+    "tipo": "EMPRESA",
+    "sucursal": 1,
+    "razon_social": "FH SERVICIOS SRL",
+    "nombre_fantasia": "FH SERVICIOS SRL",
+    "cuit": "33-71570172-9",
+    "email": "administracion@fhserviciossrl.com.ar",
+    "telefono": "542964424681",
+    "direccion": "Verificar",
+    "codigo_postal": "9420",
+    "ciudad": 1,
+    "provincia": 1,
+    "observaciones": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:26.026Z",
+    "fecha_modificacion": "2025-07-10T13:19:58.438Z"
+  }
+},
+{
+  "model": "clientes.cliente",
+  "pk": 62,
+  "fields": {
+    "tipo": "PARTICULAR",
+    "sucursal": 1,
+    "razon_social": "GOMEZ MANSILLA JUAN CLEMENTINO",
+    "nombre_fantasia": "GOMEZ MANSILLA JUAN CLEMENTINO",
+    "cuit": "20-92629134-4",
+    "email": "marcelobkst@hotmail.com",
+    "telefono": "1",
+    "direccion": "Verificar",
+    "codigo_postal": "9420",
+    "ciudad": 1,
+    "provincia": 1,
+    "observaciones": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:26.040Z",
+    "fecha_modificacion": "2025-07-10T13:19:58.449Z"
+  }
+},
+{
+  "model": "clientes.cliente",
+  "pk": 63,
+  "fields": {
+    "tipo": "PARTICULAR",
+    "sucursal": 1,
+    "razon_social": "HERNANDEZ RANIELE JOSE LUIS",
+    "nombre_fantasia": "HERNANDEZ RANIELE JOSE LUIS",
+    "cuit": "20-92863659-4",
+    "email": "leon.ipes@gmail.com",
+    "telefono": "1",
+    "direccion": "Verificar",
+    "codigo_postal": "9420",
+    "ciudad": 1,
+    "provincia": 1,
+    "observaciones": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:26.049Z",
+    "fecha_modificacion": "2025-07-10T13:19:58.461Z"
+  }
+},
+{
+  "model": "clientes.cliente",
+  "pk": 64,
+  "fields": {
+    "tipo": "EMPRESA",
+    "sucursal": 1,
+    "razon_social": "IMPORTADORA COMERCIAL FUEGUINA SRL",
+    "nombre_fantasia": "IMPORTADORA COMERCIAL FUEGUINA SRL",
+    "cuit": "30-59326113-8",
+    "email": "lthomas@imcofue.com.ar",
+    "telefono": "1",
+    "direccion": "Verificar",
+    "codigo_postal": "9420",
+    "ciudad": 1,
+    "provincia": 1,
+    "observaciones": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:26.059Z",
+    "fecha_modificacion": "2025-07-10T13:19:58.470Z"
+  }
+},
+{
+  "model": "clientes.cliente",
+  "pk": 65,
+  "fields": {
+    "tipo": "EMPRESA",
+    "sucursal": 1,
+    "razon_social": "INVERSUR S.R.L.",
+    "nombre_fantasia": "INVERSUR S.R.L.",
+    "cuit": "30-67575480-9",
+    "email": "inversur@fibertel.com.ar",
+    "telefono": "2901 45-9314",
+    "direccion": "Verificar",
+    "codigo_postal": "9420",
+    "ciudad": 1,
+    "provincia": 1,
+    "observaciones": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:26.072Z",
+    "fecha_modificacion": "2025-07-10T13:19:58.481Z"
+  }
+},
+{
+  "model": "clientes.cliente",
+  "pk": 66,
+  "fields": {
+    "tipo": "EMPRESA",
+    "sucursal": 1,
+    "razon_social": "JOW KON LOGISTICA SRL",
+    "nombre_fantasia": "JOW KON LOGISTICA SRL",
+    "cuit": "33-71405268-9",
+    "email": "administracion2@jowkon.com.ar",
+    "telefono": "1",
+    "direccion": "Verificar",
+    "codigo_postal": "9420",
+    "ciudad": 1,
+    "provincia": 1,
+    "observaciones": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:26.083Z",
+    "fecha_modificacion": "2025-07-10T13:19:58.491Z"
+  }
+},
+{
+  "model": "clientes.cliente",
+  "pk": 67,
+  "fields": {
+    "tipo": "EMPRESA",
+    "sucursal": 1,
+    "razon_social": "LA JUCIELA S.A.",
+    "nombre_fantasia": "LA JUCIELA S.A.",
+    "cuit": "30-50825527-2",
+    "email": "estanciasanjulio@gmail.com",
+    "telefono": "1",
+    "direccion": "Verificar",
+    "codigo_postal": "9420",
+    "ciudad": 1,
+    "provincia": 1,
+    "observaciones": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:26.100Z",
+    "fecha_modificacion": "2025-07-10T13:19:58.501Z"
+  }
+},
+{
+  "model": "clientes.cliente",
+  "pk": 68,
+  "fields": {
+    "tipo": "EMPRESA",
+    "sucursal": 1,
+    "razon_social": "LOS JAZMINES SA",
+    "nombre_fantasia": "LOS JAZMINES SA",
+    "cuit": "30-67067268-5",
+    "email": "alejandra@maribety.com",
+    "telefono": "1",
+    "direccion": "Verificar",
+    "codigo_postal": "9420",
+    "ciudad": 1,
+    "provincia": 1,
+    "observaciones": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:26.112Z",
+    "fecha_modificacion": "2025-07-10T13:19:58.512Z"
+  }
+},
+{
+  "model": "clientes.cliente",
+  "pk": 69,
+  "fields": {
+    "tipo": "EMPRESA",
+    "sucursal": 1,
+    "razon_social": "LOS ÑIRES S.A.",
+    "nombre_fantasia": "LOS ÑIRES S.A.",
+    "cuit": "30-67581007-5",
+    "email": "administracion@losnireshotel.com.ar",
+    "telefono": "1",
+    "direccion": "Verificar",
+    "codigo_postal": "9420",
+    "ciudad": 1,
+    "provincia": 1,
+    "observaciones": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:26.123Z",
+    "fecha_modificacion": "2025-07-10T13:19:58.524Z"
+  }
+},
+{
+  "model": "clientes.cliente",
+  "pk": 70,
+  "fields": {
+    "tipo": "PARTICULAR",
+    "sucursal": 1,
+    "razon_social": "MENESES ARTURO",
+    "nombre_fantasia": "MENESES ARTURO",
+    "cuit": "20-16788788-1",
+    "email": "ddelfino@mehcco.com.ar",
+    "telefono": "1",
+    "direccion": "Verificar",
+    "codigo_postal": "9420",
+    "ciudad": 1,
+    "provincia": 1,
+    "observaciones": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:26.135Z",
+    "fecha_modificacion": "2025-07-10T13:19:58.540Z"
+  }
+},
+{
+  "model": "clientes.cliente",
+  "pk": 71,
+  "fields": {
+    "tipo": "PARTICULAR",
+    "sucursal": 1,
+    "razon_social": "MENESES HERNAN",
+    "nombre_fantasia": "MENESES HERNAN",
+    "cuit": "20-14550739-2",
+    "email": "meneses_hernan@hotmail.com",
+    "telefono": "5492964618475",
+    "direccion": "Verificar",
+    "codigo_postal": "9420",
+    "ciudad": 1,
+    "provincia": 1,
+    "observaciones": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:26.151Z",
+    "fecha_modificacion": "2025-07-10T13:19:58.553Z"
+  }
+},
+{
+  "model": "clientes.cliente",
+  "pk": 72,
+  "fields": {
+    "tipo": "EMPRESA",
+    "sucursal": 1,
+    "razon_social": "MIRGOR S.A.C.I.F.I.A.",
+    "nombre_fantasia": "MIRGOR S.A.C.I.F.I.A.",
+    "cuit": "30-57803607-1",
+    "email": "recepcion.facturas@mirgor.com.ar",
+    "telefono": "541137527100",
+    "direccion": "Verificar",
+    "codigo_postal": "9420",
+    "ciudad": 1,
+    "provincia": 1,
+    "observaciones": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:26.163Z",
+    "fecha_modificacion": "2025-07-10T13:19:58.567Z"
+  }
+},
+{
+  "model": "clientes.cliente",
+  "pk": 73,
+  "fields": {
+    "tipo": "PARTICULAR",
+    "sucursal": 1,
+    "razon_social": "MORALES JUAN RAMON",
+    "nombre_fantasia": "MORALES JUAN RAMON",
+    "cuit": "20-11858066-5",
+    "email": "desconocido@desconocido.com",
+    "telefono": "1",
+    "direccion": "Verificar",
+    "codigo_postal": "9420",
+    "ciudad": 1,
+    "provincia": 1,
+    "observaciones": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:26.174Z",
+    "fecha_modificacion": "2025-07-10T13:19:58.581Z"
+  }
+},
+{
+  "model": "clientes.cliente",
+  "pk": 74,
+  "fields": {
+    "tipo": "PARTICULAR",
+    "sucursal": 1,
+    "razon_social": "PAÑOS JOSE LUIS",
+    "nombre_fantasia": "PAÑOS JOSE LUIS",
+    "cuit": "20-11203798-6",
+    "email": "mulloa@patagonicai.com.ar",
+    "telefono": "2964602812",
+    "direccion": "Verificar",
+    "codigo_postal": "9420",
+    "ciudad": 1,
+    "provincia": 1,
+    "observaciones": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:26.188Z",
+    "fecha_modificacion": "2025-07-10T13:19:58.597Z"
+  }
+},
+{
+  "model": "clientes.cliente",
+  "pk": 75,
+  "fields": {
+    "tipo": "EMPRESA",
+    "sucursal": 1,
+    "razon_social": "PATAGONICA DE INVERSIONES SRL",
+    "nombre_fantasia": "PATAGONICA DE INVERSIONES SRL",
+    "cuit": "30-67067312-6",
+    "email": "sonia@patagonicai.com.ar",
+    "telefono": "1",
+    "direccion": "Verificar",
+    "codigo_postal": "9420",
+    "ciudad": 1,
+    "provincia": 1,
+    "observaciones": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:26.201Z",
+    "fecha_modificacion": "2025-07-10T13:19:58.612Z"
+  }
+},
+{
+  "model": "clientes.cliente",
+  "pk": 76,
+  "fields": {
+    "tipo": "PARTICULAR",
+    "sucursal": 1,
+    "razon_social": "PIMENTEL CARMEN",
+    "nombre_fantasia": "PIMENTEL CARMEN",
+    "cuit": "27-22821374-3",
+    "email": "progreso-carmen@hotmail.com",
+    "telefono": "1",
+    "direccion": "Verificar",
+    "codigo_postal": "9420",
+    "ciudad": 1,
+    "provincia": 1,
+    "observaciones": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:26.216Z",
+    "fecha_modificacion": "2025-07-10T13:19:58.628Z"
+  }
+},
+{
+  "model": "clientes.cliente",
+  "pk": 77,
+  "fields": {
+    "tipo": "EMPRESA",
+    "sucursal": 1,
+    "razon_social": "PROALSA SRL",
+    "nombre_fantasia": "PROALSA SRL",
+    "cuit": "30-61018811-3",
+    "email": "omarmiranda@proalsa.com.ar",
+    "telefono": "1",
+    "direccion": "Verificar",
+    "codigo_postal": "9420",
+    "ciudad": 1,
+    "provincia": 1,
+    "observaciones": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:26.228Z",
+    "fecha_modificacion": "2025-07-10T13:19:58.641Z"
+  }
+},
+{
+  "model": "clientes.cliente",
+  "pk": 78,
+  "fields": {
+    "tipo": "EMPRESA",
+    "sucursal": 1,
+    "razon_social": "PRODIN S.R.L.",
+    "nombre_fantasia": "PRODIN S.R.L.",
+    "cuit": "30-67575350-0",
+    "email": "prodinsrl.tdf@gmail.com",
+    "telefono": "1",
+    "direccion": "Verificar",
+    "codigo_postal": "9420",
+    "ciudad": 1,
+    "provincia": 1,
+    "observaciones": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:26.238Z",
+    "fecha_modificacion": "2025-07-10T13:19:58.650Z"
+  }
+},
+{
+  "model": "clientes.cliente",
+  "pk": 79,
+  "fields": {
+    "tipo": "PARTICULAR",
+    "sucursal": 1,
+    "razon_social": "PROKOPIEC JUAN",
+    "nombre_fantasia": "PROKOPIEC JUAN",
+    "cuit": "20-13463847-9",
+    "email": "desconocido@desconocido.com",
+    "telefono": "2901-486321",
+    "direccion": "Verificar",
+    "codigo_postal": "9420",
+    "ciudad": 1,
+    "provincia": 1,
+    "observaciones": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:26.248Z",
+    "fecha_modificacion": "2025-07-10T13:19:58.662Z"
+  }
+},
+{
+  "model": "clientes.cliente",
+  "pk": 80,
+  "fields": {
+    "tipo": "EMPRESA",
+    "sucursal": 1,
+    "razon_social": "PROPAGACION S.A.",
+    "nombre_fantasia": "PROPAGACION S.A.",
+    "cuit": "30-58912489-4",
+    "email": "info@propagacion.com.ar",
+    "telefono": "1",
+    "direccion": "Verificar",
+    "codigo_postal": "9420",
+    "ciudad": 1,
+    "provincia": 1,
+    "observaciones": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:26.258Z",
+    "fecha_modificacion": "2025-07-10T13:19:58.671Z"
+  }
+},
+{
+  "model": "clientes.cliente",
+  "pk": 81,
+  "fields": {
+    "tipo": "EMPRESA",
+    "sucursal": 1,
+    "razon_social": "PROYECTOS FUEGUINOS",
+    "nombre_fantasia": "PROYECTOS FUEGUINOS",
+    "cuit": "30-67066128-4",
+    "email": "proyectos.proveedores@hotmail.com",
+    "telefono": "1",
+    "direccion": "Verificar",
+    "codigo_postal": "9420",
+    "ciudad": 1,
+    "provincia": 1,
+    "observaciones": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:26.269Z",
+    "fecha_modificacion": "2025-07-10T13:19:58.681Z"
+  }
+},
+{
+  "model": "clientes.cliente",
+  "pk": 82,
+  "fields": {
+    "tipo": "EMPRESA",
+    "sucursal": 1,
+    "razon_social": "R. CULLEN LAS V.S.A. Y OTROS",
+    "nombre_fantasia": "ROCH",
+    "cuit": "30-64546902-6",
+    "email": "jnavarro@roch.com.ar",
+    "telefono": "1",
+    "direccion": "Verificar",
+    "codigo_postal": "9420",
+    "ciudad": 1,
+    "provincia": 1,
+    "observaciones": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:26.279Z",
+    "fecha_modificacion": "2025-07-10T13:19:58.691Z"
+  }
+},
+{
+  "model": "clientes.cliente",
+  "pk": 83,
+  "fields": {
+    "tipo": "PARTICULAR",
+    "sucursal": 1,
+    "razon_social": "RIVERA SCHWABE PATRICIO EZEQUIEL",
+    "nombre_fantasia": "RIVERA SCHWABE PATRICIO EZEQUIEL",
+    "cuit": "20-32768766-3",
+    "email": "desconocido@desconocido.com",
+    "telefono": "2964 40-1228",
+    "direccion": "Verificar",
+    "codigo_postal": "9420",
+    "ciudad": 1,
+    "provincia": 1,
+    "observaciones": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:26.289Z",
+    "fecha_modificacion": "2025-07-10T13:19:58.701Z"
+  }
+},
+{
+  "model": "clientes.cliente",
+  "pk": 84,
+  "fields": {
+    "tipo": "EMPRESA",
+    "sucursal": 1,
+    "razon_social": "ROSITA SRL",
+    "nombre_fantasia": "ROSITA SRL",
+    "cuit": "30-51122214-8",
+    "email": "nico_becerine@hotmail.com",
+    "telefono": "1",
+    "direccion": "Verificar",
+    "codigo_postal": "9420",
+    "ciudad": 1,
+    "provincia": 1,
+    "observaciones": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:26.298Z",
+    "fecha_modificacion": "2025-07-10T13:19:58.713Z"
+  }
+},
+{
+  "model": "clientes.cliente",
+  "pk": 85,
+  "fields": {
+    "tipo": "PARTICULAR",
+    "sucursal": 1,
+    "razon_social": "SAIQUITA SALVADOR RENEE",
+    "nombre_fantasia": "SAIQUITA SALVADOR RENEE",
+    "cuit": "20-34756737-0",
+    "email": "desconocido@desconocido.com",
+    "telefono": "1",
+    "direccion": "Verificar",
+    "codigo_postal": "9420",
+    "ciudad": 1,
+    "provincia": 1,
+    "observaciones": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:26.310Z",
+    "fecha_modificacion": "2025-07-10T13:19:58.724Z"
+  }
+},
+{
+  "model": "clientes.cliente",
+  "pk": 86,
+  "fields": {
+    "tipo": "EMPRESA",
+    "sucursal": 1,
+    "razon_social": "SANATORIO SAN JORGE SRL",
+    "nombre_fantasia": "SANATORIO SAN JORGE SRL",
+    "cuit": "30-54615443-9",
+    "email": "ignacio.maldonado@sanatoriosanjorge.com.ar",
+    "telefono": "5492901490799",
+    "direccion": "Verificar",
+    "codigo_postal": "9420",
+    "ciudad": 1,
+    "provincia": 1,
+    "observaciones": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:26.322Z",
+    "fecha_modificacion": "2025-07-10T13:19:58.737Z"
+  }
+},
+{
+  "model": "clientes.cliente",
+  "pk": 87,
+  "fields": {
+    "tipo": "EMPRESA",
+    "sucursal": 1,
+    "razon_social": "SANATORIUM SA",
+    "nombre_fantasia": "SANATORIUM SA",
+    "cuit": "30-71032528-2",
+    "email": "proveedores@sanatorium.com.ar",
+    "telefono": "2901604080",
+    "direccion": "Verificar",
+    "codigo_postal": "9420",
+    "ciudad": 1,
+    "provincia": 1,
+    "observaciones": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:26.336Z",
+    "fecha_modificacion": "2025-07-10T13:19:58.750Z"
+  }
+},
+{
+  "model": "clientes.cliente",
+  "pk": 88,
+  "fields": {
+    "tipo": "PARTICULAR",
+    "sucursal": 1,
+    "razon_social": "SANCHEZ VICTOR RENE",
+    "nombre_fantasia": "SANCHEZ VICTOR RENE",
+    "cuit": "20-23565147-6",
+    "email": "desconocido@desconocido.com",
+    "telefono": "92964554312",
+    "direccion": "Verificar",
+    "codigo_postal": "9420",
+    "ciudad": 1,
+    "provincia": 1,
+    "observaciones": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:26.358Z",
+    "fecha_modificacion": "2025-07-10T13:19:58.765Z"
+  }
+},
+{
+  "model": "clientes.cliente",
+  "pk": 89,
+  "fields": {
+    "tipo": "PARTICULAR",
+    "sucursal": 1,
+    "razon_social": "SOTO VERA PEDRO ANTONIO",
+    "nombre_fantasia": "SOTO VERA PEDRO ANTONIO",
+    "cuit": "20-18737505-4",
+    "email": "romi-sto@outlook.com",
+    "telefono": "2901408239",
+    "direccion": "Verificar",
+    "codigo_postal": "9420",
+    "ciudad": 1,
+    "provincia": 1,
+    "observaciones": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:26.370Z",
+    "fecha_modificacion": "2025-07-10T13:19:58.779Z"
+  }
+},
+{
+  "model": "clientes.cliente",
+  "pk": 90,
+  "fields": {
+    "tipo": "EMPRESA",
+    "sucursal": 1,
+    "razon_social": "TRINIDAD OVERSEAS SA",
+    "nombre_fantasia": "TRINIDAD OVERSEAS SA",
+    "cuit": "30-71173623-5",
+    "email": "desconocido@desconocido.com",
+    "telefono": "1",
+    "direccion": "Verificar",
+    "codigo_postal": "9420",
+    "ciudad": 1,
+    "provincia": 1,
+    "observaciones": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:26.381Z",
+    "fecha_modificacion": "2025-07-10T13:19:58.790Z"
+  }
+},
+{
+  "model": "clientes.cliente",
+  "pk": 91,
+  "fields": {
+    "tipo": "EMPRESA",
+    "sucursal": 1,
+    "razon_social": "TVFUEGO S.A.",
+    "nombre_fantasia": "TVFUEGO S.A.",
+    "cuit": "30-61000410-1",
+    "email": "proveedores@tvfuego.com.ar",
+    "telefono": "1",
+    "direccion": "Verificar",
+    "codigo_postal": "9420",
+    "ciudad": 1,
+    "provincia": 1,
+    "observaciones": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:26.394Z",
+    "fecha_modificacion": "2025-07-10T13:19:58.800Z"
+  }
+},
+{
+  "model": "clientes.cliente",
+  "pk": 92,
+  "fields": {
+    "tipo": "PARTICULAR",
+    "sucursal": 1,
+    "razon_social": "Uriona Franco Dario",
+    "nombre_fantasia": "Uriona Franco Dario",
+    "cuit": "20-36733048-2",
+    "email": "desconocido@desconocido.com",
+    "telefono": "2964413359",
+    "direccion": "Verificar",
+    "codigo_postal": "9420",
+    "ciudad": 1,
+    "provincia": 1,
+    "observaciones": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:26.407Z",
+    "fecha_modificacion": "2025-07-10T13:19:58.814Z"
+  }
+},
+{
+  "model": "clientes.cliente",
+  "pk": 93,
+  "fields": {
+    "tipo": "PARTICULAR",
+    "sucursal": 1,
+    "razon_social": "VILLARROEL CAMACHO ELIODORO",
+    "nombre_fantasia": "VILLARROEL CAMACHO ELIODORO",
+    "cuit": "20-18855527-7",
+    "email": "gama9090@hotmail.com",
+    "telefono": "2901475993",
+    "direccion": "Verificar",
+    "codigo_postal": "9420",
+    "ciudad": 1,
+    "provincia": 1,
+    "observaciones": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:26.420Z",
+    "fecha_modificacion": "2025-07-10T13:19:58.825Z"
+  }
+},
+{
+  "model": "clientes.cliente",
+  "pk": 94,
+  "fields": {
+    "tipo": "PARTICULAR",
+    "sucursal": 1,
+    "razon_social": "ALVAREZ ALVARADO",
+    "nombre_fantasia": "ALVAREZ ALVARADO",
+    "cuit": "123456",
+    "email": "desconocido@desconocido.com",
+    "telefono": "1",
+    "direccion": "Verificar",
+    "codigo_postal": "9420",
+    "ciudad": 1,
+    "provincia": 1,
+    "observaciones": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:26.431Z",
+    "fecha_modificacion": "2025-07-10T13:19:58.836Z"
+  }
+},
+{
+  "model": "clientes.cliente",
+  "pk": 95,
+  "fields": {
+    "tipo": "EMPRESA",
+    "sucursal": 1,
+    "razon_social": "MARANATA SRL",
+    "nombre_fantasia": "MARANATA SRL",
+    "cuit": "1234567",
+    "email": "desconocido@desconocido.com",
+    "telefono": "1",
+    "direccion": "Verificar",
+    "codigo_postal": "9420",
+    "ciudad": 1,
+    "provincia": 1,
+    "observaciones": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:26.442Z",
+    "fecha_modificacion": "2025-07-10T13:19:58.847Z"
+  }
+},
+{
+  "model": "clientes.cliente",
+  "pk": 96,
+  "fields": {
+    "tipo": "PARTICULAR",
+    "sucursal": 1,
+    "razon_social": "PEDRO W FERNANDEZ",
+    "nombre_fantasia": "PEDRO W FERNANDEZ",
+    "cuit": "12345678",
+    "email": "desconocido@desconocido.com",
+    "telefono": "1",
+    "direccion": "Verificar",
+    "codigo_postal": "9420",
+    "ciudad": 1,
+    "provincia": 1,
+    "observaciones": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:26.457Z",
+    "fecha_modificacion": "2025-07-10T13:19:58.856Z"
+  }
+},
+{
+  "model": "clientes.cliente",
+  "pk": 97,
+  "fields": {
+    "tipo": "EMPRESA",
+    "sucursal": 1,
+    "razon_social": "POLO SUR SA",
+    "nombre_fantasia": "POLO SUR SA",
+    "cuit": "123456789",
+    "email": "desconocido@desconocido.com",
+    "telefono": "1",
+    "direccion": "Verificar",
+    "codigo_postal": "9420",
+    "ciudad": 1,
+    "provincia": 1,
+    "observaciones": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:26.469Z",
+    "fecha_modificacion": "2025-07-10T13:19:58.866Z"
+  }
+},
+{
+  "model": "clientes.cliente",
+  "pk": 98,
+  "fields": {
+    "tipo": "EMPRESA",
+    "sucursal": 1,
+    "razon_social": "PROALSA",
+    "nombre_fantasia": "PROALSA",
+    "cuit": "12345678910",
+    "email": "desconocido@desconocido.com",
+    "telefono": "1",
+    "direccion": "Verificar",
+    "codigo_postal": "9420",
+    "ciudad": 1,
+    "provincia": 1,
+    "observaciones": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:26.484Z",
+    "fecha_modificacion": "2025-07-10T13:19:58.879Z"
+  }
+},
+{
+  "model": "clientes.cliente",
+  "pk": 99,
+  "fields": {
+    "tipo": "EMPRESA",
+    "sucursal": 1,
+    "razon_social": "TRANEX",
+    "nombre_fantasia": "TRANEX",
+    "cuit": "12345678911",
+    "email": "desconocido@desconocido.com",
+    "telefono": "1",
+    "direccion": "Verificar",
+    "codigo_postal": "9420",
+    "ciudad": 1,
+    "provincia": 1,
+    "observaciones": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:26.498Z",
+    "fecha_modificacion": "2025-07-10T13:19:58.887Z"
+  }
+},
+{
+  "model": "clientes.cliente",
+  "pk": 100,
+  "fields": {
+    "tipo": "EMPRESA",
+    "sucursal": 1,
+    "razon_social": "VAQUERA",
+    "nombre_fantasia": "VAQUERA",
+    "cuit": "12345678912",
+    "email": "desconocido@desconocido.com",
+    "telefono": "1",
+    "direccion": "Verificar",
+    "codigo_postal": "9420",
+    "ciudad": 1,
+    "provincia": 1,
+    "observaciones": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:26.510Z",
+    "fecha_modificacion": "2025-07-10T13:19:58.899Z"
+  }
+},
+{
+  "model": "clientes.cliente",
+  "pk": 101,
+  "fields": {
+    "tipo": "EMPRESA",
+    "sucursal": 1,
+    "razon_social": "RIGEL SA",
+    "nombre_fantasia": "",
+    "cuit": "30629248052",
+    "email": "info@rigel.com.ar",
+    "telefono": "0297 448-1007",
+    "direccion": "Jorge Verdeau 110",
+    "codigo_postal": "9000",
+    "ciudad": 2,
+    "provincia": 3,
+    "observaciones": "",
+    "activo": false,
+    "fecha_creacion": "2025-07-10T13:57:22.491Z",
+    "fecha_modificacion": "2025-07-10T13:57:22.491Z"
+  }
+},
+{
+  "model": "clientes.cliente",
+  "pk": 102,
+  "fields": {
+    "tipo": "EMPRESA",
+    "sucursal": 1,
+    "razon_social": "Piedra Pampa SRL",
+    "nombre_fantasia": "",
+    "cuit": "33711909929",
+    "email": "verificar@verificar.com",
+    "telefono": "1",
+    "direccion": "Santiago Farrell 255",
+    "codigo_postal": "9000",
+    "ciudad": 2,
+    "provincia": 3,
+    "observaciones": "",
+    "activo": false,
+    "fecha_creacion": "2025-07-10T14:04:14.960Z",
+    "fecha_modificacion": "2025-07-10T14:04:14.960Z"
+  }
+},
+{
+  "model": "clientes.cliente",
+  "pk": 103,
+  "fields": {
+    "tipo": "EMPRESA",
+    "sucursal": 1,
+    "razon_social": "San jose TDF SA",
+    "nombre_fantasia": "San jose TDF SA",
+    "cuit": "30-71809419-0",
+    "email": "carriagada95@gmail.com",
+    "telefono": "02964653668",
+    "direccion": "CERRITO Nro.: 1070 Piso: 11 Dpto.: 136",
+    "codigo_postal": "9420",
+    "ciudad": 1,
+    "provincia": 1,
+    "observaciones": "",
+    "activo": false,
+    "fecha_creacion": "2025-07-11T12:27:31.930Z",
+    "fecha_modificacion": "2025-07-11T12:27:31.930Z"
+  }
+},
+{
+  "model": "clientes.tipoequipo",
+  "pk": 10,
+  "fields": {
+    "nombre": "Retroexcavadora",
+    "descripcion": "",
+    "activo": true
+  }
+},
+{
+  "model": "clientes.tipoequipo",
+  "pk": 11,
+  "fields": {
+    "nombre": "Excavadora",
+    "descripcion": "",
+    "activo": true
+  }
+},
+{
+  "model": "clientes.tipoequipo",
+  "pk": 12,
+  "fields": {
+    "nombre": "Cargadora Frontal",
+    "descripcion": "",
+    "activo": true
+  }
+},
+{
+  "model": "clientes.tipoequipo",
+  "pk": 13,
+  "fields": {
+    "nombre": "Motoniveladora",
+    "descripcion": "",
+    "activo": true
+  }
+},
+{
+  "model": "clientes.tipoequipo",
+  "pk": 14,
+  "fields": {
+    "nombre": "Topador",
+    "descripcion": "",
+    "activo": true
+  }
+},
+{
+  "model": "clientes.tipoequipo",
+  "pk": 15,
+  "fields": {
+    "nombre": "Mini Cargadora",
+    "descripcion": "",
+    "activo": true
+  }
+},
+{
+  "model": "clientes.tipoequipo",
+  "pk": 16,
+  "fields": {
+    "nombre": "Mini Excavadora",
+    "descripcion": "",
+    "activo": true
+  }
+},
+{
+  "model": "clientes.tipoequipo",
+  "pk": 17,
+  "fields": {
+    "nombre": "Grupo Electrogeno",
+    "descripcion": "",
+    "activo": true
+  }
+},
+{
+  "model": "clientes.tipoequipo",
+  "pk": 18,
+  "fields": {
+    "nombre": "Torre de Iluminacion",
+    "descripcion": "",
+    "activo": true
+  }
+},
+{
+  "model": "clientes.tipoequipo",
+  "pk": 19,
+  "fields": {
+    "nombre": "Hidrogrua",
+    "descripcion": "",
+    "activo": true
+  }
+},
+{
+  "model": "clientes.tipoequipo",
+  "pk": 20,
+  "fields": {
+    "nombre": "Motobomba",
+    "descripcion": "",
+    "activo": true
+  }
+},
+{
+  "model": "clientes.tipoequipo",
+  "pk": 21,
+  "fields": {
+    "nombre": "Martillo Hidraulico",
+    "descripcion": "",
+    "activo": true
+  }
+},
+{
+  "model": "clientes.tipoequipo",
+  "pk": 23,
+  "fields": {
+    "nombre": "Tractor",
+    "descripcion": "",
+    "activo": true
+  }
+},
+{
+  "model": "clientes.modeloequipo",
+  "pk": 11,
+  "fields": {
+    "tipo_equipo": 17,
+    "nombre": "PP-100",
+    "marca": "Palmero San Luis",
+    "descripcion": "",
+    "activo": true
+  }
+},
+{
+  "model": "clientes.modeloequipo",
+  "pk": 12,
+  "fields": {
+    "tipo_equipo": 21,
+    "nombre": "GH-7",
+    "marca": "NPK",
+    "descripcion": "",
+    "activo": true
+  }
+},
+{
+  "model": "clientes.modeloequipo",
+  "pk": 13,
+  "fields": {
+    "tipo_equipo": 15,
+    "nombre": "323D",
+    "marca": "John Deere",
+    "descripcion": "",
+    "activo": true
+  }
+},
+{
+  "model": "clientes.modeloequipo",
+  "pk": 14,
+  "fields": {
+    "tipo_equipo": 18,
+    "nombre": "Terex",
+    "marca": "Terex",
+    "descripcion": "",
+    "activo": true
+  }
+},
+{
+  "model": "clientes.modeloequipo",
+  "pk": 15,
+  "fields": {
+    "tipo_equipo": 12,
+    "nombre": "544K",
+    "marca": "John Deere",
+    "descripcion": "",
+    "activo": true
+  }
+},
+{
+  "model": "clientes.modeloequipo",
+  "pk": 16,
+  "fields": {
+    "tipo_equipo": 10,
+    "nombre": "310SJ",
+    "marca": "John Deere",
+    "descripcion": "",
+    "activo": true
+  }
+},
+{
+  "model": "clientes.modeloequipo",
+  "pk": 17,
+  "fields": {
+    "tipo_equipo": 13,
+    "nombre": "670G",
+    "marca": "John Deere",
+    "descripcion": "",
+    "activo": true
+  }
+},
+{
+  "model": "clientes.modeloequipo",
+  "pk": 18,
+  "fields": {
+    "tipo_equipo": 11,
+    "nombre": "160D",
+    "marca": "John Deere",
+    "descripcion": "",
+    "activo": true
+  }
+},
+{
+  "model": "clientes.modeloequipo",
+  "pk": 19,
+  "fields": {
+    "tipo_equipo": 17,
+    "nombre": "110",
+    "marca": "Cetec",
+    "descripcion": "",
+    "activo": true
+  }
+},
+{
+  "model": "clientes.modeloequipo",
+  "pk": 20,
+  "fields": {
+    "tipo_equipo": 17,
+    "nombre": "PP-65",
+    "marca": "Palmero San Luis",
+    "descripcion": "",
+    "activo": true
+  }
+},
+{
+  "model": "clientes.modeloequipo",
+  "pk": 21,
+  "fields": {
+    "tipo_equipo": 17,
+    "nombre": "U1GC1000-G",
+    "marca": "U1POWER",
+    "descripcion": "",
+    "activo": true
+  }
+},
+{
+  "model": "clientes.modeloequipo",
+  "pk": 22,
+  "fields": {
+    "tipo_equipo": 17,
+    "nombre": "Cummins",
+    "marca": "Cummins",
+    "descripcion": "",
+    "activo": true
+  }
+},
+{
+  "model": "clientes.modeloequipo",
+  "pk": 23,
+  "fields": {
+    "tipo_equipo": 18,
+    "nombre": "QLT-M4",
+    "marca": "BOUNOUS",
+    "descripcion": "",
+    "activo": true
+  }
+},
+{
+  "model": "clientes.modeloequipo",
+  "pk": 24,
+  "fields": {
+    "tipo_equipo": 17,
+    "nombre": "PP",
+    "marca": "Palmero San Luis",
+    "descripcion": "",
+    "activo": true
+  }
+},
+{
+  "model": "clientes.modeloequipo",
+  "pk": 25,
+  "fields": {
+    "tipo_equipo": 12,
+    "nombre": "WL-56",
+    "marca": "John Deere",
+    "descripcion": "",
+    "activo": true
+  }
+},
+{
+  "model": "clientes.modeloequipo",
+  "pk": 26,
+  "fields": {
+    "tipo_equipo": 17,
+    "nombre": "PDG-187",
+    "marca": "Palmero San Luis",
+    "descripcion": "",
+    "activo": true
+  }
+},
+{
+  "model": "clientes.modeloequipo",
+  "pk": 27,
+  "fields": {
+    "tipo_equipo": 17,
+    "nombre": "6G-56",
+    "marca": "Desconocido",
+    "descripcion": "",
+    "activo": true
+  }
+},
+{
+  "model": "clientes.modeloequipo",
+  "pk": 31,
+  "fields": {
+    "tipo_equipo": 10,
+    "nombre": "310P",
+    "marca": "John Deere",
+    "descripcion": "",
+    "activo": true
+  }
+},
+{
+  "model": "clientes.modeloequipo",
+  "pk": 32,
+  "fields": {
+    "tipo_equipo": 10,
+    "nombre": "310SL",
+    "marca": "John Deere",
+    "descripcion": "",
+    "activo": true
+  }
+},
+{
+  "model": "clientes.modeloequipo",
+  "pk": 33,
+  "fields": {
+    "tipo_equipo": 10,
+    "nombre": "310D",
+    "marca": "John Deere",
+    "descripcion": "",
+    "activo": true
+  }
+},
+{
+  "model": "clientes.modeloequipo",
+  "pk": 34,
+  "fields": {
+    "tipo_equipo": 13,
+    "nombre": "770D",
+    "marca": "John Deere",
+    "descripcion": "",
+    "activo": true
+  }
+},
+{
+  "model": "clientes.modeloequipo",
+  "pk": 35,
+  "fields": {
+    "tipo_equipo": 13,
+    "nombre": "772D",
+    "marca": "John Deere",
+    "descripcion": "",
+    "activo": true
+  }
+},
+{
+  "model": "clientes.modeloequipo",
+  "pk": 36,
+  "fields": {
+    "tipo_equipo": 13,
+    "nombre": "670D",
+    "marca": "John Deere",
+    "descripcion": "",
+    "activo": true
+  }
+},
+{
+  "model": "clientes.modeloequipo",
+  "pk": 37,
+  "fields": {
+    "tipo_equipo": 13,
+    "nombre": "770G",
+    "marca": "John Deere",
+    "descripcion": "",
+    "activo": true
+  }
+},
+{
+  "model": "clientes.modeloequipo",
+  "pk": 38,
+  "fields": {
+    "tipo_equipo": 11,
+    "nombre": "200C",
+    "marca": "John Deere",
+    "descripcion": "",
+    "activo": true
+  }
+},
+{
+  "model": "clientes.modeloequipo",
+  "pk": 39,
+  "fields": {
+    "tipo_equipo": 15,
+    "nombre": "320D",
+    "marca": "John Deere",
+    "descripcion": "",
+    "activo": true
+  }
+},
+{
+  "model": "clientes.modeloequipo",
+  "pk": 40,
+  "fields": {
+    "tipo_equipo": 11,
+    "nombre": "210G",
+    "marca": "John Deere",
+    "descripcion": "",
+    "activo": true
+  }
+},
+{
+  "model": "clientes.modeloequipo",
+  "pk": 41,
+  "fields": {
+    "tipo_equipo": 11,
+    "nombre": "250G",
+    "marca": "John Deere",
+    "descripcion": "",
+    "activo": true
+  }
+},
+{
+  "model": "clientes.modeloequipo",
+  "pk": 42,
+  "fields": {
+    "tipo_equipo": 12,
+    "nombre": "544J",
+    "marca": "John Deere",
+    "descripcion": "",
+    "activo": true
+  }
+},
+{
+  "model": "clientes.modeloequipo",
+  "pk": 43,
+  "fields": {
+    "tipo_equipo": 11,
+    "nombre": "200D",
+    "marca": "John Deere",
+    "descripcion": "",
+    "activo": true
+  }
+},
+{
+  "model": "clientes.modeloequipo",
+  "pk": 44,
+  "fields": {
+    "tipo_equipo": 11,
+    "nombre": "160C",
+    "marca": "John Deere",
+    "descripcion": "",
+    "activo": true
+  }
+},
+{
+  "model": "clientes.modeloequipo",
+  "pk": 45,
+  "fields": {
+    "tipo_equipo": 11,
+    "nombre": "130G",
+    "marca": "John Deere",
+    "descripcion": "",
+    "activo": true
+  }
+},
+{
+  "model": "clientes.modeloequipo",
+  "pk": 46,
+  "fields": {
+    "tipo_equipo": 11,
+    "nombre": "160G",
+    "marca": "John Deere",
+    "descripcion": "",
+    "activo": true
+  }
+},
+{
+  "model": "clientes.modeloequipo",
+  "pk": 47,
+  "fields": {
+    "tipo_equipo": 11,
+    "nombre": "120D",
+    "marca": "John Deere",
+    "descripcion": "",
+    "activo": true
+  }
+},
+{
+  "model": "clientes.modeloequipo",
+  "pk": 48,
+  "fields": {
+    "tipo_equipo": 10,
+    "nombre": "310L",
+    "marca": "John Deere",
+    "descripcion": "",
+    "activo": true
+  }
+},
+{
+  "model": "clientes.modeloequipo",
+  "pk": 49,
+  "fields": {
+    "tipo_equipo": 10,
+    "nombre": "310J",
+    "marca": "John Deere",
+    "descripcion": "",
+    "activo": true
+  }
+},
+{
+  "model": "clientes.modeloequipo",
+  "pk": 50,
+  "fields": {
+    "tipo_equipo": 10,
+    "nombre": "310K",
+    "marca": "John Deere",
+    "descripcion": "",
+    "activo": true
+  }
+},
+{
+  "model": "clientes.modeloequipo",
+  "pk": 51,
+  "fields": {
+    "tipo_equipo": 10,
+    "nombre": "310E",
+    "marca": "John Deere",
+    "descripcion": "",
+    "activo": true
+  }
+},
+{
+  "model": "clientes.modeloequipo",
+  "pk": 52,
+  "fields": {
+    "tipo_equipo": 10,
+    "nombre": "310SK",
+    "marca": "John Deere",
+    "descripcion": "",
+    "activo": true
+  }
+},
+{
+  "model": "clientes.modeloequipo",
+  "pk": 53,
+  "fields": {
+    "tipo_equipo": 12,
+    "nombre": "624J",
+    "marca": "John Deere",
+    "descripcion": "",
+    "activo": true
+  }
+},
+{
+  "model": "clientes.modeloequipo",
+  "pk": 54,
+  "fields": {
+    "tipo_equipo": 12,
+    "nombre": "624K",
+    "marca": "John Deere",
+    "descripcion": "",
+    "activo": true
+  }
+},
+{
+  "model": "clientes.modeloequipo",
+  "pk": 55,
+  "fields": {
+    "tipo_equipo": 12,
+    "nombre": "444J",
+    "marca": "John Deere",
+    "descripcion": "",
+    "activo": true
+  }
+},
+{
+  "model": "clientes.modeloequipo",
+  "pk": 56,
+  "fields": {
+    "tipo_equipo": 12,
+    "nombre": "444K",
+    "marca": "John Deere",
+    "descripcion": "",
+    "activo": true
+  }
+},
+{
+  "model": "clientes.modeloequipo",
+  "pk": 57,
+  "fields": {
+    "tipo_equipo": 15,
+    "nombre": "CT332",
+    "marca": "John Deere",
+    "descripcion": "",
+    "activo": true
+  }
+},
+{
+  "model": "clientes.modeloequipo",
+  "pk": 58,
+  "fields": {
+    "tipo_equipo": 10,
+    "nombre": "310SE",
+    "marca": "John Deere",
+    "descripcion": "",
+    "activo": true
+  }
+},
+{
+  "model": "clientes.modeloequipo",
+  "pk": 59,
+  "fields": {
+    "tipo_equipo": 14,
+    "nombre": "750J",
+    "marca": "John Deere",
+    "descripcion": "",
+    "activo": true
+  }
+},
+{
+  "model": "clientes.modeloequipo",
+  "pk": 60,
+  "fields": {
+    "tipo_equipo": 14,
+    "nombre": "850J",
+    "marca": "John Deere",
+    "descripcion": "",
+    "activo": true
+  }
+},
+{
+  "model": "clientes.modeloequipo",
+  "pk": 61,
+  "fields": {
+    "tipo_equipo": 15,
+    "nombre": "318E",
+    "marca": "John Deere",
+    "descripcion": "",
+    "activo": true
+  }
+},
+{
+  "model": "clientes.modeloequipo",
+  "pk": 62,
+  "fields": {
+    "tipo_equipo": 15,
+    "nombre": "320E",
+    "marca": "John Deere",
+    "descripcion": "",
+    "activo": true
+  }
+},
+{
+  "model": "clientes.modeloequipo",
+  "pk": 63,
+  "fields": {
+    "tipo_equipo": 15,
+    "nombre": "323E",
+    "marca": "John Deere",
+    "descripcion": "",
+    "activo": true
+  }
+},
+{
+  "model": "clientes.modeloequipo",
+  "pk": 64,
+  "fields": {
+    "tipo_equipo": 15,
+    "nombre": "325G",
+    "marca": "John Deere",
+    "descripcion": "",
+    "activo": true
+  }
+},
+{
+  "model": "clientes.modeloequipo",
+  "pk": 65,
+  "fields": {
+    "tipo_equipo": 15,
+    "nombre": "318D",
+    "marca": "John Deere",
+    "descripcion": "",
+    "activo": true
+  }
+},
+{
+  "model": "clientes.modeloequipo",
+  "pk": 66,
+  "fields": {
+    "tipo_equipo": 15,
+    "nombre": "320A",
+    "marca": "John Deere",
+    "descripcion": "",
+    "activo": true
+  }
+},
+{
+  "model": "clientes.modeloequipo",
+  "pk": 67,
+  "fields": {
+    "tipo_equipo": 10,
+    "nombre": "310SG",
+    "marca": "John Deere",
+    "descripcion": "",
+    "activo": true
+  }
+},
+{
+  "model": "clientes.modeloequipo",
+  "pk": 68,
+  "fields": {
+    "tipo_equipo": 16,
+    "nombre": "35G",
+    "marca": "John Deere",
+    "descripcion": "",
+    "activo": true
+  }
+},
+{
+  "model": "clientes.modeloequipo",
+  "pk": 69,
+  "fields": {
+    "tipo_equipo": 13,
+    "nombre": "620G",
+    "marca": "John Deere",
+    "descripcion": "",
+    "activo": true
+  }
+},
+{
+  "model": "clientes.modeloequipo",
+  "pk": 70,
+  "fields": {
+    "tipo_equipo": 12,
+    "nombre": "LW300",
+    "marca": "XCMG",
+    "descripcion": "",
+    "activo": true
+  }
+},
+{
+  "model": "clientes.modeloequipo",
+  "pk": 71,
+  "fields": {
+    "tipo_equipo": 17,
+    "nombre": "Deutz",
+    "marca": "Deutz",
+    "descripcion": "",
+    "activo": true
+  }
+},
+{
+  "model": "clientes.modelomotor",
+  "pk": 2,
+  "fields": {
+    "nombre": "2634",
+    "descripcion": "",
+    "activo": true
+  }
+},
+{
+  "model": "clientes.modelomotor",
+  "pk": 3,
+  "fields": {
+    "nombre": "4024HT015",
+    "descripcion": "",
+    "activo": true
+  }
+},
+{
+  "model": "clientes.modelomotor",
+  "pk": 4,
+  "fields": {
+    "nombre": "6068HDW74",
+    "descripcion": "",
+    "activo": true
+  }
+},
+{
+  "model": "clientes.modelomotor",
+  "pk": 5,
+  "fields": {
+    "nombre": "4045TT094",
+    "descripcion": "",
+    "activo": true
+  }
+},
+{
+  "model": "clientes.modelomotor",
+  "pk": 6,
+  "fields": {
+    "nombre": "6068DW201",
+    "descripcion": "",
+    "activo": true
+  }
+},
+{
+  "model": "clientes.modelomotor",
+  "pk": 7,
+  "fields": {
+    "nombre": "Desconocido",
+    "descripcion": "",
+    "activo": true
+  }
+},
+{
+  "model": "clientes.modelomotor",
+  "pk": 8,
+  "fields": {
+    "nombre": "6068HYN01",
+    "descripcion": "",
+    "activo": true
+  }
+},
+{
+  "model": "clientes.modelomotor",
+  "pk": 9,
+  "fields": {
+    "nombre": "F6M 1015GC",
+    "descripcion": "",
+    "activo": true
+  }
+},
+{
+  "model": "clientes.modelomotor",
+  "pk": 10,
+  "fields": {
+    "nombre": "4045TBZ02",
+    "descripcion": "",
+    "activo": true
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 1,
+  "fields": {
+    "cliente": 5,
+    "modelo": 11,
+    "numero_serie": "OT",
+    "modelo_motor": 2,
+    "numero_serie_motor": "RJ51358",
+    "año_fabricacion": 2015,
+    "fecha_venta": null,
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-01T13:41:11.330Z",
+    "fecha_modificacion": "2025-07-01T13:41:11.330Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 2,
+  "fields": {
+    "cliente": 6,
+    "modelo": 12,
+    "numero_serie": "117605",
+    "modelo_motor": null,
+    "numero_serie_motor": null,
+    "año_fabricacion": 2000,
+    "fecha_venta": null,
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-01T13:44:29.676Z",
+    "fecha_modificacion": "2025-07-01T13:44:29.676Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 3,
+  "fields": {
+    "cliente": 7,
+    "modelo": 13,
+    "numero_serie": "1T0323DAKBD209311",
+    "modelo_motor": 3,
+    "numero_serie_motor": "PE4024L069666",
+    "año_fabricacion": 2011,
+    "fecha_venta": "2018-03-18",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-01T13:50:16.549Z",
+    "fecha_modificacion": "2025-07-01T13:50:16.549Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 4,
+  "fields": {
+    "cliente": 8,
+    "modelo": 14,
+    "numero_serie": "unk",
+    "modelo_motor": null,
+    "numero_serie_motor": null,
+    "año_fabricacion": 2000,
+    "fecha_venta": null,
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-01T13:57:09.430Z",
+    "fecha_modificacion": "2025-07-01T13:57:09.430Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 5,
+  "fields": {
+    "cliente": 6,
+    "modelo": 15,
+    "numero_serie": "1DW544KZKA0632793",
+    "modelo_motor": 7,
+    "numero_serie_motor": "1",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-01T13:59:41.084Z",
+    "fecha_modificacion": "2025-07-10T13:19:59.437Z",
+    "ultima_hora_registrada": "16637.00"
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 6,
+  "fields": {
+    "cliente": 11,
+    "modelo": 49,
+    "numero_serie": "1T0310SJJBC213550",
+    "modelo_motor": 7,
+    "numero_serie_motor": "1",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-01T14:13:49.953Z",
+    "fecha_modificacion": "2025-07-10T13:20:00.539Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 7,
+  "fields": {
+    "cliente": 10,
+    "modelo": 17,
+    "numero_serie": "1DW670GXLHC679883",
+    "modelo_motor": 7,
+    "numero_serie_motor": "1",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-01T14:19:39.704Z",
+    "fecha_modificacion": "2025-07-10T13:20:00.779Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 8,
+  "fields": {
+    "cliente": 11,
+    "modelo": 18,
+    "numero_serie": "FF160DX05551",
+    "modelo_motor": 7,
+    "numero_serie_motor": null,
+    "año_fabricacion": 2000,
+    "fecha_venta": null,
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-01T14:26:49.027Z",
+    "fecha_modificacion": "2025-07-01T14:26:49.027Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 9,
+  "fields": {
+    "cliente": 51,
+    "modelo": 16,
+    "numero_serie": "T0310SJ139376",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE4045T649077",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-01T14:32:28.109Z",
+    "fecha_modificacion": "2025-07-10T13:19:59.782Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 10,
+  "fields": {
+    "cliente": 13,
+    "modelo": 19,
+    "numero_serie": "CDJ110ESA52030",
+    "modelo_motor": 7,
+    "numero_serie_motor": null,
+    "año_fabricacion": 2000,
+    "fecha_venta": null,
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-01T17:02:08.342Z",
+    "fecha_modificacion": "2025-07-01T17:02:08.342Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 11,
+  "fields": {
+    "cliente": 14,
+    "modelo": 20,
+    "numero_serie": "28271",
+    "modelo_motor": 7,
+    "numero_serie_motor": null,
+    "año_fabricacion": 2000,
+    "fecha_venta": null,
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-01T17:04:41.341Z",
+    "fecha_modificacion": "2025-07-01T17:04:41.341Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 12,
+  "fields": {
+    "cliente": 15,
+    "modelo": 22,
+    "numero_serie": "1",
+    "modelo_motor": 7,
+    "numero_serie_motor": null,
+    "año_fabricacion": 2000,
+    "fecha_venta": null,
+    "notas": "Cabinado Artesanal Color amarillo",
+    "activo": true,
+    "fecha_creacion": "2025-07-01T17:08:01.314Z",
+    "fecha_modificacion": "2025-07-01T17:08:01.315Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 13,
+  "fields": {
+    "cliente": 7,
+    "modelo": 23,
+    "numero_serie": "PEC00236602",
+    "modelo_motor": 7,
+    "numero_serie_motor": null,
+    "año_fabricacion": 2025,
+    "fecha_venta": null,
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-01T17:09:08.195Z",
+    "fecha_modificacion": "2025-07-08T12:22:01.320Z",
+    "ultima_hora_registrada": "1.00"
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 14,
+  "fields": {
+    "cliente": 7,
+    "modelo": 23,
+    "numero_serie": "PEC00236599",
+    "modelo_motor": 7,
+    "numero_serie_motor": null,
+    "año_fabricacion": 2025,
+    "fecha_venta": null,
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-01T17:09:34.963Z",
+    "fecha_modificacion": "2025-07-01T17:09:34.963Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 15,
+  "fields": {
+    "cliente": 16,
+    "modelo": 24,
+    "numero_serie": "01",
+    "modelo_motor": 7,
+    "numero_serie_motor": null,
+    "año_fabricacion": 2000,
+    "fecha_venta": null,
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-01T18:33:19.117Z",
+    "fecha_modificacion": "2025-07-01T18:33:19.117Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 16,
+  "fields": {
+    "cliente": 17,
+    "modelo": 25,
+    "numero_serie": "1YNWL56AJEC000237",
+    "modelo_motor": 8,
+    "numero_serie_motor": "UG6068L000296",
+    "año_fabricacion": 2014,
+    "fecha_venta": "2014-09-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-03T20:16:07.970Z",
+    "fecha_modificacion": "2025-07-10T19:33:18.890Z",
+    "ultima_hora_registrada": "4400.00"
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 17,
+  "fields": {
+    "cliente": 18,
+    "modelo": 26,
+    "numero_serie": "27110",
+    "modelo_motor": 9,
+    "numero_serie_motor": "27110",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-07T13:20:24.470Z",
+    "fecha_modificacion": "2025-07-07T13:38:43.926Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 18,
+  "fields": {
+    "cliente": 19,
+    "modelo": 27,
+    "numero_serie": "24774",
+    "modelo_motor": null,
+    "numero_serie_motor": "1",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-07T14:13:30.156Z",
+    "fecha_modificacion": "2025-07-07T14:13:30.156Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 19,
+  "fields": {
+    "cliente": 23,
+    "modelo": 52,
+    "numero_serie": "1T0310SKHCC237722",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE4045G900476",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:26.581Z",
+    "fecha_modificacion": "2025-07-10T13:19:58.959Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 20,
+  "fields": {
+    "cliente": 23,
+    "modelo": 15,
+    "numero_serie": "1DW544KZPED661353",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE6068L257897",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:26.610Z",
+    "fecha_modificacion": "2025-07-10T13:19:58.979Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 21,
+  "fields": {
+    "cliente": 24,
+    "modelo": 32,
+    "numero_serie": "1T0310SLCHC323633",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE4045J006395",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:26.623Z",
+    "fecha_modificacion": "2025-07-10T13:19:58.991Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 22,
+  "fields": {
+    "cliente": 24,
+    "modelo": 16,
+    "numero_serie": "T0310SJ154826",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE4045T697400",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:26.638Z",
+    "fecha_modificacion": "2025-07-10T13:19:59.005Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 23,
+  "fields": {
+    "cliente": 24,
+    "modelo": 33,
+    "numero_serie": "T0310DA795021",
+    "modelo_motor": 7,
+    "numero_serie_motor": "T04039D430053",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:26.659Z",
+    "fecha_modificacion": "2025-07-10T13:19:59.015Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 24,
+  "fields": {
+    "cliente": 24,
+    "modelo": 32,
+    "numero_serie": "T0310SL300456",
+    "modelo_motor": 7,
+    "numero_serie_motor": "1",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:26.674Z",
+    "fecha_modificacion": "2025-07-10T13:19:59.029Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 25,
+  "fields": {
+    "cliente": 24,
+    "modelo": 17,
+    "numero_serie": "1DW670GXEBC637532",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE6068H829863",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:26.689Z",
+    "fecha_modificacion": "2025-07-10T13:19:59.044Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 26,
+  "fields": {
+    "cliente": 24,
+    "modelo": 38,
+    "numero_serie": "FF200CX508498",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE6068H598667",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:26.701Z",
+    "fecha_modificacion": "2025-07-10T13:19:59.061Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 27,
+  "fields": {
+    "cliente": 24,
+    "modelo": 39,
+    "numero_serie": "T0320DA206022",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE4024R063780",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:26.714Z",
+    "fecha_modificacion": "2025-07-10T13:19:59.083Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 28,
+  "fields": {
+    "cliente": 24,
+    "modelo": 32,
+    "numero_serie": "1T0310SLTGC300448",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE4045G994857",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:26.736Z",
+    "fecha_modificacion": "2025-07-10T13:19:59.102Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 29,
+  "fields": {
+    "cliente": 94,
+    "modelo": 32,
+    "numero_serie": "T0310SJ146717",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE4045T674324",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:26.748Z",
+    "fecha_modificacion": "2025-07-10T13:19:59.116Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 30,
+  "fields": {
+    "cliente": 94,
+    "modelo": 32,
+    "numero_serie": "T0310SJ156551",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE4045T701812",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:26.762Z",
+    "fecha_modificacion": "2025-07-10T13:19:59.131Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 31,
+  "fields": {
+    "cliente": 33,
+    "modelo": 67,
+    "numero_serie": "T0310SG962791",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE4045T630109",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:26.779Z",
+    "fecha_modificacion": "2025-07-10T13:19:59.146Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 32,
+  "fields": {
+    "cliente": 34,
+    "modelo": 40,
+    "numero_serie": "1FF210GXPDC520935",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE6068G902001",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:26.792Z",
+    "fecha_modificacion": "2025-07-10T13:19:59.158Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 33,
+  "fields": {
+    "cliente": 34,
+    "modelo": 15,
+    "numero_serie": "DW544KZ624614",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE6068L075833",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:26.807Z",
+    "fecha_modificacion": "2025-07-10T13:19:59.173Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 34,
+  "fields": {
+    "cliente": 34,
+    "modelo": 32,
+    "numero_serie": "1T0310SLCFC287821",
+    "modelo_motor": 7,
+    "numero_serie_motor": "1",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:26.823Z",
+    "fecha_modificacion": "2025-07-10T13:19:59.183Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 35,
+  "fields": {
+    "cliente": 55,
+    "modelo": 41,
+    "numero_serie": "1FF250GXKGC609883",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE6068G904605",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:26.837Z",
+    "fecha_modificacion": "2025-07-10T13:19:59.194Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 36,
+  "fields": {
+    "cliente": 55,
+    "modelo": 67,
+    "numero_serie": "T0310SG951101",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE4045T490898",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:26.854Z",
+    "fecha_modificacion": "2025-07-10T13:19:59.206Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 37,
+  "fields": {
+    "cliente": 55,
+    "modelo": 34,
+    "numero_serie": "DW770DX619467",
+    "modelo_motor": 7,
+    "numero_serie_motor": "RG6081H301826",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:26.865Z",
+    "fecha_modificacion": "2025-07-10T13:19:59.215Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 38,
+  "fields": {
+    "cliente": 55,
+    "modelo": 35,
+    "numero_serie": "DW772DX620480",
+    "modelo_motor": 7,
+    "numero_serie_motor": "RG6081H322458",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:26.878Z",
+    "fecha_modificacion": "2025-07-10T13:19:59.225Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 39,
+  "fields": {
+    "cliente": 55,
+    "modelo": 42,
+    "numero_serie": "DW544JZ621474",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE6068L049851",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:26.891Z",
+    "fecha_modificacion": "2025-07-10T13:19:59.235Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 40,
+  "fields": {
+    "cliente": 55,
+    "modelo": 42,
+    "numero_serie": "DW544JZ620858",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE6068L047718",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:26.903Z",
+    "fecha_modificacion": "2025-07-10T13:19:59.246Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 41,
+  "fields": {
+    "cliente": 55,
+    "modelo": 18,
+    "numero_serie": "FF160DX050380",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE4045L045000",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:26.916Z",
+    "fecha_modificacion": "2025-07-10T13:19:59.257Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 42,
+  "fields": {
+    "cliente": 55,
+    "modelo": 16,
+    "numero_serie": "1T0310SJEA0192028",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE4045T806247",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:26.928Z",
+    "fecha_modificacion": "2025-07-10T13:19:59.275Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 43,
+  "fields": {
+    "cliente": 55,
+    "modelo": 16,
+    "numero_serie": "1T0310SJHA0192352",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE4045T806732",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:26.940Z",
+    "fecha_modificacion": "2025-07-10T13:19:59.287Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 44,
+  "fields": {
+    "cliente": 55,
+    "modelo": 43,
+    "numero_serie": "FF200DX513120",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE6068G831695",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:26.954Z",
+    "fecha_modificacion": "2025-07-10T13:19:59.302Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 45,
+  "fields": {
+    "cliente": 55,
+    "modelo": 15,
+    "numero_serie": "1DW544KZJCD649025",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE6068L225614",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:26.970Z",
+    "fecha_modificacion": "2025-07-10T13:19:59.315Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 46,
+  "fields": {
+    "cliente": 55,
+    "modelo": 40,
+    "numero_serie": "1FF210GXCDD521887",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE6068L927187",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:26.982Z",
+    "fecha_modificacion": "2025-07-10T13:19:59.325Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 47,
+  "fields": {
+    "cliente": 37,
+    "modelo": 15,
+    "numero_serie": "DW544KZ643032",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE6068L201892",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:26.998Z",
+    "fecha_modificacion": "2025-07-10T13:19:59.335Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 48,
+  "fields": {
+    "cliente": 39,
+    "modelo": 25,
+    "numero_serie": "1YNWL56ACDC000156",
+    "modelo_motor": 7,
+    "numero_serie_motor": "1",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:27.012Z",
+    "fecha_modificacion": "2025-07-10T13:19:59.346Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 49,
+  "fields": {
+    "cliente": 39,
+    "modelo": 53,
+    "numero_serie": "DW624JZ608198",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE6068H598208",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:27.024Z",
+    "fecha_modificacion": "2025-07-10T13:19:59.357Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 50,
+  "fields": {
+    "cliente": 39,
+    "modelo": 53,
+    "numero_serie": "DW624JZ621026",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE6068L049616",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:27.039Z",
+    "fecha_modificacion": "2025-07-10T13:19:59.365Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 51,
+  "fields": {
+    "cliente": 39,
+    "modelo": 25,
+    "numero_serie": "1YNWL56AVEC000287",
+    "modelo_motor": 7,
+    "numero_serie_motor": "UG6068L000488",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:27.049Z",
+    "fecha_modificacion": "2025-07-10T13:19:59.375Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 52,
+  "fields": {
+    "cliente": 40,
+    "modelo": 44,
+    "numero_serie": "FF160CX046343",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE4045H619441",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:27.058Z",
+    "fecha_modificacion": "2025-07-10T13:19:59.384Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 53,
+  "fields": {
+    "cliente": 40,
+    "modelo": 32,
+    "numero_serie": "1T0310SLCKD358951",
+    "modelo_motor": 7,
+    "numero_serie_motor": "1",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:27.068Z",
+    "fecha_modificacion": "2025-07-10T13:19:59.396Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 54,
+  "fields": {
+    "cliente": 40,
+    "modelo": 40,
+    "numero_serie": "1FF210GXJDD521886",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE6068L927412",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:27.078Z",
+    "fecha_modificacion": "2025-07-10T13:19:59.406Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 55,
+  "fields": {
+    "cliente": 43,
+    "modelo": 33,
+    "numero_serie": "T0310DA791221",
+    "modelo_motor": 7,
+    "numero_serie_motor": "T04039D411895",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:27.089Z",
+    "fecha_modificacion": "2025-07-10T13:19:59.417Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 56,
+  "fields": {
+    "cliente": 6,
+    "modelo": 45,
+    "numero_serie": "1FF130GXPGD041225",
+    "modelo_motor": 7,
+    "numero_serie_motor": "1",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:27.099Z",
+    "fecha_modificacion": "2025-07-10T13:19:59.428Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 57,
+  "fields": {
+    "cliente": 6,
+    "modelo": 16,
+    "numero_serie": "1T0310SJHB0198296",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE4045T810502",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:27.127Z",
+    "fecha_modificacion": "2025-07-10T13:19:59.450Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 58,
+  "fields": {
+    "cliente": 6,
+    "modelo": 41,
+    "numero_serie": "1FF250GXLDC608963",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE6068G868924",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:27.139Z",
+    "fecha_modificacion": "2025-07-10T13:19:59.463Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 59,
+  "fields": {
+    "cliente": 6,
+    "modelo": 36,
+    "numero_serie": "DW670DX608792",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE6068H607795",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:27.149Z",
+    "fecha_modificacion": "2025-07-10T13:19:59.475Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 60,
+  "fields": {
+    "cliente": 6,
+    "modelo": 46,
+    "numero_serie": "1FF160GXKDD055422",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE4045L888342",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:27.161Z",
+    "fecha_modificacion": "2025-07-10T13:19:59.485Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 61,
+  "fields": {
+    "cliente": 6,
+    "modelo": 25,
+    "numero_serie": "1YNWL56ACDC000036",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE6068L884875",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:27.173Z",
+    "fecha_modificacion": "2025-07-10T13:19:59.497Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 62,
+  "fields": {
+    "cliente": 6,
+    "modelo": 60,
+    "numero_serie": "T0850JX152655",
+    "modelo_motor": 7,
+    "numero_serie_motor": "RG6090L026863",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:27.186Z",
+    "fecha_modificacion": "2025-07-10T13:19:59.507Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 63,
+  "fields": {
+    "cliente": 6,
+    "modelo": 17,
+    "numero_serie": "DW670GX626111",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE6068H769268",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:27.196Z",
+    "fecha_modificacion": "2025-07-10T13:19:59.518Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 64,
+  "fields": {
+    "cliente": 6,
+    "modelo": 57,
+    "numero_serie": "T0332TK178509",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE5030T184956",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:27.206Z",
+    "fecha_modificacion": "2025-07-10T13:19:59.528Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 65,
+  "fields": {
+    "cliente": 6,
+    "modelo": 40,
+    "numero_serie": "1FF210GXPFD523086",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE6068L959365",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:27.217Z",
+    "fecha_modificacion": "2025-07-10T13:19:59.537Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 66,
+  "fields": {
+    "cliente": 6,
+    "modelo": 40,
+    "numero_serie": "1FF210GXVFD523563",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE6068L966255",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:27.232Z",
+    "fecha_modificacion": "2025-07-10T13:19:59.547Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 67,
+  "fields": {
+    "cliente": 46,
+    "modelo": 49,
+    "numero_serie": "T0310JXHA0188131",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE4045T795181",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:27.245Z",
+    "fecha_modificacion": "2025-07-10T13:19:59.558Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 68,
+  "fields": {
+    "cliente": 47,
+    "modelo": 32,
+    "numero_serie": "1T0310SLHFC288621",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE4045G971776",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:27.256Z",
+    "fecha_modificacion": "2025-07-10T13:19:59.568Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 69,
+  "fields": {
+    "cliente": 49,
+    "modelo": 55,
+    "numero_serie": "DW444JZ607473",
+    "modelo_motor": 7,
+    "numero_serie_motor": "1",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:27.268Z",
+    "fecha_modificacion": "2025-07-10T13:19:59.577Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 70,
+  "fields": {
+    "cliente": 49,
+    "modelo": 67,
+    "numero_serie": "T0310SG963467",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE4045T633579",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:27.277Z",
+    "fecha_modificacion": "2025-07-10T13:19:59.588Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 71,
+  "fields": {
+    "cliente": 49,
+    "modelo": 33,
+    "numero_serie": "T0310DA795077",
+    "modelo_motor": 7,
+    "numero_serie_motor": "T04039D430223",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:27.288Z",
+    "fecha_modificacion": "2025-07-10T13:19:59.598Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 72,
+  "fields": {
+    "cliente": 49,
+    "modelo": 44,
+    "numero_serie": "FF160CX046083",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE4045H583969",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:27.298Z",
+    "fecha_modificacion": "2025-07-10T13:19:59.608Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 73,
+  "fields": {
+    "cliente": 49,
+    "modelo": 48,
+    "numero_serie": "1BZ310LALLC003705",
+    "modelo_motor": 7,
+    "numero_serie_motor": "1",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:27.310Z",
+    "fecha_modificacion": "2025-07-10T13:19:59.619Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 74,
+  "fields": {
+    "cliente": 49,
+    "modelo": 43,
+    "numero_serie": "FF200DX510790",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE6068L028641",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:27.322Z",
+    "fecha_modificacion": "2025-07-10T13:19:59.632Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 75,
+  "fields": {
+    "cliente": 49,
+    "modelo": 34,
+    "numero_serie": "DW770DX609347",
+    "modelo_motor": 7,
+    "numero_serie_motor": "RG6081H294765",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:27.334Z",
+    "fecha_modificacion": "2025-07-10T13:19:59.649Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 76,
+  "fields": {
+    "cliente": 49,
+    "modelo": 43,
+    "numero_serie": "FF200DX512623",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE6068G819219",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:27.346Z",
+    "fecha_modificacion": "2025-07-10T13:19:59.660Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 77,
+  "fields": {
+    "cliente": 49,
+    "modelo": 38,
+    "numero_serie": "FF200CX508746",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE6068H618307",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:27.356Z",
+    "fecha_modificacion": "2025-07-10T13:19:59.669Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 78,
+  "fields": {
+    "cliente": 49,
+    "modelo": 67,
+    "numero_serie": "T0310SG951125",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE4045T495843",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:27.365Z",
+    "fecha_modificacion": "2025-07-10T13:19:59.678Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 79,
+  "fields": {
+    "cliente": 49,
+    "modelo": 32,
+    "numero_serie": "1T0310SLEGC303217",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE4045G998400",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:27.376Z",
+    "fecha_modificacion": "2025-07-10T13:19:59.689Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 80,
+  "fields": {
+    "cliente": 83,
+    "modelo": 49,
+    "numero_serie": "1T0310JXJBC216096",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE4045T856383",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:27.387Z",
+    "fecha_modificacion": "2025-07-10T13:20:00.086Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 81,
+  "fields": {
+    "cliente": 50,
+    "modelo": 38,
+    "numero_serie": "FF200CX508766",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE6068H618314",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:27.399Z",
+    "fecha_modificacion": "2025-07-10T13:19:59.710Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 82,
+  "fields": {
+    "cliente": 50,
+    "modelo": 40,
+    "numero_serie": "1F9210GXCHD520739",
+    "modelo_motor": 7,
+    "numero_serie_motor": "1",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:27.410Z",
+    "fecha_modificacion": "2025-07-10T13:19:59.720Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 83,
+  "fields": {
+    "cliente": 50,
+    "modelo": 40,
+    "numero_serie": "1F9210GXVND522530",
+    "modelo_motor": 7,
+    "numero_serie_motor": "1",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:27.421Z",
+    "fecha_modificacion": "2025-07-10T13:19:59.729Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 84,
+  "fields": {
+    "cliente": 50,
+    "modelo": 18,
+    "numero_serie": "FF160DX050367",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE4045L044996",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:27.432Z",
+    "fecha_modificacion": "2025-07-10T13:19:59.741Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 85,
+  "fields": {
+    "cliente": 50,
+    "modelo": 45,
+    "numero_serie": "1F9130GXEMD040327",
+    "modelo_motor": 7,
+    "numero_serie_motor": "1",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:27.443Z",
+    "fecha_modificacion": "2025-07-10T13:19:59.750Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 86,
+  "fields": {
+    "cliente": 51,
+    "modelo": 58,
+    "numero_serie": "T0310SE841012",
+    "modelo_motor": 7,
+    "numero_serie_motor": "T04045T746168",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:27.456Z",
+    "fecha_modificacion": "2025-07-10T13:19:59.762Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 87,
+  "fields": {
+    "cliente": 51,
+    "modelo": 60,
+    "numero_serie": "T0850JX150492",
+    "modelo_motor": 7,
+    "numero_serie_motor": "RG6090L025219",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:27.471Z",
+    "fecha_modificacion": "2025-07-10T13:19:59.772Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 88,
+  "fields": {
+    "cliente": 51,
+    "modelo": 36,
+    "numero_serie": "DW670DX612326",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE6068H655175",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:27.495Z",
+    "fecha_modificacion": "2025-07-10T13:19:59.791Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 89,
+  "fields": {
+    "cliente": 51,
+    "modelo": 43,
+    "numero_serie": "FF200DX511457",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE6068L050283",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:27.507Z",
+    "fecha_modificacion": "2025-07-10T13:19:59.804Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 90,
+  "fields": {
+    "cliente": 51,
+    "modelo": 15,
+    "numero_serie": "DW544KZ624612",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE6068L074940",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:27.517Z",
+    "fecha_modificacion": "2025-07-10T13:19:59.816Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 91,
+  "fields": {
+    "cliente": 51,
+    "modelo": 40,
+    "numero_serie": "1F9210GXCLD521639",
+    "modelo_motor": 7,
+    "numero_serie_motor": "1",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:27.529Z",
+    "fecha_modificacion": "2025-07-10T13:19:59.828Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 92,
+  "fields": {
+    "cliente": 51,
+    "modelo": 53,
+    "numero_serie": "DW624JZ607239",
+    "modelo_motor": 7,
+    "numero_serie_motor": "1",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:27.539Z",
+    "fecha_modificacion": "2025-07-10T13:19:59.841Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 93,
+  "fields": {
+    "cliente": 51,
+    "modelo": 43,
+    "numero_serie": "1FF200DXKBC513361",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE6068G839101",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:27.550Z",
+    "fecha_modificacion": "2025-07-10T13:19:59.851Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 94,
+  "fields": {
+    "cliente": 51,
+    "modelo": 37,
+    "numero_serie": "1DW770GXCEC663302",
+    "modelo_motor": 7,
+    "numero_serie_motor": "RG6090018327",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:27.561Z",
+    "fecha_modificacion": "2025-07-10T13:19:59.863Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 95,
+  "fields": {
+    "cliente": 51,
+    "modelo": 32,
+    "numero_serie": "1T0310SLEHC307138",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE4045J001242",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:27.574Z",
+    "fecha_modificacion": "2025-07-10T13:19:59.877Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 96,
+  "fields": {
+    "cliente": 51,
+    "modelo": 48,
+    "numero_serie": "1BZ310LALLC003722",
+    "modelo_motor": 7,
+    "numero_serie_motor": "1",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:27.585Z",
+    "fecha_modificacion": "2025-07-10T13:19:59.889Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 97,
+  "fields": {
+    "cliente": 51,
+    "modelo": 17,
+    "numero_serie": "1DW670GX626124",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE6068H768666",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:27.594Z",
+    "fecha_modificacion": "2025-07-10T13:19:59.901Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 98,
+  "fields": {
+    "cliente": 85,
+    "modelo": 16,
+    "numero_serie": "T0310SJ138365",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE4045T643989",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:27.606Z",
+    "fecha_modificacion": "2025-07-10T13:19:59.916Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 99,
+  "fields": {
+    "cliente": 58,
+    "modelo": 49,
+    "numero_serie": "1T0310JXLBC210014",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE4045T843436",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:27.617Z",
+    "fecha_modificacion": "2025-07-10T13:19:59.929Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 100,
+  "fields": {
+    "cliente": 59,
+    "modelo": 32,
+    "numero_serie": "1T0310SLPGC300080",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE4045G993634",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:27.634Z",
+    "fecha_modificacion": "2025-07-10T13:19:59.942Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 101,
+  "fields": {
+    "cliente": 13,
+    "modelo": 40,
+    "numero_serie": "1FF201GXCFD523738",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE6068L967633",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:27.648Z",
+    "fecha_modificacion": "2025-07-10T13:19:59.954Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 102,
+  "fields": {
+    "cliente": 13,
+    "modelo": 40,
+    "numero_serie": "1F9210GXVHD520720",
+    "modelo_motor": 7,
+    "numero_serie_motor": "1",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:27.658Z",
+    "fecha_modificacion": "2025-07-10T13:19:59.966Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 103,
+  "fields": {
+    "cliente": 13,
+    "modelo": 17,
+    "numero_serie": "1DW670GXLHC680158",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE6068J001038",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:27.668Z",
+    "fecha_modificacion": "2025-07-10T13:19:59.994Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 104,
+  "fields": {
+    "cliente": 13,
+    "modelo": 15,
+    "numero_serie": "1DW544KZLFD671228",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE6068L274289",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:27.677Z",
+    "fecha_modificacion": "2025-07-10T13:20:00.015Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 105,
+  "fields": {
+    "cliente": 13,
+    "modelo": 40,
+    "numero_serie": "1FF210GXVFD523501",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE6068L965114",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:27.690Z",
+    "fecha_modificacion": "2025-07-10T13:20:00.041Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 106,
+  "fields": {
+    "cliente": 13,
+    "modelo": 67,
+    "numero_serie": "T0310SG956844",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE4045T562906",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:27.700Z",
+    "fecha_modificacion": "2025-07-10T13:20:00.050Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 107,
+  "fields": {
+    "cliente": 13,
+    "modelo": 32,
+    "numero_serie": "T0310SLEHC323808",
+    "modelo_motor": 7,
+    "numero_serie_motor": "1",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:27.712Z",
+    "fecha_modificacion": "2025-07-10T13:20:00.062Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 108,
+  "fields": {
+    "cliente": 83,
+    "modelo": 51,
+    "numero_serie": "T0310EX836560",
+    "modelo_motor": 7,
+    "numero_serie_motor": "T04045D732139",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:27.724Z",
+    "fecha_modificacion": "2025-07-10T13:20:00.075Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 109,
+  "fields": {
+    "cliente": 45,
+    "modelo": 18,
+    "numero_serie": "FF160DXPA0050615",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE4045L784293",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:27.748Z",
+    "fecha_modificacion": "2025-07-10T13:20:00.115Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 110,
+  "fields": {
+    "cliente": 45,
+    "modelo": 53,
+    "numero_serie": "DW624JZ615732",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE6068L019898",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:27.758Z",
+    "fecha_modificacion": "2025-07-10T13:20:00.135Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 111,
+  "fields": {
+    "cliente": 45,
+    "modelo": 54,
+    "numero_serie": "DW624KZ634312",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE6068H804739",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:27.770Z",
+    "fecha_modificacion": "2025-07-10T13:20:00.154Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 112,
+  "fields": {
+    "cliente": 45,
+    "modelo": 52,
+    "numero_serie": " 1T0310SKJEC268738",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE4045G950669",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:27.786Z",
+    "fecha_modificacion": "2025-07-10T13:20:00.181Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 113,
+  "fields": {
+    "cliente": 62,
+    "modelo": 52,
+    "numero_serie": "T0310SK254278",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE4045G930195",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:27.798Z",
+    "fecha_modificacion": "2025-07-10T13:20:00.199Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 114,
+  "fields": {
+    "cliente": 62,
+    "modelo": 67,
+    "numero_serie": "T0310SG959506",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE4045T589919",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:27.810Z",
+    "fecha_modificacion": "2025-07-10T13:20:00.222Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 115,
+  "fields": {
+    "cliente": 65,
+    "modelo": 32,
+    "numero_serie": "1T0310SLCGC293894",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE4045G987751",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:27.821Z",
+    "fecha_modificacion": "2025-07-10T13:20:00.235Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 116,
+  "fields": {
+    "cliente": 95,
+    "modelo": 32,
+    "numero_serie": "1T0310SLKGC303899",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE4045G999588",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:27.831Z",
+    "fecha_modificacion": "2025-07-10T13:20:00.250Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 117,
+  "fields": {
+    "cliente": 95,
+    "modelo": 40,
+    "numero_serie": "1F9210GXCHD520532",
+    "modelo_motor": 7,
+    "numero_serie_motor": "1",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:27.843Z",
+    "fecha_modificacion": "2025-07-10T13:20:00.265Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 118,
+  "fields": {
+    "cliente": 11,
+    "modelo": 46,
+    "numero_serie": "1FF160GXHFD056310",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE4045L960099",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:27.856Z",
+    "fecha_modificacion": "2025-07-10T13:20:00.278Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 119,
+  "fields": {
+    "cliente": 11,
+    "modelo": 54,
+    "numero_serie": "1DW624KZLDC653454",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE6068H915061",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:27.870Z",
+    "fecha_modificacion": "2025-07-10T13:20:00.290Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 120,
+  "fields": {
+    "cliente": 11,
+    "modelo": 52,
+    "numero_serie": "1T0310SKPEC268039",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE4045G949224",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:27.883Z",
+    "fecha_modificacion": "2025-07-10T13:20:00.301Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 121,
+  "fields": {
+    "cliente": 11,
+    "modelo": 52,
+    "numero_serie": "1T0310SKVDC245753",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE4045G914951",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:27.897Z",
+    "fecha_modificacion": "2025-07-10T13:20:00.314Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 122,
+  "fields": {
+    "cliente": 11,
+    "modelo": 46,
+    "numero_serie": "1F160GXPDD055421",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE4045L888343",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:27.907Z",
+    "fecha_modificacion": "2025-07-10T13:20:00.326Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 123,
+  "fields": {
+    "cliente": 11,
+    "modelo": 44,
+    "numero_serie": "FF160CX046189",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE4045H602232",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:27.917Z",
+    "fecha_modificacion": "2025-07-10T13:20:00.344Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 124,
+  "fields": {
+    "cliente": 11,
+    "modelo": 44,
+    "numero_serie": "FF160CX046237",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE4045H598250",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:27.927Z",
+    "fecha_modificacion": "2025-07-10T13:20:00.359Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 125,
+  "fields": {
+    "cliente": 11,
+    "modelo": 44,
+    "numero_serie": "FF160CX046257",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE4045H591449",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:27.938Z",
+    "fecha_modificacion": "2025-07-10T13:20:00.374Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 126,
+  "fields": {
+    "cliente": 11,
+    "modelo": 43,
+    "numero_serie": "FF200DX512561",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE6068G821039",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:27.947Z",
+    "fecha_modificacion": "2025-07-10T13:20:00.386Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 127,
+  "fields": {
+    "cliente": 11,
+    "modelo": 54,
+    "numero_serie": "1DW624KZCA0630712",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE6068H795210",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:27.959Z",
+    "fecha_modificacion": "2025-07-10T13:20:00.400Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 128,
+  "fields": {
+    "cliente": 11,
+    "modelo": 18,
+    "numero_serie": "FF160DX050886",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE4045L820963",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:27.969Z",
+    "fecha_modificacion": "2025-07-10T13:20:00.415Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 129,
+  "fields": {
+    "cliente": 11,
+    "modelo": 40,
+    "numero_serie": "1FF210GCED522936",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE6068L951299",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:27.980Z",
+    "fecha_modificacion": "2025-07-10T13:20:00.428Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 130,
+  "fields": {
+    "cliente": 11,
+    "modelo": 47,
+    "numero_serie": "1FF120DXVCD037666",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE4045L858677 ",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:27.992Z",
+    "fecha_modificacion": "2025-07-10T13:20:00.440Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 131,
+  "fields": {
+    "cliente": 11,
+    "modelo": 40,
+    "numero_serie": "1FF210GXCFD523473",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE6068L965107",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:28.006Z",
+    "fecha_modificacion": "2025-07-10T13:20:00.451Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 132,
+  "fields": {
+    "cliente": 11,
+    "modelo": 40,
+    "numero_serie": "1FF210GXPED522888",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE6068L951296",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:28.017Z",
+    "fecha_modificacion": "2025-07-10T13:20:00.462Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 133,
+  "fields": {
+    "cliente": 11,
+    "modelo": 45,
+    "numero_serie": "1FF130GXKGD041050",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE4045L962708",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:28.030Z",
+    "fecha_modificacion": "2025-07-10T13:20:00.475Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 134,
+  "fields": {
+    "cliente": 11,
+    "modelo": 45,
+    "numero_serie": "1FF130GXKED040736",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE4045L954467",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:28.041Z",
+    "fecha_modificacion": "2025-07-10T13:20:00.486Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 135,
+  "fields": {
+    "cliente": 11,
+    "modelo": 54,
+    "numero_serie": "1DW624KZAFC670871",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE6068H971726",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:28.056Z",
+    "fecha_modificacion": "2025-07-10T13:20:00.499Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 136,
+  "fields": {
+    "cliente": 11,
+    "modelo": 40,
+    "numero_serie": "1F9210GXHLD521718",
+    "modelo_motor": 7,
+    "numero_serie_motor": "1",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:28.068Z",
+    "fecha_modificacion": "2025-07-10T13:20:00.511Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 137,
+  "fields": {
+    "cliente": 11,
+    "modelo": 40,
+    "numero_serie": "1F9210GXPND523137",
+    "modelo_motor": 7,
+    "numero_serie_motor": "J06068L770222",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:28.081Z",
+    "fecha_modificacion": "2025-07-10T13:20:00.525Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 138,
+  "fields": {
+    "cliente": 11,
+    "modelo": 60,
+    "numero_serie": "1T0850JXTFC284314",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE6068G966114",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:28.105Z",
+    "fecha_modificacion": "2025-07-10T13:20:00.550Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 139,
+  "fields": {
+    "cliente": 11,
+    "modelo": 45,
+    "numero_serie": "1F9130GXAND040597",
+    "modelo_motor": 7,
+    "numero_serie_motor": "J04045L745951",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:28.118Z",
+    "fecha_modificacion": "2025-07-10T13:20:00.560Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 140,
+  "fields": {
+    "cliente": 11,
+    "modelo": 36,
+    "numero_serie": "DW670DX613616",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE6068H664320",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:28.135Z",
+    "fecha_modificacion": "2025-07-10T13:20:00.571Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 141,
+  "fields": {
+    "cliente": 11,
+    "modelo": 43,
+    "numero_serie": "FF200DX512451",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE6068G809734",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:28.148Z",
+    "fecha_modificacion": "2025-07-10T13:20:00.582Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 142,
+  "fields": {
+    "cliente": 11,
+    "modelo": 16,
+    "numero_serie": "T0310SJ151393",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE4045T689473",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:28.162Z",
+    "fecha_modificacion": "2025-07-10T13:20:00.594Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 143,
+  "fields": {
+    "cliente": 11,
+    "modelo": 44,
+    "numero_serie": "FF160CX046245",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE4045H598270",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:28.176Z",
+    "fecha_modificacion": "2025-07-10T13:20:00.606Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 144,
+  "fields": {
+    "cliente": 11,
+    "modelo": 54,
+    "numero_serie": "1DW624KZJBC640078",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE6068H844988",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:28.192Z",
+    "fecha_modificacion": "2025-07-10T13:20:00.616Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 145,
+  "fields": {
+    "cliente": 70,
+    "modelo": 16,
+    "numero_serie": "T0310SJ146118",
+    "modelo_motor": 7,
+    "numero_serie_motor": "1",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:28.205Z",
+    "fecha_modificacion": "2025-07-10T13:20:00.626Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 146,
+  "fields": {
+    "cliente": 70,
+    "modelo": 58,
+    "numero_serie": "T0310SE843299",
+    "modelo_motor": 7,
+    "numero_serie_motor": "T04045T753095",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:28.217Z",
+    "fecha_modificacion": "2025-07-10T13:20:00.636Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 147,
+  "fields": {
+    "cliente": 70,
+    "modelo": 33,
+    "numero_serie": "T0310DF793513",
+    "modelo_motor": 7,
+    "numero_serie_motor": "T04039D423152",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:28.231Z",
+    "fecha_modificacion": "2025-07-10T13:20:00.647Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 148,
+  "fields": {
+    "cliente": 70,
+    "modelo": 44,
+    "numero_serie": "FF160CX045669",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE4045H543776",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:28.244Z",
+    "fecha_modificacion": "2025-07-10T13:20:00.657Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 149,
+  "fields": {
+    "cliente": 71,
+    "modelo": 36,
+    "numero_serie": "DW670D618578",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE6068H711713",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:28.263Z",
+    "fecha_modificacion": "2025-07-10T13:20:00.667Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 150,
+  "fields": {
+    "cliente": 71,
+    "modelo": 16,
+    "numero_serie": "T0310SJ164966",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE4045T722926",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:28.278Z",
+    "fecha_modificacion": "2025-07-10T13:20:00.678Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 151,
+  "fields": {
+    "cliente": 71,
+    "modelo": 32,
+    "numero_serie": "1T0310SLKGC303725",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE4045G999014",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:28.289Z",
+    "fecha_modificacion": "2025-07-10T13:20:00.691Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 152,
+  "fields": {
+    "cliente": 71,
+    "modelo": 25,
+    "numero_serie": "1YNWL56APEC000218",
+    "modelo_motor": 7,
+    "numero_serie_motor": "UG6068L000217",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:28.300Z",
+    "fecha_modificacion": "2025-07-10T13:20:00.705Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 153,
+  "fields": {
+    "cliente": 71,
+    "modelo": 42,
+    "numero_serie": "DW544JZ604672",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE6068H551839",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:28.313Z",
+    "fecha_modificacion": "2025-07-10T13:20:00.717Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 154,
+  "fields": {
+    "cliente": 71,
+    "modelo": 46,
+    "numero_serie": "1FF160GXKFD056170",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE4045L954254",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:28.328Z",
+    "fecha_modificacion": "2025-07-10T13:20:00.727Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 155,
+  "fields": {
+    "cliente": 71,
+    "modelo": 37,
+    "numero_serie": "1DW770GXEDC651115",
+    "modelo_motor": 7,
+    "numero_serie_motor": "RG6090G11372",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:28.342Z",
+    "fecha_modificacion": "2025-07-10T13:20:00.738Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 156,
+  "fields": {
+    "cliente": 10,
+    "modelo": 17,
+    "numero_serie": "1DW670GXPCC650125",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE6068H900685",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:28.358Z",
+    "fecha_modificacion": "2025-07-10T13:20:00.748Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 157,
+  "fields": {
+    "cliente": 10,
+    "modelo": 50,
+    "numero_serie": "1T0310KXJDC239007",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE4045G901153",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:28.369Z",
+    "fecha_modificacion": "2025-07-10T13:20:00.759Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 158,
+  "fields": {
+    "cliente": 10,
+    "modelo": 50,
+    "numero_serie": "1T0310KXKDC238972",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE4045G901708",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:28.381Z",
+    "fecha_modificacion": "2025-07-10T13:20:00.770Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 159,
+  "fields": {
+    "cliente": 10,
+    "modelo": 17,
+    "numero_serie": "DW670GX679883",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE6068J000891",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:28.408Z",
+    "fecha_modificacion": "2025-07-10T13:20:00.790Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 160,
+  "fields": {
+    "cliente": 10,
+    "modelo": 32,
+    "numero_serie": "1T0310SLEHC307222",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE4045L996289",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:28.422Z",
+    "fecha_modificacion": "2025-07-10T13:20:00.800Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 161,
+  "fields": {
+    "cliente": 10,
+    "modelo": 15,
+    "numero_serie": "1BZ544KAEHD001059",
+    "modelo_motor": 7,
+    "numero_serie_motor": "1",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:28.441Z",
+    "fecha_modificacion": "2025-07-10T13:20:00.812Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 162,
+  "fields": {
+    "cliente": 10,
+    "modelo": 17,
+    "numero_serie": "1DW670GXPHC680152",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE6068J000954",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:28.467Z",
+    "fecha_modificacion": "2025-07-10T13:20:00.822Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 163,
+  "fields": {
+    "cliente": 10,
+    "modelo": 32,
+    "numero_serie": "1T0310SLELC388019",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE4045J016185",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:28.484Z",
+    "fecha_modificacion": "2025-07-10T13:20:00.832Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 164,
+  "fields": {
+    "cliente": 74,
+    "modelo": 61,
+    "numero_serie": "1T0318EAKFG291026",
+    "modelo_motor": 7,
+    "numero_serie_motor": "CH4X33T002087",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:28.500Z",
+    "fecha_modificacion": "2025-07-10T13:20:00.842Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 165,
+  "fields": {
+    "cliente": 15,
+    "modelo": 62,
+    "numero_serie": "1T0320EAHFG288845",
+    "modelo_motor": 7,
+    "numero_serie_motor": "CH4X33T001715",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:28.514Z",
+    "fecha_modificacion": "2025-07-10T13:20:00.852Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 166,
+  "fields": {
+    "cliente": 15,
+    "modelo": 46,
+    "numero_serie": "1FF160GXLED055896",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE4045L904671",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:28.528Z",
+    "fecha_modificacion": "2025-07-10T13:20:00.863Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 167,
+  "fields": {
+    "cliente": 15,
+    "modelo": 49,
+    "numero_serie": "T0310JX210961",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE4045T844804",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:28.538Z",
+    "fecha_modificacion": "2025-07-10T13:20:00.875Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 168,
+  "fields": {
+    "cliente": 15,
+    "modelo": 16,
+    "numero_serie": "1T0310SJVCC217165",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE4045T858693",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:28.552Z",
+    "fecha_modificacion": "2025-07-10T13:20:00.887Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 169,
+  "fields": {
+    "cliente": 15,
+    "modelo": 25,
+    "numero_serie": "1YNWL56AHFC000327",
+    "modelo_motor": 7,
+    "numero_serie_motor": "1",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:28.568Z",
+    "fecha_modificacion": "2025-07-10T13:20:00.898Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 170,
+  "fields": {
+    "cliente": 15,
+    "modelo": 32,
+    "numero_serie": "1T0310SLHPC442925",
+    "modelo_motor": 7,
+    "numero_serie_motor": "1",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:28.579Z",
+    "fecha_modificacion": "2025-07-10T13:20:00.908Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 171,
+  "fields": {
+    "cliente": 15,
+    "modelo": 17,
+    "numero_serie": "1DW670GVFC669106",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE6068H966937",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:28.591Z",
+    "fecha_modificacion": "2025-07-10T13:20:00.917Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 172,
+  "fields": {
+    "cliente": 7,
+    "modelo": 13,
+    "numero_serie": "1T0323DAPBD209307",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE4024L069556",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:28.610Z",
+    "fecha_modificacion": "2025-07-10T13:20:00.928Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 173,
+  "fields": {
+    "cliente": 96,
+    "modelo": 32,
+    "numero_serie": "1T0310SLVHC316013",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE4045J003668",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:28.624Z",
+    "fecha_modificacion": "2025-07-10T13:20:00.937Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 174,
+  "fields": {
+    "cliente": 96,
+    "modelo": 32,
+    "numero_serie": "1T0310SLJHC315991",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE4045J003677",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:28.639Z",
+    "fecha_modificacion": "2025-07-10T13:20:00.947Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 175,
+  "fields": {
+    "cliente": 96,
+    "modelo": 55,
+    "numero_serie": "DW444JZ608146",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE4045H598186",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:28.657Z",
+    "fecha_modificacion": "2025-07-10T13:20:00.961Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 176,
+  "fields": {
+    "cliente": 97,
+    "modelo": 63,
+    "numero_serie": "1T0323EALFG284052",
+    "modelo_motor": 7,
+    "numero_serie_motor": "SH4X33T001657",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:28.670Z",
+    "fecha_modificacion": "2025-07-10T13:20:00.970Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 177,
+  "fields": {
+    "cliente": 97,
+    "modelo": 45,
+    "numero_serie": "1F9130GXEND040605",
+    "modelo_motor": 7,
+    "numero_serie_motor": "1",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:28.683Z",
+    "fecha_modificacion": "2025-07-10T13:20:00.982Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 178,
+  "fields": {
+    "cliente": 98,
+    "modelo": 40,
+    "numero_serie": "1F9210GXPGD520404",
+    "modelo_motor": 7,
+    "numero_serie_motor": "1",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:28.697Z",
+    "fecha_modificacion": "2025-07-10T13:20:00.992Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 179,
+  "fields": {
+    "cliente": 98,
+    "modelo": 40,
+    "numero_serie": "FF210GX520404",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE6068L197950",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:28.709Z",
+    "fecha_modificacion": "2025-07-10T13:20:01.002Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 180,
+  "fields": {
+    "cliente": 98,
+    "modelo": 32,
+    "numero_serie": "1T0310SLAFC288423",
+    "modelo_motor": 7,
+    "numero_serie_motor": "1",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:28.720Z",
+    "fecha_modificacion": "2025-07-10T13:20:01.012Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 181,
+  "fields": {
+    "cliente": 98,
+    "modelo": 48,
+    "numero_serie": "1T0310LXVFC290219",
+    "modelo_motor": 7,
+    "numero_serie_motor": "1",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:28.734Z",
+    "fecha_modificacion": "2025-07-10T13:20:01.027Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 182,
+  "fields": {
+    "cliente": 98,
+    "modelo": 18,
+    "numero_serie": "FF160DX050362",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE4045L040833",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:28.747Z",
+    "fecha_modificacion": "2025-07-10T13:20:01.038Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 183,
+  "fields": {
+    "cliente": 98,
+    "modelo": 67,
+    "numero_serie": "T0310SG961553",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE4045T611676",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:28.756Z",
+    "fecha_modificacion": "2025-07-10T13:20:01.052Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 184,
+  "fields": {
+    "cliente": 78,
+    "modelo": 44,
+    "numero_serie": "FF160CX046220",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE4045H606295",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:28.764Z",
+    "fecha_modificacion": "2025-07-10T13:20:01.063Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 185,
+  "fields": {
+    "cliente": 78,
+    "modelo": 36,
+    "numero_serie": "DW670DX602558",
+    "modelo_motor": 7,
+    "numero_serie_motor": "1",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:28.776Z",
+    "fecha_modificacion": "2025-07-10T13:20:01.074Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 186,
+  "fields": {
+    "cliente": 78,
+    "modelo": 18,
+    "numero_serie": "1F160DXKBD051016",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE4045L837763",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:28.786Z",
+    "fecha_modificacion": "2025-07-10T13:20:01.085Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 187,
+  "fields": {
+    "cliente": 80,
+    "modelo": 54,
+    "numero_serie": "1BZ624KAEHC001059",
+    "modelo_motor": 7,
+    "numero_serie_motor": "J06068G713078",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:28.795Z",
+    "fecha_modificacion": "2025-07-10T13:20:01.096Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 188,
+  "fields": {
+    "cliente": 80,
+    "modelo": 32,
+    "numero_serie": "1T0310SLJPC442738",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE4045J027013",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:28.806Z",
+    "fecha_modificacion": "2025-07-10T13:20:01.107Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 189,
+  "fields": {
+    "cliente": 81,
+    "modelo": 67,
+    "numero_serie": "T0310SG951314",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE4045T495832",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:28.816Z",
+    "fecha_modificacion": "2025-07-10T13:20:01.119Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 190,
+  "fields": {
+    "cliente": 81,
+    "modelo": 15,
+    "numero_serie": "DW544KZ632789",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE6068L137550",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:28.827Z",
+    "fecha_modificacion": "2025-07-10T13:20:01.131Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 191,
+  "fields": {
+    "cliente": 14,
+    "modelo": 49,
+    "numero_serie": "T0310JX141409",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE4045T656529",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:28.838Z",
+    "fecha_modificacion": "2025-07-10T13:20:01.141Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 192,
+  "fields": {
+    "cliente": 14,
+    "modelo": 64,
+    "numero_serie": "1T0320GMEMG394151",
+    "modelo_motor": 7,
+    "numero_serie_motor": "CH4X33T003881",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:28.850Z",
+    "fecha_modificacion": "2025-07-10T13:20:01.150Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 193,
+  "fields": {
+    "cliente": 14,
+    "modelo": 32,
+    "numero_serie": "1T0310SLEHC323808",
+    "modelo_motor": 7,
+    "numero_serie_motor": "1",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:28.859Z",
+    "fecha_modificacion": "2025-07-10T13:20:01.163Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 194,
+  "fields": {
+    "cliente": 89,
+    "modelo": 32,
+    "numero_serie": "1T0310SLWFC284129",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE4045G967083",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:28.872Z",
+    "fecha_modificacion": "2025-07-10T13:20:01.175Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 195,
+  "fields": {
+    "cliente": 99,
+    "modelo": 65,
+    "numero_serie": "1T0318DAEDG240313",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE4024R116779",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:28.882Z",
+    "fecha_modificacion": "2025-07-10T13:20:01.189Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 196,
+  "fields": {
+    "cliente": 100,
+    "modelo": 66,
+    "numero_serie": "T00320A159146",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE4024T162101",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:28.897Z",
+    "fecha_modificacion": "2025-07-10T13:20:01.202Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 197,
+  "fields": {
+    "cliente": 100,
+    "modelo": 52,
+    "numero_serie": "1T0310SKVFC276052",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE4045G957870",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:28.907Z",
+    "fecha_modificacion": "2025-07-10T13:20:01.223Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 198,
+  "fields": {
+    "cliente": 100,
+    "modelo": 67,
+    "numero_serie": "T0310SG951169",
+    "modelo_motor": 7,
+    "numero_serie_motor": "1",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:28.917Z",
+    "fecha_modificacion": "2025-07-10T13:20:01.235Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 199,
+  "fields": {
+    "cliente": 100,
+    "modelo": 49,
+    "numero_serie": "T0310JX150234",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE4045T681018",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:28.928Z",
+    "fecha_modificacion": "2025-07-10T13:20:01.248Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 200,
+  "fields": {
+    "cliente": 100,
+    "modelo": 17,
+    "numero_serie": "1DW670GXHHC679738",
+    "modelo_motor": 7,
+    "numero_serie_motor": "1",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:28.938Z",
+    "fecha_modificacion": "2025-07-10T13:20:01.258Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 201,
+  "fields": {
+    "cliente": 100,
+    "modelo": 39,
+    "numero_serie": "1T0320DACDG240352",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE4024R117785",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:28.948Z",
+    "fecha_modificacion": "2025-07-10T13:20:01.267Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 202,
+  "fields": {
+    "cliente": 100,
+    "modelo": 15,
+    "numero_serie": "DW544KZ649020",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE6068L225989",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:28.959Z",
+    "fecha_modificacion": "2025-07-10T13:20:01.279Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 203,
+  "fields": {
+    "cliente": 100,
+    "modelo": 51,
+    "numero_serie": "T0310EX842419",
+    "modelo_motor": 7,
+    "numero_serie_motor": "T04045D750456",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:28.968Z",
+    "fecha_modificacion": "2025-07-10T13:20:01.290Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 204,
+  "fields": {
+    "cliente": 100,
+    "modelo": 46,
+    "numero_serie": "1FF160GXLFD056242",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE4045L956021",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:28.980Z",
+    "fecha_modificacion": "2025-07-10T13:20:01.299Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 205,
+  "fields": {
+    "cliente": 5,
+    "modelo": 18,
+    "numero_serie": "FF160DX050078",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE4045L010740",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:28.990Z",
+    "fecha_modificacion": "2025-07-10T13:20:01.308Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 206,
+  "fields": {
+    "cliente": 5,
+    "modelo": 18,
+    "numero_serie": "FF160DX050529",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE4045L077609",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:29.007Z",
+    "fecha_modificacion": "2025-07-10T13:20:01.318Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 207,
+  "fields": {
+    "cliente": 5,
+    "modelo": 25,
+    "numero_serie": "1YNWL56AEDC000035",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE6068L884871",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:29.017Z",
+    "fecha_modificacion": "2025-07-10T13:20:01.327Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 208,
+  "fields": {
+    "cliente": 5,
+    "modelo": 52,
+    "numero_serie": "1T0310SKXCC237495",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE4045G900631",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:29.029Z",
+    "fecha_modificacion": "2025-07-10T13:20:01.338Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 209,
+  "fields": {
+    "cliente": 5,
+    "modelo": 42,
+    "numero_serie": "DW544JZ621638",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE6068L053991",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:29.042Z",
+    "fecha_modificacion": "2025-07-10T13:20:01.349Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 210,
+  "fields": {
+    "cliente": 5,
+    "modelo": 42,
+    "numero_serie": "DW544JZ620364",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE6068L043891",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:29.053Z",
+    "fecha_modificacion": "2025-07-10T13:20:01.359Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 211,
+  "fields": {
+    "cliente": 5,
+    "modelo": 43,
+    "numero_serie": "FF20DX512480",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE6068G813728",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:29.064Z",
+    "fecha_modificacion": "2025-07-10T13:20:01.369Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 212,
+  "fields": {
+    "cliente": 5,
+    "modelo": 36,
+    "numero_serie": "DW670DX606297",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE6068H577354",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:29.083Z",
+    "fecha_modificacion": "2025-07-10T13:20:01.380Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 213,
+  "fields": {
+    "cliente": 5,
+    "modelo": 52,
+    "numero_serie": "1T0310SKJFC275755",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE4045G957985",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:29.097Z",
+    "fecha_modificacion": "2025-07-10T13:20:01.392Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 214,
+  "fields": {
+    "cliente": 5,
+    "modelo": 40,
+    "numero_serie": "1F9210GXANC523099",
+    "modelo_motor": 7,
+    "numero_serie_motor": "1",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:29.121Z",
+    "fecha_modificacion": "2025-07-10T13:20:01.402Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 215,
+  "fields": {
+    "cliente": 93,
+    "modelo": 52,
+    "numero_serie": "1T0310SKCCC237729",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE4045TT096 900130",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:29.130Z",
+    "fecha_modificacion": "2025-07-10T13:20:01.412Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 216,
+  "fields": {
+    "cliente": 17,
+    "modelo": 40,
+    "numero_serie": "1FF210GXPFD523153",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE6068L959515",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:29.140Z",
+    "fecha_modificacion": "2025-07-10T13:20:01.423Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 217,
+  "fields": {
+    "cliente": 17,
+    "modelo": 16,
+    "numero_serie": "T0310SJ155978",
+    "modelo_motor": 7,
+    "numero_serie_motor": "PE4045T700575",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:29.150Z",
+    "fecha_modificacion": "2025-07-10T13:20:01.434Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 218,
+  "fields": {
+    "cliente": 32,
+    "modelo": 31,
+    "numero_serie": "1BZ310PAHRAX02719",
+    "modelo_motor": 7,
+    "numero_serie_motor": "1",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:29.159Z",
+    "fecha_modificacion": "2025-07-10T13:20:01.445Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 219,
+  "fields": {
+    "cliente": 34,
+    "modelo": 31,
+    "numero_serie": "1BZ310PACSAX03720",
+    "modelo_motor": 7,
+    "numero_serie_motor": "1",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:15:29.172Z",
+    "fecha_modificacion": "2025-07-10T13:20:01.458Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 220,
+  "fields": {
+    "cliente": 20,
+    "modelo": 31,
+    "numero_serie": "1BZ310PAESAX03568",
+    "modelo_motor": 10,
+    "numero_serie_motor": "1",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:30:00.998Z",
+    "fecha_modificacion": "2025-07-10T13:50:42.488Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 221,
+  "fields": {
+    "cliente": 101,
+    "modelo": 69,
+    "numero_serie": "1BZ620GALNC000312",
+    "modelo_motor": 7,
+    "numero_serie_motor": "1",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T13:58:36.900Z",
+    "fecha_modificacion": "2025-07-10T13:58:36.900Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 222,
+  "fields": {
+    "cliente": 102,
+    "modelo": 17,
+    "numero_serie": "1BZ670GAENC000251",
+    "modelo_motor": 7,
+    "numero_serie_motor": "1",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T14:04:56.782Z",
+    "fecha_modificacion": "2025-07-10T14:04:56.782Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 223,
+  "fields": {
+    "cliente": 17,
+    "modelo": 70,
+    "numero_serie": "11212006",
+    "modelo_motor": 7,
+    "numero_serie_motor": "1",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-10T19:59:17.576Z",
+    "fecha_modificacion": "2025-07-10T19:59:17.576Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.equipo",
+  "pk": 224,
+  "fields": {
+    "cliente": 103,
+    "modelo": 71,
+    "numero_serie": "SL506815",
+    "modelo_motor": 7,
+    "numero_serie_motor": "1",
+    "año_fabricacion": 2000,
+    "fecha_venta": "2000-01-01",
+    "notas": "",
+    "activo": true,
+    "fecha_creacion": "2025-07-11T12:49:23.844Z",
+    "fecha_modificacion": "2025-07-11T12:49:23.844Z",
+    "ultima_hora_registrada": null
+  }
+},
+{
+  "model": "clientes.registrohorometro",
+  "pk": 1,
+  "fields": {
+    "equipo": 5,
+    "horas": "16637.00",
+    "fecha_registro": "2025-07-01T17:38:22.899Z",
+    "origen": "PRE_ORDER",
+    "usuario": 1,
+    "api_response_id": null,
+    "datos_api": null,
+    "observaciones": "Registro automático desde preorden"
+  }
+},
+{
+  "model": "clientes.registrohorometro",
+  "pk": 2,
+  "fields": {
+    "equipo": 5,
+    "horas": "16637.00",
+    "fecha_registro": "2025-07-01T17:38:38.533Z",
+    "origen": "SERVICIO",
+    "usuario": 1,
+    "api_response_id": null,
+    "datos_api": null,
+    "observaciones": "Registro automático desde servicio"
+  }
+},
+{
+  "model": "clientes.registrohorometro",
+  "pk": 3,
+  "fields": {
+    "equipo": 5,
+    "horas": "16637.00",
+    "fecha_registro": "2025-07-01T17:38:51.841Z",
+    "origen": "SERVICIO",
+    "usuario": 1,
+    "api_response_id": null,
+    "datos_api": null,
+    "observaciones": "Registro automático desde servicio"
+  }
+},
+{
+  "model": "clientes.registrohorometro",
+  "pk": 4,
+  "fields": {
+    "equipo": 16,
+    "horas": "4400.00",
+    "fecha_registro": "2025-07-03T20:18:15.294Z",
+    "origen": "PRE_ORDER",
+    "usuario": 9,
+    "api_response_id": null,
+    "datos_api": null,
+    "observaciones": "Registro automático desde preorden"
+  }
+},
+{
+  "model": "clientes.registrohorometro",
+  "pk": 5,
+  "fields": {
+    "equipo": 16,
+    "horas": "4400.00",
+    "fecha_registro": "2025-07-03T20:23:17.534Z",
+    "origen": "SERVICIO",
+    "usuario": 9,
+    "api_response_id": null,
+    "datos_api": null,
+    "observaciones": "Registro automático desde servicio"
+  }
+},
+{
+  "model": "clientes.registrohorometro",
+  "pk": 6,
+  "fields": {
+    "equipo": 16,
+    "horas": "4400.00",
+    "fecha_registro": "2025-07-07T14:18:20.503Z",
+    "origen": "SERVICIO",
+    "usuario": 9,
+    "api_response_id": null,
+    "datos_api": null,
+    "observaciones": "Registro automático desde servicio"
+  }
+},
+{
+  "model": "clientes.registrohorometro",
+  "pk": 7,
+  "fields": {
+    "equipo": 16,
+    "horas": "4400.00",
+    "fecha_registro": "2025-07-07T18:31:11.824Z",
+    "origen": "SERVICIO",
+    "usuario": 9,
+    "api_response_id": null,
+    "datos_api": null,
+    "observaciones": "Registro automático desde servicio"
+  }
+},
+{
+  "model": "clientes.registrohorometro",
+  "pk": 8,
+  "fields": {
+    "equipo": 13,
+    "horas": "1.00",
+    "fecha_registro": "2025-07-08T12:20:24.376Z",
+    "origen": "PRE_ORDER",
+    "usuario": 1,
+    "api_response_id": null,
+    "datos_api": null,
+    "observaciones": "Registro automático desde preorden"
+  }
+},
+{
+  "model": "clientes.registrohorometro",
+  "pk": 9,
+  "fields": {
+    "equipo": 13,
+    "horas": "1.00",
+    "fecha_registro": "2025-07-08T12:20:40.978Z",
+    "origen": "SERVICIO",
+    "usuario": 1,
+    "api_response_id": null,
+    "datos_api": null,
+    "observaciones": "Registro automático desde servicio"
+  }
+},
+{
+  "model": "clientes.registrohorometro",
+  "pk": 10,
+  "fields": {
+    "equipo": 13,
+    "horas": "1.00",
+    "fecha_registro": "2025-07-08T12:21:35.227Z",
+    "origen": "SERVICIO",
+    "usuario": 1,
+    "api_response_id": null,
+    "datos_api": null,
+    "observaciones": "Registro automático desde servicio"
+  }
+},
+{
+  "model": "clientes.registrohorometro",
+  "pk": 11,
+  "fields": {
+    "equipo": 13,
+    "horas": "1.00",
+    "fecha_registro": "2025-07-08T12:22:01.311Z",
+    "origen": "SERVICIO",
+    "usuario": 1,
+    "api_response_id": null,
+    "datos_api": null,
+    "observaciones": "Registro automático desde servicio"
+  }
+},
+{
+  "model": "clientes.registrohorometro",
+  "pk": 12,
+  "fields": {
+    "equipo": 16,
+    "horas": "4400.00",
+    "fecha_registro": "2025-07-08T12:46:54.535Z",
+    "origen": "SERVICIO",
+    "usuario": 9,
+    "api_response_id": null,
+    "datos_api": null,
+    "observaciones": "Registro automático desde servicio"
+  }
+},
+{
+  "model": "clientes.registrohorometro",
+  "pk": 13,
+  "fields": {
+    "equipo": 16,
+    "horas": "4400.00",
+    "fecha_registro": "2025-07-08T12:48:37.326Z",
+    "origen": "SERVICIO",
+    "usuario": 9,
+    "api_response_id": null,
+    "datos_api": null,
+    "observaciones": "Registro automático desde servicio"
+  }
+},
+{
+  "model": "clientes.registrohorometro",
+  "pk": 14,
+  "fields": {
+    "equipo": 16,
+    "horas": "4400.00",
+    "fecha_registro": "2025-07-08T12:49:13.635Z",
+    "origen": "SERVICIO",
+    "usuario": 9,
+    "api_response_id": null,
+    "datos_api": null,
+    "observaciones": "Registro automático desde servicio"
+  }
+},
+{
+  "model": "clientes.registrohorometro",
+  "pk": 15,
+  "fields": {
+    "equipo": 16,
+    "horas": "4400.00",
+    "fecha_registro": "2025-07-10T19:33:18.881Z",
+    "origen": "SERVICIO",
+    "usuario": 9,
+    "api_response_id": null,
+    "datos_api": null,
+    "observaciones": "Registro automático desde servicio"
+  }
+}
+]

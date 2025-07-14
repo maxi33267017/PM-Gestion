@@ -55,6 +55,10 @@ STATICFILES_DIRS = [
 
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
+# Media files (uploads)
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
 # Configuración de archivos estáticos para producción
 # Usar CompressedStaticFilesStorage en lugar de CompressedManifestStaticFilesStorage
 # para evitar problemas con el manifest file
@@ -64,9 +68,13 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
 WHITENOISE_USE_FINDERS = True
 WHITENOISE_AUTOREFRESH = True
 
+# Configurar WhiteNoise para servir archivos media
+WHITENOISE_ROOT = os.path.join(BASE_DIR, 'media')
+
 # Agregar WhiteNoise al middleware
 MIDDLEWARE = [
     'whitenoise.middleware.WhiteNoiseMiddleware',  # Debe ir después de SecurityMiddleware
+    'PatagoniaMaquinarias.middleware.MediaFilesMiddleware',  # Middleware personalizado para archivos media
 ] + MIDDLEWARE
 
 # Configuración de seguridad para producción

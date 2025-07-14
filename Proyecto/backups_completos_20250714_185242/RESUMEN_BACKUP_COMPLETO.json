@@ -1,0 +1,641 @@
+{
+  "fecha_backup": "20250714_185242",
+  "total_modelos": 79,
+  "exitosos": 0,
+  "fallidos": 79,
+  "sin_datos": 0,
+  "detalles": [
+    {
+      "app": "recursosHumanos",
+      "modelo": "Provincia",
+      "registros": 0,
+      "archivo": null,
+      "estado": "error",
+      "error": "module 'django.db.models' has no attribute 'get_model'"
+    },
+    {
+      "app": "recursosHumanos",
+      "modelo": "Ciudad",
+      "registros": 0,
+      "archivo": null,
+      "estado": "error",
+      "error": "module 'django.db.models' has no attribute 'get_model'"
+    },
+    {
+      "app": "recursosHumanos",
+      "modelo": "Sucursal",
+      "registros": 0,
+      "archivo": null,
+      "estado": "error",
+      "error": "module 'django.db.models' has no attribute 'get_model'"
+    },
+    {
+      "app": "recursosHumanos",
+      "modelo": "TarifaManoObra",
+      "registros": 0,
+      "archivo": null,
+      "estado": "error",
+      "error": "module 'django.db.models' has no attribute 'get_model'"
+    },
+    {
+      "app": "recursosHumanos",
+      "modelo": "ActividadTrabajo",
+      "registros": 0,
+      "archivo": null,
+      "estado": "error",
+      "error": "module 'django.db.models' has no attribute 'get_model'"
+    },
+    {
+      "app": "recursosHumanos",
+      "modelo": "Competencia",
+      "registros": 0,
+      "archivo": null,
+      "estado": "error",
+      "error": "module 'django.db.models' has no attribute 'get_model'"
+    },
+    {
+      "app": "recursosHumanos",
+      "modelo": "CertificacionJD",
+      "registros": 0,
+      "archivo": null,
+      "estado": "error",
+      "error": "module 'django.db.models' has no attribute 'get_model'"
+    },
+    {
+      "app": "recursosHumanos",
+      "modelo": "CertificacionTecnico",
+      "registros": 0,
+      "archivo": null,
+      "estado": "error",
+      "error": "module 'django.db.models' has no attribute 'get_model'"
+    },
+    {
+      "app": "recursosHumanos",
+      "modelo": "CompetenciaTecnico",
+      "registros": 0,
+      "archivo": null,
+      "estado": "error",
+      "error": "module 'django.db.models' has no attribute 'get_model'"
+    },
+    {
+      "app": "recursosHumanos",
+      "modelo": "EvaluacionSistema",
+      "registros": 0,
+      "archivo": null,
+      "estado": "error",
+      "error": "module 'django.db.models' has no attribute 'get_model'"
+    },
+    {
+      "app": "recursosHumanos",
+      "modelo": "RevisionHerramientas",
+      "registros": 0,
+      "archivo": null,
+      "estado": "error",
+      "error": "module 'django.db.models' has no attribute 'get_model'"
+    },
+    {
+      "app": "recursosHumanos",
+      "modelo": "HerramientaEspecial",
+      "registros": 0,
+      "archivo": null,
+      "estado": "error",
+      "error": "module 'django.db.models' has no attribute 'get_model'"
+    },
+    {
+      "app": "recursosHumanos",
+      "modelo": "PrestamoHerramienta",
+      "registros": 0,
+      "archivo": null,
+      "estado": "error",
+      "error": "module 'django.db.models' has no attribute 'get_model'"
+    },
+    {
+      "app": "recursosHumanos",
+      "modelo": "RegistroHorasTecnico",
+      "registros": 0,
+      "archivo": null,
+      "estado": "error",
+      "error": "module 'django.db.models' has no attribute 'get_model'"
+    },
+    {
+      "app": "clientes",
+      "modelo": "TipoEquipo",
+      "registros": 0,
+      "archivo": null,
+      "estado": "error",
+      "error": "module 'django.db.models' has no attribute 'get_model'"
+    },
+    {
+      "app": "clientes",
+      "modelo": "ModeloEquipo",
+      "registros": 0,
+      "archivo": null,
+      "estado": "error",
+      "error": "module 'django.db.models' has no attribute 'get_model'"
+    },
+    {
+      "app": "clientes",
+      "modelo": "ModeloMotor",
+      "registros": 0,
+      "archivo": null,
+      "estado": "error",
+      "error": "module 'django.db.models' has no attribute 'get_model'"
+    },
+    {
+      "app": "clientes",
+      "modelo": "Cliente",
+      "registros": 0,
+      "archivo": null,
+      "estado": "error",
+      "error": "module 'django.db.models' has no attribute 'get_model'"
+    },
+    {
+      "app": "clientes",
+      "modelo": "ContactoCliente",
+      "registros": 0,
+      "archivo": null,
+      "estado": "error",
+      "error": "module 'django.db.models' has no attribute 'get_model'"
+    },
+    {
+      "app": "clientes",
+      "modelo": "Equipo",
+      "registros": 0,
+      "archivo": null,
+      "estado": "error",
+      "error": "module 'django.db.models' has no attribute 'get_model'"
+    },
+    {
+      "app": "clientes",
+      "modelo": "RegistroHorometro",
+      "registros": 0,
+      "archivo": null,
+      "estado": "error",
+      "error": "module 'django.db.models' has no attribute 'get_model'"
+    },
+    {
+      "app": "operationsCenter",
+      "modelo": "OperationsCenterConfig",
+      "registros": 0,
+      "archivo": null,
+      "estado": "error",
+      "error": "module 'django.db.models' has no attribute 'get_model'"
+    },
+    {
+      "app": "operationsCenter",
+      "modelo": "Machine",
+      "registros": 0,
+      "archivo": null,
+      "estado": "error",
+      "error": "module 'django.db.models' has no attribute 'get_model'"
+    },
+    {
+      "app": "operationsCenter",
+      "modelo": "MachineLocation",
+      "registros": 0,
+      "archivo": null,
+      "estado": "error",
+      "error": "module 'django.db.models' has no attribute 'get_model'"
+    },
+    {
+      "app": "operationsCenter",
+      "modelo": "MachineEngineHours",
+      "registros": 0,
+      "archivo": null,
+      "estado": "error",
+      "error": "module 'django.db.models' has no attribute 'get_model'"
+    },
+    {
+      "app": "operationsCenter",
+      "modelo": "MachineAlert",
+      "registros": 0,
+      "archivo": null,
+      "estado": "error",
+      "error": "module 'django.db.models' has no attribute 'get_model'"
+    },
+    {
+      "app": "operationsCenter",
+      "modelo": "MachineHoursOfOperation",
+      "registros": 0,
+      "archivo": null,
+      "estado": "error",
+      "error": "module 'django.db.models' has no attribute 'get_model'"
+    },
+    {
+      "app": "operationsCenter",
+      "modelo": "DeviceStateReport",
+      "registros": 0,
+      "archivo": null,
+      "estado": "error",
+      "error": "module 'django.db.models' has no attribute 'get_model'"
+    },
+    {
+      "app": "operationsCenter",
+      "modelo": "TelemetryReport",
+      "registros": 0,
+      "archivo": null,
+      "estado": "error",
+      "error": "module 'django.db.models' has no attribute 'get_model'"
+    },
+    {
+      "app": "operationsCenter",
+      "modelo": "TelemetryReportMachine",
+      "registros": 0,
+      "archivo": null,
+      "estado": "error",
+      "error": "module 'django.db.models' has no attribute 'get_model'"
+    },
+    {
+      "app": "centroSoluciones",
+      "modelo": "CodigoAlerta",
+      "registros": 0,
+      "archivo": null,
+      "estado": "error",
+      "error": "module 'django.db.models' has no attribute 'get_model'"
+    },
+    {
+      "app": "centroSoluciones",
+      "modelo": "AlertaEquipo",
+      "registros": 0,
+      "archivo": null,
+      "estado": "error",
+      "error": "module 'django.db.models' has no attribute 'get_model'"
+    },
+    {
+      "app": "centroSoluciones",
+      "modelo": "LeadJohnDeere",
+      "registros": 0,
+      "archivo": null,
+      "estado": "error",
+      "error": "module 'django.db.models' has no attribute 'get_model'"
+    },
+    {
+      "app": "centroSoluciones",
+      "modelo": "AsignacionAlerta",
+      "registros": 0,
+      "archivo": null,
+      "estado": "error",
+      "error": "module 'django.db.models' has no attribute 'get_model'"
+    },
+    {
+      "app": "crm",
+      "modelo": "Campania",
+      "registros": 0,
+      "archivo": null,
+      "estado": "error",
+      "error": "module 'django.db.models' has no attribute 'get_model'"
+    },
+    {
+      "app": "crm",
+      "modelo": "Contacto",
+      "registros": 0,
+      "archivo": null,
+      "estado": "error",
+      "error": "module 'django.db.models' has no attribute 'get_model'"
+    },
+    {
+      "app": "crm",
+      "modelo": "PotencialCompraModelo",
+      "registros": 0,
+      "archivo": null,
+      "estado": "error",
+      "error": "module 'django.db.models' has no attribute 'get_model'"
+    },
+    {
+      "app": "crm",
+      "modelo": "AnalisisCliente",
+      "registros": 0,
+      "archivo": null,
+      "estado": "error",
+      "error": "module 'django.db.models' has no attribute 'get_model'"
+    },
+    {
+      "app": "crm",
+      "modelo": "PaqueteServicio",
+      "registros": 0,
+      "archivo": null,
+      "estado": "error",
+      "error": "module 'django.db.models' has no attribute 'get_model'"
+    },
+    {
+      "app": "crm",
+      "modelo": "ClientePaquete",
+      "registros": 0,
+      "archivo": null,
+      "estado": "error",
+      "error": "module 'django.db.models' has no attribute 'get_model'"
+    },
+    {
+      "app": "crm",
+      "modelo": "Campana",
+      "registros": 0,
+      "archivo": null,
+      "estado": "error",
+      "error": "module 'django.db.models' has no attribute 'get_model'"
+    },
+    {
+      "app": "crm",
+      "modelo": "EmbudoVentas",
+      "registros": 0,
+      "archivo": null,
+      "estado": "error",
+      "error": "module 'django.db.models' has no attribute 'get_model'"
+    },
+    {
+      "app": "crm",
+      "modelo": "ContactoCliente",
+      "registros": 0,
+      "archivo": null,
+      "estado": "error",
+      "error": "module 'django.db.models' has no attribute 'get_model'"
+    },
+    {
+      "app": "crm",
+      "modelo": "SugerenciaMejora",
+      "registros": 0,
+      "archivo": null,
+      "estado": "error",
+      "error": "module 'django.db.models' has no attribute 'get_model'"
+    },
+    {
+      "app": "ventaMaquinarias",
+      "modelo": "EquipoStock",
+      "registros": 0,
+      "archivo": null,
+      "estado": "error",
+      "error": "module 'django.db.models' has no attribute 'get_model'"
+    },
+    {
+      "app": "ventaMaquinarias",
+      "modelo": "Certificado",
+      "registros": 0,
+      "archivo": null,
+      "estado": "error",
+      "error": "module 'django.db.models' has no attribute 'get_model'"
+    },
+    {
+      "app": "ventaMaquinarias",
+      "modelo": "MovimientoStockCertificado",
+      "registros": 0,
+      "archivo": null,
+      "estado": "error",
+      "error": "module 'django.db.models' has no attribute 'get_model'"
+    },
+    {
+      "app": "ventaMaquinarias",
+      "modelo": "VentaEquipo",
+      "registros": 0,
+      "archivo": null,
+      "estado": "error",
+      "error": "module 'django.db.models' has no attribute 'get_model'"
+    },
+    {
+      "app": "ventaMaquinarias",
+      "modelo": "ChecklistProcesosJD",
+      "registros": 0,
+      "archivo": null,
+      "estado": "error",
+      "error": "module 'django.db.models' has no attribute 'get_model'"
+    },
+    {
+      "app": "ventaMaquinarias",
+      "modelo": "TransferenciaEquipo",
+      "registros": 0,
+      "archivo": null,
+      "estado": "error",
+      "error": "module 'django.db.models' has no attribute 'get_model'"
+    },
+    {
+      "app": "gestionDeTaller",
+      "modelo": "Servicio",
+      "registros": 0,
+      "archivo": null,
+      "estado": "error",
+      "error": "module 'django.db.models' has no attribute 'get_model'"
+    },
+    {
+      "app": "gestionDeTaller",
+      "modelo": "Repuesto",
+      "registros": 0,
+      "archivo": null,
+      "estado": "error",
+      "error": "module 'django.db.models' has no attribute 'get_model'"
+    },
+    {
+      "app": "gestionDeTaller",
+      "modelo": "PreOrden",
+      "registros": 0,
+      "archivo": null,
+      "estado": "error",
+      "error": "module 'django.db.models' has no attribute 'get_model'"
+    },
+    {
+      "app": "gestionDeTaller",
+      "modelo": "PedidoRepuestosTerceros",
+      "registros": 0,
+      "archivo": null,
+      "estado": "error",
+      "error": "module 'django.db.models' has no attribute 'get_model'"
+    },
+    {
+      "app": "gestionDeTaller",
+      "modelo": "GastoAsistencia",
+      "registros": 0,
+      "archivo": null,
+      "estado": "error",
+      "error": "module 'django.db.models' has no attribute 'get_model'"
+    },
+    {
+      "app": "gestionDeTaller",
+      "modelo": "VentaRepuesto",
+      "registros": 0,
+      "archivo": null,
+      "estado": "error",
+      "error": "module 'django.db.models' has no attribute 'get_model'"
+    },
+    {
+      "app": "gestionDeTaller",
+      "modelo": "Revision5S",
+      "registros": 0,
+      "archivo": null,
+      "estado": "error",
+      "error": "module 'django.db.models' has no attribute 'get_model'"
+    },
+    {
+      "app": "gestionDeTaller",
+      "modelo": "EvidenciaRevision5S",
+      "registros": 0,
+      "archivo": null,
+      "estado": "error",
+      "error": "module 'django.db.models' has no attribute 'get_model'"
+    },
+    {
+      "app": "gestionDeTaller",
+      "modelo": "PlanAccion5S",
+      "registros": 0,
+      "archivo": null,
+      "estado": "error",
+      "error": "module 'django.db.models' has no attribute 'get_model'"
+    },
+    {
+      "app": "gestionDeTaller",
+      "modelo": "EvidenciaPlanAccion5S",
+      "registros": 0,
+      "archivo": null,
+      "estado": "error",
+      "error": "module 'django.db.models' has no attribute 'get_model'"
+    },
+    {
+      "app": "gestionDeTaller",
+      "modelo": "CostoPersonalTaller",
+      "registros": 0,
+      "archivo": null,
+      "estado": "error",
+      "error": "module 'django.db.models' has no attribute 'get_model'"
+    },
+    {
+      "app": "gestionDeTaller",
+      "modelo": "AnalisisTaller",
+      "registros": 0,
+      "archivo": null,
+      "estado": "error",
+      "error": "module 'django.db.models' has no attribute 'get_model'"
+    },
+    {
+      "app": "gestionDeTaller",
+      "modelo": "Evidencia",
+      "registros": 0,
+      "archivo": null,
+      "estado": "error",
+      "error": "module 'django.db.models' has no attribute 'get_model'"
+    },
+    {
+      "app": "gestionDeTaller",
+      "modelo": "ChecklistSalidaCampo",
+      "registros": 0,
+      "archivo": null,
+      "estado": "error",
+      "error": "module 'django.db.models' has no attribute 'get_model'"
+    },
+    {
+      "app": "gestionDeTaller",
+      "modelo": "EncuestaServicio",
+      "registros": 0,
+      "archivo": null,
+      "estado": "error",
+      "error": "module 'django.db.models' has no attribute 'get_model'"
+    },
+    {
+      "app": "gestionDeTaller",
+      "modelo": "RespuestaEncuesta",
+      "registros": 0,
+      "archivo": null,
+      "estado": "error",
+      "error": "module 'django.db.models' has no attribute 'get_model'"
+    },
+    {
+      "app": "gestionDeTaller",
+      "modelo": "InsatisfaccionCliente",
+      "registros": 0,
+      "archivo": null,
+      "estado": "error",
+      "error": "module 'django.db.models' has no attribute 'get_model'"
+    },
+    {
+      "app": "gestionDeTaller",
+      "modelo": "LogCambioServicio",
+      "registros": 0,
+      "archivo": null,
+      "estado": "error",
+      "error": "module 'django.db.models' has no attribute 'get_model'"
+    },
+    {
+      "app": "gestionDeTaller",
+      "modelo": "LogCambioInforme",
+      "registros": 0,
+      "archivo": null,
+      "estado": "error",
+      "error": "module 'django.db.models' has no attribute 'get_model'"
+    },
+    {
+      "app": "gestionDeTaller",
+      "modelo": "ObservacionServicio",
+      "registros": 0,
+      "archivo": null,
+      "estado": "error",
+      "error": "module 'django.db.models' has no attribute 'get_model'"
+    },
+    {
+      "app": "gestionDeTaller",
+      "modelo": "HerramientaEspecial",
+      "registros": 0,
+      "archivo": null,
+      "estado": "error",
+      "error": "module 'django.db.models' has no attribute 'get_model'"
+    },
+    {
+      "app": "gestionDeTaller",
+      "modelo": "ReservaHerramienta",
+      "registros": 0,
+      "archivo": null,
+      "estado": "error",
+      "error": "module 'django.db.models' has no attribute 'get_model'"
+    },
+    {
+      "app": "gestionDeTaller",
+      "modelo": "LogHerramienta",
+      "registros": 0,
+      "archivo": null,
+      "estado": "error",
+      "error": "module 'django.db.models' has no attribute 'get_model'"
+    },
+    {
+      "app": "gestionDeTaller",
+      "modelo": "HerramientaPersonal",
+      "registros": 0,
+      "archivo": null,
+      "estado": "error",
+      "error": "module 'django.db.models' has no attribute 'get_model'"
+    },
+    {
+      "app": "gestionDeTaller",
+      "modelo": "ItemHerramientaPersonal",
+      "registros": 0,
+      "archivo": null,
+      "estado": "error",
+      "error": "module 'django.db.models' has no attribute 'get_model'"
+    },
+    {
+      "app": "gestionDeTaller",
+      "modelo": "AsignacionHerramientaPersonal",
+      "registros": 0,
+      "archivo": null,
+      "estado": "error",
+      "error": "module 'django.db.models' has no attribute 'get_model'"
+    },
+    {
+      "app": "gestionDeTaller",
+      "modelo": "AuditoriaHerramientaPersonal",
+      "registros": 0,
+      "archivo": null,
+      "estado": "error",
+      "error": "module 'django.db.models' has no attribute 'get_model'"
+    },
+    {
+      "app": "gestionDeTaller",
+      "modelo": "LogCambioItemHerramienta",
+      "registros": 0,
+      "archivo": null,
+      "estado": "error",
+      "error": "module 'django.db.models' has no attribute 'get_model'"
+    },
+    {
+      "app": "gestionDeTaller",
+      "modelo": "DetalleAuditoriaHerramienta",
+      "registros": 0,
+      "archivo": null,
+      "estado": "error",
+      "error": "module 'django.db.models' has no attribute 'get_model'"
+    }
+  ]
+}

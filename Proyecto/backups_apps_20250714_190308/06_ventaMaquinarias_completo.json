@@ -1,0 +1,34 @@
+[
+{
+  "model": "ventaMaquinarias.certificado",
+  "pk": 1,
+  "fields": {
+    "nombre": "Certificado de Importacion (AD06)",
+    "tipo": "OTRO",
+    "descripcion": "",
+    "costo": "25730.00",
+    "precio_venta": "25730.00",
+    "stock_disponible": 10,
+    "stock_minimo": 5,
+    "activo": true,
+    "fecha_creacion": "2025-07-08T18:03:23.509Z",
+    "fecha_modificacion": "2025-07-08T18:03:23.509Z"
+  }
+},
+{
+  "model": "ventaMaquinarias.certificado",
+  "pk": 2,
+  "fields": {
+    "nombre": "01&12",
+    "tipo": "OTRO",
+    "descripcion": "",
+    "costo": "0.00",
+    "precio_venta": "0.00",
+    "stock_disponible": 7,
+    "stock_minimo": 5,
+    "activo": true,
+    "fecha_creacion": "2025-07-08T18:03:36.518Z",
+    "fecha_modificacion": "2025-07-10T13:29:31.221Z"
+  }
+}
+]

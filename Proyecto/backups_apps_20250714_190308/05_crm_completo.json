@@ -1,0 +1,269 @@
+[
+{
+  "model": "crm.potencialcompramodelo",
+  "pk": 1,
+  "fields": {
+    "modelo": 41,
+    "potencial_anual": "3000.00",
+    "horas_uso_estimadas": 1000
+  }
+},
+{
+  "model": "crm.potencialcompramodelo",
+  "pk": 2,
+  "fields": {
+    "modelo": 40,
+    "potencial_anual": "2800.00",
+    "horas_uso_estimadas": 1000
+  }
+},
+{
+  "model": "crm.potencialcompramodelo",
+  "pk": 3,
+  "fields": {
+    "modelo": 43,
+    "potencial_anual": "2800.00",
+    "horas_uso_estimadas": 1000
+  }
+},
+{
+  "model": "crm.potencialcompramodelo",
+  "pk": 4,
+  "fields": {
+    "modelo": 48,
+    "potencial_anual": "2500.00",
+    "horas_uso_estimadas": 1000
+  }
+},
+{
+  "model": "crm.potencialcompramodelo",
+  "pk": 5,
+  "fields": {
+    "modelo": 31,
+    "potencial_anual": "2500.00",
+    "horas_uso_estimadas": 1000
+  }
+},
+{
+  "model": "crm.potencialcompramodelo",
+  "pk": 6,
+  "fields": {
+    "modelo": 32,
+    "potencial_anual": "2750.00",
+    "horas_uso_estimadas": 1000
+  }
+},
+{
+  "model": "crm.potencialcompramodelo",
+  "pk": 7,
+  "fields": {
+    "modelo": 52,
+    "potencial_anual": "2500.00",
+    "horas_uso_estimadas": 1000
+  }
+},
+{
+  "model": "crm.potencialcompramodelo",
+  "pk": 8,
+  "fields": {
+    "modelo": 16,
+    "potencial_anual": "2500.00",
+    "horas_uso_estimadas": 1000
+  }
+},
+{
+  "model": "crm.potencialcompramodelo",
+  "pk": 9,
+  "fields": {
+    "modelo": 17,
+    "potencial_anual": "3500.00",
+    "horas_uso_estimadas": 1000
+  }
+},
+{
+  "model": "crm.analisiscliente",
+  "pk": 1,
+  "fields": {
+    "cliente": 8,
+    "categoria": "C",
+    "ultima_actualizacion": "2025-07-01"
+  }
+},
+{
+  "model": "crm.analisiscliente",
+  "pk": 2,
+  "fields": {
+    "cliente": 11,
+    "categoria": "C",
+    "ultima_actualizacion": "2025-07-01"
+  }
+},
+{
+  "model": "crm.analisiscliente",
+  "pk": 3,
+  "fields": {
+    "cliente": 6,
+    "categoria": "C",
+    "ultima_actualizacion": "2025-07-01"
+  }
+},
+{
+  "model": "crm.analisiscliente",
+  "pk": 4,
+  "fields": {
+    "cliente": 9,
+    "categoria": "C",
+    "ultima_actualizacion": "2025-07-01"
+  }
+},
+{
+  "model": "crm.analisiscliente",
+  "pk": 5,
+  "fields": {
+    "cliente": 12,
+    "categoria": "C",
+    "ultima_actualizacion": "2025-07-01"
+  }
+},
+{
+  "model": "crm.analisiscliente",
+  "pk": 6,
+  "fields": {
+    "cliente": 10,
+    "categoria": "C",
+    "ultima_actualizacion": "2025-07-01"
+  }
+},
+{
+  "model": "crm.analisiscliente",
+  "pk": 7,
+  "fields": {
+    "cliente": 7,
+    "categoria": "C",
+    "ultima_actualizacion": "2025-07-01"
+  }
+},
+{
+  "model": "crm.analisiscliente",
+  "pk": 8,
+  "fields": {
+    "cliente": 5,
+    "categoria": "C",
+    "ultima_actualizacion": "2025-07-01"
+  }
+},
+{
+  "model": "crm.embudoventas",
+  "pk": 2,
+  "fields": {
+    "campana": null,
+    "cliente": 11,
+    "etapa": "PERDIDO",
+    "fecha_ingreso": "2025-07-10T17:40:36.163Z",
+    "fecha_ultima_actividad": "2025-07-10T20:09:32.886Z",
+    "valor_estimado": null,
+    "valor_cierre": null,
+    "origen": "LEAD_JD",
+    "alerta_equipo": null,
+    "lead_jd": 3,
+    "descripcion_negocio": "Lead John Deere: Reduccion del 82%",
+    "observaciones": "Lead creado automáticamente desde Centro de Soluciones. Clasificación: Disponibilidad",
+    "fecha_creacion": "2025-07-10T17:40:36.163Z",
+    "fecha_modificacion": "2025-07-10T20:09:32.886Z",
+    "creado_por": 1
+  }
+},
+{
+  "model": "crm.embudoventas",
+  "pk": 3,
+  "fields": {
+    "campana": null,
+    "cliente": 102,
+    "etapa": "PERDIDO",
+    "fecha_ingreso": "2025-07-10T17:40:36.207Z",
+    "fecha_ultima_actividad": "2025-07-10T20:07:24.761Z",
+    "valor_estimado": null,
+    "valor_cierre": null,
+    "origen": "LEAD_JD",
+    "alerta_equipo": null,
+    "lead_jd": 2,
+    "descripcion_negocio": "Lead John Deere: Osciocidad 53%",
+    "observaciones": "Lead creado automáticamente desde Centro de Soluciones. Clasificación: Dientes / Cuchillas",
+    "fecha_creacion": "2025-07-10T17:40:36.207Z",
+    "fecha_modificacion": "2025-07-10T20:07:24.761Z",
+    "creado_por": 1
+  }
+},
+{
+  "model": "crm.embudoventas",
+  "pk": 4,
+  "fields": {
+    "campana": null,
+    "cliente": 101,
+    "etapa": "CIERRE",
+    "fecha_ingreso": "2025-07-10T17:40:36.221Z",
+    "fecha_ultima_actividad": "2025-07-11T13:41:26.703Z",
+    "valor_estimado": "2954.00",
+    "valor_cierre": "753.00",
+    "origen": "LEAD_JD",
+    "alerta_equipo": null,
+    "lead_jd": 1,
+    "descripcion_negocio": "Lead John Deere: Equipo llegando a las 3000Hs.",
+    "observaciones": "Lead creado automáticamente desde Centro de Soluciones. Clasificación: Mtto Preventivo",
+    "fecha_creacion": "2025-07-10T17:40:36.221Z",
+    "fecha_modificacion": "2025-07-11T13:41:26.703Z",
+    "creado_por": 1
+  }
+},
+{
+  "model": "crm.contactocliente",
+  "pk": 2,
+  "fields": {
+    "cliente": 102,
+    "fecha_contacto": "2025-07-10T20:07:12.402Z",
+    "tipo_contacto": "TELEFONO",
+    "descripcion": "El cliente no tiene intenciónes de realizar ningun servicio/diagnostico/reparacion por el momento. ",
+    "resultado": "CANCELADO",
+    "observaciones": "",
+    "proximo_seguimiento": "2025-08-13T00:00:00Z",
+    "responsable": 1,
+    "embudo_ventas": 3,
+    "fecha_creacion": "2025-07-10T20:07:12.405Z",
+    "fecha_modificacion": "2025-07-10T20:07:12.405Z"
+  }
+},
+{
+  "model": "crm.contactocliente",
+  "pk": 3,
+  "fields": {
+    "cliente": 11,
+    "fecha_contacto": "2025-07-10T20:09:28.894Z",
+    "tipo_contacto": "TELEFONO",
+    "descripcion": "El cliente redujo el uso del equipo, ya adquirió un stock importante de filtros y aceite, por el momento no precisa ninguna atención de nuestra parte. ",
+    "resultado": "CANCELADO",
+    "observaciones": "",
+    "proximo_seguimiento": "2025-08-14T00:00:00Z",
+    "responsable": 1,
+    "embudo_ventas": 2,
+    "fecha_creacion": "2025-07-10T20:09:28.894Z",
+    "fecha_modificacion": "2025-07-10T20:09:28.894Z"
+  }
+},
+{
+  "model": "crm.contactocliente",
+  "pk": 4,
+  "fields": {
+    "cliente": 101,
+    "fecha_contacto": "2025-07-11T13:23:00.620Z",
+    "tipo_contacto": "TELEFONO",
+    "descripcion": "Se vendieron insumos para servicio. ",
+    "resultado": "EXITOSO",
+    "observaciones": "",
+    "proximo_seguimiento": null,
+    "responsable": 1,
+    "embudo_ventas": 4,
+    "fecha_creacion": "2025-07-11T13:23:00.620Z",
+    "fecha_modificacion": "2025-07-11T13:23:00.620Z"
+  }
+}
+]

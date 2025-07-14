@@ -1,0 +1,57 @@
+{
+  "fecha_backup": "20250714_190308",
+  "total_apps": 7,
+  "exitosos": 7,
+  "fallidos": 0,
+  "detalles": [
+    {
+      "app": "recursosHumanos",
+      "registros": 69,
+      "archivo": "01_recursosHumanos_completo.json",
+      "estado": "exitoso",
+      "tamaño": 26696
+    },
+    {
+      "app": "clientes",
+      "registros": 418,
+      "archivo": "02_clientes_completo.json",
+      "estado": "exitoso",
+      "tamaño": 171570
+    },
+    {
+      "app": "operationsCenter",
+      "registros": 1,
+      "archivo": "03_operationsCenter_completo.json",
+      "estado": "exitoso",
+      "tamaño": 1697
+    },
+    {
+      "app": "centroSoluciones",
+      "registros": 7,
+      "archivo": "04_centroSoluciones_completo.json",
+      "estado": "exitoso",
+      "tamaño": 4809
+    },
+    {
+      "app": "crm",
+      "registros": 23,
+      "archivo": "05_crm_completo.json",
+      "estado": "exitoso",
+      "tamaño": 6243
+    },
+    {
+      "app": "ventaMaquinarias",
+      "registros": 2,
+      "archivo": "06_ventaMaquinarias_completo.json",
+      "estado": "exitoso",
+      "tamaño": 770
+    },
+    {
+      "app": "gestionDeTaller",
+      "registros": 732,
+      "archivo": "07_gestionDeTaller_completo.json",
+      "estado": "exitoso",
+      "tamaño": 328043
+    }
+  ]
+}

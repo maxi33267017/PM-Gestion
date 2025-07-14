@@ -1,0 +1,18 @@
+[
+{
+  "model": "operationsCenter.operationscenterconfig",
+  "pk": 2,
+  "fields": {
+    "client_id": "0oaphj738dbaZfEA65d7",
+    "client_secret": "YMh-14nNEHvVsobX5fRdaN6a6NnRCYKZhD0611kCohQfxquoy0sxzUH-rjHSB55_",
+    "redirect_uri": "http://localhost:8000/operations-center/callback/",
+    "access_token": "eyJraWQiOiJzVWg4cEVVRUctMHMtMm5KSzBVb2xITlB0OVFjM2p0TVRUUnVMWFpPWXZFIiwiYWxnIjoiUlMyNTYifQ.eyJ2ZXIiOjEsImp0aSI6IkFULjRGTnVpSDJnSU92Y1NQUk1UVjg2M2w1RkQxM0RIcFdCVUdhUkRyX2xiMzQub2FyM2lvaHd5bk1xSU1WbVU1ZDciLCJpc3MiOiJodHRwczovL3NpZ25pbi5qb2huZGVlcmUuY29tL29hdXRoMi9hdXM3OHRubGF5c01yYUZoQzF0NyIsImF1ZCI6ImNvbS5kZWVyZS5pc2cuYXhpb20iLCJpYXQiOjE3NTE5NzcxMzQsImV4cCI6MTc1MjAyMDMzNCwiY2lkIjoiMG9hcGhqNzM4ZGJhWmZFQTY1ZDciLCJ1aWQiOiIwMHVheWdxNWJnN2lZem5seDVkNyIsInNjcCI6WyJhZzEiLCJvZmZsaW5lX2FjY2VzcyIsIm9yZzEiLCJlcTEiXSwiYXV0aF90aW1lIjoxNzUxOTEyNDIxLCJzdWIiOiJYNTg1MjkxQHZkc3Byb2QuZGVlcmUuY29tIiwiaXNjc2MiOnRydWUsInRpZXIiOiJTQU5EQk9YIiwiY25hbWUiOiJHZXN0aW9uIGRlIFRhbGxlciBQTSIsInVzZXJUeXBlIjoiRGVhbGVyIEVtcGxveWVlIiwiY2FwaWQiOiI3ZThjNzg5MS05YmVmLTQ0NGEtOWJmMi05ZjBhZGVkNTc0OTkifQ.Qo_Al0EATDaVri-WxfMBqSUqPJ7_ScyKuTof4v0z5liPWlj2PSDYvawv1Hmo8c93UMlXf_qXL0W5pmK6cl3pBYMCQMQWc6bIaAQ98k0XqK10aF34KlCG1ztFmPFH0qP38HG6tbfjJNUeZrTa4B4nt-t7zMiIsZ277R8j1nXEoXJP5USd9D-Jo14rGEwDUtBL3Ftsw37YNviQmiyCrqEPZcoDkyXSWwNxyQAkw817odOB7rxIVQOaEMMEZLMlkFocWiESqRiWfnuukvrm9EO3yS2Y2rqBjO91wyvSZJVVCHATtrxHCowiDxsOxO7c_zng6ZHkRgWm0U74hW_Iduknzg",
+    "refresh_token": "poF97wWijEQuToVNoc2trIyvadOL1Jco6Tc04aXgCZ0",
+    "token_expires_at": "2025-07-09T00:18:54.960Z",
+    "organization_id": "468502",
+    "is_active": true,
+    "created_at": "2025-07-07T20:44:10.393Z",
+    "updated_at": "2025-07-08T12:18:54.960Z"
+  }
+}
+]

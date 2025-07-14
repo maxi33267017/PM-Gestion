@@ -1,0 +1,143 @@
+[
+{
+  "model": "centroSoluciones.alertaequipo",
+  "pk": 1,
+  "fields": {
+    "fecha": "2025-07-10T14:10:11.943Z",
+    "cliente": 102,
+    "pin_equipo": "1BZ670GAENC000251",
+    "clasificacion": "MEDIA",
+    "codigo": "TCU 524271.05",
+    "descripcion": "Embrague 4 trans en cortoc a aliment - Es necesario localizar la avería.",
+    "estado": "EN_PROCESO",
+    "sucursal": 1,
+    "fecha_asignacion": "2025-07-10T14:10:11.943Z",
+    "tecnico_asignado": 5,
+    "fecha_resolucion": null,
+    "observaciones_tecnico": "Estamos trabajando en la alerta",
+    "conexion_sar_realizada": false,
+    "fecha_conexion_sar": "2025-07-10T14:48:15.762Z",
+    "resultado_conexion_sar": "        Conexión SAR realizada exitosamente.\r\n        \r\n        Diagnóstico remoto:\r\n        - Códigos de error: P0191, P0192\r\n        - Presión de combustible baja\r\n        - Filtro de combustible posiblemente obstruido\r\n        - Se requiere reemplazo de filtro y posible bomba de combustible\r\n        \r\n        Acciones recomendadas:\r\n        1. Reemplazar filtro de combustible\r\n        2. Verificar presión del sistema\r\n        3. Considerar reemplazo de bomba si persiste el problema\r\n        ",
+    "oportunidad_crm_creada": true,
+    "fecha_creacion": "2025-07-10T14:10:11.943Z",
+    "fecha_modificacion": "2025-07-10T16:56:39.993Z",
+    "creado_por": 1
+  }
+},
+{
+  "model": "centroSoluciones.alertaequipo",
+  "pk": 2,
+  "fields": {
+    "fecha": "2025-07-10T18:03:12.091Z",
+    "cliente": 102,
+    "pin_equipo": "1BZ670GAENC000251",
+    "clasificacion": "MEDIA",
+    "codigo": " VCU 001713.01",
+    "descripcion": "Restricción en filtro de aceite hidráulico. - Sustituir el filtro. Es posible que se requiera localización de averías adicional.",
+    "estado": "ASIGNADA",
+    "sucursal": 1,
+    "fecha_asignacion": "2025-07-10T18:03:12.091Z",
+    "tecnico_asignado": 5,
+    "fecha_resolucion": null,
+    "observaciones_tecnico": "",
+    "conexion_sar_realizada": false,
+    "fecha_conexion_sar": null,
+    "resultado_conexion_sar": "",
+    "oportunidad_crm_creada": false,
+    "fecha_creacion": "2025-07-10T18:03:12.091Z",
+    "fecha_modificacion": "2025-07-10T18:03:12.121Z",
+    "creado_por": 1
+  }
+},
+{
+  "model": "centroSoluciones.leadjohndeere",
+  "pk": 1,
+  "fields": {
+    "fecha": "2025-07-10T13:59:38.289Z",
+    "cliente": 101,
+    "equipo": 221,
+    "clasificacion": "MTTO_PREVENTIVO",
+    "descripcion": "Equipo llegando a las 3000Hs.",
+    "estado": "NUEVO",
+    "sucursal": 1,
+    "fecha_contacto": null,
+    "observaciones_contacto": "",
+    "valor_estimado": "2954.00",
+    "fecha_creacion": "2025-07-10T13:59:38.289Z",
+    "fecha_modificacion": "2025-07-10T13:59:38.289Z",
+    "creado_por": 1
+  }
+},
+{
+  "model": "centroSoluciones.leadjohndeere",
+  "pk": 2,
+  "fields": {
+    "fecha": "2025-07-10T14:05:33.394Z",
+    "cliente": 102,
+    "equipo": 222,
+    "clasificacion": "DIENTES_CUCHILLAS",
+    "descripcion": "Osciocidad 53%",
+    "estado": "NUEVO",
+    "sucursal": 1,
+    "fecha_contacto": null,
+    "observaciones_contacto": "",
+    "valor_estimado": null,
+    "fecha_creacion": "2025-07-10T14:05:33.394Z",
+    "fecha_modificacion": "2025-07-10T14:05:33.394Z",
+    "creado_por": 1
+  }
+},
+{
+  "model": "centroSoluciones.leadjohndeere",
+  "pk": 3,
+  "fields": {
+    "fecha": "2025-07-10T14:06:48.826Z",
+    "cliente": 11,
+    "equipo": 136,
+    "clasificacion": "DISPONIBILIDAD",
+    "descripcion": "Reduccion del 82%",
+    "estado": "NUEVO",
+    "sucursal": 1,
+    "fecha_contacto": null,
+    "observaciones_contacto": "",
+    "valor_estimado": null,
+    "fecha_creacion": "2025-07-10T14:06:48.826Z",
+    "fecha_modificacion": "2025-07-10T14:06:48.826Z",
+    "creado_por": 1
+  }
+},
+{
+  "model": "centroSoluciones.codigoalerta",
+  "pk": 11,
+  "fields": {
+    "codigo": "VCU 001713.01",
+    "modelo_equipo": "JD 670G",
+    "descripcion": "Restricción en filtro de aceite hidráulico. - Sustituir el filtro. Es posible que se requiera localización de averías adicional.",
+    "clasificacion": "MEDIA",
+    "instrucciones_resolucion": "",
+    "repuestos_comunes": "",
+    "tiempo_estimado_resolucion": null,
+    "fecha_creacion": "2025-07-10T18:26:48.530Z",
+    "fecha_modificacion": "2025-07-10T18:27:15.007Z",
+    "creado_por": 1,
+    "activo": true
+  }
+},
+{
+  "model": "centroSoluciones.codigoalerta",
+  "pk": 12,
+  "fields": {
+    "codigo": "TCU 524271.05",
+    "modelo_equipo": "JD 670G",
+    "descripcion": "Embrague 4 trans en cortoc a aliment - Es necesario localizar la avería.",
+    "clasificacion": "MEDIA",
+    "instrucciones_resolucion": "",
+    "repuestos_comunes": "",
+    "tiempo_estimado_resolucion": null,
+    "fecha_creacion": "2025-07-10T18:26:48.565Z",
+    "fecha_modificacion": "2025-07-10T20:10:46.703Z",
+    "creado_por": 1,
+    "activo": true
+  }
+}
+]

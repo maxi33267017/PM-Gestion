@@ -1,0 +1,1053 @@
+[
+{
+  "model": "recursosHumanos.provincia",
+  "pk": 1,
+  "fields": {
+    "nombre": "Tierra del Fuego",
+    "activo": true,
+    "fecha_creacion": "2024-11-04T03:40:39.820Z",
+    "fecha_modificacion": "2024-11-04T03:40:39.820Z"
+  }
+},
+{
+  "model": "recursosHumanos.provincia",
+  "pk": 2,
+  "fields": {
+    "nombre": "Santa Cruz",
+    "activo": true,
+    "fecha_creacion": "2024-11-04T12:26:07.995Z",
+    "fecha_modificacion": "2024-11-04T12:26:07.995Z"
+  }
+},
+{
+  "model": "recursosHumanos.provincia",
+  "pk": 3,
+  "fields": {
+    "nombre": "Chubut",
+    "activo": true,
+    "fecha_creacion": "2024-11-04T12:26:12.204Z",
+    "fecha_modificacion": "2024-11-04T12:27:21.579Z"
+  }
+},
+{
+  "model": "recursosHumanos.ciudad",
+  "pk": 1,
+  "fields": {
+    "nombre": "Rio Grande",
+    "provincia": 1,
+    "activo": true,
+    "fecha_creacion": "2024-11-04T03:40:59.234Z",
+    "fecha_modificacion": "2024-11-04T16:21:10.976Z"
+  }
+},
+{
+  "model": "recursosHumanos.ciudad",
+  "pk": 2,
+  "fields": {
+    "nombre": "Comodoro Rivadavia",
+    "provincia": 3,
+    "activo": true,
+    "fecha_creacion": "2024-11-04T12:25:57.290Z",
+    "fecha_modificacion": "2024-11-04T16:21:07.428Z"
+  }
+},
+{
+  "model": "recursosHumanos.ciudad",
+  "pk": 3,
+  "fields": {
+    "nombre": "Ushuaia",
+    "provincia": 1,
+    "activo": true,
+    "fecha_creacion": "2024-11-04T16:21:19.289Z",
+    "fecha_modificacion": "2024-11-04T16:21:19.289Z"
+  }
+},
+{
+  "model": "recursosHumanos.ciudad",
+  "pk": 4,
+  "fields": {
+    "nombre": "Caleta Oliva",
+    "provincia": 2,
+    "activo": true,
+    "fecha_creacion": "2024-11-04T16:21:26.486Z",
+    "fecha_modificacion": "2024-11-04T16:21:26.486Z"
+  }
+},
+{
+  "model": "recursosHumanos.ciudad",
+  "pk": 5,
+  "fields": {
+    "nombre": "Rio Gallegos",
+    "provincia": 2,
+    "activo": true,
+    "fecha_creacion": "2024-11-04T16:21:31.547Z",
+    "fecha_modificacion": "2024-11-04T16:21:31.547Z"
+  }
+},
+{
+  "model": "recursosHumanos.sucursal",
+  "pk": 1,
+  "fields": {
+    "nombre": "Casa Central",
+    "direccion": "Ruta 3 KM 2815",
+    "ciudad": 1,
+    "provincia": 1,
+    "activo": true,
+    "fecha_creacion": "2024-11-04T03:42:01.496Z",
+    "fecha_modificacion": "2024-11-04T12:26:42.421Z"
+  }
+},
+{
+  "model": "recursosHumanos.sucursal",
+  "pk": 2,
+  "fields": {
+    "nombre": "Comodoro Rivadavia",
+    "direccion": "Manuel de Arburua 3175",
+    "ciudad": 2,
+    "provincia": 3,
+    "activo": true,
+    "fecha_creacion": "2024-11-04T12:27:22.990Z",
+    "fecha_modificacion": "2024-11-04T12:27:22.990Z"
+  }
+},
+{
+  "model": "recursosHumanos.usuario",
+  "pk": 1,
+  "fields": {
+    "password": "pbkdf2_sha256$600000$Hb4o8JrSKSi00USNlqh40W$AZXH6qwAbWpy2QjtsdwODbypLozTgQvIbdbjHCFNi0g=",
+    "last_login": "2025-07-14T17:09:49.023Z",
+    "is_superuser": true,
+    "first_name": "Maxi",
+    "last_name": "Caamano",
+    "is_staff": true,
+    "is_active": true,
+    "date_joined": "2025-05-05T17:15:23.542Z",
+    "email": "maxi.caamano@patagoniamaquinarias.com",
+    "nombre": "Maxi",
+    "apellido": "Caamaño",
+    "sucursal": 1,
+    "rol": "GERENTE",
+    "fecha_creacion": "2025-05-05T17:15:23.907Z",
+    "fecha_modificacion": "2025-07-11T16:48:25.601Z",
+    "tarifa_individual": null,
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "recursosHumanos.usuario",
+  "pk": 2,
+  "fields": {
+    "password": "pbkdf2_sha256$600000$NWFYh9cKoazejzC438LW7s$PwnCCdHAzT7WXwMC0iMb7hDxVSCf6lzLYsaThe1GaR8=",
+    "last_login": "2025-07-11T20:18:02.298Z",
+    "is_superuser": false,
+    "first_name": "Daniel",
+    "last_name": "Palazzo Rossi",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2025-05-05T17:17:26.952Z",
+    "email": "daniel.palazzorossi@patagoniamaquinarias.com",
+    "nombre": "Daniel",
+    "apellido": "Palazzorossi",
+    "sucursal": 1,
+    "rol": "TECNICO",
+    "fecha_creacion": "2025-05-05T17:17:27.330Z",
+    "fecha_modificacion": "2025-07-07T18:52:29.529Z",
+    "tarifa_individual": null,
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "recursosHumanos.usuario",
+  "pk": 4,
+  "fields": {
+    "password": "pbkdf2_sha256$600000$nz88q6lkIdZkTzaMOg0Fgq$Phzz2xCNSGLGALS2gR9Sj8+RhVV/EkmEI1RLqL2y/bI=",
+    "last_login": "2025-07-07T18:01:35.327Z",
+    "is_superuser": false,
+    "first_name": "Emanuel",
+    "last_name": "Roca",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2025-06-10T14:04:43.011Z",
+    "email": "tallercomodoro@patagoniamaquinarias.com",
+    "nombre": "Emanuel",
+    "apellido": "Roca",
+    "sucursal": 1,
+    "rol": "TECNICO",
+    "fecha_creacion": "2025-06-10T14:04:43.403Z",
+    "fecha_modificacion": "2025-07-07T17:59:13.367Z",
+    "tarifa_individual": null,
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "recursosHumanos.usuario",
+  "pk": 5,
+  "fields": {
+    "password": "pbkdf2_sha256$600000$JTwk7uwom731w6B1S0E5og$2Sr8KmpfoUR+kafCXNmZFPt8v1qcvaOVQnll0yV5Eac=",
+    "last_login": "2025-07-10T14:41:55.998Z",
+    "is_superuser": false,
+    "first_name": "Enzo",
+    "last_name": "Caliari",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2025-06-10T14:09:04.689Z",
+    "email": "enzocaliari@gmail.com",
+    "nombre": "Enzo",
+    "apellido": "Caliari",
+    "sucursal": 1,
+    "rol": "TECNICO",
+    "fecha_creacion": "2025-06-10T14:09:05.132Z",
+    "fecha_modificacion": "2025-07-01T14:47:58.564Z",
+    "tarifa_individual": null,
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "recursosHumanos.usuario",
+  "pk": 6,
+  "fields": {
+    "password": "pbkdf2_sha256$600000$lkGfGSveI2BamTpANgkOdZ$C/bCTjCp3zH4vxgbaCGw342PYEnN1DDn2fVIUAZDq5M=",
+    "last_login": "2025-07-14T12:07:59.258Z",
+    "is_superuser": false,
+    "first_name": "Anibal",
+    "last_name": "Gomez",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2025-06-10T14:09:47.761Z",
+    "email": "anibalgomez@gmail.com",
+    "nombre": "Anibal",
+    "apellido": "Gomez",
+    "sucursal": 1,
+    "rol": "TECNICO",
+    "fecha_creacion": "2025-06-10T14:09:48.151Z",
+    "fecha_modificacion": "2025-07-01T14:48:16.550Z",
+    "tarifa_individual": null,
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "recursosHumanos.usuario",
+  "pk": 7,
+  "fields": {
+    "password": "pbkdf2_sha256$600000$255DH335vqZ8b7c5KxwnO3$Of9J4/CD4n5s6tj+fp04W9LGnRY6AF+ovAdWqkoz6rY=",
+    "last_login": null,
+    "is_superuser": false,
+    "first_name": "Francisco",
+    "last_name": "Ruiz",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2025-06-10T14:11:02.374Z",
+    "email": "franciscoruiz@gmail.com",
+    "nombre": "Ignacio",
+    "apellido": "Ruiz",
+    "sucursal": 1,
+    "rol": "TECNICO",
+    "fecha_creacion": "2025-06-10T14:11:02.750Z",
+    "fecha_modificacion": "2025-07-01T14:48:53.592Z",
+    "tarifa_individual": null,
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "recursosHumanos.usuario",
+  "pk": 9,
+  "fields": {
+    "password": "pbkdf2_sha256$600000$dpedMOimpALxyd9AP2Gdk9$QHJon+UfirOtWQ36iHJagHYLeBeUMjgl8luPo5fjx3A=",
+    "last_login": "2025-07-11T15:57:05.908Z",
+    "is_superuser": false,
+    "first_name": "Repuestosrga",
+    "last_name": "Usuario",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2025-06-17T19:04:25.848Z",
+    "email": "repuestosrga@patagoniamaquinarias.com",
+    "nombre": "Fernanda",
+    "apellido": "Gonzalez",
+    "sucursal": 1,
+    "rol": "ADMINISTRATIVO",
+    "fecha_creacion": "2025-06-17T19:04:26.213Z",
+    "fecha_modificacion": "2025-07-11T16:48:25.663Z",
+    "tarifa_individual": null,
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "recursosHumanos.usuario",
+  "pk": 10,
+  "fields": {
+    "password": "pbkdf2_sha256$600000$vVnKCykwE3LLKVpXKpJSFq$Lo4yIOBZdqrlC4MwLgX6X3uNrSlAw5CQ7GiW/MSa0JM=",
+    "last_login": null,
+    "is_superuser": false,
+    "first_name": "Santiago",
+    "last_name": "Fiocchi",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2025-07-01T17:12:32.041Z",
+    "email": "santiago.fiocchi@patagoniamaquinarias.com",
+    "nombre": "Santiago",
+    "apellido": "Fiocchi",
+    "sucursal": 1,
+    "rol": "GERENTE",
+    "fecha_creacion": "2025-07-01T17:12:32.398Z",
+    "fecha_modificacion": "2025-07-11T16:48:25.656Z",
+    "tarifa_individual": null,
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "recursosHumanos.usuario",
+  "pk": 11,
+  "fields": {
+    "password": "pbkdf2_sha256$600000$pW58txOrQx6m8xsnk19PD8$CQMFvSdVpQoXqiSvpyJbGZTuBAvWkUksbp6KjbmIfhg=",
+    "last_login": null,
+    "is_superuser": false,
+    "first_name": "Carolina",
+    "last_name": "Fiocchi",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2025-07-07T12:56:05.430Z",
+    "email": "carolina.fiocchi@patagoniamaquinarias.com",
+    "nombre": "Carolina",
+    "apellido": "Fiocchi",
+    "sucursal": 1,
+    "rol": "GERENTE",
+    "fecha_creacion": "2025-07-07T12:56:06.246Z",
+    "fecha_modificacion": "2025-07-11T16:48:25.642Z",
+    "tarifa_individual": null,
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "recursosHumanos.usuario",
+  "pk": 12,
+  "fields": {
+    "password": "pbkdf2_sha256$600000$sDiKIpfHDSRbFGmgykDx2M$PWRkjqjlfrldSUW91Vin+JocCTFs8NHT4tM441JZaUU=",
+    "last_login": "2025-07-11T18:25:18.776Z",
+    "is_superuser": false,
+    "first_name": "Hector",
+    "last_name": "Gonzalez",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2025-07-07T12:56:41.685Z",
+    "email": "hector.gonzalez@patagoniamaquinarias.com",
+    "nombre": "Hector",
+    "apellido": "Gonzalez",
+    "sucursal": 1,
+    "rol": "GERENTE",
+    "fecha_creacion": "2025-07-07T12:56:42.146Z",
+    "fecha_modificacion": "2025-07-11T16:48:25.672Z",
+    "tarifa_individual": null,
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "recursosHumanos.actividadtrabajo",
+  "pk": 1,
+  "fields": {
+    "nombre": "Servicio / Reparacion en Taller",
+    "descripcion": "",
+    "disponibilidad": "DISPONIBLE",
+    "genera_ingreso": "INGRESO",
+    "categoria_facturacion": "FACTURABLE"
+  }
+},
+{
+  "model": "recursosHumanos.actividadtrabajo",
+  "pk": 2,
+  "fields": {
+    "nombre": "Ausente",
+    "descripcion": "",
+    "disponibilidad": "NO_DISPONIBLE",
+    "genera_ingreso": "NO_INGRESO",
+    "categoria_facturacion": "NO_FACTURABLE"
+  }
+},
+{
+  "model": "recursosHumanos.actividadtrabajo",
+  "pk": 3,
+  "fields": {
+    "nombre": "Capacitacion Presencial en Taller o fuera de Taller",
+    "descripcion": "",
+    "disponibilidad": "NO_DISPONIBLE",
+    "genera_ingreso": "NO_INGRESO",
+    "categoria_facturacion": "NO_FACTURABLE"
+  }
+},
+{
+  "model": "recursosHumanos.actividadtrabajo",
+  "pk": 4,
+  "fields": {
+    "nombre": "Vacaciones",
+    "descripcion": "",
+    "disponibilidad": "NO_DISPONIBLE",
+    "genera_ingreso": "NO_INGRESO",
+    "categoria_facturacion": "NO_FACTURABLE"
+  }
+},
+{
+  "model": "recursosHumanos.actividadtrabajo",
+  "pk": 5,
+  "fields": {
+    "nombre": "Limpieza de Box",
+    "descripcion": "",
+    "disponibilidad": "DISPONIBLE",
+    "genera_ingreso": "NO_INGRESO",
+    "categoria_facturacion": "NO_FACTURABLE"
+  }
+},
+{
+  "model": "recursosHumanos.actividadtrabajo",
+  "pk": 6,
+  "fields": {
+    "nombre": "Reunion Interna Organizacion",
+    "descripcion": "",
+    "disponibilidad": "DISPONIBLE",
+    "genera_ingreso": "NO_INGRESO",
+    "categoria_facturacion": "NO_FACTURABLE"
+  }
+},
+{
+  "model": "recursosHumanos.actividadtrabajo",
+  "pk": 7,
+  "fields": {
+    "nombre": "Capacitacion Online",
+    "descripcion": "",
+    "disponibilidad": "DISPONIBLE",
+    "genera_ingreso": "NO_INGRESO",
+    "categoria_facturacion": "NO_FACTURABLE"
+  }
+},
+{
+  "model": "recursosHumanos.actividadtrabajo",
+  "pk": 8,
+  "fields": {
+    "nombre": "Preparacion para servicio en Taller",
+    "descripcion": "",
+    "disponibilidad": "DISPONIBLE",
+    "genera_ingreso": "NO_INGRESO",
+    "categoria_facturacion": "NO_FACTURABLE"
+  }
+},
+{
+  "model": "recursosHumanos.actividadtrabajo",
+  "pk": 9,
+  "fields": {
+    "nombre": "Preparacion para servicio en campo",
+    "descripcion": "",
+    "disponibilidad": "DISPONIBLE",
+    "genera_ingreso": "NO_INGRESO",
+    "categoria_facturacion": "NO_FACTURABLE"
+  }
+},
+{
+  "model": "recursosHumanos.actividadtrabajo",
+  "pk": 10,
+  "fields": {
+    "nombre": "Redo",
+    "descripcion": "",
+    "disponibilidad": "DISPONIBLE",
+    "genera_ingreso": "NO_INGRESO",
+    "categoria_facturacion": "NO_FACTURABLE"
+  }
+},
+{
+  "model": "recursosHumanos.actividadtrabajo",
+  "pk": 11,
+  "fields": {
+    "nombre": "Viaje IDA a Cliente",
+    "descripcion": "",
+    "disponibilidad": "DISPONIBLE",
+    "genera_ingreso": "INGRESO",
+    "categoria_facturacion": "FACTURABLE"
+  }
+},
+{
+  "model": "recursosHumanos.actividadtrabajo",
+  "pk": 12,
+  "fields": {
+    "nombre": "Servicio Remoto",
+    "descripcion": "",
+    "disponibilidad": "DISPONIBLE",
+    "genera_ingreso": "INGRESO",
+    "categoria_facturacion": "FACTURABLE"
+  }
+},
+{
+  "model": "recursosHumanos.actividadtrabajo",
+  "pk": 13,
+  "fields": {
+    "nombre": "Servicio / Reparacion en Campo",
+    "descripcion": "",
+    "disponibilidad": "DISPONIBLE",
+    "genera_ingreso": "INGRESO",
+    "categoria_facturacion": "FACTURABLE"
+  }
+},
+{
+  "model": "recursosHumanos.actividadtrabajo",
+  "pk": 14,
+  "fields": {
+    "nombre": "Asistencia a Repuestos",
+    "descripcion": "",
+    "disponibilidad": "DISPONIBLE",
+    "genera_ingreso": "NO_INGRESO",
+    "categoria_facturacion": "NO_FACTURABLE"
+  }
+},
+{
+  "model": "recursosHumanos.actividadtrabajo",
+  "pk": 15,
+  "fields": {
+    "nombre": "Limpieza de Camionetas",
+    "descripcion": "",
+    "disponibilidad": "DISPONIBLE",
+    "genera_ingreso": "NO_INGRESO",
+    "categoria_facturacion": "NO_FACTURABLE"
+  }
+},
+{
+  "model": "recursosHumanos.actividadtrabajo",
+  "pk": 16,
+  "fields": {
+    "nombre": "Limpieza General",
+    "descripcion": "",
+    "disponibilidad": "DISPONIBLE",
+    "genera_ingreso": "NO_INGRESO",
+    "categoria_facturacion": "NO_FACTURABLE"
+  }
+},
+{
+  "model": "recursosHumanos.actividadtrabajo",
+  "pk": 17,
+  "fields": {
+    "nombre": "Revision 5S",
+    "descripcion": "",
+    "disponibilidad": "DISPONIBLE",
+    "genera_ingreso": "NO_INGRESO",
+    "categoria_facturacion": "NO_FACTURABLE"
+  }
+},
+{
+  "model": "recursosHumanos.actividadtrabajo",
+  "pk": 18,
+  "fields": {
+    "nombre": "Lavado de Equipos",
+    "descripcion": "",
+    "disponibilidad": "DISPONIBLE",
+    "genera_ingreso": "INGRESO",
+    "categoria_facturacion": "FACTURABLE"
+  }
+},
+{
+  "model": "recursosHumanos.actividadtrabajo",
+  "pk": 19,
+  "fields": {
+    "nombre": "Almuerzo",
+    "descripcion": "",
+    "disponibilidad": "NO_DISPONIBLE",
+    "genera_ingreso": "NO_INGRESO",
+    "categoria_facturacion": "NO_FACTURABLE"
+  }
+},
+{
+  "model": "recursosHumanos.actividadtrabajo",
+  "pk": 20,
+  "fields": {
+    "nombre": "Refrigerio",
+    "descripcion": "",
+    "disponibilidad": "NO_DISPONIBLE",
+    "genera_ingreso": "NO_INGRESO",
+    "categoria_facturacion": "NO_FACTURABLE"
+  }
+},
+{
+  "model": "recursosHumanos.actividadtrabajo",
+  "pk": 21,
+  "fields": {
+    "nombre": "Compra de insumos taller",
+    "descripcion": "",
+    "disponibilidad": "NO_DISPONIBLE",
+    "genera_ingreso": "NO_INGRESO",
+    "categoria_facturacion": "NO_FACTURABLE"
+  }
+},
+{
+  "model": "recursosHumanos.actividadtrabajo",
+  "pk": 22,
+  "fields": {
+    "nombre": "Viaje VUELTA a Taller",
+    "descripcion": "",
+    "disponibilidad": "DISPONIBLE",
+    "genera_ingreso": "INGRESO",
+    "categoria_facturacion": "FACTURABLE"
+  }
+},
+{
+  "model": "recursosHumanos.actividadtrabajo",
+  "pk": 23,
+  "fields": {
+    "nombre": "Carga de combustible",
+    "descripcion": "",
+    "disponibilidad": "DISPONIBLE",
+    "genera_ingreso": "NO_INGRESO",
+    "categoria_facturacion": "NO_FACTURABLE"
+  }
+},
+{
+  "model": "recursosHumanos.actividadtrabajo",
+  "pk": 24,
+  "fields": {
+    "nombre": "Investigacion para Servicio/Diagnostico",
+    "descripcion": "",
+    "disponibilidad": "DISPONIBLE",
+    "genera_ingreso": "NO_INGRESO",
+    "categoria_facturacion": "NO_FACTURABLE"
+  }
+},
+{
+  "model": "recursosHumanos.actividadtrabajo",
+  "pk": 25,
+  "fields": {
+    "nombre": "Sin trabajo asignado",
+    "descripcion": "",
+    "disponibilidad": "DISPONIBLE",
+    "genera_ingreso": "NO_INGRESO",
+    "categoria_facturacion": "NO_FACTURABLE"
+  }
+},
+{
+  "model": "recursosHumanos.actividadtrabajo",
+  "pk": 26,
+  "fields": {
+    "nombre": "Aguardando Cliente",
+    "descripcion": "",
+    "disponibilidad": "DISPONIBLE",
+    "genera_ingreso": "NO_INGRESO",
+    "categoria_facturacion": "NO_FACTURABLE"
+  }
+},
+{
+  "model": "recursosHumanos.registrohorastecnico",
+  "pk": 3,
+  "fields": {
+    "tecnico": 2,
+    "fecha": "2025-07-08",
+    "hora_inicio": "09:00:00",
+    "hora_fin": "09:30:00",
+    "tipo_hora": 9,
+    "servicio": null,
+    "descripcion": "",
+    "aprobado": true,
+    "aprobado_por": 1,
+    "fecha_aprobacion": "2025-07-08T20:16:37.923Z",
+    "fecha_creacion": "2025-07-08T20:05:29.743Z",
+    "fecha_modificacion": "2025-07-08T20:05:29.743Z"
+  }
+},
+{
+  "model": "recursosHumanos.registrohorastecnico",
+  "pk": 4,
+  "fields": {
+    "tecnico": 2,
+    "fecha": "2025-07-08",
+    "hora_inicio": "09:30:00",
+    "hora_fin": "10:00:00",
+    "tipo_hora": 11,
+    "servicio": 16,
+    "descripcion": "",
+    "aprobado": true,
+    "aprobado_por": 1,
+    "fecha_aprobacion": "2025-07-08T20:16:37.923Z",
+    "fecha_creacion": "2025-07-08T20:06:04.403Z",
+    "fecha_modificacion": "2025-07-08T20:06:04.403Z"
+  }
+},
+{
+  "model": "recursosHumanos.registrohorastecnico",
+  "pk": 5,
+  "fields": {
+    "tecnico": 2,
+    "fecha": "2025-07-08",
+    "hora_inicio": "10:00:00",
+    "hora_fin": "12:30:00",
+    "tipo_hora": 13,
+    "servicio": 16,
+    "descripcion": "",
+    "aprobado": true,
+    "aprobado_por": 1,
+    "fecha_aprobacion": "2025-07-08T20:16:37.923Z",
+    "fecha_creacion": "2025-07-08T20:06:37.507Z",
+    "fecha_modificacion": "2025-07-08T20:06:37.507Z"
+  }
+},
+{
+  "model": "recursosHumanos.registrohorastecnico",
+  "pk": 6,
+  "fields": {
+    "tecnico": 2,
+    "fecha": "2025-07-08",
+    "hora_inicio": "12:30:00",
+    "hora_fin": "13:00:00",
+    "tipo_hora": 22,
+    "servicio": 16,
+    "descripcion": "",
+    "aprobado": true,
+    "aprobado_por": 1,
+    "fecha_aprobacion": "2025-07-08T20:16:37.923Z",
+    "fecha_creacion": "2025-07-08T20:07:21.728Z",
+    "fecha_modificacion": "2025-07-08T20:07:21.728Z"
+  }
+},
+{
+  "model": "recursosHumanos.registrohorastecnico",
+  "pk": 7,
+  "fields": {
+    "tecnico": 2,
+    "fecha": "2025-07-08",
+    "hora_inicio": "13:00:00",
+    "hora_fin": "14:00:00",
+    "tipo_hora": 19,
+    "servicio": null,
+    "descripcion": "",
+    "aprobado": true,
+    "aprobado_por": 1,
+    "fecha_aprobacion": "2025-07-08T20:16:37.923Z",
+    "fecha_creacion": "2025-07-08T20:07:45.700Z",
+    "fecha_modificacion": "2025-07-08T20:07:45.700Z"
+  }
+},
+{
+  "model": "recursosHumanos.registrohorastecnico",
+  "pk": 8,
+  "fields": {
+    "tecnico": 2,
+    "fecha": "2025-07-08",
+    "hora_inicio": "14:00:00",
+    "hora_fin": "14:30:00",
+    "tipo_hora": 11,
+    "servicio": 17,
+    "descripcion": "",
+    "aprobado": true,
+    "aprobado_por": 1,
+    "fecha_aprobacion": "2025-07-08T20:16:37.923Z",
+    "fecha_creacion": "2025-07-08T20:10:21.315Z",
+    "fecha_modificacion": "2025-07-08T20:10:21.315Z"
+  }
+},
+{
+  "model": "recursosHumanos.registrohorastecnico",
+  "pk": 9,
+  "fields": {
+    "tecnico": 2,
+    "fecha": "2025-07-08",
+    "hora_inicio": "14:30:00",
+    "hora_fin": "16:30:00",
+    "tipo_hora": 13,
+    "servicio": 17,
+    "descripcion": "",
+    "aprobado": true,
+    "aprobado_por": 1,
+    "fecha_aprobacion": "2025-07-08T20:16:37.923Z",
+    "fecha_creacion": "2025-07-08T20:10:56.924Z",
+    "fecha_modificacion": "2025-07-08T20:10:56.924Z"
+  }
+},
+{
+  "model": "recursosHumanos.registrohorastecnico",
+  "pk": 10,
+  "fields": {
+    "tecnico": 2,
+    "fecha": "2025-07-08",
+    "hora_inicio": "16:30:00",
+    "hora_fin": "17:00:00",
+    "tipo_hora": 22,
+    "servicio": 17,
+    "descripcion": "",
+    "aprobado": true,
+    "aprobado_por": 1,
+    "fecha_aprobacion": "2025-07-08T20:16:37.923Z",
+    "fecha_creacion": "2025-07-08T20:11:30.437Z",
+    "fecha_modificacion": "2025-07-08T20:11:30.437Z"
+  }
+},
+{
+  "model": "recursosHumanos.registrohorastecnico",
+  "pk": 11,
+  "fields": {
+    "tecnico": 2,
+    "fecha": "2025-07-08",
+    "hora_inicio": "17:00:00",
+    "hora_fin": "17:30:00",
+    "tipo_hora": 15,
+    "servicio": null,
+    "descripcion": "",
+    "aprobado": true,
+    "aprobado_por": 1,
+    "fecha_aprobacion": "2025-07-08T20:16:37.923Z",
+    "fecha_creacion": "2025-07-08T20:12:02.635Z",
+    "fecha_modificacion": "2025-07-08T20:12:02.635Z"
+  }
+},
+{
+  "model": "recursosHumanos.registrohorastecnico",
+  "pk": 12,
+  "fields": {
+    "tecnico": 2,
+    "fecha": "2025-07-08",
+    "hora_inicio": "17:30:00",
+    "hora_fin": "18:00:00",
+    "tipo_hora": 24,
+    "servicio": null,
+    "descripcion": "",
+    "aprobado": true,
+    "aprobado_por": 1,
+    "fecha_aprobacion": "2025-07-08T20:16:37.923Z",
+    "fecha_creacion": "2025-07-08T20:15:00.428Z",
+    "fecha_modificacion": "2025-07-08T20:15:00.428Z"
+  }
+},
+{
+  "model": "recursosHumanos.registrohorastecnico",
+  "pk": 13,
+  "fields": {
+    "tecnico": 2,
+    "fecha": "2025-07-11",
+    "hora_inicio": "09:00:00",
+    "hora_fin": "09:30:00",
+    "tipo_hora": 9,
+    "servicio": null,
+    "descripcion": "",
+    "aprobado": false,
+    "aprobado_por": null,
+    "fecha_aprobacion": null,
+    "fecha_creacion": "2025-07-11T20:25:53.045Z",
+    "fecha_modificacion": "2025-07-11T20:25:53.045Z"
+  }
+},
+{
+  "model": "recursosHumanos.registrohorastecnico",
+  "pk": 14,
+  "fields": {
+    "tecnico": 6,
+    "fecha": "2025-07-11",
+    "hora_inicio": "09:00:00",
+    "hora_fin": "09:30:00",
+    "tipo_hora": 9,
+    "servicio": null,
+    "descripcion": "",
+    "aprobado": false,
+    "aprobado_por": null,
+    "fecha_aprobacion": null,
+    "fecha_creacion": "2025-07-11T20:25:55.096Z",
+    "fecha_modificacion": "2025-07-11T20:25:55.096Z"
+  }
+},
+{
+  "model": "recursosHumanos.registrohorastecnico",
+  "pk": 15,
+  "fields": {
+    "tecnico": 2,
+    "fecha": "2025-07-11",
+    "hora_inicio": "09:30:00",
+    "hora_fin": "11:00:00",
+    "tipo_hora": 11,
+    "servicio": 20,
+    "descripcion": "",
+    "aprobado": false,
+    "aprobado_por": null,
+    "fecha_aprobacion": null,
+    "fecha_creacion": "2025-07-11T20:32:03.486Z",
+    "fecha_modificacion": "2025-07-11T20:32:03.486Z"
+  }
+},
+{
+  "model": "recursosHumanos.registrohorastecnico",
+  "pk": 16,
+  "fields": {
+    "tecnico": 6,
+    "fecha": "2025-07-11",
+    "hora_inicio": "09:30:00",
+    "hora_fin": "11:00:00",
+    "tipo_hora": 11,
+    "servicio": 20,
+    "descripcion": "",
+    "aprobado": false,
+    "aprobado_por": null,
+    "fecha_aprobacion": null,
+    "fecha_creacion": "2025-07-11T20:32:09.374Z",
+    "fecha_modificacion": "2025-07-11T20:32:09.374Z"
+  }
+},
+{
+  "model": "recursosHumanos.registrohorastecnico",
+  "pk": 17,
+  "fields": {
+    "tecnico": 2,
+    "fecha": "2025-07-11",
+    "hora_inicio": "11:00:00",
+    "hora_fin": "15:30:00",
+    "tipo_hora": 13,
+    "servicio": 20,
+    "descripcion": "",
+    "aprobado": false,
+    "aprobado_por": null,
+    "fecha_aprobacion": null,
+    "fecha_creacion": "2025-07-11T20:33:44.260Z",
+    "fecha_modificacion": "2025-07-11T20:33:44.260Z"
+  }
+},
+{
+  "model": "recursosHumanos.registrohorastecnico",
+  "pk": 18,
+  "fields": {
+    "tecnico": 6,
+    "fecha": "2025-07-11",
+    "hora_inicio": "11:00:00",
+    "hora_fin": "15:30:00",
+    "tipo_hora": 13,
+    "servicio": 20,
+    "descripcion": "",
+    "aprobado": false,
+    "aprobado_por": null,
+    "fecha_aprobacion": null,
+    "fecha_creacion": "2025-07-11T20:33:44.444Z",
+    "fecha_modificacion": "2025-07-11T20:33:44.444Z"
+  }
+},
+{
+  "model": "recursosHumanos.registrohorastecnico",
+  "pk": 19,
+  "fields": {
+    "tecnico": 2,
+    "fecha": "2025-07-11",
+    "hora_inicio": "15:30:00",
+    "hora_fin": "17:00:00",
+    "tipo_hora": 22,
+    "servicio": 20,
+    "descripcion": "",
+    "aprobado": false,
+    "aprobado_por": null,
+    "fecha_aprobacion": null,
+    "fecha_creacion": "2025-07-11T20:39:16.639Z",
+    "fecha_modificacion": "2025-07-11T20:39:16.639Z"
+  }
+},
+{
+  "model": "recursosHumanos.registrohorastecnico",
+  "pk": 20,
+  "fields": {
+    "tecnico": 2,
+    "fecha": "2025-07-11",
+    "hora_inicio": "17:00:00",
+    "hora_fin": "17:30:00",
+    "tipo_hora": 23,
+    "servicio": null,
+    "descripcion": "",
+    "aprobado": false,
+    "aprobado_por": null,
+    "fecha_aprobacion": null,
+    "fecha_creacion": "2025-07-11T20:41:05.573Z",
+    "fecha_modificacion": "2025-07-11T20:41:05.573Z"
+  }
+},
+{
+  "model": "recursosHumanos.registrohorastecnico",
+  "pk": 21,
+  "fields": {
+    "tecnico": 2,
+    "fecha": "2025-07-11",
+    "hora_inicio": "17:30:00",
+    "hora_fin": "18:00:00",
+    "tipo_hora": 15,
+    "servicio": null,
+    "descripcion": "",
+    "aprobado": false,
+    "aprobado_por": null,
+    "fecha_aprobacion": null,
+    "fecha_creacion": "2025-07-11T20:43:04.235Z",
+    "fecha_modificacion": "2025-07-11T20:43:04.235Z"
+  }
+},
+{
+  "model": "recursosHumanos.registrohorastecnico",
+  "pk": 22,
+  "fields": {
+    "tecnico": 6,
+    "fecha": "2025-07-11",
+    "hora_inicio": "15:30:00",
+    "hora_fin": "17:00:00",
+    "tipo_hora": 22,
+    "servicio": 20,
+    "descripcion": "",
+    "aprobado": false,
+    "aprobado_por": null,
+    "fecha_aprobacion": null,
+    "fecha_creacion": "2025-07-11T20:45:34.491Z",
+    "fecha_modificacion": "2025-07-11T20:45:34.491Z"
+  }
+},
+{
+  "model": "recursosHumanos.registrohorastecnico",
+  "pk": 23,
+  "fields": {
+    "tecnico": 6,
+    "fecha": "2025-07-11",
+    "hora_inicio": "17:00:00",
+    "hora_fin": "17:30:00",
+    "tipo_hora": 23,
+    "servicio": null,
+    "descripcion": "",
+    "aprobado": false,
+    "aprobado_por": null,
+    "fecha_aprobacion": null,
+    "fecha_creacion": "2025-07-11T20:46:51.265Z",
+    "fecha_modificacion": "2025-07-11T20:46:51.265Z"
+  }
+},
+{
+  "model": "recursosHumanos.registrohorastecnico",
+  "pk": 24,
+  "fields": {
+    "tecnico": 6,
+    "fecha": "2025-07-11",
+    "hora_inicio": "17:30:00",
+    "hora_fin": "18:00:00",
+    "tipo_hora": 15,
+    "servicio": null,
+    "descripcion": "",
+    "aprobado": false,
+    "aprobado_por": null,
+    "fecha_aprobacion": null,
+    "fecha_creacion": "2025-07-11T20:49:38.279Z",
+    "fecha_modificacion": "2025-07-11T20:49:38.279Z"
+  }
+},
+{
+  "model": "recursosHumanos.registrohorastecnico",
+  "pk": 25,
+  "fields": {
+    "tecnico": 6,
+    "fecha": "2025-07-12",
+    "hora_inicio": "09:00:00",
+    "hora_fin": "10:00:00",
+    "tipo_hora": 6,
+    "servicio": null,
+    "descripcion": "",
+    "aprobado": false,
+    "aprobado_por": null,
+    "fecha_aprobacion": null,
+    "fecha_creacion": "2025-07-14T12:11:53.515Z",
+    "fecha_modificacion": "2025-07-14T12:11:53.515Z"
+  }
+}
+]

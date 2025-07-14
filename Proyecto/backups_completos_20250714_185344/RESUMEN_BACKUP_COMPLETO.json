@@ -1,0 +1,565 @@
+{
+  "fecha_backup": "20250714_185344",
+  "total_modelos": 79,
+  "exitosos": 3,
+  "fallidos": 0,
+  "sin_datos": 76,
+  "detalles": [
+    {
+      "app": "recursosHumanos",
+      "modelo": "Provincia",
+      "registros": 3,
+      "archivo": "01_recursosHumanos_provincia.json",
+      "estado": "exitoso",
+      "tamaño": 593
+    },
+    {
+      "app": "recursosHumanos",
+      "modelo": "Ciudad",
+      "registros": 5,
+      "archivo": "02_recursosHumanos_ciudad.json",
+      "estado": "exitoso",
+      "tamaño": 1059
+    },
+    {
+      "app": "recursosHumanos",
+      "modelo": "Sucursal",
+      "registros": 2,
+      "archivo": "03_recursosHumanos_sucursal.json",
+      "estado": "exitoso",
+      "tamaño": 530
+    },
+    {
+      "app": "recursosHumanos",
+      "modelo": "TarifaManoObra",
+      "registros": 0,
+      "archivo": null,
+      "estado": "sin_datos"
+    },
+    {
+      "app": "recursosHumanos",
+      "modelo": "ActividadTrabajo",
+      "registros": 0,
+      "archivo": null,
+      "estado": "sin_datos"
+    },
+    {
+      "app": "recursosHumanos",
+      "modelo": "Competencia",
+      "registros": 0,
+      "archivo": null,
+      "estado": "sin_datos"
+    },
+    {
+      "app": "recursosHumanos",
+      "modelo": "CertificacionJD",
+      "registros": 0,
+      "archivo": null,
+      "estado": "sin_datos"
+    },
+    {
+      "app": "recursosHumanos",
+      "modelo": "CertificacionTecnico",
+      "registros": 0,
+      "archivo": null,
+      "estado": "sin_datos"
+    },
+    {
+      "app": "recursosHumanos",
+      "modelo": "CompetenciaTecnico",
+      "registros": 0,
+      "archivo": null,
+      "estado": "sin_datos"
+    },
+    {
+      "app": "recursosHumanos",
+      "modelo": "EvaluacionSistema",
+      "registros": 0,
+      "archivo": null,
+      "estado": "sin_datos"
+    },
+    {
+      "app": "recursosHumanos",
+      "modelo": "RevisionHerramientas",
+      "registros": 0,
+      "archivo": null,
+      "estado": "sin_datos"
+    },
+    {
+      "app": "recursosHumanos",
+      "modelo": "HerramientaEspecial",
+      "registros": 0,
+      "archivo": null,
+      "estado": "sin_datos"
+    },
+    {
+      "app": "recursosHumanos",
+      "modelo": "PrestamoHerramienta",
+      "registros": 0,
+      "archivo": null,
+      "estado": "sin_datos"
+    },
+    {
+      "app": "recursosHumanos",
+      "modelo": "RegistroHorasTecnico",
+      "registros": 0,
+      "archivo": null,
+      "estado": "sin_datos"
+    },
+    {
+      "app": "clientes",
+      "modelo": "TipoEquipo",
+      "registros": 0,
+      "archivo": null,
+      "estado": "sin_datos"
+    },
+    {
+      "app": "clientes",
+      "modelo": "ModeloEquipo",
+      "registros": 0,
+      "archivo": null,
+      "estado": "sin_datos"
+    },
+    {
+      "app": "clientes",
+      "modelo": "ModeloMotor",
+      "registros": 0,
+      "archivo": null,
+      "estado": "sin_datos"
+    },
+    {
+      "app": "clientes",
+      "modelo": "Cliente",
+      "registros": 0,
+      "archivo": null,
+      "estado": "sin_datos"
+    },
+    {
+      "app": "clientes",
+      "modelo": "ContactoCliente",
+      "registros": 0,
+      "archivo": null,
+      "estado": "sin_datos"
+    },
+    {
+      "app": "clientes",
+      "modelo": "Equipo",
+      "registros": 0,
+      "archivo": null,
+      "estado": "sin_datos"
+    },
+    {
+      "app": "clientes",
+      "modelo": "RegistroHorometro",
+      "registros": 0,
+      "archivo": null,
+      "estado": "sin_datos"
+    },
+    {
+      "app": "operationsCenter",
+      "modelo": "OperationsCenterConfig",
+      "registros": 0,
+      "archivo": null,
+      "estado": "sin_datos"
+    },
+    {
+      "app": "operationsCenter",
+      "modelo": "Machine",
+      "registros": 0,
+      "archivo": null,
+      "estado": "sin_datos"
+    },
+    {
+      "app": "operationsCenter",
+      "modelo": "MachineLocation",
+      "registros": 0,
+      "archivo": null,
+      "estado": "sin_datos"
+    },
+    {
+      "app": "operationsCenter",
+      "modelo": "MachineEngineHours",
+      "registros": 0,
+      "archivo": null,
+      "estado": "sin_datos"
+    },
+    {
+      "app": "operationsCenter",
+      "modelo": "MachineAlert",
+      "registros": 0,
+      "archivo": null,
+      "estado": "sin_datos"
+    },
+    {
+      "app": "operationsCenter",
+      "modelo": "MachineHoursOfOperation",
+      "registros": 0,
+      "archivo": null,
+      "estado": "sin_datos"
+    },
+    {
+      "app": "operationsCenter",
+      "modelo": "DeviceStateReport",
+      "registros": 0,
+      "archivo": null,
+      "estado": "sin_datos"
+    },
+    {
+      "app": "operationsCenter",
+      "modelo": "TelemetryReport",
+      "registros": 0,
+      "archivo": null,
+      "estado": "sin_datos"
+    },
+    {
+      "app": "operationsCenter",
+      "modelo": "TelemetryReportMachine",
+      "registros": 0,
+      "archivo": null,
+      "estado": "sin_datos"
+    },
+    {
+      "app": "centroSoluciones",
+      "modelo": "CodigoAlerta",
+      "registros": 0,
+      "archivo": null,
+      "estado": "sin_datos"
+    },
+    {
+      "app": "centroSoluciones",
+      "modelo": "AlertaEquipo",
+      "registros": 0,
+      "archivo": null,
+      "estado": "sin_datos"
+    },
+    {
+      "app": "centroSoluciones",
+      "modelo": "LeadJohnDeere",
+      "registros": 0,
+      "archivo": null,
+      "estado": "sin_datos"
+    },
+    {
+      "app": "centroSoluciones",
+      "modelo": "AsignacionAlerta",
+      "registros": 0,
+      "archivo": null,
+      "estado": "sin_datos"
+    },
+    {
+      "app": "crm",
+      "modelo": "Campania",
+      "registros": 0,
+      "archivo": null,
+      "estado": "sin_datos"
+    },
+    {
+      "app": "crm",
+      "modelo": "Contacto",
+      "registros": 0,
+      "archivo": null,
+      "estado": "sin_datos"
+    },
+    {
+      "app": "crm",
+      "modelo": "PotencialCompraModelo",
+      "registros": 0,
+      "archivo": null,
+      "estado": "sin_datos"
+    },
+    {
+      "app": "crm",
+      "modelo": "AnalisisCliente",
+      "registros": 0,
+      "archivo": null,
+      "estado": "sin_datos"
+    },
+    {
+      "app": "crm",
+      "modelo": "PaqueteServicio",
+      "registros": 0,
+      "archivo": null,
+      "estado": "sin_datos"
+    },
+    {
+      "app": "crm",
+      "modelo": "ClientePaquete",
+      "registros": 0,
+      "archivo": null,
+      "estado": "sin_datos"
+    },
+    {
+      "app": "crm",
+      "modelo": "Campana",
+      "registros": 0,
+      "archivo": null,
+      "estado": "sin_datos"
+    },
+    {
+      "app": "crm",
+      "modelo": "EmbudoVentas",
+      "registros": 0,
+      "archivo": null,
+      "estado": "sin_datos"
+    },
+    {
+      "app": "crm",
+      "modelo": "ContactoCliente",
+      "registros": 0,
+      "archivo": null,
+      "estado": "sin_datos"
+    },
+    {
+      "app": "crm",
+      "modelo": "SugerenciaMejora",
+      "registros": 0,
+      "archivo": null,
+      "estado": "sin_datos"
+    },
+    {
+      "app": "ventaMaquinarias",
+      "modelo": "EquipoStock",
+      "registros": 0,
+      "archivo": null,
+      "estado": "sin_datos"
+    },
+    {
+      "app": "ventaMaquinarias",
+      "modelo": "Certificado",
+      "registros": 0,
+      "archivo": null,
+      "estado": "sin_datos"
+    },
+    {
+      "app": "ventaMaquinarias",
+      "modelo": "MovimientoStockCertificado",
+      "registros": 0,
+      "archivo": null,
+      "estado": "sin_datos"
+    },
+    {
+      "app": "ventaMaquinarias",
+      "modelo": "VentaEquipo",
+      "registros": 0,
+      "archivo": null,
+      "estado": "sin_datos"
+    },
+    {
+      "app": "ventaMaquinarias",
+      "modelo": "ChecklistProcesosJD",
+      "registros": 0,
+      "archivo": null,
+      "estado": "sin_datos"
+    },
+    {
+      "app": "ventaMaquinarias",
+      "modelo": "TransferenciaEquipo",
+      "registros": 0,
+      "archivo": null,
+      "estado": "sin_datos"
+    },
+    {
+      "app": "gestionDeTaller",
+      "modelo": "Servicio",
+      "registros": 0,
+      "archivo": null,
+      "estado": "sin_datos"
+    },
+    {
+      "app": "gestionDeTaller",
+      "modelo": "Repuesto",
+      "registros": 0,
+      "archivo": null,
+      "estado": "sin_datos"
+    },
+    {
+      "app": "gestionDeTaller",
+      "modelo": "PreOrden",
+      "registros": 0,
+      "archivo": null,
+      "estado": "sin_datos"
+    },
+    {
+      "app": "gestionDeTaller",
+      "modelo": "PedidoRepuestosTerceros",
+      "registros": 0,
+      "archivo": null,
+      "estado": "sin_datos"
+    },
+    {
+      "app": "gestionDeTaller",
+      "modelo": "GastoAsistencia",
+      "registros": 0,
+      "archivo": null,
+      "estado": "sin_datos"
+    },
+    {
+      "app": "gestionDeTaller",
+      "modelo": "VentaRepuesto",
+      "registros": 0,
+      "archivo": null,
+      "estado": "sin_datos"
+    },
+    {
+      "app": "gestionDeTaller",
+      "modelo": "Revision5S",
+      "registros": 0,
+      "archivo": null,
+      "estado": "sin_datos"
+    },
+    {
+      "app": "gestionDeTaller",
+      "modelo": "EvidenciaRevision5S",
+      "registros": 0,
+      "archivo": null,
+      "estado": "sin_datos"
+    },
+    {
+      "app": "gestionDeTaller",
+      "modelo": "PlanAccion5S",
+      "registros": 0,
+      "archivo": null,
+      "estado": "sin_datos"
+    },
+    {
+      "app": "gestionDeTaller",
+      "modelo": "EvidenciaPlanAccion5S",
+      "registros": 0,
+      "archivo": null,
+      "estado": "sin_datos"
+    },
+    {
+      "app": "gestionDeTaller",
+      "modelo": "CostoPersonalTaller",
+      "registros": 0,
+      "archivo": null,
+      "estado": "sin_datos"
+    },
+    {
+      "app": "gestionDeTaller",
+      "modelo": "AnalisisTaller",
+      "registros": 0,
+      "archivo": null,
+      "estado": "sin_datos"
+    },
+    {
+      "app": "gestionDeTaller",
+      "modelo": "Evidencia",
+      "registros": 0,
+      "archivo": null,
+      "estado": "sin_datos"
+    },
+    {
+      "app": "gestionDeTaller",
+      "modelo": "ChecklistSalidaCampo",
+      "registros": 0,
+      "archivo": null,
+      "estado": "sin_datos"
+    },
+    {
+      "app": "gestionDeTaller",
+      "modelo": "EncuestaServicio",
+      "registros": 0,
+      "archivo": null,
+      "estado": "sin_datos"
+    },
+    {
+      "app": "gestionDeTaller",
+      "modelo": "RespuestaEncuesta",
+      "registros": 0,
+      "archivo": null,
+      "estado": "sin_datos"
+    },
+    {
+      "app": "gestionDeTaller",
+      "modelo": "InsatisfaccionCliente",
+      "registros": 0,
+      "archivo": null,
+      "estado": "sin_datos"
+    },
+    {
+      "app": "gestionDeTaller",
+      "modelo": "LogCambioServicio",
+      "registros": 0,
+      "archivo": null,
+      "estado": "sin_datos"
+    },
+    {
+      "app": "gestionDeTaller",
+      "modelo": "LogCambioInforme",
+      "registros": 0,
+      "archivo": null,
+      "estado": "sin_datos"
+    },
+    {
+      "app": "gestionDeTaller",
+      "modelo": "ObservacionServicio",
+      "registros": 0,
+      "archivo": null,
+      "estado": "sin_datos"
+    },
+    {
+      "app": "gestionDeTaller",
+      "modelo": "HerramientaEspecial",
+      "registros": 0,
+      "archivo": null,
+      "estado": "sin_datos"
+    },
+    {
+      "app": "gestionDeTaller",
+      "modelo": "ReservaHerramienta",
+      "registros": 0,
+      "archivo": null,
+      "estado": "sin_datos"
+    },
+    {
+      "app": "gestionDeTaller",
+      "modelo": "LogHerramienta",
+      "registros": 0,
+      "archivo": null,
+      "estado": "sin_datos"
+    },
+    {
+      "app": "gestionDeTaller",
+      "modelo": "HerramientaPersonal",
+      "registros": 0,
+      "archivo": null,
+      "estado": "sin_datos"
+    },
+    {
+      "app": "gestionDeTaller",
+      "modelo": "ItemHerramientaPersonal",
+      "registros": 0,
+      "archivo": null,
+      "estado": "sin_datos"
+    },
+    {
+      "app": "gestionDeTaller",
+      "modelo": "AsignacionHerramientaPersonal",
+      "registros": 0,
+      "archivo": null,
+      "estado": "sin_datos"
+    },
+    {
+      "app": "gestionDeTaller",
+      "modelo": "AuditoriaHerramientaPersonal",
+      "registros": 0,
+      "archivo": null,
+      "estado": "sin_datos"
+    },
+    {
+      "app": "gestionDeTaller",
+      "modelo": "LogCambioItemHerramienta",
+      "registros": 0,
+      "archivo": null,
+      "estado": "sin_datos"
+    },
+    {
+      "app": "gestionDeTaller",
+      "modelo": "DetalleAuditoriaHerramienta",
+      "registros": 0,
+      "archivo": null,
+      "estado": "sin_datos"
+    }
+  ]
+}
