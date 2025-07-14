@@ -1,0 +1,479 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+    .repuestos-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 15px;
+        margin-bottom: 2rem;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+    
+    .filtros-card {
+        background: white;
+        border-radius: 15px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+    }
+    
+    .repuesto-card {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+        border: 1px solid #e9ecef;
+    }
+    
+    .repuesto-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        border-color: #667eea;
+    }
+    
+    .codigo-badge {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+    
+    .precio-badge {
+        background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-weight: 600;
+    }
+    
+    .margen-badge {
+        background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+        color: white;
+        padding: 0.3rem 0.8rem;
+        border-radius: 15px;
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+    
+    .estado-badge {
+        padding: 0.3rem 0.8rem;
+        border-radius: 15px;
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+    
+    .estado-activo {
+        background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+        color: white;
+    }
+    
+    .estado-inactivo {
+        background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+        color: white;
+    }
+    
+    .modal-content {
+        border-radius: 15px;
+        border: none;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    }
+    
+    .modal-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 15px 15px 0 0;
+        border: none;
+    }
+    
+    .btn {
+        border-radius: 25px;
+        padding: 0.6rem 1.2rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        border: none;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    .btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    
+    .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+    
+    .btn-success {
+        background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+        color: white;
+    }
+    
+    .btn-warning {
+        background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+        color: white;
+    }
+    
+    .btn-secondary {
+        background: linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%);
+        color: white;
+    }
+    
+    .form-control, .form-select {
+        border-radius: 10px;
+        border: 1px solid #e9ecef;
+        padding: 0.75rem 1rem;
+        transition: all 0.3s ease;
+    }
+    
+    .form-control:focus, .form-select:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+    }
+    
+    .pagination {
+        justify-content: center;
+        margin-top: 2rem;
+    }
+    
+    .page-link {
+        border-radius: 10px;
+        margin: 0 0.2rem;
+        border: 1px solid #e9ecef;
+        color: #667eea;
+    }
+    
+    .page-link:hover {
+        background-color: #667eea;
+        border-color: #667eea;
+        color: white;
+    }
+    
+    .page-item.active .page-link {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-color: #667eea;
+    }
+</style>
+
+<div class="container-fluid mt-4">
+    <!-- Header -->
+    <div class="repuestos-header text-center">
+        <h1><i class="fas fa-cogs me-3"></i>Base de Datos de Repuestos</h1>
+        <p class="mb-0">Gestiona el catálogo de repuestos con precios y descripciones</p>
+    </div>
+
+    <!-- Filtros -->
+    <div class="filtros-card">
+        <form method="GET" class="row g-3">
+            <div class="col-md-3">
+                <label for="search" class="form-label">Buscar</label>
+                <input type="text" class="form-control" id="search" name="search" 
+                       value="{{ search_filtro }}" placeholder="Código, descripción, categoría...">
+            </div>
+            <div class="col-md-2">
+                <label for="categoria" class="form-label">Categoría</label>
+                <select class="form-select" id="categoria" name="categoria">
+                    <option value="">Todas</option>
+                    {% for categoria in categorias_unicas %}
+                        <option value="{{ categoria }}" {% if categoria == categoria_filtro %}selected{% endif %}>
+                            {{ categoria }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label for="proveedor" class="form-label">Proveedor</label>
+                <select class="form-select" id="proveedor" name="proveedor">
+                    <option value="">Todos</option>
+                    {% for proveedor in proveedores_unicos %}
+                        <option value="{{ proveedor }}" {% if proveedor == proveedor_filtro %}selected{% endif %}>
+                            {{ proveedor }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label for="activo" class="form-label">Estado</label>
+                <select class="form-select" id="activo" name="activo">
+                    <option value="">Todos</option>
+                    <option value="true" {% if activo_filtro == 'true' %}selected{% endif %}>Activos</option>
+                    <option value="false" {% if activo_filtro == 'false' %}selected{% endif %}>Inactivos</option>
+                </select>
+            </div>
+            <div class="col-md-3 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary me-2">
+                    <i class="fas fa-search me-2"></i>Filtrar
+                </button>
+                <a href="{% url 'gestionDeTaller:gestionar_repuestos' %}" class="btn btn-secondary">
+                    <i class="fas fa-times me-2"></i>Limpiar
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Botón para crear nuevo repuesto -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h4><i class="fas fa-list me-2"></i>Repuestos ({{ page_obj.paginator.count }} total)</h4>
+        <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalCrearRepuesto">
+            <i class="fas fa-plus me-2"></i>Nuevo Repuesto
+        </button>
+    </div>
+
+    <!-- Lista de repuestos -->
+    {% if page_obj %}
+        <div class="row">
+            {% for repuesto in page_obj %}
+                <div class="col-md-6 col-lg-4">
+                    <div class="repuesto-card">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <span class="codigo-badge">{{ repuesto.codigo }}</span>
+                            <span class="estado-badge {% if repuesto.activo %}estado-activo{% else %}estado-inactivo{% endif %}">
+                                {% if repuesto.activo %}✓ Activo{% else %}✗ Inactivo{% endif %}
+                            </span>
+                        </div>
+                        
+                        <h6 class="mb-2">{{ repuesto.descripcion|default:"Sin descripción"|truncatechars:50 }}</h6>
+                        
+                        <div class="row mb-2">
+                            <div class="col-6">
+                                <small class="text-muted">Costo:</small><br>
+                                <strong>${{ repuesto.costo|default:"N/A" }}</strong>
+                            </div>
+                            <div class="col-6">
+                                <small class="text-muted">Precio:</small><br>
+                                <span class="precio-badge">${{ repuesto.precio_venta }}</span>
+                            </div>
+                        </div>
+                        
+                        {% if repuesto.costo and repuesto.precio_venta %}
+                            <div class="mb-2">
+                                <span class="margen-badge">
+                                    Margen: {{ repuesto.margen_ganancia|floatformat:1 }}%
+                                </span>
+                            </div>
+                        {% endif %}
+                        
+                        <div class="row mb-3">
+                            {% if repuesto.categoria %}
+                                <div class="col-6">
+                                    <small class="text-muted">Categoría:</small><br>
+                                    <strong>{{ repuesto.categoria }}</strong>
+                                </div>
+                            {% endif %}
+                            {% if repuesto.proveedor %}
+                                <div class="col-6">
+                                    <small class="text-muted">Proveedor:</small><br>
+                                    <strong>{{ repuesto.proveedor|truncatechars:20 }}</strong>
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="d-flex justify-content-between">
+                            <small class="text-muted">
+                                <i class="fas fa-calendar me-1"></i>
+                                {{ repuesto.fecha_creacion|date:"d/m/Y" }}
+                            </small>
+                            <div>
+                                <button type="button" class="btn btn-sm btn-outline-primary" 
+                                        onclick="verDetalleRepuesto('{{ repuesto.codigo }}')">
+                                    <i class="fas fa-eye me-1"></i>Ver
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- Paginación -->
+        {% if page_obj.has_other_pages %}
+            <nav aria-label="Paginación de repuestos">
+                <ul class="pagination">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page=1{% if search_filtro %}&search={{ search_filtro }}{% endif %}{% if categoria_filtro %}&categoria={{ categoria_filtro }}{% endif %}{% if proveedor_filtro %}&proveedor={{ proveedor_filtro }}{% endif %}{% if activo_filtro %}&activo={{ activo_filtro }}{% endif %}">
+                                <i class="fas fa-angle-double-left"></i>
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if search_filtro %}&search={{ search_filtro }}{% endif %}{% if categoria_filtro %}&categoria={{ categoria_filtro }}{% endif %}{% if proveedor_filtro %}&proveedor={{ proveedor_filtro }}{% endif %}{% if activo_filtro %}&activo={{ activo_filtro }}{% endif %}">
+                                <i class="fas fa-angle-left"></i>
+                            </a>
+                        </li>
+                    {% endif %}
+
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ num }}</span>
+                            </li>
+                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ num }}{% if search_filtro %}&search={{ search_filtro }}{% endif %}{% if categoria_filtro %}&categoria={{ categoria_filtro }}{% endif %}{% if proveedor_filtro %}&proveedor={{ proveedor_filtro }}{% endif %}{% if activo_filtro %}&activo={{ activo_filtro }}{% endif %}">{{ num }}</a>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if search_filtro %}&search={{ search_filtro }}{% endif %}{% if categoria_filtro %}&categoria={{ categoria_filtro }}{% endif %}{% if proveedor_filtro %}&proveedor={{ proveedor_filtro }}{% endif %}{% if activo_filtro %}&activo={{ activo_filtro }}{% endif %}">
+                                <i class="fas fa-angle-right"></i>
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if search_filtro %}&search={{ search_filtro }}{% endif %}{% if categoria_filtro %}&categoria={{ categoria_filtro }}{% endif %}{% if proveedor_filtro %}&proveedor={{ proveedor_filtro }}{% endif %}{% if activo_filtro %}&activo={{ activo_filtro }}{% endif %}">
+                                <i class="fas fa-angle-double-right"></i>
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        {% endif %}
+    {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-cogs fa-4x text-muted mb-3"></i>
+            <h4 class="text-muted">No se encontraron repuestos</h4>
+            <p class="text-muted">Intenta ajustar los filtros o crear un nuevo repuesto.</p>
+        </div>
+    {% endif %}
+</div>
+
+<!-- Modal para crear nuevo repuesto -->
+<div class="modal fade" id="modalCrearRepuesto" tabindex="-1" aria-labelledby="modalCrearRepuestoLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalCrearRepuestoLabel">
+                    <i class="fas fa-plus me-2"></i>Crear Nuevo Repuesto
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="formCrearRepuesto">
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="codigo" class="form-label">Código del Repuesto *</label>
+                                <input type="text" class="form-control" id="codigo" name="codigo" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="precio_venta" class="form-label">Precio de Venta *</label>
+                                <input type="number" class="form-control" id="precio_venta" name="precio_venta" 
+                                       step="0.01" min="0" required>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="descripcion" class="form-label">Descripción</label>
+                        <textarea class="form-control" id="descripcion" name="descripcion" rows="3"></textarea>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="costo" class="form-label">Costo</label>
+                                <input type="number" class="form-control" id="costo" name="costo" 
+                                       step="0.01" min="0">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="categoria" class="form-label">Categoría</label>
+                                <input type="text" class="form-control" id="categoria" name="categoria" 
+                                       placeholder="Ej: Filtros, Aceites, Neumáticos...">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="proveedor" class="form-label">Proveedor</label>
+                        <input type="text" class="form-control" id="proveedor" name="proveedor">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-2"></i>Cancelar
+                    </button>
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-save me-2"></i>Crear Repuesto
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para ver detalle del repuesto -->
+<div class="modal fade" id="modalDetalleRepuesto" tabindex="-1" aria-labelledby="modalDetalleRepuestoLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalDetalleRepuestoLabel">
+                    <i class="fas fa-eye me-2"></i>Detalle del Repuesto
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="detalleRepuestoContent">
+                <!-- Aquí se cargará el contenido dinámicamente -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Formulario para crear repuesto
+    document.getElementById('formCrearRepuesto').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(this);
+        
+        fetch('{% url "gestionDeTaller:crear_repuesto" %}', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+            },
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(data.message);
+                location.reload(); // Recargar la página para mostrar el nuevo repuesto
+            } else {
+                alert('Error: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error al crear el repuesto');
+        });
+    });
+});
+
+function verDetalleRepuesto(codigo) {
+    // Por ahora solo mostrar el código, pero se puede expandir para mostrar más detalles
+    const modal = new bootstrap.Modal(document.getElementById('modalDetalleRepuesto'));
+    document.getElementById('detalleRepuestoContent').innerHTML = `
+        <div class="text-center">
+            <h6>Repuesto: ${codigo}</h6>
+            <p class="text-muted">Funcionalidad de detalle en desarrollo...</p>
+        </div>
+    `;
+    modal.show();
+}
+</script>
+{% endblock %} 

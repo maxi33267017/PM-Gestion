@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Transferir Equipo - Venta #{{ venta.id }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="h3 mb-4">
+                <i class="fas fa-truck"></i> Transferir Equipo - Venta #{{ venta.id }}
+            </h1>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Transferencia de Equipo</h6>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">Esta funcionalidad estará disponible próximamente.</p>
+                    <a href="/admin/ventaMaquinarias/transferenciaequipo/add/" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Crear desde Admin
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

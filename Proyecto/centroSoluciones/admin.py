@@ -5,7 +5,7 @@ from django.utils.safestring import mark_safe
 from django.db.models import Count, Q
 from django.utils import timezone
 from datetime import timedelta
-from .models import AlertaEquipo, LeadJohnDeere, AsignacionAlerta
+from .models import AlertaEquipo, LeadJohnDeere, AsignacionAlerta, CodigoAlerta
 
 @admin.register(AlertaEquipo)
 class AlertaEquipoAdmin(admin.ModelAdmin):
@@ -16,6 +16,8 @@ class AlertaEquipoAdmin(admin.ModelAdmin):
         'clasificacion_badge', 
         'estado_badge', 
         'tecnico_asignado', 
+        'sar_status_badge',
+        'crm_opportunity_badge',
         'fecha', 
         'tiempo_pendiente_display'
     ]
@@ -44,13 +46,17 @@ class AlertaEquipoAdmin(admin.ModelAdmin):
             'fields': ('estado', 'tecnico_asignado', 'observaciones_tecnico'),
             'classes': ('collapse',)
         }),
+        ('Conexión SAR y CRM', {
+            'fields': ('conexion_sar_realizada', 'fecha_conexion_sar', 'resultado_conexion_sar', 'oportunidad_crm_creada'),
+            'classes': ('collapse',)
+        }),
         ('Información de Auditoría', {
             'fields': ('creado_por', 'fecha_creacion', 'fecha_modificacion'),
             'classes': ('collapse',)
         }),
     )
     
-    readonly_fields = ['fecha_creacion', 'fecha_modificacion', 'fecha_asignacion', 'fecha_resolucion']
+    readonly_fields = ['fecha_creacion', 'fecha_modificacion', 'fecha_asignacion', 'fecha_resolucion', 'fecha_conexion_sar']
     
     actions = ['asignar_tecnicos', 'marcar_resueltas', 'marcar_canceladas']
     
@@ -95,6 +101,21 @@ class AlertaEquipoAdmin(admin.ModelAdmin):
                 return f"{int(horas)} horas"
         return "-"
     tiempo_pendiente_display.short_description = 'Tiempo Pendiente'
+    
+    def sar_status_badge(self, obj):
+        if obj.conexion_sar_realizada:
+            return format_html(
+                '<span class="badge bg-success" title="{}">SAR ✓</span>',
+                obj.fecha_conexion_sar.strftime('%d/%m/%Y %H:%M') if obj.fecha_conexion_sar else 'Conexión SAR realizada'
+            )
+        return format_html('<span class="badge bg-secondary">SAR ✗</span>')
+    sar_status_badge.short_description = 'SAR'
+    
+    def crm_opportunity_badge(self, obj):
+        if obj.oportunidad_crm_creada:
+            return format_html('<span class="badge bg-primary">CRM ✓</span>')
+        return format_html('<span class="badge bg-secondary">CRM ✗</span>')
+    crm_opportunity_badge.short_description = 'CRM'
     
     def asignar_tecnicos(self, request, queryset):
         # Esta acción se puede expandir para asignar técnicos automáticamente
@@ -263,6 +284,80 @@ class AsignacionAlertaAdmin(admin.ModelAdmin):
     def save_model(self, request, obj, form, change):
         if not change:  # Si es una nueva asignación
             obj.asignado_por = request.user
+        super().save_model(request, obj, form, change)
+
+
+@admin.register(CodigoAlerta)
+class CodigoAlertaAdmin(admin.ModelAdmin):
+    list_display = [
+        'codigo', 
+        'modelo_equipo', 
+        'clasificacion_badge', 
+        'tiempo_estimado_resolucion',
+        'activo_badge',
+        'fecha_creacion'
+    ]
+    list_filter = [
+        'clasificacion', 
+        'activo', 
+        'fecha_creacion',
+        'modelo_equipo'
+    ]
+    search_fields = [
+        'codigo', 
+        'modelo_equipo', 
+        'descripcion',
+        'instrucciones_resolucion'
+    ]
+    date_hierarchy = 'fecha_creacion'
+    list_per_page = 25
+    
+    fieldsets = (
+        ('Información del Código', {
+            'fields': ('codigo', 'modelo_equipo', 'descripcion', 'clasificacion', 'activo')
+        }),
+        ('Información Técnica', {
+            'fields': ('instrucciones_resolucion', 'repuestos_comunes', 'tiempo_estimado_resolucion'),
+            'classes': ('collapse',)
+        }),
+        ('Información de Auditoría', {
+            'fields': ('creado_por', 'fecha_creacion', 'fecha_modificacion'),
+            'classes': ('collapse',)
+        }),
+    )
+    
+    readonly_fields = ['fecha_creacion', 'fecha_modificacion']
+    
+    actions = ['activar_codigos', 'desactivar_codigos']
+    
+    def clasificacion_badge(self, obj):
+        color = obj.get_prioridad_color()
+        return format_html(
+            '<span class="badge bg-{}">{}</span>',
+            color,
+            obj.get_clasificacion_display()
+        )
+    clasificacion_badge.short_description = 'Clasificación'
+    
+    def activo_badge(self, obj):
+        if obj.activo:
+            return format_html('<span class="badge bg-success">Activo</span>')
+        return format_html('<span class="badge bg-secondary">Inactivo</span>')
+    activo_badge.short_description = 'Estado'
+    
+    def activar_codigos(self, request, queryset):
+        updated = queryset.update(activo=True)
+        self.message_user(request, f'{updated} códigos de alerta activados.')
+    activar_codigos.short_description = "Activar códigos seleccionados"
+    
+    def desactivar_codigos(self, request, queryset):
+        updated = queryset.update(activo=False)
+        self.message_user(request, f'{updated} códigos de alerta desactivados.')
+    desactivar_codigos.short_description = "Desactivar códigos seleccionados"
+    
+    def save_model(self, request, obj, form, change):
+        if not change:  # Si es un nuevo código
+            obj.creado_por = request.user
         super().save_model(request, obj, form, change)
 
 

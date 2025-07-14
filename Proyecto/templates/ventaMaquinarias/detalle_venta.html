@@ -1,0 +1,265 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Detalle Venta #{{ venta.id }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="h3 mb-4">
+                <i class="fas fa-receipt"></i> Detalle Venta #{{ venta.id }}
+            </h1>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 font-weight-bold text-primary">Información de la Venta</h6>
+                    <div>
+                        {% if venta.estado == 'PENDIENTE' and not transferencia_existente %}
+                            <a href="{% url 'ventaMaquinarias:transferir_equipo' venta.id %}" class="btn btn-success">
+                                <i class="fas fa-truck"></i> Transferir Equipo
+                            </a>
+                        {% endif %}
+                        <a href="/admin/ventaMaquinarias/ventaequipo/{{ venta.id }}/change/" class="btn btn-primary">
+                            <i class="fas fa-edit"></i> Editar
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5 class="text-primary">Información del Equipo</h5>
+                            <table class="table table-borderless">
+                                <tr>
+                                    <td><strong>Número de Serie:</strong></td>
+                                    <td>{{ venta.equipo_stock.numero_serie }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Modelo:</strong></td>
+                                    <td>{{ venta.equipo_stock.modelo }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Tipo de Equipo:</strong></td>
+                                    <td>{{ venta.equipo_stock.tipo_equipo }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Estado:</strong></td>
+                                    <td>
+                                        <span class="badge badge-{% if venta.estado == 'COMPLETADA' %}success{% elif venta.estado == 'PENDIENTE' %}warning{% else %}danger{% endif %}">
+                                            {{ venta.get_estado_display }}
+                                        </span>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <h5 class="text-primary">Información de la Venta</h5>
+                            <table class="table table-borderless">
+                                <tr>
+                                    <td><strong>Cliente:</strong></td>
+                                    <td>{{ venta.cliente.razon_social }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Fecha de Venta:</strong></td>
+                                    <td>{{ venta.fecha_venta|date:"d/m/Y" }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Precio de Venta:</strong></td>
+                                    <td>${{ venta.precio_venta|floatformat:2 }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Número de Factura:</strong></td>
+                                    <td>{{ venta.numero_factura|default:"No especificado" }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Vendedor:</strong></td>
+                                    <td>{{ venta.vendedor.get_nombre_completo }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Total Certificados:</strong></td>
+                                    <td>{{ venta.total_certificados }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Certificados Asociados -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="mb-0"><i class="fas fa-certificate"></i> Certificados Asociados</h5>
+                        </div>
+                        <div class="card-body">
+                            {% if venta.certificados.all %}
+                                <div class="row">
+                                    {% for certificado in venta.certificados.all %}
+                                        <div class="col-md-4 mb-3">
+                                            <div class="certificado-item border rounded p-3">
+                                                <h6><i class="fas fa-certificate text-primary"></i> {{ certificado.nombre }}</h6>
+                                                <p class="mb-1"><strong>Tipo:</strong> {{ certificado.get_tipo_display }}</p>
+                                                <p class="mb-1"><strong>Código:</strong> {{ certificado.codigo }}</p>
+                                                <p class="mb-0 text-muted">Precio: ${{ certificado.precio_venta|floatformat:2 }}</p>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                <p class="text-muted mb-0">No se asociaron certificados a esta venta.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Checklist de Procesos JD -->
+                    <div class="card mb-4">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0"><i class="fas fa-tasks"></i> Checklist de Procesos John Deere</h5>
+                            <a href="{% url 'ventaMaquinarias:actualizar_checklist_procesos' venta.id %}" class="btn btn-sm btn-primary">
+                                <i class="fas fa-edit"></i> Actualizar
+                            </a>
+                        </div>
+                        <div class="card-body">
+                            {% if venta.checklist_procesos %}
+                                {% with checklist=venta.checklist_procesos %}
+                                    <!-- Barra de Progreso -->
+                                    <div class="mb-3">
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <span class="fw-bold">Progreso: {{ checklist.procesos_completados }}/{{ checklist.total_procesos }}</span>
+                                            <span class="badge bg-primary">{{ checklist.porcentaje_completado|floatformat:1 }}%</span>
+                                        </div>
+                                        <div class="progress" style="height: 20px;">
+                                            <div class="progress-bar bg-success" role="progressbar" 
+                                                 style="width: {{ checklist.porcentaje_completado }}%">
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Lista de Procesos -->
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="proceso-item {% if checklist.registro_garantias %}completado{% endif %}">
+                                                <i class="fas fa-shield-alt"></i>
+                                                <strong>Registro en Garantías</strong>
+                                                {% if checklist.registro_garantias %}
+                                                    <i class="fas fa-check-circle text-success ms-2"></i>
+                                                {% else %}
+                                                    <i class="fas fa-times-circle text-danger ms-2"></i>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="proceso-item {% if checklist.garantia_extendida %}completado{% endif %}">
+                                                <i class="fas fa-clock"></i>
+                                                <strong>Garantía Extendida</strong>
+                                                {% if checklist.garantia_extendida %}
+                                                    <i class="fas fa-check-circle text-success ms-2"></i>
+                                                {% else %}
+                                                    <i class="fas fa-times-circle text-danger ms-2"></i>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="proceso-item {% if checklist.operations_center %}completado{% endif %}">
+                                                <i class="fas fa-satellite-dish"></i>
+                                                <strong>Operations Center</strong>
+                                                {% if checklist.operations_center %}
+                                                    <i class="fas fa-check-circle text-success ms-2"></i>
+                                                {% else %}
+                                                    <i class="fas fa-times-circle text-danger ms-2"></i>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="proceso-item {% if checklist.svap %}completado{% endif %}">
+                                                <i class="fas fa-shield-virus"></i>
+                                                <strong>SVAP (John Deere Protect)</strong>
+                                                {% if checklist.svap %}
+                                                    <i class="fas fa-check-circle text-success ms-2"></i>
+                                                {% else %}
+                                                    <i class="fas fa-times-circle text-danger ms-2"></i>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {% if checklist.observaciones %}
+                                        <div class="mt-3">
+                                            <strong>Observaciones:</strong>
+                                            <p class="mb-0 text-muted">{{ checklist.observaciones }}</p>
+                                        </div>
+                                    {% endif %}
+
+                                    <div class="mt-3">
+                                        <small class="text-muted">
+                                            <i class="fas fa-info-circle"></i>
+                                            Última actualización: {{ checklist.fecha_actualizacion|date:"d/m/Y H:i" }}
+                                            {% if checklist.usuario_actualizacion %}
+                                                por {{ checklist.usuario_actualizacion.get_full_name|default:checklist.usuario_actualizacion.username }}
+                                            {% endif %}
+                                        </small>
+                                    </div>
+                                {% endwith %}
+                            {% else %}
+                                <p class="text-muted mb-0">No se ha iniciado el checklist de procesos.</p>
+                                <a href="{% url 'ventaMaquinarias:actualizar_checklist_procesos' venta.id %}" class="btn btn-primary mt-2">
+                                    <i class="fas fa-plus"></i> Iniciar Checklist
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    {% if venta.observaciones %}
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h5 class="mb-0"><i class="fas fa-comment"></i> Observaciones</h5>
+                            </div>
+                            <div class="card-body">
+                                <p class="mb-0">{{ venta.observaciones }}</p>
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    <!-- Información del Sistema -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0"><i class="fas fa-info-circle"></i> Información del Sistema</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p><strong>Fecha de Creación:</strong> {{ venta.fecha_creacion|date:"d/m/Y H:i" }}</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p><strong>Última Modificación:</strong> {{ venta.fecha_modificacion|date:"d/m/Y H:i" }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.proceso-item {
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    background-color: #f8f9fa;
+    border-left: 4px solid #dee2e6;
+}
+
+.proceso-item.completado {
+    background-color: #d4edda;
+    border-left-color: #28a745;
+}
+
+.certificado-item {
+    background-color: #f8f9fa;
+    border-radius: 5px;
+}
+</style>
+{% endblock %} 

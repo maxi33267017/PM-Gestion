@@ -12,6 +12,7 @@ urlpatterns = [
         path('', views.gestion_de_taller, name='gestion_de_taller'),
         path('servicios/', views.lista_servicios, name='lista_servicios'),
         path('calendario_preordenes/', views.calendario_preordenes, name='calendario_preordenes'),
+        path('calendario_semanal_tecnicos/', views.calendario_semanal_tecnicos, name='calendario_semanal_tecnicos'),
         path('preordenes_json/', views.preordenes_json, name='preordenes_json'),
         path('preorden/<int:preorden_id>/detalle/', views.detalle_preorden, name='detalle_preorden'),
         path('crear_preorden/', views.crear_preorden, name='crear_preorden'),
@@ -47,10 +48,13 @@ urlpatterns = [
         path('5s/<int:revision_id>/', views.detalle_revision_5s, name='detalle_revision_5s'),
         path('5s/<int:revision_id>/plan-accion/', views.crear_plan_accion_5s, name='crear_plan_accion_5s'),
         path('5s/planes-accion/', views.lista_planes_accion_5s, name='lista_planes_accion_5s'),
+        path('5s/plan-accion/<int:plan_id>/', views.detalle_plan_accion_5s, name='detalle_plan_accion_5s'),
+        path('5s/plan-accion/<int:plan_id>/editar/', views.editar_plan_accion_5s, name='editar_plan_accion_5s'),
 
         # URLs para encuestas
         path('encuestas/', views.lista_encuestas, name='lista_encuestas'),
         path('encuestas/enviar/<int:servicio_id>/', views.enviar_encuesta, name='enviar_encuesta'),
+        path('encuestas/<int:encuesta_id>/reenviar/', views.reenviar_encuesta, name='reenviar_encuesta'),
         path('encuestas/estadisticas/', views.estadisticas_encuestas, name='estadisticas_encuestas'),
         path('encuestas/<int:encuesta_id>/cargar_respuesta/', views.cargar_respuesta_encuesta, name='cargar_respuesta_encuesta'),
         path('encuestas/<int:encuesta_id>/ver_respuesta/', views.ver_respuesta_encuesta, name='ver_respuesta_encuesta'),
@@ -62,4 +66,34 @@ urlpatterns = [
         # URLs para observaciones de servicios
         path('servicio/<int:servicio_id>/agregar_observacion/', views.agregar_observacion, name='agregar_observacion'),
         path('observacion/<int:observacion_id>/eliminar/', views.eliminar_observacion, name='eliminar_observacion'),
+        
+        # URLs para gestión de repuestos
+        path('repuestos/', views.gestionar_repuestos, name='gestionar_repuestos'),
+        path('repuestos/crear/', views.crear_repuesto, name='crear_repuesto'),
+        path('repuestos/obtener/', views.obtener_repuesto, name='obtener_repuesto'),
+        path('repuestos/lista/', views.obtener_lista_repuestos, name='obtener_lista_repuestos'),
+
+        # URLs para Herramientas Especiales
+        path('herramientas-especiales/', views.herramientas_especiales_list, name='herramientas_especiales_list'),
+        path('herramientas-especiales/<int:herramienta_id>/', views.herramienta_especial_detail, name='herramienta_especial_detail'),
+        path('herramientas-especiales/<int:herramienta_id>/reservar/', views.reservar_herramienta, name='reservar_herramienta'),
+        path('reservas/<int:reserva_id>/retirar/', views.retirar_herramienta, name='retirar_herramienta'),
+        path('reservas/<int:reserva_id>/devolver/', views.devolver_herramienta, name='devolver_herramienta'),
+        path('reservas/<int:reserva_id>/cancelar/', views.cancelar_reserva, name='cancelar_reserva'),
+        path('herramientas-especiales/<int:herramienta_id>/retirar-sin-reserva/', views.retirar_sin_reserva, name='retirar_sin_reserva'),
+        
+        # URLs para importación de herramientas especiales
+        path('herramientas-especiales/importar/', views.importar_herramientas_especiales, name='importar_herramientas_especiales'),
+        path('herramientas-especiales/descargar-template/', views.descargar_template_excel, name='descargar_template_excel'),
+        
+        # URLs para Herramientas Personales
+        path('herramientas-personales/', views.personal_tools_list, name='personal_tools_list'),
+        path('herramientas-personales/dashboard/', views.personal_tools_dashboard, name='personal_tools_dashboard'),
+        path('herramientas-personales/reportes/', views.personal_tools_reports, name='personal_tools_reports'),
+        path('herramientas-personales/<int:tool_id>/', views.personal_tool_detail, name='personal_tool_detail'),
+        path('herramientas-personales/<int:tool_id>/asignar/', views.assign_personal_tool, name='assign_personal_tool'),
+        path('herramientas-personales/<int:tool_id>/devolver/', views.return_personal_tool, name='return_personal_tool'),
+        path('herramientas-personales/<int:tool_id>/auditar/', views.audit_personal_tool, name='audit_personal_tool'),
+        path('herramientas-personales/<int:tool_id>/certificacion/', views.update_certification, name='update_certification'),
+        path('herramientas-personales/<int:tool_id>/items/', views.add_item, name='add_item'),
     ]

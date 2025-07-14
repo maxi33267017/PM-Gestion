@@ -29,16 +29,17 @@
         </div>
         <div class="card-body">
             <form method="get" class="row g-3">
-                <div class="col-md-3">
+                <div class="col-md-2">
                     <label for="periodo" class="form-label">Período de Análisis</label>
                     <select name="periodo" id="periodo" class="form-select">
+                        <option value="30" {% if periodo_dias == 30 %}selected{% endif %}>Último mes</option>
                         <option value="90" {% if periodo_dias == 90 %}selected{% endif %}>Últimos 3 meses</option>
                         <option value="180" {% if periodo_dias == 180 %}selected{% endif %}>Últimos 6 meses</option>
                         <option value="365" {% if periodo_dias == 365 %}selected{% endif %}>Último año</option>
                         <option value="730" {% if periodo_dias == 730 %}selected{% endif %}>Últimos 2 años</option>
                     </select>
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-2">
                     <label for="segmento" class="form-label">Segmento</label>
                     <select name="segmento" id="segmento" class="form-select">
                         <option value="">Todos los segmentos</option>
@@ -47,7 +48,7 @@
                         <option value="C" {% if segmento_filtro == 'C' %}selected{% endif %}>Segmento C</option>
                     </select>
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-2">
                     <label for="comportamiento" class="form-label">Comportamiento</label>
                     <select name="comportamiento" id="comportamiento" class="form-select">
                         <option value="">Todos los comportamientos</option>
@@ -57,7 +58,14 @@
                         <option value="INACTIVO" {% if comportamiento_filtro == 'INACTIVO' %}selected{% endif %}>Inactivo</option>
                     </select>
                 </div>
-                <div class="col-md-3 d-flex align-items-end">
+                <div class="col-md-2">
+                    <label for="solo_activos" class="form-label">Estado del Cliente</label>
+                    <select name="solo_activos" id="solo_activos" class="form-select">
+                        <option value="true" {% if solo_activos %}selected{% endif %}>Solo Activos</option>
+                        <option value="false" {% if not solo_activos %}selected{% endif %}>Todos los Clientes</option>
+                    </select>
+                </div>
+                <div class="col-md-4 d-flex align-items-end">
                     <button type="submit" class="btn btn-primary me-2">
                         <i class="bi bi-search me-2"></i>Filtrar
                     </button>
@@ -176,8 +184,8 @@
                             </small>
                         </div>
                         <div class="text-end">
-                            <strong>${{ cliente_data.cliente.total_facturacion|floatformat:0 }}</strong><br>
-                            <small class="text-muted">{{ cliente_data.cliente.total_servicios }} servicios</small>
+                            <strong>${{ cliente_data.facturacion_total|floatformat:0 }}</strong><br>
+                            <small class="text-muted">{{ cliente_data.total_servicios }} servicios</small>
                         </div>
                     </div>
                     {% empty %}
@@ -233,16 +241,16 @@
                                 </span>
                             </td>
                             <td>
-                                <strong>${{ cliente_data.cliente.total_facturacion|floatformat:0 }}</strong>
+                                <strong>${{ cliente_data.facturacion_total|floatformat:0 }}</strong>
                             </td>
                             <td>
-                                <span class="badge bg-primary">{{ cliente_data.cliente.total_servicios }}</span>
+                                <span class="badge bg-primary">{{ cliente_data.total_servicios }}</span>
                             </td>
                             <td>
-                                <span class="badge bg-secondary">{{ cliente_data.cliente.equipos_activos }}</span>
+                                <span class="badge bg-secondary">{{ cliente_data.equipos_activos }}</span>
                             </td>
                             <td>
-                                <span class="badge bg-info">{{ cliente_data.cliente.paquetes_activos }}</span>
+                                <span class="badge bg-info">{{ cliente_data.paquetes_activos }}</span>
                             </td>
                             <td>
                                 {% if cliente_data.cliente.ultimo_servicio %}
@@ -270,5 +278,137 @@
             </div>
         </div>
     </div>
+
+    <!-- Reportes de Facturación -->
+    <div class="card shadow-sm mt-4">
+        <div class="card-header">
+            <h5 class="mb-0">
+                <i class="bi bi-file-earmark-text me-2"></i>Reportes de Facturación
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-12 mb-3">
+                    <form method="get" action="{% url 'crm:reporte_facturacion' %}" class="row g-3">
+                        <div class="col-md-2">
+                            <label for="tipo_reporte" class="form-label">Tipo de Reporte</label>
+                            <select name="tipo_reporte" id="tipo_reporte" class="form-select" required>
+                                <option value="">Seleccionar...</option>
+                                <option value="anual">Anual</option>
+                                <option value="semestral">Semestral</option>
+                                <option value="trimestral">Trimestral</option>
+                                <option value="mensual">Mensual</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label for="año" class="form-label">Año</label>
+                            <select name="año" id="año" class="form-select" required>
+                                <option value="">Seleccionar...</option>
+                                <option value="2025">2025</option>
+                                <option value="2024">2024</option>
+                                <option value="2023">2023</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label for="periodo_especifico" class="form-label">Período</label>
+                            <select name="periodo_especifico" id="periodo_especifico" class="form-select">
+                                <option value="">Todos</option>
+                                <option value="Q1">Q1 (Ene-Mar)</option>
+                                <option value="Q2">Q2 (Abr-Jun)</option>
+                                <option value="Q3">Q3 (Jul-Sep)</option>
+                                <option value="Q4">Q4 (Oct-Dic)</option>
+                                <option value="S1">S1 (Ene-Jun)</option>
+                                <option value="S2">S2 (Jul-Dic)</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label for="nivel_detalle" class="form-label">Nivel de Detalle</label>
+                            <select name="nivel_detalle" id="nivel_detalle" class="form-select">
+                                <option value="resumen">Solo Totales</option>
+                                <option value="detallado">Con Servicios</option>
+                                <option value="completo">Completo</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label for="top_clientes" class="form-label">Top Clientes</label>
+                            <select name="top_clientes" id="top_clientes" class="form-select">
+                                <option value="">Todos</option>
+                                <option value="10">Top 10</option>
+                                <option value="20">Top 20</option>
+                                <option value="50">Top 50</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2 d-flex align-items-end">
+                            <button type="submit" class="btn btn-success me-2">
+                                <i class="bi bi-file-earmark-excel me-2"></i>Generar Reporte
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Reportes Rápidos -->
+            <div class="row mt-3">
+                <div class="col-md-12">
+                    <h6 class="mb-3">
+                        <i class="bi bi-lightning me-2"></i>Reportes Rápidos
+                    </h6>
+                    <div class="d-flex flex-wrap gap-2">
+                        <a href="{% url 'crm:reporte_facturacion' %}?tipo_reporte=anual&año=2025&nivel_detalle=resumen" class="btn btn-outline-primary btn-sm">
+                            <i class="bi bi-calendar-year me-1"></i>2025 - Resumen
+                        </a>
+                        <a href="{% url 'crm:reporte_facturacion' %}?tipo_reporte=trimestral&año=2025&periodo_especifico=Q1&nivel_detalle=detallado" class="btn btn-outline-info btn-sm">
+                            <i class="bi bi-calendar-quarter me-1"></i>Q1 2025 - Detallado
+                        </a>
+                        <a href="{% url 'crm:reporte_facturacion' %}?tipo_reporte=mensual&año=2025&nivel_detalle=completo&top_clientes=10" class="btn btn-outline-success btn-sm">
+                            <i class="bi bi-calendar-month me-1"></i>2025 - Top 10
+                        </a>
+                        <a href="{% url 'crm:reporte_facturacion' %}?tipo_reporte=anual&año=2024&nivel_detalle=completo" class="btn btn-outline-warning btn-sm">
+                            <i class="bi bi-calendar-check me-1"></i>2024 - Completo
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Mostrar/ocultar campos según el tipo de reporte
+    const tipoReporte = document.getElementById('tipo_reporte');
+    const periodoEspecifico = document.getElementById('periodo_especifico');
+    
+    tipoReporte.addEventListener('change', function() {
+        const value = this.value;
+        
+        // Mostrar opciones relevantes según el tipo
+        if (value === 'trimestral') {
+            periodoEspecifico.innerHTML = `
+                <option value="">Todos los trimestres</option>
+                <option value="Q1">Q1 (Enero-Marzo)</option>
+                <option value="Q2">Q2 (Abril-Junio)</option>
+                <option value="Q3">Q3 (Julio-Septiembre)</option>
+                <option value="Q4">Q4 (Octubre-Diciembre)</option>
+            `;
+        } else if (value === 'semestral') {
+            periodoEspecifico.innerHTML = `
+                <option value="">Ambos semestres</option>
+                <option value="S1">S1 (Enero-Junio)</option>
+                <option value="S2">S2 (Julio-Diciembre)</option>
+            `;
+        } else {
+            periodoEspecifico.innerHTML = `
+                <option value="">Todos</option>
+                <option value="Q1">Q1 (Ene-Mar)</option>
+                <option value="Q2">Q2 (Abr-Jun)</option>
+                <option value="Q3">Q3 (Jul-Sep)</option>
+                <option value="Q4">Q4 (Oct-Dic)</option>
+                <option value="S1">S1 (Ene-Jun)</option>
+                <option value="S2">S2 (Jul-Dic)</option>
+            `;
+        }
+    });
+});
+</script>
 {% endblock %} 

@@ -1,0 +1,232 @@
+{% extends 'base.html' %}
+{% block title %} | Detalle de Lead{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="display-6 mb-2">
+                        <i class="bi bi-person-plus-fill text-info me-2"></i>Lead John Deere
+                    </h1>
+                    <p class="lead text-muted">Detalle del lead</p>
+                </div>
+                <div>
+                    <a href="{% url 'centroSoluciones:lead_edit' lead.id %}" class="btn btn-warning">
+                        <i class="bi bi-pencil me-2"></i>Editar Lead
+                    </a>
+                    <a href="{% url 'centroSoluciones:leads_list' %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left me-2"></i>Volver a Leads
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <!-- Información Principal -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-info-circle me-2"></i>Información del Lead
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Cliente</label>
+                                <p class="form-control-plaintext">{{ lead.cliente.razon_social }}</p>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">CUIT</label>
+                                <p class="form-control-plaintext">{{ lead.cliente.cuit }}</p>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Equipo</label>
+                                <p class="form-control-plaintext">{{ lead.equipo.numero_serie }}</p>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Modelo</label>
+                                <p class="form-control-plaintext">{{ lead.equipo.modelo.nombre }}</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Estado</label>
+                                <p class="form-control-plaintext">
+                                    {% if lead.estado == 'NUEVO' %}
+                                        <span class="badge bg-danger">Nuevo</span>
+                                    {% elif lead.estado == 'CONTACTADO' %}
+                                        <span class="badge bg-warning">Contactado</span>
+                                    {% elif lead.estado == 'CALIFICADO' %}
+                                        <span class="badge bg-info">Calificado</span>
+                                    {% elif lead.estado == 'CONVERTIDO' %}
+                                        <span class="badge bg-success">Convertido</span>
+                                    {% elif lead.estado == 'DESCARTADO' %}
+                                        <span class="badge bg-secondary">Descartado</span>
+                                    {% endif %}
+                                </p>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Clasificación</label>
+                                <p class="form-control-plaintext">
+                                    <span class="badge bg-{{ lead.get_clasificacion_color }}">
+                                        {{ lead.get_clasificacion_display }}
+                                    </span>
+                                </p>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Valor Estimado</label>
+                                <p class="form-control-plaintext">
+                                    {% if lead.valor_estimado %}
+                                        <span class="text-success fw-bold">${{ lead.valor_estimado|floatformat:2 }}</span>
+                                    {% else %}
+                                        <span class="text-muted">No especificado</span>
+                                    {% endif %}
+                                </p>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Fecha de Recepción</label>
+                                <p class="form-control-plaintext">{{ lead.fecha|date:"d/m/Y H:i" }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Descripción -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-file-text me-2"></i>Descripción
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="form-control-plaintext">{{ lead.descripcion|linebreaks }}</p>
+                </div>
+            </div>
+
+            <!-- Observaciones de Contacto -->
+            {% if lead.observaciones_contacto %}
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-chat-dots me-2"></i>Observaciones de Contacto
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="form-control-plaintext">{{ lead.observaciones_contacto|linebreaks }}</p>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="col-md-4">
+            <!-- Información de Auditoría -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-clock-history me-2"></i>Información de Auditoría
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Creado por</label>
+                        <p class="form-control-plaintext">{{ lead.creado_por.get_nombre_completo }}</p>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Fecha de Creación</label>
+                        <p class="form-control-plaintext">{{ lead.fecha_creacion|date:"d/m/Y H:i" }}</p>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Última Modificación</label>
+                        <p class="form-control-plaintext">{{ lead.fecha_modificacion|date:"d/m/Y H:i" }}</p>
+                    </div>
+                    {% if lead.fecha_contacto %}
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Fecha de Primer Contacto</label>
+                        <p class="form-control-plaintext">{{ lead.fecha_contacto|date:"d/m/Y H:i" }}</p>
+                    </div>
+                    {% endif %}
+                    {% if lead.tiempo_sin_contactar %}
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Tiempo sin Contactar</label>
+                        <p class="form-control-plaintext text-warning">
+                            {{ lead.tiempo_sin_contactar.days }} días
+                        </p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Embudo de Ventas -->
+            {% if embudo %}
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-funnel-fill text-primary me-2"></i>Embudo de Ventas
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Etapa Actual</label>
+                        <p class="form-control-plaintext">
+                            <span class="badge bg-primary">{{ embudo.get_etapa_display }}</span>
+                        </p>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Probabilidad de Cierre</label>
+                        <div class="d-flex align-items-center">
+                            <div class="progress me-2" style="width: 100px; height: 8px;">
+                                <div class="progress-bar bg-success" style="width: {{ embudo.probabilidad_cierre }}%"></div>
+                            </div>
+                            <span class="fw-bold">{{ embudo.probabilidad_cierre }}%</span>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Valor Estimado</label>
+                        <p class="form-control-plaintext">
+                            {% if embudo.valor_estimado %}
+                                <span class="text-success fw-bold">${{ embudo.valor_estimado|floatformat:2 }}</span>
+                            {% else %}
+                                <span class="text-muted">No especificado</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                    <div class="d-grid">
+                        <a href="{% url 'crm:embudo_ventas_detalle' embudo.id %}" class="btn btn-primary">
+                            <i class="bi bi-funnel me-2"></i>Ver Embudo Completo
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Acciones Rápidas -->
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-lightning-fill me-2"></i>Acciones Rápidas
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'centroSoluciones:lead_edit' lead.id %}" class="btn btn-warning">
+                            <i class="bi bi-pencil me-2"></i>Editar Lead
+                        </a>
+                        <a href="{% url 'centroSoluciones:leads_list' %}" class="btn btn-outline-secondary">
+                            <i class="bi bi-list me-2"></i>Ver Todos los Leads
+                        </a>
+                        <button type="button" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#modalNuevoLead">
+                            <i class="bi bi-plus-circle me-2"></i>Nuevo Lead
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

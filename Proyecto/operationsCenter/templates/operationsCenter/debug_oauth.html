@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3><i class="bi bi-bug"></i> Debug OAuth Configuration</h3>
+                </div>
+                <div class="card-body">
+                    <h5>Configuración Actual:</h5>
+                    {% if config %}
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Client ID:</strong> {{ config.client_id }}</p>
+                            <p><strong>Redirect URI:</strong> {{ config.redirect_uri }}</p>
+                            <p><strong>Access Token:</strong> {% if config.access_token %}Configurado{% else %}No configurado{% endif %}</p>
+                            <p><strong>Organization ID:</strong> {{ config.organization_id|default:"No configurado" }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Estado:</strong> {% if config.is_active %}Activo{% else %}Inactivo{% endif %}</p>
+                            <p><strong>Última actualización:</strong> {{ config.updated_at|date:"d/m/Y H:i" }}</p>
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    
+                    <h5>URL de Autorización Generada:</h5>
+                    <div class="alert alert-info">
+                        <code>{{ auth_url }}</code>
+                    </div>
+                    
+                    <form method="post" class="mt-3">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-warning">
+                            <i class="bi bi-search"></i> Probar URL de Autorización
+                        </button>
+                        <a href="{% url 'operationsCenter:configuracion_oc' %}" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left"></i> Volver a Configuración
+                        </a>
+                    </form>
+                    
+                    {% else %}
+                    <div class="alert alert-danger">
+                        <i class="bi bi-exclamation-triangle"></i> No hay configuración activa.
+                    </div>
+                    <a href="{% url 'operationsCenter:configuracion_oc' %}" class="btn btn-primary">
+                        <i class="bi bi-gear"></i> Ir a Configuración
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

@@ -141,6 +141,15 @@ class Servicio(models.Model):
         null=True
     )
 
+    # Campo para Orden de Servicio (OR)
+    orden_servicio = models.CharField(
+        max_length=8, 
+        blank=True, 
+        null=True, 
+        verbose_name="OR (Orden de Servicio)",
+        help_text="Número de hasta 8 dígitos de la Orden de Servicio"
+    )
+
     fecha_creacion = models.DateTimeField(auto_now_add=True)
     fecha_modificacion = models.DateTimeField(auto_now=True)
     trabajo = models.CharField(max_length=20, choices=TRABAJO_CHOICES)
@@ -390,7 +399,7 @@ class VentaRepuesto(models.Model):
     codigo = models.CharField(max_length=50, verbose_name="Código Repuesto")
     descripcion = models.CharField(max_length=200)
     cantidad = models.PositiveIntegerField()
-    costo_unitario = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Costo Unitario")
+    costo_unitario = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Costo Unitario", null=True, blank=True)
     precio_unitario = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Precio Unitario")
 
     def get_subtotal(self):
@@ -448,7 +457,7 @@ class Revision5S(models.Model):
     fecha_creacion = models.DateTimeField(auto_now_add=True)
     fecha_modificacion = models.DateTimeField(auto_now=True)
 
-    evidencias = models.ImageField(upload_to='5s/revision/antes/', blank=True, verbose_name="Evidencias No Conformidades")
+    # Campo de evidencias removido - ahora se maneja con modelo separado
 
 
     class Meta:
@@ -475,6 +484,38 @@ class Revision5S(models.Model):
         self.porcentaje_conformidad = self.calcular_conformidad()
         super().save(*args, **kwargs)
 
+
+class EvidenciaRevision5S(models.Model):
+    """Modelo para múltiples evidencias de revisiones 5S"""
+    revision = models.ForeignKey(Revision5S, on_delete=models.CASCADE, related_name='evidencias')
+    imagen = models.ImageField(upload_to='5s/revision/evidencias/', verbose_name="Evidencia")
+    descripcion = models.CharField(max_length=200, blank=True, verbose_name="Descripción")
+    fecha_subida = models.DateTimeField(auto_now_add=True, verbose_name="Fecha de Subida")
+    
+    class Meta:
+        verbose_name = "Evidencia de Revisión 5S"
+        verbose_name_plural = "Evidencias de Revisiones 5S"
+        ordering = ['-fecha_subida']
+    
+    def __str__(self):
+        return f"Evidencia {self.id} - {self.revision}"
+
+
+class EvidenciaPlanAccion5S(models.Model):
+    """Modelo para múltiples evidencias de planes de acción 5S"""
+    plan_accion = models.ForeignKey('PlanAccion5S', on_delete=models.CASCADE, related_name='evidencias')
+    imagen = models.ImageField(upload_to='5s/planes/evidencias/', verbose_name="Evidencia")
+    descripcion = models.CharField(max_length=200, blank=True, verbose_name="Descripción")
+    fecha_subida = models.DateTimeField(auto_now_add=True, verbose_name="Fecha de Subida")
+
+    class Meta:
+        verbose_name = "Evidencia de Plan de Acción 5S"
+        verbose_name_plural = "Evidencias de Planes de Acción 5S"
+        ordering = ['-fecha_subida']
+
+    def __str__(self):
+        return f"Evidencia {self.id} - {self.plan_accion}"
+
 class PlanAccion5S(models.Model):
     ESTADO_CHOICES = [
         ('PENDIENTE', 'Pendiente'),
@@ -489,7 +530,7 @@ class PlanAccion5S(models.Model):
     fecha_limite = models.DateField()
     estado = models.CharField(max_length=20, choices=ESTADO_CHOICES, default='PENDIENTE')
     fecha_cierre = models.DateField(null=True, blank=True)
-    evidencia_despues = models.ImageField(upload_to='5s/despues/', blank=True)
+    evidencia_despues = models.ImageField(upload_to='5s/despues/', blank=True)  # Mantener para compatibilidad
     observaciones = models.TextField(blank=True)
 
     @classmethod
@@ -679,10 +720,46 @@ class EncuestaServicio(models.Model):
 class RespuestaEncuesta(models.Model):
     encuesta = models.ForeignKey(EncuestaServicio, on_delete=models.CASCADE, related_name='respuestas')
     fecha_respuesta = models.DateTimeField(auto_now_add=True)
-    calificacion = models.IntegerField(choices=[(i, i) for i in range(11)], help_text="Calificación del 0 al 10 (NPS)")
-    comentarios = models.TextField(blank=True, null=True)
-    nombre_respondente = models.CharField(max_length=100, blank=True, null=True)
-    cargo_respondente = models.CharField(max_length=100, blank=True, null=True)
+    
+    # Pregunta 1: Cumplimiento del acuerdo
+    cumplimiento_acuerdo = models.IntegerField(
+        choices=[(i, i) for i in range(1, 11)], 
+        verbose_name="Del momento del agendamiento hasta la entrega del Equipo, ¿Lo que fue acordado fue cumplido?",
+        help_text="Calificación del 1 al 10",
+        null=True,
+        blank=True
+    )
+    motivo_cumplimiento_bajo = models.TextField(
+        blank=True, 
+        null=True,
+        verbose_name="Si la respuesta fue menor o igual a 7, ¿podría decirnos por qué?"
+    )
+    
+    # Pregunta 2: Probabilidad de recomendación (NPS)
+    probabilidad_recomendacion = models.IntegerField(
+        choices=[(i, i) for i in range(1, 11)], 
+        verbose_name="En una escala de 1 a 10, ¿cuán probable es que recomiende el Servicio del Concesionario a otras personas?",
+        help_text="Calificación del 1 al 10",
+        null=True,
+        blank=True
+    )
+    motivo_recomendacion_baja = models.TextField(
+        blank=True, 
+        null=True,
+        verbose_name="Si la respuesta fue menor o igual a 7, ¿podría decirnos por qué?"
+    )
+    
+    # Pregunta 3: Problemas pendientes
+    problemas_pendientes = models.TextField(
+        blank=True, 
+        null=True,
+        verbose_name="¿Algún pendiente o problema no resuelto?"
+    )
+    
+    # Campos adicionales
+    comentarios_generales = models.TextField(blank=True, null=True, verbose_name="Comentarios adicionales")
+    nombre_respondente = models.CharField(max_length=100, blank=True, null=True, verbose_name="Nombre del respondente")
+    cargo_respondente = models.CharField(max_length=100, blank=True, null=True, verbose_name="Cargo del respondente")
 
     class Meta:
         verbose_name = "Respuesta de Encuesta"
@@ -692,12 +769,24 @@ class RespuestaEncuesta(models.Model):
         return f"Respuesta para Servicio #{self.encuesta.servicio.id} - {self.fecha_respuesta}"
     
     def get_nps_category(self):
-        if self.calificacion >= 9:
+        """Determina la categoría NPS basada en la probabilidad de recomendación"""
+        if self.probabilidad_recomendacion >= 9:
             return "Promotor"
-        elif self.calificacion >= 7:
+        elif self.probabilidad_recomendacion >= 7:
             return "Pasivo"
         else:
             return "Detractor"
+    
+    def get_cumplimiento_category(self):
+        """Determina la categoría del cumplimiento del acuerdo"""
+        if self.cumplimiento_acuerdo >= 9:
+            return "Excelente"
+        elif self.cumplimiento_acuerdo >= 7:
+            return "Bueno"
+        elif self.cumplimiento_acuerdo >= 5:
+            return "Regular"
+        else:
+            return "Deficiente"
     
 
 class InsatisfaccionCliente(models.Model):
@@ -811,4 +900,744 @@ class ObservacionServicio(models.Model):
         """Retorna la fecha formateada para mostrar"""
         return self.fecha_creacion.strftime('%d/%m/%Y %H:%M')
 
+
+class Repuesto(models.Model):
+    """Modelo para almacenar la base de datos de repuestos"""
+    
+    codigo = models.CharField(max_length=50, unique=True, verbose_name="Código del Repuesto")
+    descripcion = models.TextField(blank=True, verbose_name="Descripción")
+    costo = models.DecimalField(
+        max_digits=10, 
+        decimal_places=2, 
+        null=True, 
+        blank=True, 
+        verbose_name="Costo"
+    )
+    precio_venta = models.DecimalField(
+        max_digits=10, 
+        decimal_places=2, 
+        verbose_name="Precio de Venta"
+    )
+    
+    # Campos adicionales
+    categoria = models.CharField(
+        max_length=100, 
+        blank=True, 
+        verbose_name="Categoría",
+        help_text="Ej: Filtros, Aceites, Neumáticos, etc."
+    )
+    proveedor = models.CharField(
+        max_length=200, 
+        blank=True, 
+        verbose_name="Proveedor"
+    )
+    stock_minimo = models.PositiveIntegerField(
+        default=0, 
+        verbose_name="Stock Mínimo"
+    )
+    ubicacion_almacen = models.CharField(
+        max_length=100, 
+        blank=True, 
+        verbose_name="Ubicación en Almacén"
+    )
+    
+    # Campos de auditoría
+    fecha_creacion = models.DateTimeField(auto_now_add=True, verbose_name="Fecha de Creación")
+    fecha_modificacion = models.DateTimeField(auto_now=True, verbose_name="Última Modificación")
+    creado_por = models.ForeignKey(
+        'recursosHumanos.Usuario', 
+        on_delete=models.SET_NULL, 
+        null=True, 
+        related_name='repuestos_creados',
+        verbose_name="Creado por"
+    )
+    activo = models.BooleanField(default=True, verbose_name="Activo")
+    
+    class Meta:
+        verbose_name = "Repuesto"
+        verbose_name_plural = "Repuestos"
+        ordering = ['codigo']
+        indexes = [
+            models.Index(fields=['codigo']),
+            models.Index(fields=['categoria']),
+            models.Index(fields=['proveedor']),
+            models.Index(fields=['activo']),
+        ]
+    
+    def __str__(self):
+        return f"{self.codigo} - {self.descripcion[:50] if self.descripcion else 'Sin descripción'}"
+    
+    @property
+    def margen_ganancia(self):
+        """Calcula el margen de ganancia en porcentaje"""
+        if self.costo and self.precio_venta:
+            return ((self.precio_venta - self.costo) / self.costo) * 100
+        return 0
+    
+    @property
+    def ganancia_unitaria(self):
+        """Calcula la ganancia unitaria"""
+        if self.costo and self.precio_venta:
+            return self.precio_venta - self.costo
+        return 0 
+    
+
+class HerramientaEspecial(models.Model):
+    """Modelo para herramientas especiales John Deere"""
+    codigo = models.CharField(max_length=50, unique=True, verbose_name="Código")
+    nombre = models.CharField(max_length=255, verbose_name="Nombre")
+    cantidad = models.PositiveIntegerField(default=1, verbose_name="Cantidad")
+    ubicacion = models.CharField(max_length=255, verbose_name="Ubicación")
+    foto = models.ImageField(
+        upload_to='herramientas_especiales/', 
+        blank=True, 
+        null=True, 
+        verbose_name="Foto"
+    )
+    nota = models.TextField(blank=True, null=True, verbose_name="Nota")
+    
+    # Campos de auditoría
+    fecha_creacion = models.DateTimeField(auto_now_add=True, verbose_name="Fecha de Creación")
+    fecha_modificacion = models.DateTimeField(auto_now=True, verbose_name="Última Modificación")
+    creado_por = models.ForeignKey(
+        'recursosHumanos.Usuario', 
+        on_delete=models.SET_NULL, 
+        null=True,
+        related_name='herramientas_creadas',
+        verbose_name="Creado por"
+    )
+    
+    class Meta:
+        verbose_name = "Herramienta Especial"
+        verbose_name_plural = "Herramientas Especiales"
+        ordering = ['codigo']
+    
+    def __str__(self):
+        return f"{self.codigo} - {self.nombre}"
+    
+    @property
+    def disponible(self):
+        """Verifica si la herramienta está disponible para la fecha actual"""
+        from django.utils import timezone
+        from datetime import date
+        
+        hoy = date.today()
+        reservas_activas = self.reservas.filter(
+            fecha_reserva=hoy,
+            estado__in=['RESERVADA', 'RETIRADA']
+        )
+        return not reservas_activas.exists()
+    
+    @property
+    def estado_actual(self):
+        """Retorna el estado actual de la herramienta"""
+        if not self.disponible:
+            return "No Disponible"
+        return "Disponible"
+    
+    @property
+    def reserva_actual(self):
+        """Retorna la reserva actual si existe"""
+        from django.utils import timezone
+        from datetime import date
+        
+        hoy = date.today()
+        return self.reservas.filter(
+            fecha_reserva=hoy,
+            estado__in=['RESERVADA', 'RETIRADA']
+        ).first()
+
+
+class ReservaHerramienta(models.Model):
+    """Modelo para reservas de herramientas especiales"""
+    ESTADO_CHOICES = [
+        ('RESERVADA', 'Reservada'),
+        ('RETIRADA', 'Retirada'),
+        ('DEVUELTA', 'Devuelta'),
+        ('CANCELADA', 'Cancelada'),
+    ]
+    
+    herramienta = models.ForeignKey(
+        HerramientaEspecial, 
+        on_delete=models.CASCADE,
+        related_name='reservas',
+        verbose_name="Herramienta"
+    )
+    usuario = models.ForeignKey(
+        'recursosHumanos.Usuario', 
+        on_delete=models.SET_NULL, 
+        null=True,
+        verbose_name="Usuario"
+    )
+    fecha_reserva = models.DateField(verbose_name="Fecha de Reserva")
+    preorden = models.ForeignKey(
+        'gestionDeTaller.PreOrden', 
+        on_delete=models.SET_NULL, 
+        null=True, 
+        blank=True,
+        verbose_name="Pre-Orden"
+    )
+    servicio = models.ForeignKey(
+        'gestionDeTaller.Servicio', 
+        on_delete=models.SET_NULL, 
+        null=True, 
+        blank=True,
+        verbose_name="Servicio"
+    )
+    estado = models.CharField(
+        max_length=20, 
+        choices=ESTADO_CHOICES, 
+        default='RESERVADA',
+        verbose_name="Estado"
+    )
+    fecha_retiro = models.DateTimeField(blank=True, null=True, verbose_name="Fecha de Retiro")
+    fecha_devolucion = models.DateTimeField(blank=True, null=True, verbose_name="Fecha de Devolución")
+    observaciones = models.TextField(blank=True, null=True, verbose_name="Observaciones")
+    
+    # Campos de auditoría
+    fecha_creacion = models.DateTimeField(auto_now_add=True, verbose_name="Fecha de Creación")
+    fecha_modificacion = models.DateTimeField(auto_now=True, verbose_name="Última Modificación")
+    
+    class Meta:
+        verbose_name = "Reserva de Herramienta"
+        verbose_name_plural = "Reservas de Herramientas"
+        ordering = ['-fecha_reserva', '-fecha_creacion']
+    
+    def __str__(self):
+        return f"{self.herramienta.codigo} - {self.fecha_reserva} - {self.get_estado_display()}"
+    
+    def marcar_retirada(self):
+        """Marca la herramienta como retirada"""
+        from django.utils import timezone
+        self.estado = 'RETIRADA'
+        self.fecha_retiro = timezone.now()
+        self.save()
+        
+        # Crear log
+        LogHerramienta.objects.create(
+            herramienta=self.herramienta,
+            usuario=self.usuario,
+            accion='RETIRO',
+            reserva=self,
+            observaciones=f"Herramienta retirada por {self.usuario.get_full_name() or self.usuario.username if self.usuario else 'Usuario'}"
+        )
+    
+    def marcar_devuelta(self):
+        """Marca la herramienta como devuelta"""
+        from django.utils import timezone
+        self.estado = 'DEVUELTA'
+        self.fecha_devolucion = timezone.now()
+        self.save()
+        
+        # Crear log
+        LogHerramienta.objects.create(
+            herramienta=self.herramienta,
+            usuario=self.usuario,
+            accion='DEVOLUCION',
+            reserva=self,
+            observaciones=f"Herramienta devuelta por {self.usuario.get_full_name() or self.usuario.username if self.usuario else 'Usuario'}"
+        )
+
+
+class LogHerramienta(models.Model):
+    """Modelo para el log de movimientos de herramientas"""
+    ACCION_CHOICES = [
+        ('RESERVA', 'Reserva'),
+        ('RETIRO', 'Retiro'),
+        ('DEVOLUCION', 'Devolución'),
+        ('CANCELACION', 'Cancelación'),
+    ]
+    
+    herramienta = models.ForeignKey(
+        HerramientaEspecial, 
+        on_delete=models.CASCADE,
+        related_name='logs',
+        verbose_name="Herramienta"
+    )
+    usuario = models.ForeignKey(
+        'recursosHumanos.Usuario', 
+        on_delete=models.SET_NULL, 
+        null=True,
+        verbose_name="Usuario"
+    )
+    accion = models.CharField(
+        max_length=20, 
+        choices=ACCION_CHOICES,
+        verbose_name="Acción"
+    )
+    fecha = models.DateTimeField(auto_now_add=True, verbose_name="Fecha")
+    reserva = models.ForeignKey(
+        ReservaHerramienta, 
+        on_delete=models.SET_NULL, 
+        null=True, 
+        blank=True,
+        verbose_name="Reserva"
+    )
+    observaciones = models.TextField(blank=True, null=True, verbose_name="Observaciones")
+    
+    class Meta:
+        verbose_name = "Log de Herramienta"
+        verbose_name_plural = "Logs de Herramientas"
+        ordering = ['-fecha']
+    
+    def __str__(self):
+        return f"{self.herramienta.codigo} - {self.get_accion_display()} - {self.fecha}" 
+    
+
+class HerramientaPersonal(models.Model):
+    """Modelo para el catálogo de herramientas personales"""
+    CATEGORIA_CHOICES = [
+        ('CAJA_HERRAMIENTAS', 'Caja de Herramientas'),
+        ('TESTER', 'Tester/Multímetro'),
+        ('HERRAMIENTA_ADICIONAL', 'Herramienta Adicional'),
+        ('EPP', 'Elemento de Protección Personal'),
+    ]
+    
+    ESTADO_CHOICES = [
+        ('DISPONIBLE', 'Disponible'),
+        ('ASIGNADA', 'Asignada'),
+        ('MANTENIMIENTO', 'Mantenimiento'),
+        ('PERDIDA', 'Perdida'),
+        ('DAÑADA', 'Dañada'),
+        ('VENCIDA', 'Vencida'),
+    ]
+    
+    codigo = models.CharField(max_length=20, unique=True, verbose_name="Código")
+    nombre = models.CharField(max_length=255, verbose_name="Nombre")
+    categoria = models.CharField(max_length=30, choices=CATEGORIA_CHOICES, verbose_name="Categoría")
+    marca = models.CharField(max_length=100, blank=True, verbose_name="Marca")
+    modelo = models.CharField(max_length=100, blank=True, verbose_name="Modelo")
+    descripcion = models.TextField(blank=True, verbose_name="Descripción")
+    costo_reposicion = models.DecimalField(
+        max_digits=10, 
+        decimal_places=2, 
+        null=True, 
+        blank=True, 
+        verbose_name="Costo de Reposición"
+    )
+    vida_util_meses = models.PositiveIntegerField(
+        null=True, 
+        blank=True, 
+        verbose_name="Vida Útil (meses)"
+    )
+    activo = models.BooleanField(default=True, verbose_name="Activo")
+    estado = models.CharField(
+        max_length=20,
+        choices=ESTADO_CHOICES,
+        default='DISPONIBLE',
+        verbose_name="Estado"
+    )
+    
+    # Campos de certificación
+    fecha_certificacion = models.DateField(
+        null=True, 
+        blank=True, 
+        verbose_name="Fecha de Certificación"
+    )
+    fecha_vencimiento_certificacion = models.DateField(
+        null=True, 
+        blank=True, 
+        verbose_name="Fecha de Vencimiento de Certificación"
+    )
+    
+    # Campos de auditoría
+    fecha_creacion = models.DateTimeField(auto_now_add=True, verbose_name="Fecha de Creación")
+    fecha_modificacion = models.DateTimeField(auto_now=True, verbose_name="Última Modificación")
+    creado_por = models.ForeignKey(
+        'recursosHumanos.Usuario', 
+        on_delete=models.SET_NULL, 
+        null=True,
+        related_name='herramientas_personales_creadas',
+        verbose_name="Creado por"
+    )
+    
+    class Meta:
+        verbose_name = "Herramienta Personal"
+        verbose_name_plural = "Herramientas Personales"
+        ordering = ['categoria', 'nombre']
+    
+    def __str__(self):
+        return f"{self.codigo} - {self.nombre}"
+    
+    @property
+    def es_epp(self):
+        """Verifica si es un elemento de protección personal"""
+        return self.categoria == 'EPP'
+    
+    @property
+    def asignacion_actual(self):
+        """Retorna la asignación actual activa de la herramienta"""
+        return self.asignaciones.filter(estado_asignacion='ENTREGADA').first()
+    
+    @property
+    def requiere_certificacion(self):
+        """Verifica si la herramienta requiere certificación"""
+        return self.categoria in ['TESTER', 'HERRAMIENTA_ADICIONAL']
+    
+    @property
+    def certificacion_vencida(self):
+        """Verifica si la certificación está vencida"""
+        if not self.fecha_vencimiento_certificacion:
+            return False
+        from django.utils import timezone
+        return self.fecha_vencimiento_certificacion < timezone.now().date()
+    
+    @property
+    def certificacion_proxima_vencer(self):
+        """Verifica si la certificación está próxima a vencer (30 días)"""
+        if not self.fecha_vencimiento_certificacion:
+            return False
+        from django.utils import timezone
+        from datetime import timedelta
+        fecha_limite = timezone.now().date() + timedelta(days=30)
+        return self.fecha_vencimiento_certificacion <= fecha_limite
+    
+    @property
+    def dias_vencimiento_certificacion(self):
+        """Retorna los días restantes para el vencimiento de la certificación"""
+        if not self.fecha_vencimiento_certificacion:
+            return None
+        from django.utils import timezone
+        from datetime import date
+        return (self.fecha_vencimiento_certificacion - date.today()).days
+    
+    @property
+    def total_items(self):
+        """Retorna el total de items en la herramienta"""
+        return self.items.count()
+    
+    @property
+    def items_presentes(self):
+        """Retorna el número de items presentes"""
+        return self.items.filter(estado='PRESENTE').count()
+    
+    @property
+    def items_ausentes(self):
+        """Retorna el número de items ausentes"""
+        return self.items.filter(estado='AUSENTE').count()
+    
+    @property
+    def items_danados(self):
+        """Retorna el número de items dañados"""
+        return self.items.filter(estado='DAÑADO').count()
+    
+    @property
+    def items_requieren_reposicion(self):
+        """Retorna el número de items que requieren reposición"""
+        return self.items.filter(estado__in=['AUSENTE', 'DAÑADO', 'VENCIDO']).count()
+    
+    @property
+    def completitud_herramienta(self):
+        """Retorna el porcentaje de completitud de la herramienta"""
+        if self.total_items == 0:
+            return 100
+        return round((self.items_presentes / self.total_items) * 100, 1)
+    
+    @property
+    def tiene_items_criticos(self):
+        """Verifica si la herramienta tiene items críticos ausentes"""
+        return self.items.filter(estado='AUSENTE', cantidad=1).exists()
+
+
+class ItemHerramientaPersonal(models.Model):
+    """Modelo para items individuales dentro de herramientas personales"""
+    ESTADO_CHOICES = [
+        ('PRESENTE', 'Presente'),
+        ('AUSENTE', 'Ausente'),
+        ('DAÑADO', 'Dañado'),
+        ('DESGASTADO', 'Desgastado'),
+        ('VENCIDO', 'Vencido'),
+    ]
+    
+    herramienta = models.ForeignKey(
+        HerramientaPersonal, 
+        on_delete=models.CASCADE,
+        related_name='items',
+        verbose_name="Herramienta"
+    )
+    nombre = models.CharField(max_length=255, verbose_name="Nombre del Item")
+    descripcion = models.TextField(blank=True, verbose_name="Descripción")
+    cantidad = models.PositiveIntegerField(default=1, verbose_name="Cantidad")
+    estado = models.CharField(
+        max_length=20,
+        choices=ESTADO_CHOICES,
+        default='PRESENTE',
+        verbose_name="Estado"
+    )
+    observaciones = models.TextField(blank=True, verbose_name="Observaciones")
+    
+    # Campos de auditoría
+    fecha_creacion = models.DateTimeField(auto_now_add=True, verbose_name="Fecha de Creación")
+    fecha_modificacion = models.DateTimeField(auto_now=True, verbose_name="Última Modificación")
+    
+    class Meta:
+        verbose_name = "Item de Herramienta Personal"
+        verbose_name_plural = "Items de Herramientas Personales"
+        ordering = ['herramienta', 'nombre']
+        unique_together = ['herramienta', 'nombre']
+    
+    def __str__(self):
+        return f"{self.herramienta.nombre} - {self.nombre}"
+    
+    @property
+    def requiere_reposicion(self):
+        """Verifica si el item requiere reposición"""
+        return self.estado in ['AUSENTE', 'DAÑADO', 'VENCIDO']
+    
+    @property
+    def es_critico(self):
+        """Verifica si el item es crítico para la herramienta"""
+        return self.estado == 'AUSENTE' and self.cantidad == 1
+
+
+
+
+
+class AsignacionHerramientaPersonal(models.Model):
+    """Modelo para asignaciones de herramientas personales a técnicos"""
+    ESTADO_CHOICES = [
+        ('ENTREGADA', 'Entregada'),
+        ('DEVUELTA', 'Devuelta'),
+        ('PERDIDA', 'Perdida'),
+        ('DAÑADA', 'Dañada'),
+        ('VENCIDA', 'Vencida'),
+    ]
+    
+    tecnico = models.ForeignKey(
+        'recursosHumanos.Usuario', 
+        on_delete=models.CASCADE,
+        related_name='asignaciones_herramientas',
+        verbose_name="Técnico"
+    )
+    herramienta = models.ForeignKey(
+        HerramientaPersonal, 
+        on_delete=models.CASCADE,
+        related_name='asignaciones',
+        verbose_name="Herramienta"
+    )
+    fecha_asignacion = models.DateField(verbose_name="Fecha de Asignación")
+    fecha_devolucion = models.DateField(blank=True, null=True, verbose_name="Fecha de Devolución")
+    estado_asignacion = models.CharField(
+        max_length=20, 
+        choices=ESTADO_CHOICES, 
+        default='ENTREGADA',
+        verbose_name="Estado"
+    )
+    observaciones_asignacion = models.TextField(blank=True, verbose_name="Observaciones")
+    observaciones_devolucion = models.TextField(blank=True, verbose_name="Observaciones de Devolución")
+    asignado_por = models.ForeignKey(
+        'recursosHumanos.Usuario', 
+        on_delete=models.SET_NULL, 
+        null=True,
+        related_name='herramientas_asignadas',
+        verbose_name="Asignado por"
+    )
+    
+    # Campos de auditoría
+    fecha_creacion = models.DateTimeField(auto_now_add=True, verbose_name="Fecha de Creación")
+    fecha_modificacion = models.DateTimeField(auto_now=True, verbose_name="Última Modificación")
+    
+    class Meta:
+        verbose_name = "Asignación de Herramienta Personal"
+        verbose_name_plural = "Asignaciones de Herramientas Personales"
+        ordering = ['-fecha_asignacion', '-fecha_creacion']
+        unique_together = ['tecnico', 'herramienta', 'estado_asignacion']
+    
+    def __str__(self):
+        return f"{self.tecnico.get_full_name()} - {self.herramienta.nombre}"
+    
+    @property
+    def dias_asignada(self):
+        """Calcula los días que lleva asignada la herramienta"""
+        from django.utils import timezone
+        from datetime import date
+        return (date.today() - self.fecha_asignacion).days
+    
+    @property
+    def proxima_vencer(self):
+        """Verifica si la herramienta está próxima a vencer"""
+        if self.herramienta.vida_util_meses:
+            dias_vida_util = self.herramienta.vida_util_meses * 30
+            dias_restantes = dias_vida_util - self.dias_asignada
+            return dias_restantes <= 30  # Alerta 30 días antes
+        return False
+
+
+class AuditoriaHerramientaPersonal(models.Model):
+    """Modelo para auditorías de herramientas personales"""
+    TIPO_AUDITORIA_CHOICES = [
+        ('SEMESTRAL', 'Semestral'),
+        ('EXTRAORDINARIA', 'Extraordinaria'),
+        ('DEVOLUCION', 'Devolución'),
+        ('VENCIMIENTO', 'Vencimiento'),
+    ]
+    
+    ESTADO_GENERAL_CHOICES = [
+        ('EXCELENTE', 'Excelente'),
+        ('BUENO', 'Bueno'),
+        ('REGULAR', 'Regular'),
+        ('MALO', 'Malo'),
+    ]
+    
+    tecnico = models.ForeignKey(
+        'recursosHumanos.Usuario', 
+        on_delete=models.CASCADE,
+        related_name='auditorias_herramientas',
+        verbose_name="Técnico"
+    )
+    fecha_auditoria = models.DateField(verbose_name="Fecha de Auditoría")
+    auditor = models.ForeignKey(
+        'recursosHumanos.Usuario', 
+        on_delete=models.SET_NULL, 
+        null=True,
+        related_name='auditorias_realizadas',
+        verbose_name="Auditor"
+    )
+    tipo_auditoria = models.CharField(
+        max_length=20, 
+        choices=TIPO_AUDITORIA_CHOICES,
+        verbose_name="Tipo de Auditoría"
+    )
+    estado_general = models.CharField(
+        max_length=20, 
+        choices=ESTADO_GENERAL_CHOICES,
+        verbose_name="Estado General"
+    )
+    observaciones_generales = models.TextField(blank=True, verbose_name="Observaciones Generales")
+    
+    # Campos de auditoría
+    fecha_creacion = models.DateTimeField(auto_now_add=True, verbose_name="Fecha de Creación")
+    fecha_modificacion = models.DateTimeField(auto_now=True, verbose_name="Última Modificación")
+    
+    class Meta:
+        verbose_name = "Auditoría de Herramientas Personales"
+        verbose_name_plural = "Auditorías de Herramientas Personales"
+        ordering = ['-fecha_auditoria', '-fecha_creacion']
+    
+    def __str__(self):
+        return f"Auditoría {self.tipo_auditoria} - {self.tecnico.get_full_name()} - {self.fecha_auditoria}"
+    
+    @property
+    def herramientas_auditadas(self):
+        """Retorna el número de herramientas auditadas"""
+        return self.detalles_auditoria.count()
+    
+    @property
+    def herramientas_presentes(self):
+        """Retorna el número de herramientas presentes"""
+        return self.detalles_auditoria.filter(estado_herramienta='PRESENTE').count()
+    
+    @property
+    def herramientas_ausentes(self):
+        """Retorna el número de herramientas ausentes"""
+        return self.detalles_auditoria.filter(estado_herramienta='AUSENTE').count()
+    
+    @property
+    def acciones_pendientes(self):
+        """Retorna el número de acciones pendientes"""
+        return self.detalles_auditoria.filter(
+            accion_requerida__in=['REPOSICION', 'REPARACION', 'LIMPIEZA']
+        ).count()
+
+
+class LogCambioItemHerramienta(models.Model):
+    """Modelo para registrar cambios de estado de items durante auditorías"""
+    item = models.ForeignKey(
+        ItemHerramientaPersonal, 
+        on_delete=models.CASCADE,
+        related_name='logs_cambios',
+        verbose_name="Item"
+    )
+    auditoria = models.ForeignKey(
+        AuditoriaHerramientaPersonal, 
+        on_delete=models.CASCADE,
+        related_name='cambios_items',
+        verbose_name="Auditoría"
+    )
+    estado_anterior = models.CharField(max_length=20, verbose_name="Estado Anterior")
+    estado_nuevo = models.CharField(max_length=20, verbose_name="Estado Nuevo")
+    observaciones = models.TextField(blank=True, verbose_name="Observaciones")
+    fecha_cambio = models.DateTimeField(auto_now_add=True, verbose_name="Fecha de Cambio")
+    
+    class Meta:
+        verbose_name = "Log de Cambio de Item"
+        verbose_name_plural = "Logs de Cambios de Items"
+        ordering = ['-fecha_cambio']
+    
+    def __str__(self):
+        return f"{self.item.nombre} - {self.estado_anterior} → {self.estado_nuevo}"
+
+
+class DetalleAuditoriaHerramienta(models.Model):
+    """Modelo para el detalle de auditorías de herramientas"""
+    ESTADO_HERRAMIENTA_CHOICES = [
+        ('PRESENTE', 'Presente'),
+        ('AUSENTE', 'Ausente'),
+        ('DAÑADA', 'Dañada'),
+        ('DESGASTADA', 'Desgastada'),
+        ('VENCIDA', 'Vencida'),
+    ]
+    
+    ACCION_REQUERIDA_CHOICES = [
+        ('NINGUNA', 'Ninguna'),
+        ('REPOSICION', 'Reposición'),
+        ('REPARACION', 'Reparación'),
+        ('LIMPIEZA', 'Limpieza'),
+        ('MANTENIMIENTO', 'Mantenimiento'),
+    ]
+    
+    auditoria = models.ForeignKey(
+        AuditoriaHerramientaPersonal, 
+        on_delete=models.CASCADE,
+        related_name='detalles_auditoria',
+        verbose_name="Auditoría"
+    )
+    herramienta = models.ForeignKey(
+        HerramientaPersonal, 
+        on_delete=models.CASCADE,
+        verbose_name="Herramienta"
+    )
+    estado_herramienta = models.CharField(
+        max_length=20, 
+        choices=ESTADO_HERRAMIENTA_CHOICES,
+        verbose_name="Estado de la Herramienta"
+    )
+    observaciones = models.TextField(blank=True, verbose_name="Observaciones")
+    accion_requerida = models.CharField(
+        max_length=20, 
+        choices=ACCION_REQUERIDA_CHOICES,
+        default='NINGUNA',
+        verbose_name="Acción Requerida"
+    )
+    fecha_limite_accion = models.DateField(
+        null=True, 
+        blank=True, 
+        verbose_name="Fecha Límite de Acción"
+    )
+    
+    # Campos de auditoría
+    fecha_creacion = models.DateTimeField(auto_now_add=True, verbose_name="Fecha de Creación")
+    fecha_modificacion = models.DateTimeField(auto_now=True, verbose_name="Última Modificación")
+    
+    class Meta:
+        verbose_name = "Detalle de Auditoría de Herramienta"
+        verbose_name_plural = "Detalles de Auditorías de Herramientas"
+        ordering = ['auditoria', 'herramienta__categoria', 'herramienta__nombre']
+        unique_together = ['auditoria', 'herramienta']
+    
+    def __str__(self):
+        return f"{self.auditoria} - {self.herramienta.nombre}"
+    
+    @property
+    def requiere_accion(self):
+        """Verifica si requiere alguna acción"""
+        return self.accion_requerida != 'NINGUNA'
+    
+    @property
+    def accion_vencida(self):
+        """Verifica si la acción requerida está vencida"""
+        if self.fecha_limite_accion:
+            from datetime import date
+            return date.today() > self.fecha_limite_accion
+        return False 
     

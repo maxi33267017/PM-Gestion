@@ -109,6 +109,33 @@
         align-items: center;
         gap: 0.8rem;
     }
+    
+    .btn-module {
+        background: rgba(255,255,255,0.2);
+        color: white;
+        border: 1px solid rgba(255,255,255,0.3);
+        border-radius: 25px;
+        padding: 0.8rem 1.5rem;
+        font-weight: 600;
+        transition: var(--transition);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-size: 0.9rem;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        position: relative;
+        z-index: 1;
+    }
+    
+    .btn-module:hover {
+        background: rgba(255,255,255,0.3);
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(255,255,255,0.2);
+        text-decoration: none;
+    }
 
     /* Leyenda mejorada */
     .legend-container {
@@ -437,11 +464,15 @@
 
     <!-- Contenedor del Calendario -->
     <div class="calendar-container">
-        <div class="calendar-card-header">
+        <div class="calendar-card-header d-flex justify-content-between align-items-center">
             <h3>
                 <i class="bi bi-calendar-event"></i>
                 Vista de Calendario
             </h3>
+            <a href="{% url 'gestionDeTaller:calendario_semanal_tecnicos' %}" class="btn btn-light btn-module">
+                <i class="bi bi-people-fill me-2"></i>
+                Calendario por Técnicos
+            </a>
         </div>
         
         <div class="calendar-body">

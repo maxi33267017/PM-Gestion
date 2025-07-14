@@ -133,8 +133,11 @@
                         <i class="bi bi-people-fill text-info me-2"></i>Alertas Asignadas
                     </h5>
                     <p class="card-text display-6 text-info">{{ alertas_asignadas }}</p>
-                    <a href="{% url 'centroSoluciones:alertas_list' %}?estado=ASIGNADA" class="btn btn-outline-info btn-sm">
+                    <a href="{% url 'centroSoluciones:alertas_list' %}?estado=ASIGNADA,EN_PROCESO" class="btn btn-outline-info btn-sm">
                         Ver alertas asignadas
+                    </a>
+                    <a href="{% url 'crm:embudo_ventas_origen' 'ALERTA_EQUIPO' %}" class="btn btn-outline-primary btn-sm">
+                        <i class="bi bi-funnel me-1"></i>Embudo de Alertas
                     </a>
                 </div>
             </div>
@@ -149,6 +152,9 @@
                     <p class="card-text display-6 text-success">{{ leads_nuevos }}</p>
                     <a href="{% url 'centroSoluciones:leads_list' %}" class="btn btn-outline-success btn-sm">
                         Ver leads nuevos
+                    </a>
+                    <a href="{% url 'crm:embudo_ventas_origen' 'LEAD_JD' %}" class="btn btn-outline-primary btn-sm">
+                        <i class="bi bi-funnel me-1"></i>Embudo de Leads
                     </a>
                 </div>
             </div>
@@ -191,6 +197,11 @@
                             </a>
                         </div>
                         {% endif %}
+                        <div class="col-md-3">
+                            <a href="{% url 'centroSoluciones:gestionar_codigos_alerta' %}" class="btn btn-secondary w-100">
+                                <i class="bi bi-database me-2"></i>Base de Códigos
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -251,7 +262,36 @@
                         </div>
                         <div class="col-md-6">
                             <label for="codigo_alerta" class="form-label">Código de Alerta *</label>
-                            <input type="text" class="form-control" id="codigo_alerta" name="codigo" required>
+                            <div class="input-group">
+                                <select class="form-select" id="codigo_alerta_select" style="display: none;">
+                                    <option value="">Seleccionar código existente...</option>
+                                </select>
+                                <input type="text" class="form-control" id="codigo_alerta" name="codigo" required>
+                                <button class="btn btn-outline-secondary" type="button" id="buscar_codigo_btn">
+                                    <i class="fas fa-search"></i> Buscar
+                                </button>
+                                <button class="btn btn-outline-primary" type="button" id="toggle_codigo_btn">
+                                    <i class="fas fa-list"></i> Lista
+                                </button>
+                            </div>
+                            <div class="mt-2">
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="tipo_codigo" id="codigo_nuevo" value="nuevo" checked>
+                                    <label class="form-check-label" for="codigo_nuevo">Nuevo código</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="tipo_codigo" id="codigo_existente" value="existente">
+                                    <label class="form-check-label" for="codigo_existente">Código existente</label>
+                                </div>
+                            </div>
+                            <div id="codigo_info" class="mt-2" style="display: none;">
+                                <div class="alert alert-info">
+                                    <strong>Información del código:</strong>
+                                    <div id="codigo_descripcion"></div>
+                                    <div id="codigo_clasificacion"></div>
+                                    <div id="codigo_instrucciones"></div>
+                                </div>
+                            </div>
                         </div>
                         <div class="col-md-6">
                             <label for="tecnico_asignado" class="form-label">Técnico Asignado</label>
@@ -451,6 +491,125 @@ function cargarTecnicos() {
         })
         .catch(error => {
             console.error('Error cargando técnicos:', error);
+        });
+}
+
+// Funciones para manejar códigos de alerta
+document.addEventListener('DOMContentLoaded', function() {
+    // Buscar código de alerta
+    document.getElementById('buscar_codigo_btn').addEventListener('click', function() {
+        const codigo = document.getElementById('codigo_alerta').value;
+        if (codigo) {
+            buscarCodigoAlerta(codigo);
+        } else {
+            alert('Por favor, ingresa un código de alerta para buscar.');
+        }
+    });
+    
+    // Buscar código al presionar Enter en el campo
+    document.getElementById('codigo_alerta').addEventListener('keypress', function(e) {
+        if (e.which === 13) { // Enter key
+            e.preventDefault();
+            document.getElementById('buscar_codigo_btn').click();
+        }
+    });
+    
+    // Manejar cambio entre nuevo código y código existente
+    document.querySelectorAll('input[name="tipo_codigo"]').forEach(function(radio) {
+        radio.addEventListener('change', function() {
+            const tipo = this.value;
+            if (tipo === 'existente') {
+                document.getElementById('codigo_alerta').style.display = 'none';
+                document.getElementById('codigo_alerta_select').style.display = 'block';
+                cargarCodigosExistentes();
+            } else {
+                document.getElementById('codigo_alerta_select').style.display = 'none';
+                document.getElementById('codigo_alerta').style.display = 'block';
+            }
+        });
+    });
+    
+    // Manejar selección de código existente
+    document.getElementById('codigo_alerta_select').addEventListener('change', function() {
+        const codigoSeleccionado = this.value;
+        if (codigoSeleccionado) {
+            document.getElementById('codigo_alerta').value = codigoSeleccionado;
+            buscarCodigoAlerta(codigoSeleccionado);
+        }
+    });
+    
+    // Botón para mostrar lista de códigos
+    document.getElementById('toggle_codigo_btn').addEventListener('click', function() {
+        const tipoNuevo = document.getElementById('codigo_nuevo');
+        const tipoExistente = document.getElementById('codigo_existente');
+        
+        if (tipoNuevo.checked) {
+            tipoExistente.checked = true;
+            tipoExistente.dispatchEvent(new Event('change'));
+        } else {
+            tipoNuevo.checked = true;
+            tipoNuevo.dispatchEvent(new Event('change'));
+        }
+    });
+});
+
+function cargarCodigosExistentes() {
+    fetch('{% url "centroSoluciones:obtener_lista_codigos_alerta" %}')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const select = document.getElementById('codigo_alerta_select');
+                select.innerHTML = '<option value="">Seleccionar código existente...</option>';
+                data.codigos.forEach(function(item) {
+                    const option = document.createElement('option');
+                    option.value = item.codigo;
+                    option.textContent = `${item.codigo} - ${item.modelo_equipo}`;
+                    select.appendChild(option);
+                });
+            } else {
+                console.error('Error al cargar códigos:', data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error al cargar códigos existentes:', error);
+            alert('Error al cargar los códigos existentes. Por favor, intenta nuevamente.');
+        });
+}
+
+function buscarCodigoAlerta(codigo) {
+    fetch(`{% url "centroSoluciones:obtener_codigo_alerta" %}?codigo=${encodeURIComponent(codigo)}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const codigoAlerta = data.codigo_alerta;
+                
+                // Mostrar información del código
+                document.getElementById('codigo_descripcion').innerHTML = `<strong>Descripción:</strong> ${codigoAlerta.descripcion}`;
+                document.getElementById('codigo_clasificacion').innerHTML = `<strong>Clasificación:</strong> ${codigoAlerta.clasificacion}`;
+                
+                if (codigoAlerta.instrucciones_resolucion) {
+                    document.getElementById('codigo_instrucciones').innerHTML = `<strong>Instrucciones:</strong> ${codigoAlerta.instrucciones_resolucion}`;
+                } else {
+                    document.getElementById('codigo_instrucciones').innerHTML = '';
+                }
+                
+                // Llenar automáticamente los campos
+                document.getElementById('descripcion_alerta').value = codigoAlerta.descripcion;
+                document.getElementById('clasificacion_alerta').value = codigoAlerta.clasificacion;
+                
+                // Mostrar el panel de información
+                document.getElementById('codigo_info').style.display = 'block';
+                
+            } else {
+                // Ocultar panel de información
+                document.getElementById('codigo_info').style.display = 'none';
+                alert(data.message || 'Código no encontrado en la base de datos.');
+            }
+        })
+        .catch(error => {
+            document.getElementById('codigo_info').style.display = 'none';
+            console.error('Error al buscar código de alerta:', error);
+            alert('Error al buscar el código de alerta. Por favor, intenta nuevamente.');
         });
 }
 

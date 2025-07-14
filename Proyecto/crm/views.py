@@ -1,14 +1,17 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from django.db.models import Sum, F, Q, Count, Max, DecimalField
+from django.db.models import Sum, F, Q, Count, Max, DecimalField, Value
+from django.db.models.functions import Coalesce
 from django.utils import timezone
 from datetime import timedelta
+from decimal import Decimal
 from clientes.models import Cliente
 from gestionDeTaller.models import Servicio
 from .models import AnalisisCliente, Campania, PaqueteServicio, ClientePaquete, Contacto, SugerenciaMejora, EmbudoVentas, Campana, ContactoCliente
 from django.contrib import messages
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from recursosHumanos.models import Sucursal
+import csv
 
 # Create your views here.
 @login_required
@@ -30,42 +33,38 @@ def segmentacion_clientes(request):
     sucursal_id = request.GET.get('sucursal', '')
     comportamiento = request.GET.get('comportamiento', '')
     segmento_filtro = request.GET.get('segmento', '')
+    solo_activos = request.GET.get('solo_activos', 'true') == 'true'
     
     # Calcular fecha límite
     fecha_limite = timezone.now().date() - timedelta(days=periodo_dias)
     
-    # Base queryset de clientes
-    clientes_queryset = Cliente.objects.filter(activo=True)
+    # Base queryset de clientes - incluir todos los clientes (activos e inactivos)
+    clientes_queryset = Cliente.objects.all()
+    
+    # Aplicar filtros
+    if solo_activos:
+        clientes_queryset = clientes_queryset.filter(activo=True)
     
     # Filtrar por sucursal si se especifica
     if sucursal_id:
         clientes_queryset = clientes_queryset.filter(sucursal_id=sucursal_id)
     
-    # Anotar con datos de facturación
+    # Anotar con datos básicos primero
     clientes_con_datos = clientes_queryset.annotate(
         total_servicios=Count(
             'preorden__servicio',
             filter=Q(
                 preorden__servicio__fecha_servicio__gte=fecha_limite,
                 preorden__servicio__estado='COMPLETADO'
-            )
-        ),
-        total_facturacion=Sum(
-            F('preorden__servicio__valor_mano_obra') + 
-            F('preorden__servicio__gastos__monto') + 
-            F('preorden__servicio__repuestos__precio_unitario') * F('preorden__servicio__repuestos__cantidad'),
-            filter=Q(
-                preorden__servicio__fecha_servicio__gte=fecha_limite,
-                preorden__servicio__estado='COMPLETADO'
             ),
-            default=0
+            distinct=True
         ),
         ultimo_servicio=Max('preorden__servicio__fecha_servicio'),
-        equipos_activos=Count('equipos', filter=Q(equipos__activo=True)),
-        paquetes_activos=Count('paquetes', filter=Q(paquetes__estado='ACTIVO'))
-    ).order_by('-total_facturacion')
+        equipos_activos=Count('equipos', filter=Q(equipos__activo=True), distinct=True),
+        paquetes_activos=Count('paquetes', filter=Q(paquetes__estado='ACTIVO'), distinct=True)
+    )
     
-    # Calcular comportamiento para cada cliente
+    # Calcular comportamiento y facturación real para cada cliente
     clientes_analizados = []
     for cliente in clientes_con_datos:
         if cliente.ultimo_servicio:
@@ -85,15 +84,37 @@ def segmentacion_clientes(request):
         if comportamiento and comportamiento_cliente != comportamiento:
             continue
         
+        # Calcular facturación real sumando mano de obra, gastos y repuestos de cada servicio
+        servicios = Servicio.objects.filter(
+            preorden__cliente=cliente,
+            fecha_servicio__gte=fecha_limite,
+            estado='COMPLETADO'
+        )
+        
+        facturacion_total = 0
+        for servicio in servicios:
+            # Mano de obra
+            valor_mano_obra = servicio.valor_mano_obra or 0
+            facturacion_total += valor_mano_obra
+            
+            # Gastos
+            total_gastos = sum(g.monto for g in servicio.gastos.all())
+            facturacion_total += total_gastos
+            
+            # Repuestos
+            total_repuestos = sum(r.precio_unitario * r.cantidad for r in servicio.repuestos.all())
+            facturacion_total += total_repuestos
+        
         clientes_analizados.append({
             'cliente': cliente,
             'comportamiento': comportamiento_cliente,
-            'dias_desde_ultimo': dias_desde_ultimo if cliente.ultimo_servicio else None
+            'dias_desde_ultimo': dias_desde_ultimo if cliente.ultimo_servicio else None,
+            'facturacion_total': facturacion_total
         })
     
     # Calcular totales para segmentación ABC (solo clientes con facturación)
-    clientes_con_facturacion = [c for c in clientes_analizados if c['cliente'].total_facturacion > 0]
-    total_facturacion = sum(cliente['cliente'].total_facturacion for cliente in clientes_con_facturacion)
+    clientes_con_facturacion = [c for c in clientes_analizados if c['facturacion_total'] > 0]
+    total_facturacion = sum(cliente['facturacion_total'] for cliente in clientes_con_facturacion)
     
     # Segmentar clientes (solo los que tienen facturación)
     clientes_segmentados = []
@@ -118,7 +139,7 @@ def segmentacion_clientes(request):
             'cliente': cliente,
             'segmento': segmento,
             'comportamiento': cliente_data['comportamiento'],
-            'total_facturacion': cliente.total_facturacion,
+            'total_facturacion': cliente_data['facturacion_total'],
             'total_servicios': cliente.total_servicios,
             'equipos_activos': cliente.equipos_activos,
             'potencial_estimado': potencial_estimado,
@@ -127,26 +148,28 @@ def segmentacion_clientes(request):
             'dias_desde_ultimo': cliente_data['dias_desde_ultimo']
         })
         
-        acumulado += cliente.total_facturacion
+        acumulado += cliente_data['facturacion_total']
     
     # Agregar clientes sin facturación como "Nuevos" o "Sin Segmentar"
     for cliente_data in clientes_analizados:
         cliente = cliente_data['cliente']
-        if cliente.total_facturacion == 0:
+        if cliente_data['facturacion_total'] == 0:
             clientes_segmentados.append({
                 'cliente': cliente,
                 'segmento': 'NUEVO',
                 'comportamiento': cliente_data['comportamiento'],
                 'total_facturacion': 0,
-                'total_servicios': 0,
+                'total_servicios': cliente.total_servicios,
                 'equipos_activos': cliente.equipos_activos,
                 'potencial_estimado': cliente.equipos_activos * 5000,
                 'porcentaje_acumulado': 0,
-                'ultimo_servicio': None,
-                'dias_desde_ultimo': None
+                'ultimo_servicio': cliente.ultimo_servicio,
+                'dias_desde_ultimo': cliente_data['dias_desde_ultimo']
             })
     
-    # Aplicar filtro de segmento si se especifica
+    # Ordenar por facturación y aplicar filtro de segmento si se especifica
+    clientes_segmentados.sort(key=lambda x: x['total_facturacion'], reverse=True)
+    
     if segmento_filtro:
         clientes_segmentados = [c for c in clientes_segmentados if c['segmento'] == segmento_filtro]
     
@@ -192,6 +215,7 @@ def segmentacion_clientes(request):
         'promedio_por_cliente': promedio_por_cliente,
         'sucursal_id': sucursal_id,
         'segmento_filtro': segmento_filtro,
+        'solo_activos': solo_activos,
         'sucursales': sucursales,
     }
     
@@ -596,6 +620,7 @@ def analisis_clientes(request):
     periodo_dias = request.GET.get('periodo', 365)
     segmento = request.GET.get('segmento', '')
     comportamiento = request.GET.get('comportamiento', '')
+    solo_activos = request.GET.get('solo_activos', 'true') == 'true'
     
     try:
         periodo_dias = int(periodo_dias)
@@ -604,38 +629,43 @@ def analisis_clientes(request):
     
     fecha_limite = timezone.now() - timedelta(days=periodo_dias)
     
-    # Base queryset de clientes
-    clientes_queryset = Cliente.objects.filter(activo=True)
+    # Base queryset de clientes - incluir todos los clientes (activos e inactivos)
+    clientes_queryset = Cliente.objects.all()
     
     # Aplicar filtros
+    if solo_activos:
+        clientes_queryset = clientes_queryset.filter(activo=True)
+    
     if segmento:
         clientes_queryset = clientes_queryset.filter(analisiscliente__categoria=segmento)
     
-    # Anotar con datos de facturación
+    # Anotar con datos básicos primero
     clientes_con_datos = clientes_queryset.annotate(
         total_servicios=Count(
             'preorden__servicio',
             filter=Q(
                 preorden__servicio__fecha_servicio__gte=fecha_limite,
                 preorden__servicio__estado='COMPLETADO'
-            )
-        ),
-        total_facturacion=Sum(
-            F('preorden__servicio__valor_mano_obra') + 
-            F('preorden__servicio__gastos__monto') + 
-            F('preorden__servicio__repuestos__precio_unitario') * F('preorden__servicio__repuestos__cantidad'),
-            filter=Q(
-                preorden__servicio__fecha_servicio__gte=fecha_limite,
-                preorden__servicio__estado='COMPLETADO'
             ),
-            default=0
+            distinct=True
+        ),
+        total_mano_obra=Coalesce(
+            Sum(
+                'preorden__servicio__valor_mano_obra',
+                filter=Q(
+                    preorden__servicio__fecha_servicio__gte=fecha_limite,
+                    preorden__servicio__estado='COMPLETADO'
+                )
+            ),
+            Value(0),
+            output_field=DecimalField()
         ),
         ultimo_servicio=Max('preorden__servicio__fecha_servicio'),
-        equipos_activos=Count('equipos', filter=Q(equipos__activo=True)),
-        paquetes_activos=Count('paquetes', filter=Q(paquetes__estado='ACTIVO'))
-    ).order_by('-total_facturacion')
-    
-    # Calcular comportamiento para cada cliente
+        equipos_activos=Count('equipos', filter=Q(equipos__activo=True), distinct=True),
+        paquetes_activos=Count('paquetes', filter=Q(paquetes__estado='ACTIVO'), distinct=True)
+    ).order_by('-total_mano_obra')
+
+    # Calcular comportamiento y facturación real para cada cliente
     clientes_analizados = []
     for cliente in clientes_con_datos:
         if cliente.ultimo_servicio:
@@ -650,32 +680,46 @@ def analisis_clientes(request):
                 comportamiento_cliente = 'INACTIVO'
         else:
             comportamiento_cliente = 'INACTIVO'
-        
         # Aplicar filtro de comportamiento si se especifica
         if comportamiento and comportamiento_cliente != comportamiento:
             continue
-        
+        # Calcular facturación real sumando mano de obra, gastos y repuestos de cada servicio
+        servicios = Servicio.objects.filter(
+            preorden__cliente=cliente,
+            fecha_servicio__gte=fecha_limite,
+            estado='COMPLETADO'
+        )
+        facturacion_total = 0
+        for s in servicios:
+            total_gastos = sum(g.monto for g in s.gastos.all())
+            total_repuestos = sum(r.precio_unitario * r.cantidad for r in s.repuestos.all())
+            valor_mano_obra = s.valor_mano_obra or 0
+            facturacion_total += valor_mano_obra + total_gastos + total_repuestos
         clientes_analizados.append({
             'cliente': cliente,
             'comportamiento': comportamiento_cliente,
-            'dias_desde_ultimo': dias_desde_ultimo if cliente.ultimo_servicio else None
+            'dias_desde_ultimo': dias_desde_ultimo if cliente.ultimo_servicio else None,
+            'facturacion_total': facturacion_total,
+            'total_servicios': servicios.count(),
+            'equipos_activos': cliente.equipos_activos,
+            'paquetes_activos': cliente.paquetes_activos,
         })
-    
+
     # Estadísticas generales
     total_clientes = len(clientes_analizados)
     clientes_activos = len([c for c in clientes_analizados if c['comportamiento'] == 'ACTIVO'])
     clientes_inactivos = len([c for c in clientes_analizados if c['comportamiento'] == 'INACTIVO'])
-    facturacion_total = sum(c['cliente'].total_facturacion for c in clientes_analizados)
-    
+    facturacion_total = sum(c['facturacion_total'] for c in clientes_analizados)
+
     # Distribución por comportamiento
     distribucion_comportamiento = {}
     for comportamiento in ['ACTIVO', 'CRECIMIENTO', 'COMPORTAMIENTO_BAJISTA', 'INACTIVO']:
         count = len([c for c in clientes_analizados if c['comportamiento'] == comportamiento])
         distribucion_comportamiento[comportamiento] = count
-    
+
     # Top 10 clientes por facturación
-    top_clientes = sorted(clientes_analizados, key=lambda x: x['cliente'].total_facturacion, reverse=True)[:10]
-    
+    top_clientes = sorted(clientes_analizados, key=lambda x: x['facturacion_total'], reverse=True)[:10]
+
     context = {
         'clientes_analizados': clientes_analizados,
         'total_clientes': total_clientes,
@@ -688,6 +732,7 @@ def analisis_clientes(request):
         'fecha_limite': fecha_limite,
         'segmento_filtro': segmento,
         'comportamiento_filtro': comportamiento,
+        'solo_activos': solo_activos,
     }
     return render(request, 'crm/analisis_clientes.html', context)
 
@@ -1012,109 +1057,8 @@ def revisar_sugerencia(request, sugerencia_id):
 
 @login_required
 def embudo_ventas(request):
-    """Vista principal del embudo de ventas"""
-    
-    # Obtener filtros
-    campana_id = request.GET.get('campana', '')
-    etapa_filtro = request.GET.get('etapa', '')
-    origen_filtro = request.GET.get('origen', '')
-    sucursal_id = request.GET.get('sucursal', '')
-    
-    # Base queryset de embudos
-    embudos = EmbudoVentas.objects.all()
-    
-    # Filtrar por sucursal si el usuario no es superusuario
-    if not request.user.is_superuser and hasattr(request.user, 'sucursal'):
-        embudos = embudos.filter(cliente__sucursal=request.user.sucursal)
-    elif sucursal_id:
-        embudos = embudos.filter(cliente__sucursal_id=sucursal_id)
-    
-    # Aplicar filtros adicionales
-    if campana_id:
-        embudos = embudos.filter(campana_id=campana_id)
-    if etapa_filtro:
-        embudos = embudos.filter(etapa=etapa_filtro)
-    if origen_filtro:
-        embudos = embudos.filter(origen=origen_filtro)
-    
-    # Ordenar por fecha de ingreso
-    embudos = embudos.order_by('-fecha_ingreso')
-    
-    # Calcular estadísticas por etapa
-    estadisticas_etapas = {}
-    etapas = ['CONTACTO_INICIAL', 'CALIFICACION', 'PROPUESTA', 'NEGOCIACION', 'CIERRE', 'PERDIDO']
-    
-    for etapa in etapas:
-        embudos_etapa = embudos.filter(etapa=etapa)
-        cantidad = embudos_etapa.count()
-        valor_total = embudos_etapa.aggregate(
-            total=Sum('valor_estimado')
-        )['total'] or 0
-        valor_probabilizado = embudos_etapa.aggregate(
-            total=Sum(F('valor_estimado') * F('probabilidad_cierre') / 100)
-        )['total'] or 0
-        
-        estadisticas_etapas[etapa] = {
-            'cantidad': cantidad,
-            'valor_total': valor_total,
-            'valor_probabilizado': valor_probabilizado,
-            'porcentaje_conversion': 0  # Se calculará después
-        }
-    
-    # Calcular tasas de conversión
-    total_contactos = estadisticas_etapas['CONTACTO_INICIAL']['cantidad']
-    if total_contactos > 0:
-        for etapa in etapas:
-            if estadisticas_etapas[etapa]['cantidad'] > 0:
-                estadisticas_etapas[etapa]['porcentaje_conversion'] = (
-                    estadisticas_etapas[etapa]['cantidad'] / total_contactos * 100
-                )
-    
-    # Estadísticas por origen
-    estadisticas_origen = {}
-    origenes = embudos.values_list('origen', flat=True).distinct()
-    
-    for origen in origenes:
-        embudos_origen = embudos.filter(origen=origen)
-        cantidad = embudos_origen.count()
-        valor_total = embudos_origen.aggregate(
-            total=Sum('valor_estimado')
-        )['total'] or 0
-        conversiones = embudos_origen.filter(etapa='CIERRE').count()
-        
-        estadisticas_origen[origen] = {
-            'cantidad': cantidad,
-            'valor_total': valor_total,
-            'conversiones': conversiones,
-            'tasa_conversion': (conversiones / cantidad * 100) if cantidad > 0 else 0
-        }
-    
-    # Obtener campañas para el filtro
-    campanas = Campana.objects.filter(activa=True).order_by('-fecha_inicio')
-    
-    # Obtener sucursales para el filtro
-    sucursales = Sucursal.objects.filter(activo=True).order_by('nombre')
-    
-    # Paginación
-    from django.core.paginator import Paginator
-    paginator = Paginator(embudos, 20)
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
-    
-    context = {
-        'page_obj': page_obj,
-        'estadisticas_etapas': estadisticas_etapas,
-        'estadisticas_origen': estadisticas_origen,
-        'campanas': campanas,
-        'sucursales': sucursales,
-        'campana_filtro': campana_id,
-        'etapa_filtro': etapa_filtro,
-        'origen_filtro': origen_filtro,
-        'sucursal_filtro': sucursal_id,
-        'etapas': etapas,
-    }
-    
-    return render(request, 'crm/embudo_ventas.html', context)
+    """Vista principal del embudo de ventas - Redirige al dashboard"""
+    return redirect('crm:embudo_ventas_dashboard')
 
 @login_required
 def crear_embudo(request):
@@ -1127,7 +1071,6 @@ def crear_embudo(request):
         etapa = request.POST.get('etapa')
         origen = request.POST.get('origen')
         valor_estimado = request.POST.get('valor_estimado')
-        probabilidad = request.POST.get('probabilidad_cierre')
         descripcion = request.POST.get('descripcion_negocio')
         
         try:
@@ -1142,13 +1085,12 @@ def crear_embudo(request):
                 etapa=etapa,
                 origen=origen,
                 valor_estimado=valor_estimado if valor_estimado else None,
-                probabilidad_cierre=probabilidad if probabilidad else 0,
                 descripcion_negocio=descripcion,
                 creado_por=request.user
             )
             
             messages.success(request, f'Embudo de ventas creado para {cliente.razon_social}')
-            return redirect('crm:embudo_ventas')
+            return redirect('crm:embudo_ventas_dashboard')
             
         except Exception as e:
             messages.error(request, f'Error al crear el embudo: {str(e)}')
@@ -1166,26 +1108,8 @@ def crear_embudo(request):
 
 @login_required
 def detalle_embudo(request, embudo_id):
-    """Vista de detalle de un embudo de ventas"""
-    
-    embudo = get_object_or_404(EmbudoVentas, id=embudo_id)
-    contactos = embudo.contactos.all().order_by('-fecha_contacto')
-    
-    if request.method == 'POST':
-        # Procesar cambio de etapa
-        nueva_etapa = request.POST.get('etapa')
-        if nueva_etapa and nueva_etapa != embudo.etapa:
-            embudo.etapa = nueva_etapa
-            embudo.save()
-            messages.success(request, f'Etapa actualizada a {embudo.get_etapa_display()}')
-            return redirect('crm:detalle_embudo', embudo_id=embudo.id)
-    
-    context = {
-        'embudo': embudo,
-        'contactos': contactos,
-    }
-    
-    return render(request, 'crm/detalle_embudo.html', context)
+    """Vista de detalle de un embudo de ventas - Redirige a la vista unificada"""
+    return redirect('crm:embudo_ventas_detalle', embudo_id=embudo_id)
 
 @login_required
 def embudo_ventas_dashboard(request):
@@ -1222,15 +1146,10 @@ def embudo_ventas_dashboard(request):
     for etapa in etapas_orden:
         etapa_stats = next((s for s in etapas_stats if s['etapa'] == etapa), None)
         if etapa_stats:
-            # Calcular valor probabilizado manualmente
-            embudos_etapa = embudos.filter(etapa=etapa)
-            valor_probabilizado = sum(embudo.valor_probabilizado for embudo in embudos_etapa)
-            
             embudo_data.append({
                 'etapa': dict(EmbudoVentas.ETAPA_CHOICES)[etapa],
                 'total': etapa_stats['total'],
                 'valor_total': float(etapa_stats['valor_total'] or 0),
-                'valor_probabilizado': float(valor_probabilizado),
                 'color': get_etapa_color(etapa)
             })
         else:
@@ -1238,15 +1157,14 @@ def embudo_ventas_dashboard(request):
                 'etapa': dict(EmbudoVentas.ETAPA_CHOICES)[etapa],
                 'total': 0,
                 'valor_total': 0,
-                'valor_probabilizado': 0,
                 'color': get_etapa_color(etapa)
             })
     
     # KPIs principales
     total_embudos = embudos.count()
     total_valor_estimado = embudos.aggregate(total=Sum('valor_estimado'))['total'] or 0
-    total_valor_probabilizado = sum(embudo.valor_probabilizado for embudo in embudos)
     tasa_conversion = calcular_tasa_conversion(embudos)
+    total_valor_cierre = embudos.aggregate(total=Sum("valor_cierre"))["total"] or 0
     
     # Embudos recientes (últimos 10)
     embudos_recientes = embudos.order_by('-fecha_ultima_actividad')[:10]
@@ -1261,7 +1179,7 @@ def embudo_ventas_dashboard(request):
         'campanas_stats': campanas_stats,
         'total_embudos': total_embudos,
         'total_valor_estimado': total_valor_estimado,
-        'total_valor_probabilizado': total_valor_probabilizado,
+        "total_valor_cierre": total_valor_cierre,
         'tasa_conversion': tasa_conversion,
         'etapas_orden': etapas_orden,
         'embudos_recientes': embudos_recientes,
@@ -1288,7 +1206,6 @@ def embudo_ventas_campana(request, campana_id=None):
     # KPIs de la campaña
     total_embudos = embudos.count()
     total_valor_estimado = embudos.aggregate(total=Sum('valor_estimado'))['total'] or 0
-    total_valor_probabilizado = embudos.aggregate(total=Sum('valor_probabilizado'))['total'] or 0
     tasa_conversion = calcular_tasa_conversion(embudos)
     
     context = {
@@ -1297,7 +1214,6 @@ def embudo_ventas_campana(request, campana_id=None):
         'titulo': titulo,
         'total_embudos': total_embudos,
         'total_valor_estimado': total_valor_estimado,
-        'total_valor_probabilizado': total_valor_probabilizado,
         'tasa_conversion': tasa_conversion,
     }
     
@@ -1321,7 +1237,6 @@ def embudo_ventas_origen(request, origen):
     # KPIs del origen
     total_embudos = embudos.count()
     total_valor_estimado = embudos.aggregate(total=Sum('valor_estimado'))['total'] or 0
-    total_valor_probabilizado = embudos.aggregate(total=Sum('valor_probabilizado'))['total'] or 0
     tasa_conversion = calcular_tasa_conversion(embudos)
     
     # Obtener origen display name
@@ -1333,8 +1248,8 @@ def embudo_ventas_origen(request, origen):
         'embudo_data': embudo_data,
         'total_embudos': total_embudos,
         'total_valor_estimado': total_valor_estimado,
-        'total_valor_probabilizado': total_valor_probabilizado,
         'tasa_conversion': tasa_conversion,
+        'embudos': embudos,  # <--- AGREGADO
     }
     
     return render(request, 'crm/embudo_ventas_origen.html', context)
@@ -1344,6 +1259,40 @@ def embudo_ventas_detalle(request, embudo_id):
     """Detalle de un embudo de ventas específico"""
     
     embudo = get_object_or_404(EmbudoVentas, id=embudo_id)
+    
+    # Manejar cambios del embudo
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        
+        if action == 'cambiar_etapa':
+            nueva_etapa = request.POST.get('etapa')
+            if nueva_etapa and nueva_etapa != embudo.etapa:
+                embudo.etapa = nueva_etapa
+                embudo.save()
+                messages.success(request, f'Etapa actualizada a {embudo.get_etapa_display()}')
+                return redirect('crm:embudo_ventas_detalle', embudo_id=embudo.id)
+        
+        elif action == 'actualizar_valores':
+            try:
+                # Actualizar valor estimado
+                nuevo_valor_estimado = request.POST.get('valor_estimado')
+                if nuevo_valor_estimado:
+                    embudo.valor_estimado = Decimal(nuevo_valor_estimado)
+                
+                # Actualizar valor de cierre
+                nuevo_valor_cierre = request.POST.get('valor_cierre')
+                if nuevo_valor_cierre:
+                    embudo.valor_cierre = Decimal(nuevo_valor_cierre)
+                elif nuevo_valor_cierre == '':  # Campo vacío
+                    embudo.valor_cierre = None
+                
+                embudo.save()
+                messages.success(request, 'Valores actualizados correctamente')
+                return redirect('crm:embudo_ventas_detalle', embudo_id=embudo.id)
+                
+            except (ValueError, TypeError) as e:
+                messages.error(request, f'Error al actualizar valores: {str(e)}')
+                return redirect('crm:embudo_ventas_detalle', embudo_id=embudo.id)
     
     # Obtener contactos relacionados
     contactos = ContactoCliente.objects.filter(embudo_ventas=embudo).order_by('-fecha_contacto')
@@ -1426,16 +1375,11 @@ def generar_datos_embudo(embudos):
             'valor_total': 0
         })
         
-        # Calcular valor probabilizado manualmente
-        embudos_etapa = embudos.filter(etapa=etapa)
-        valor_probabilizado = sum(embudo.valor_probabilizado for embudo in embudos_etapa)
-        
         embudo_data.append({
             'etapa': dict(EmbudoVentas.ETAPA_CHOICES)[etapa],
             'etapa_key': etapa,
             'total': etapa_stats['total'],
             'valor_total': float(etapa_stats['valor_total'] or 0),
-            'valor_probabilizado': float(valor_probabilizado),
             'color': get_etapa_color(etapa),
             'porcentaje': 0  # Se calculará en el template
         })
@@ -1456,3 +1400,379 @@ def calcular_tasa_conversion(embudos):
     
     embudos_cierre = embudos.filter(etapa='CIERRE').count()
     return round((embudos_cierre / total_embudos) * 100, 1)
+
+@login_required
+def reporte_facturacion(request):
+    """Vista para generar reportes de facturación detallados"""
+    
+    # Obtener parámetros del reporte
+    tipo_reporte = request.GET.get('tipo_reporte', 'anual')
+    año = int(request.GET.get('año', timezone.now().year))
+    periodo_especifico = request.GET.get('periodo_especifico', '')
+    nivel_detalle = request.GET.get('nivel_detalle', 'resumen')
+    top_clientes = request.GET.get('top_clientes', '')
+    
+    # Definir rangos de fechas según el tipo de reporte
+    if tipo_reporte == 'anual':
+        fecha_inicio = timezone.datetime(año, 1, 1).date()
+        fecha_fin = timezone.datetime(año, 12, 31).date()
+        titulo_periodo = f"Año {año}"
+    elif tipo_reporte == 'semestral':
+        if periodo_especifico == 'S1':
+            fecha_inicio = timezone.datetime(año, 1, 1).date()
+            fecha_fin = timezone.datetime(año, 6, 30).date()
+            titulo_periodo = f"Primer Semestre {año}"
+        elif periodo_especifico == 'S2':
+            fecha_inicio = timezone.datetime(año, 7, 1).date()
+            fecha_fin = timezone.datetime(año, 12, 31).date()
+            titulo_periodo = f"Segundo Semestre {año}"
+        else:
+            fecha_inicio = timezone.datetime(año, 1, 1).date()
+            fecha_fin = timezone.datetime(año, 12, 31).date()
+            titulo_periodo = f"Ambos Semestres {año}"
+    elif tipo_reporte == 'trimestral':
+        if periodo_especifico == 'Q1':
+            fecha_inicio = timezone.datetime(año, 1, 1).date()
+            fecha_fin = timezone.datetime(año, 3, 31).date()
+            titulo_periodo = f"Q1 {año} (Enero-Marzo)"
+        elif periodo_especifico == 'Q2':
+            fecha_inicio = timezone.datetime(año, 4, 1).date()
+            fecha_fin = timezone.datetime(año, 6, 30).date()
+            titulo_periodo = f"Q2 {año} (Abril-Junio)"
+        elif periodo_especifico == 'Q3':
+            fecha_inicio = timezone.datetime(año, 7, 1).date()
+            fecha_fin = timezone.datetime(año, 9, 30).date()
+            titulo_periodo = f"Q3 {año} (Julio-Septiembre)"
+        elif periodo_especifico == 'Q4':
+            fecha_inicio = timezone.datetime(año, 10, 1).date()
+            fecha_fin = timezone.datetime(año, 12, 31).date()
+            titulo_periodo = f"Q4 {año} (Octubre-Diciembre)"
+        else:
+            fecha_inicio = timezone.datetime(año, 1, 1).date()
+            fecha_fin = timezone.datetime(año, 12, 31).date()
+            titulo_periodo = f"Todos los Trimestres {año}"
+    elif tipo_reporte == 'mensual':
+        fecha_inicio = timezone.datetime(año, 1, 1).date()
+        fecha_fin = timezone.datetime(año, 12, 31).date()
+        titulo_periodo = f"Análisis Mensual {año}"
+    else:
+        fecha_inicio = timezone.datetime(año, 1, 1).date()
+        fecha_fin = timezone.datetime(año, 12, 31).date()
+        titulo_periodo = f"Año {año}"
+    
+    # Obtener servicios en el período
+    servicios = Servicio.objects.filter(
+        fecha_servicio__gte=fecha_inicio,
+        fecha_servicio__lte=fecha_fin,
+        estado='COMPLETADO'
+    ).select_related('preorden__cliente')
+    
+    # Calcular facturación por cliente
+    facturacion_por_cliente = {}
+    total_facturacion = 0
+    total_servicios = 0
+    
+    for servicio in servicios:
+        cliente = servicio.preorden.cliente
+        
+        if cliente not in facturacion_por_cliente:
+                    facturacion_por_cliente[cliente] = {
+            'cliente': cliente,
+            'facturacion_total': 0,
+            'servicios': [],
+            'cantidad_servicios': 0,
+            'mano_obra_total': 0,
+            'gastos_total': 0,
+            'repuestos_total': 0,
+            'promedio_por_servicio': 0
+        }
+        
+        # Calcular facturación del servicio
+        mano_obra = servicio.valor_mano_obra or 0
+        gastos = sum(g.monto for g in servicio.gastos.all())
+        repuestos = sum(r.precio_unitario * r.cantidad for r in servicio.repuestos.all())
+        facturacion_servicio = mano_obra + gastos + repuestos
+        
+        facturacion_por_cliente[cliente]['facturacion_total'] += facturacion_servicio
+        facturacion_por_cliente[cliente]['cantidad_servicios'] += 1
+        facturacion_por_cliente[cliente]['mano_obra_total'] += mano_obra
+        facturacion_por_cliente[cliente]['gastos_total'] += gastos
+        facturacion_por_cliente[cliente]['repuestos_total'] += repuestos
+        
+        # Calcular promedio por servicio
+        if facturacion_por_cliente[cliente]['cantidad_servicios'] > 0:
+            facturacion_por_cliente[cliente]['promedio_por_servicio'] = facturacion_por_cliente[cliente]['facturacion_total'] / facturacion_por_cliente[cliente]['cantidad_servicios']
+        
+        if nivel_detalle in ['detallado', 'completo']:
+            facturacion_por_cliente[cliente]['servicios'].append({
+                'servicio': servicio,
+                'fecha': servicio.fecha_servicio,
+                'mano_obra': mano_obra,
+                'gastos': gastos,
+                'repuestos': repuestos,
+                'total': facturacion_servicio
+            })
+        
+        total_facturacion += facturacion_servicio
+        total_servicios += 1
+    
+    # Ordenar por facturación y aplicar límite de top clientes
+    clientes_ordenados = sorted(
+        facturacion_por_cliente.values(),
+        key=lambda x: x['facturacion_total'],
+        reverse=True
+    )
+    
+    if top_clientes:
+        clientes_ordenados = clientes_ordenados[:int(top_clientes)]
+    
+    # Calcular estadísticas mensuales para reportes anuales y mensuales
+    estadisticas_mensuales = {}
+    if tipo_reporte in ['mensual', 'anual']:
+        for mes in range(1, 13):
+            fecha_mes_inicio = timezone.datetime(año, mes, 1).date()
+            if mes == 12:
+                fecha_mes_fin = timezone.datetime(año, mes, 31).date()
+            else:
+                fecha_mes_fin = timezone.datetime(año, mes + 1, 1).date() - timedelta(days=1)
+            
+            servicios_mes = servicios.filter(
+                fecha_servicio__gte=fecha_mes_inicio,
+                fecha_servicio__lte=fecha_mes_fin
+            )
+            
+            facturacion_mes = 0
+            for servicio in servicios_mes:
+                mano_obra = servicio.valor_mano_obra or 0
+                gastos = sum(g.monto for g in servicio.gastos.all())
+                repuestos = sum(r.precio_unitario * r.cantidad for r in servicio.repuestos.all())
+                facturacion_mes += mano_obra + gastos + repuestos
+            
+            estadisticas_mensuales[mes] = {
+                'nombre': timezone.datetime(año, mes, 1).strftime('%B'),
+                'facturacion': facturacion_mes,
+                'servicios': servicios_mes.count()
+            }
+    
+    # Calcular estadísticas por segmento
+    estadisticas_segmento = {'A': 0, 'B': 0, 'C': 0, 'NUEVO': 0}
+    for cliente_data in clientes_ordenados:
+        cliente = cliente_data['cliente']
+        if hasattr(cliente, 'analisiscliente') and cliente.analisiscliente:
+            segmento = cliente.analisiscliente.categoria
+        else:
+            segmento = 'NUEVO'
+        
+        if segmento in estadisticas_segmento:
+            estadisticas_segmento[segmento] += cliente_data['facturacion_total']
+    
+    # Calcular promedio por servicio
+    promedio_por_servicio = total_facturacion / total_servicios if total_servicios > 0 else 0
+    
+    context = {
+        'tipo_reporte': tipo_reporte,
+        'titulo_periodo': titulo_periodo,
+        'fecha_inicio': fecha_inicio,
+        'fecha_fin': fecha_fin,
+        'clientes_ordenados': clientes_ordenados,
+        'total_facturacion': total_facturacion,
+        'total_servicios': total_servicios,
+        'promedio_por_servicio': promedio_por_servicio,
+        'nivel_detalle': nivel_detalle,
+        'estadisticas_mensuales': estadisticas_mensuales,
+        'estadisticas_segmento': estadisticas_segmento,
+        'top_clientes': top_clientes,
+        'periodo_especifico': periodo_especifico,
+        'año': año,
+        'fecha_generacion': timezone.now()
+    }
+    
+    return render(request, 'crm/reporte_facturacion.html', context)
+
+@login_required
+def exportar_reporte_excel(request):
+    """Exportar reporte de facturación a Excel (CSV)"""
+    
+    # Obtener parámetros del reporte
+    tipo_reporte = request.GET.get('tipo_reporte', 'anual')
+    año = int(request.GET.get('año', timezone.now().year))
+    periodo_especifico = request.GET.get('periodo_especifico', '')
+    nivel_detalle = request.GET.get('nivel_detalle', 'resumen')
+    top_clientes = request.GET.get('top_clientes', '')
+    
+    # Definir rangos de fechas según el tipo de reporte
+    if tipo_reporte == 'anual':
+        fecha_inicio = timezone.datetime(año, 1, 1).date()
+        fecha_fin = timezone.datetime(año, 12, 31).date()
+        titulo_periodo = f"Año {año}"
+    elif tipo_reporte == 'semestral':
+        if periodo_especifico == 'S1':
+            fecha_inicio = timezone.datetime(año, 1, 1).date()
+            fecha_fin = timezone.datetime(año, 6, 30).date()
+            titulo_periodo = f"Primer Semestre {año}"
+        elif periodo_especifico == 'S2':
+            fecha_inicio = timezone.datetime(año, 7, 1).date()
+            fecha_fin = timezone.datetime(año, 12, 31).date()
+            titulo_periodo = f"Segundo Semestre {año}"
+        else:
+            fecha_inicio = timezone.datetime(año, 1, 1).date()
+            fecha_fin = timezone.datetime(año, 12, 31).date()
+            titulo_periodo = f"Ambos Semestres {año}"
+    elif tipo_reporte == 'trimestral':
+        if periodo_especifico == 'Q1':
+            fecha_inicio = timezone.datetime(año, 1, 1).date()
+            fecha_fin = timezone.datetime(año, 3, 31).date()
+            titulo_periodo = f"Q1 {año} (Enero-Marzo)"
+        elif periodo_especifico == 'Q2':
+            fecha_inicio = timezone.datetime(año, 4, 1).date()
+            fecha_fin = timezone.datetime(año, 6, 30).date()
+            titulo_periodo = f"Q2 {año} (Abril-Junio)"
+        elif periodo_especifico == 'Q3':
+            fecha_inicio = timezone.datetime(año, 7, 1).date()
+            fecha_fin = timezone.datetime(año, 9, 30).date()
+            titulo_periodo = f"Q3 {año} (Julio-Septiembre)"
+        elif periodo_especifico == 'Q4':
+            fecha_inicio = timezone.datetime(año, 10, 1).date()
+            fecha_fin = timezone.datetime(año, 12, 31).date()
+            titulo_periodo = f"Q4 {año} (Octubre-Diciembre)"
+        else:
+            fecha_inicio = timezone.datetime(año, 1, 1).date()
+            fecha_fin = timezone.datetime(año, 12, 31).date()
+            titulo_periodo = f"Todos los Trimestres {año}"
+    elif tipo_reporte == 'mensual':
+        fecha_inicio = timezone.datetime(año, 1, 1).date()
+        fecha_fin = timezone.datetime(año, 12, 31).date()
+        titulo_periodo = f"Análisis Mensual {año}"
+    else:
+        fecha_inicio = timezone.datetime(año, 1, 1).date()
+        fecha_fin = timezone.datetime(año, 12, 31).date()
+        titulo_periodo = f"Año {año}"
+    
+    # Obtener servicios en el período
+    servicios = Servicio.objects.filter(
+        fecha_servicio__gte=fecha_inicio,
+        fecha_servicio__lte=fecha_fin,
+        estado='COMPLETADO'
+    ).select_related('preorden__cliente')
+    
+    # Calcular facturación por cliente
+    facturacion_por_cliente = {}
+    total_facturacion = 0
+    total_servicios = 0
+    
+    for servicio in servicios:
+        cliente = servicio.preorden.cliente
+        
+        if cliente not in facturacion_por_cliente:
+            facturacion_por_cliente[cliente] = {
+                'cliente': cliente,
+                'facturacion_total': 0,
+                'servicios': [],
+                'cantidad_servicios': 0,
+                'mano_obra_total': 0,
+                'gastos_total': 0,
+                'repuestos_total': 0,
+                'promedio_por_servicio': 0
+            }
+        
+        # Calcular facturación del servicio
+        mano_obra = servicio.valor_mano_obra or 0
+        gastos = sum(g.monto for g in servicio.gastos.all())
+        repuestos = sum(r.precio_unitario * r.cantidad for r in servicio.repuestos.all())
+        facturacion_servicio = mano_obra + gastos + repuestos
+        
+        facturacion_por_cliente[cliente]['facturacion_total'] += facturacion_servicio
+        facturacion_por_cliente[cliente]['cantidad_servicios'] += 1
+        facturacion_por_cliente[cliente]['mano_obra_total'] += mano_obra
+        facturacion_por_cliente[cliente]['gastos_total'] += gastos
+        facturacion_por_cliente[cliente]['repuestos_total'] += repuestos
+        
+        # Calcular promedio por servicio
+        if facturacion_por_cliente[cliente]['cantidad_servicios'] > 0:
+            facturacion_por_cliente[cliente]['promedio_por_servicio'] = facturacion_por_cliente[cliente]['facturacion_total'] / facturacion_por_cliente[cliente]['cantidad_servicios']
+        
+        if nivel_detalle in ['detallado', 'completo']:
+            facturacion_por_cliente[cliente]['servicios'].append({
+                'servicio': servicio,
+                'fecha': servicio.fecha_servicio,
+                'mano_obra': mano_obra,
+                'gastos': gastos,
+                'repuestos': repuestos,
+                'total': facturacion_servicio
+            })
+        
+        total_facturacion += facturacion_servicio
+        total_servicios += 1
+    
+    # Ordenar por facturación y aplicar límite de top clientes
+    clientes_ordenados = sorted(
+        facturacion_por_cliente.values(),
+        key=lambda x: x['facturacion_total'],
+        reverse=True
+    )
+    
+    if top_clientes:
+        clientes_ordenados = clientes_ordenados[:int(top_clientes)]
+    
+    # Crear respuesta CSV
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = f'attachment; filename="reporte_facturacion_{tipo_reporte}_{año}.csv"'
+    
+    # Crear writer CSV
+    writer = csv.writer(response)
+    writer.writerow(['REPORTE DE FACTURACIÓN'])
+    writer.writerow([f'Período: {titulo_periodo}'])
+    writer.writerow([f'Fecha de Generación: {timezone.now().strftime("%d/%m/%Y %H:%M")}'])
+    writer.writerow([])
+    
+    # Resumen ejecutivo
+    writer.writerow(['RESUMEN EJECUTIVO'])
+    writer.writerow(['Facturación Total', f'${total_facturacion:,.0f}'])
+    writer.writerow(['Total de Servicios', total_servicios])
+    writer.writerow(['Promedio por Servicio', f'${total_facturacion/total_servicios:,.0f}' if total_servicios > 0 else '$0'])
+    writer.writerow(['Total de Clientes', len(clientes_ordenados)])
+    writer.writerow([])
+    
+    # Tabla de clientes
+    writer.writerow(['FACTURACIÓN POR CLIENTE'])
+    writer.writerow(['#', 'Cliente', 'Email', 'Segmento', 'Facturación Total', 'Servicios', 'Mano de Obra', 'Gastos', 'Repuestos', 'Promedio/Servicio'])
+    
+    for i, cliente_data in enumerate(clientes_ordenados, 1):
+        cliente = cliente_data['cliente']
+        segmento = 'Nuevo'
+        if hasattr(cliente, 'analisiscliente') and cliente.analisiscliente:
+            segmento = f'Segmento {cliente.analisiscliente.categoria}'
+        
+        writer.writerow([
+            i,
+            cliente.razon_social,
+            cliente.email or 'Sin email',
+            segmento,
+            f'${cliente_data["facturacion_total"]:,.0f}',
+            cliente_data['cantidad_servicios'],
+            f'${cliente_data["mano_obra_total"]:,.0f}',
+            f'${cliente_data["gastos_total"]:,.0f}',
+            f'${cliente_data["repuestos_total"]:,.0f}',
+            f'${cliente_data["promedio_por_servicio"]:,.0f}'
+        ])
+    
+    # Si es detallado, agregar servicios
+    if nivel_detalle in ['detallado', 'completo']:
+        writer.writerow([])
+        writer.writerow(['DETALLE DE SERVICIOS'])
+        writer.writerow(['Cliente', 'Fecha', 'Descripción', 'Mano de Obra', 'Gastos', 'Repuestos', 'Total'])
+        
+        for cliente_data in clientes_ordenados:
+            cliente = cliente_data['cliente']
+            for servicio_data in cliente_data['servicios']:
+                writer.writerow([
+                    cliente.razon_social,
+                    servicio_data['fecha'].strftime('%d/%m/%Y'),
+                    servicio_data['servicio'].descripcion[:50],
+                    f'${servicio_data["mano_obra"]:,.0f}',
+                    f'${servicio_data["gastos"]:,.0f}',
+                    f'${servicio_data["repuestos"]:,.0f}',
+                    f'${servicio_data["total"]:,.0f}'
+                ])
+    
+    return response

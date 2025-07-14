@@ -1,0 +1,212 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Lista de Ventas{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="h3 mb-4">
+                <i class="fas fa-list"></i> Lista de Ventas
+            </h1>
+        </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Filtros</h6>
+                </div>
+                <div class="card-body">
+                    <form method="get" class="row">
+                        <div class="col-md-3">
+                            <label for="estado">Estado</label>
+                            <select name="estado" id="estado" class="form-control">
+                                <option value="">Todos</option>
+                                {% for estado_codigo, estado_nombre in estados %}
+                                <option value="{{ estado_codigo }}" {% if filtros.estado == estado_codigo %}selected{% endif %}>
+                                    {{ estado_nombre }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="fecha_desde">Fecha Desde</label>
+                            <input type="date" name="fecha_desde" id="fecha_desde" class="form-control" 
+                                   value="{{ filtros.fecha_desde }}">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="fecha_hasta">Fecha Hasta</label>
+                            <input type="date" name="fecha_hasta" id="fecha_hasta" class="form-control" 
+                                   value="{{ filtros.fecha_hasta }}">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="search">Buscar</label>
+                            <input type="text" name="search" id="search" class="form-control" 
+                                   value="{{ filtros.search }}" placeholder="Cliente, serie, factura...">
+                        </div>
+                        <div class="col-12 mt-3">
+                            <button type="submit" class="btn btn-primary mr-2">
+                                <i class="fas fa-search"></i> Filtrar
+                            </button>
+                            <a href="{% url 'ventaMaquinarias:lista_ventas' %}" class="btn btn-secondary">
+                                <i class="fas fa-times"></i> Limpiar
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lista de ventas -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 font-weight-bold text-primary">Ventas Realizadas</h6>
+                    <a href="{% url 'ventaMaquinarias:crear_venta_directa' %}" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Nueva Venta
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if page_obj %}
+                        <div class="table-responsive">
+                            <table class="table table-bordered" width="100%" cellspacing="0">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Equipo</th>
+                                        <th>Cliente</th>
+                                        <th>Fecha Venta</th>
+                                        <th>Precio</th>
+                                        <th>Estado</th>
+                                        <th>Vendedor</th>
+                                        <th>Certificados</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for venta in page_obj %}
+                                    <tr>
+                                        <td>
+                                            <strong>#{{ venta.id }}</strong>
+                                        </td>
+                                        <td>
+                                            <div>{{ venta.equipo_stock.numero_serie }}</div>
+                                            <small class="text-muted">{{ venta.equipo_stock.modelo }}</small>
+                                        </td>
+                                        <td>
+                                            <div>{{ venta.cliente.razon_social }}</div>
+                                            <small class="text-muted">{{ venta.cliente.cuit }}</small>
+                                        </td>
+                                        <td>{{ venta.fecha_venta|date:"d/m/Y" }}</td>
+                                        <td>
+                                            <strong>${{ venta.precio_venta|floatformat:2 }}</strong>
+                                            {% if venta.numero_factura %}
+                                                <br><small class="text-muted">Fact: {{ venta.numero_factura }}</small>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <span class="badge badge-{% if venta.estado == 'COMPLETADA' %}success{% elif venta.estado == 'PENDIENTE' %}warning{% else %}danger{% endif %}">
+                                                {{ venta.get_estado_display }}
+                                            </span>
+                                        </td>
+                                        <td>{{ venta.vendedor.get_nombre_completo }}</td>
+                                        <td>
+                                            <span class="badge badge-info">{{ venta.total_certificados }}</span>
+                                            {% if venta.certificado_garantia %}
+                                                <br><small class="text-success">✓ Garantía</small>
+                                            {% endif %}
+                                            {% if venta.certificado_garantia_extendida %}
+                                                <br><small class="text-success">✓ Extendida</small>
+                                            {% endif %}
+                                            {% if venta.certificado_svap %}
+                                                <br><small class="text-success">✓ SVAP</small>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <a href="{% url 'ventaMaquinarias:detalle_venta' venta.id %}" class="btn btn-sm btn-info">
+                                                <i class="fas fa-eye"></i> Ver
+                                            </a>
+                                            {% if venta.estado == 'PENDIENTE' %}
+                                                <a href="{% url 'ventaMaquinarias:transferir_equipo' venta.id %}" class="btn btn-sm btn-success">
+                                                    <i class="fas fa-truck"></i> Transferir
+                                                </a>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Paginación -->
+                        {% if page_obj.has_other_pages %}
+                        <nav aria-label="Paginación">
+                            <ul class="pagination justify-content-center">
+                                {% if page_obj.has_previous %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page=1{% if filtros.estado %}&estado={{ filtros.estado }}{% endif %}{% if filtros.fecha_desde %}&fecha_desde={{ filtros.fecha_desde }}{% endif %}{% if filtros.fecha_hasta %}&fecha_hasta={{ filtros.fecha_hasta }}{% endif %}{% if filtros.search %}&search={{ filtros.search }}{% endif %}">
+                                            <i class="fas fa-angle-double-left"></i>
+                                        </a>
+                                    </li>
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if filtros.estado %}&estado={{ filtros.estado }}{% endif %}{% if filtros.fecha_desde %}&fecha_desde={{ filtros.fecha_desde }}{% endif %}{% if filtros.fecha_hasta %}&fecha_hasta={{ filtros.fecha_hasta }}{% endif %}{% if filtros.search %}&search={{ filtros.search }}{% endif %}">
+                                            <i class="fas fa-angle-left"></i>
+                                        </a>
+                                    </li>
+                                {% endif %}
+
+                                {% for num in page_obj.paginator.page_range %}
+                                    {% if page_obj.number == num %}
+                                        <li class="page-item active">
+                                            <span class="page-link">{{ num }}</span>
+                                        </li>
+                                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page={{ num }}{% if filtros.estado %}&estado={{ filtros.estado }}{% endif %}{% if filtros.fecha_desde %}&fecha_desde={{ filtros.fecha_desde }}{% endif %}{% if filtros.fecha_hasta %}&fecha_hasta={{ filtros.fecha_hasta }}{% endif %}{% if filtros.search %}&search={{ filtros.search }}{% endif %}">{{ num }}</a>
+                                        </li>
+                                    {% endif %}
+                                {% endfor %}
+
+                                {% if page_obj.has_next %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if filtros.estado %}&estado={{ filtros.estado }}{% endif %}{% if filtros.fecha_desde %}&fecha_desde={{ filtros.fecha_desde }}{% endif %}{% if filtros.fecha_hasta %}&fecha_hasta={{ filtros.fecha_hasta }}{% endif %}{% if filtros.search %}&search={{ filtros.search }}{% endif %}">
+                                            <i class="fas fa-angle-right"></i>
+                                        </a>
+                                    </li>
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if filtros.estado %}&estado={{ filtros.estado }}{% endif %}{% if filtros.fecha_desde %}&fecha_desde={{ filtros.fecha_desde }}{% endif %}{% if filtros.fecha_hasta %}&fecha_hasta={{ filtros.fecha_hasta }}{% endif %}{% if filtros.search %}&search={{ filtros.search }}{% endif %}">
+                                            <i class="fas fa-angle-double-right"></i>
+                                        </a>
+                                    </li>
+                                {% endif %}
+                            </ul>
+                        </nav>
+                        {% endif %}
+
+                        <div class="text-center mt-3">
+                            <p class="text-muted">
+                                Mostrando {{ page_obj.start_index }} a {{ page_obj.end_index }} de {{ page_obj.paginator.count }} ventas
+                            </p>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-receipt fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">No se encontraron ventas</h5>
+                            <p class="text-muted">No hay ventas que coincidan con los filtros aplicados.</p>
+                            <a href="{% url 'ventaMaquinarias:lista_ventas' %}" class="btn btn-primary">
+                                <i class="fas fa-times"></i> Limpiar Filtros
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

@@ -5,9 +5,11 @@ from django.db.models import Q
 from django.core.paginator import Paginator
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
-from .models import AlertaEquipo, LeadJohnDeere, AsignacionAlerta
+from django.utils import timezone
+from .models import AlertaEquipo, LeadJohnDeere, AsignacionAlerta, CodigoAlerta
 from clientes.models import Cliente, Equipo
 from recursosHumanos.models import Usuario, Sucursal
+from crm.models import EmbudoVentas, ContactoCliente
 
 # Create your views here.
 
@@ -22,7 +24,7 @@ def dashboard(request):
             sucursal=request.user.sucursal
         ).count()
         alertas_asignadas = AlertaEquipo.objects.filter(
-            estado='ASIGNADA',
+            estado__in=['ASIGNADA', 'EN_PROCESO'],
             sucursal=request.user.sucursal
         ).count()
         leads_nuevos = LeadJohnDeere.objects.filter(
@@ -67,7 +69,12 @@ def alertas_list(request):
     search = request.GET.get('search')
     
     if estado:
-        alertas = alertas.filter(estado=estado)
+        # Manejar múltiples estados separados por comas
+        estados = [e.strip() for e in estado.split(',')]
+        if len(estados) == 1:
+            alertas = alertas.filter(estado=estado)
+        else:
+            alertas = alertas.filter(estado__in=estados)
     if clasificacion:
         alertas = alertas.filter(clasificacion=clasificacion)
     if search:
@@ -106,38 +113,101 @@ def alerta_detail(request, alerta_id):
     else:
         alerta = get_object_or_404(AlertaEquipo, id=alerta_id, tecnico_asignado=request.user)
     
+    # Calcular horas para los tiempos
+    tiempo_pendiente_horas = 0
+    tiempo_resolucion_horas = 0
+    
+    if alerta.tiempo_pendiente:
+        tiempo_pendiente_horas = round(alerta.tiempo_pendiente.seconds / 3600, 1)
+    
+    if alerta.tiempo_resolucion:
+        tiempo_resolucion_horas = round(alerta.tiempo_resolucion.seconds / 3600, 1)
+    
     context = {
         'alerta': alerta,
         'es_admin': request.user.rol in ['GERENTE', 'ADMINISTRATIVO'],
+        'tiempo_pendiente_horas': tiempo_pendiente_horas,
+        'tiempo_resolucion_horas': tiempo_resolucion_horas,
     }
     
     return render(request, 'centroSoluciones/alerta_detail.html', context)
 
 @login_required
 def procesar_alerta(request, alerta_id):
-    """Vista para que los técnicos procesen sus alertas asignadas"""
+    """Vista para que los técnicos y gerentes procesen alertas con conexión SAR y oportunidades CRM"""
     
-    if request.user.rol not in ['TECNICO']:
-        messages.error(request, 'Solo los técnicos pueden procesar alertas.')
+    if request.user.rol not in ['TECNICO', 'GERENTE']:
+        messages.error(request, 'Solo los técnicos y gerentes pueden procesar alertas.')
         return redirect('centroSoluciones:alertas_list')
     
-    alerta = get_object_or_404(AlertaEquipo, id=alerta_id, tecnico_asignado=request.user)
+    # Los técnicos solo pueden procesar sus alertas asignadas, los gerentes pueden procesar cualquier alerta
+    if request.user.rol == 'TECNICO':
+        alerta = get_object_or_404(AlertaEquipo, id=alerta_id, tecnico_asignado=request.user)
+    else:
+        alerta = get_object_or_404(AlertaEquipo, id=alerta_id)
     
     if request.method == 'POST':
         # Procesar el formulario
         estado = request.POST.get('estado')
         observaciones = request.POST.get('observaciones_tecnico')
+        conexion_sar_realizada = request.POST.get('conexion_sar_realizada') == 'on'
+        resultado_conexion_sar = request.POST.get('resultado_conexion_sar', '')
+        crear_oportunidad = request.POST.get('crear_oportunidad') == 'on'
+        tipo_oportunidad = request.POST.get('tipo_oportunidad', '')
+        descripcion_oportunidad = request.POST.get('descripcion_oportunidad', '')
+        valor_estimado = request.POST.get('valor_estimado', '')
         
-        if estado in ['EN_PROCESO', 'RESUELTA']:
-            alerta.estado = estado
-            alerta.observaciones_tecnico = observaciones
-            alerta.save()
-            
-            messages.success(request, f'Alerta {alerta.codigo} actualizada correctamente.')
-            return redirect('centroSoluciones:alertas_list')
+        # Actualizar alerta
+        alerta.estado = estado
+        alerta.observaciones_tecnico = observaciones
+        alerta.conexion_sar_realizada = conexion_sar_realizada
+        alerta.resultado_conexion_sar = resultado_conexion_sar
+        
+        # Crear oportunidad CRM si se solicita
+        if crear_oportunidad and tipo_oportunidad and descripcion_oportunidad:
+            try:
+                # Crear embudo de ventas
+                embudo = EmbudoVentas.objects.create(
+                    cliente=alerta.cliente,
+                    etapa='CONTACTO_INICIAL',
+                    valor_estimado=float(valor_estimado) if valor_estimado else None,
+                    origen='ALERTA_EQUIPO',
+                    alerta_equipo=alerta,
+                    descripcion_negocio=descripcion_oportunidad,
+                    observaciones=f"Oportunidad creada desde alerta {alerta.codigo}. Tipo: {tipo_oportunidad}",
+                    creado_por=request.user
+                )
+                
+                # Crear contacto inicial
+                ContactoCliente.objects.create(
+                    cliente=alerta.cliente,
+                    tipo_contacto='VISITA',
+                    descripcion=f"Contacto inicial por alerta {alerta.codigo}. {descripcion_oportunidad}",
+                    resultado='EXITOSO',
+                    observaciones=f"Técnico realizó conexión SAR y identificó oportunidad de {tipo_oportunidad}",
+                    responsable=request.user,
+                    embudo_ventas=embudo
+                )
+                
+                alerta.oportunidad_crm_creada = True
+                messages.success(request, f'Oportunidad CRM creada exitosamente para {tipo_oportunidad}.')
+                
+            except Exception as e:
+                messages.error(request, f'Error al crear oportunidad CRM: {str(e)}')
+        
+        alerta.save()
+        
+        messages.success(request, f'Alerta {alerta.codigo} procesada correctamente.')
+        return redirect('centroSoluciones:alerta_detail', alerta_id=alerta.id)
+    
+    # Calcular horas del tiempo pendiente para el template
+    tiempo_pendiente_seconds_hours = 0
+    if alerta.tiempo_pendiente:
+        tiempo_pendiente_seconds_hours = int(alerta.tiempo_pendiente.total_seconds() // 3600)
     
     context = {
         'alerta': alerta,
+        'alerta_tiempo_pendiente_seconds_hours': tiempo_pendiente_seconds_hours,
     }
     
     return render(request, 'centroSoluciones/procesar_alerta.html', context)
@@ -235,6 +305,35 @@ def crear_lead(request):
             sucursal=request.user.sucursal,
             creado_por=request.user
         )
+        
+        # Crear embudo de ventas automáticamente
+        try:
+            embudo = EmbudoVentas.objects.create(
+                cliente=cliente,
+                etapa='CONTACTO_INICIAL',
+                origen='LEAD_JD',
+                valor_estimado=valor,
+                # Sin probabilidad de cierre
+                descripcion_negocio=f"Lead John Deere: {descripcion}",
+                observaciones=f"Lead creado automáticamente desde Centro de Soluciones. Clasificación: {dict(LeadJohnDeere.CLASIFICACION_CHOICES)[clasificacion]}",
+                lead_jd=lead,
+                creado_por=request.user
+            )
+            
+            # Crear contacto inicial automático
+            ContactoCliente.objects.create(
+                cliente=cliente,
+                tipo_contacto='VISITA',
+                descripcion=f"Lead John Deere recibido: {descripcion}",
+                resultado='EXITOSO',
+                observaciones=f"Lead automático creado desde Centro de Soluciones. Equipo: {equipo.numero_serie}",
+                responsable=request.user,
+                embudo_ventas=embudo
+            )
+            
+        except Exception as e:
+            # Si falla la creación del embudo, no fallar el lead
+            print(f"Error al crear embudo de ventas: {str(e)}")
         
         return JsonResponse({
             'success': True, 
@@ -352,3 +451,271 @@ def leads_list(request):
     }
     
     return render(request, 'centroSoluciones/leads_list.html', context)
+
+@login_required
+def lead_detail(request, lead_id):
+    """Detalle de un lead específico"""
+    
+    # Solo gerentes y administrativos pueden ver leads
+    if request.user.rol not in ['GERENTE', 'ADMINISTRATIVO']:
+        messages.error(request, 'No tienes permisos para ver leads.')
+        return redirect('centroSoluciones:centro_soluciones_dashboard')
+    
+    # Obtener el lead
+    lead = get_object_or_404(LeadJohnDeere, id=lead_id, sucursal=request.user.sucursal)
+    
+    # Obtener embudo de ventas asociado
+    embudo = None
+    try:
+        embudo = EmbudoVentas.objects.filter(lead_jd=lead).first()
+    except:
+        pass
+    
+    context = {
+        'lead': lead,
+        'embudo': embudo,
+    }
+    
+    return render(request, 'centroSoluciones/lead_detail.html', context)
+
+@login_required
+def lead_edit(request, lead_id):
+    """Vista para editar un lead"""
+    
+    # Solo gerentes y administrativos pueden editar leads
+    if request.user.rol not in ['GERENTE', 'ADMINISTRATIVO']:
+        messages.error(request, 'No tienes permisos para editar leads.')
+        return redirect('centroSoluciones:leads_list')
+    
+    # Obtener el lead
+    lead = get_object_or_404(LeadJohnDeere, id=lead_id, sucursal=request.user.sucursal)
+    
+    if request.method == 'POST':
+        # Procesar el formulario
+        estado = request.POST.get('estado')
+        clasificacion = request.POST.get('clasificacion')
+        descripcion = request.POST.get('descripcion')
+        observaciones_contacto = request.POST.get('observaciones_contacto', '')
+        valor_estimado = request.POST.get('valor_estimado', '')
+        
+        # Actualizar lead
+        lead.estado = estado
+        lead.clasificacion = clasificacion
+        lead.descripcion = descripcion
+        lead.observaciones_contacto = observaciones_contacto
+        
+        # Convertir valor estimado
+        if valor_estimado:
+            try:
+                lead.valor_estimado = float(valor_estimado)
+            except ValueError:
+                messages.error(request, 'El valor estimado debe ser un número válido.')
+                return redirect('centroSoluciones:lead_edit', lead_id=lead.id)
+        else:
+            lead.valor_estimado = None
+        
+        lead.save()
+        
+        # Actualizar embudo de ventas asociado si existe
+        try:
+            embudo = EmbudoVentas.objects.filter(lead_jd=lead).first()
+            if embudo:
+                embudo.valor_estimado = lead.valor_estimado
+                embudo.descripcion_negocio = f"Lead John Deere: {lead.descripcion}"
+                embudo.observaciones = f"Lead actualizado desde Centro de Soluciones. Clasificación: {lead.get_clasificacion_display()}"
+                embudo.save()
+        except Exception as e:
+            print(f"Error al actualizar embudo de ventas: {str(e)}")
+        
+        messages.success(request, f'Lead actualizado correctamente.')
+        return redirect('centroSoluciones:lead_detail', lead_id=lead.id)
+    
+    context = {
+        'lead': lead,
+    }
+    
+    return render(request, 'centroSoluciones/lead_edit.html', context)
+
+@login_required
+def obtener_codigo_alerta(request):
+    """Vista para obtener información de un código de alerta específico (AJAX)"""
+    codigo = request.GET.get('codigo')
+    modelo_equipo = request.GET.get('modelo_equipo')
+    
+    if not codigo:
+        return JsonResponse({'success': False, 'message': 'Código de alerta requerido'})
+    
+    try:
+        # Buscar el código de alerta
+        codigo_alerta = CodigoAlerta.objects.filter(
+            codigo=codigo,
+            activo=True
+        ).first()
+        
+        if codigo_alerta:
+            # Si se especifica modelo, verificar que coincida
+            if modelo_equipo and codigo_alerta.modelo_equipo != modelo_equipo:
+                # Buscar una versión específica para ese modelo
+                codigo_especifico = CodigoAlerta.objects.filter(
+                    codigo=codigo,
+                    modelo_equipo=modelo_equipo,
+                    activo=True
+                ).first()
+                if codigo_especifico:
+                    codigo_alerta = codigo_especifico
+            
+            return JsonResponse({
+                'success': True,
+                'codigo_alerta': {
+                    'codigo': codigo_alerta.codigo,
+                    'modelo_equipo': codigo_alerta.modelo_equipo,
+                    'descripcion': codigo_alerta.descripcion,
+                    'clasificacion': codigo_alerta.clasificacion,
+                    'instrucciones_resolucion': codigo_alerta.instrucciones_resolucion,
+                    'repuestos_comunes': codigo_alerta.repuestos_comunes,
+                    'tiempo_estimado_resolucion': codigo_alerta.tiempo_estimado_resolucion,
+                }
+            })
+        else:
+            return JsonResponse({
+                'success': False, 
+                'message': f'Código de alerta {codigo} no encontrado en la base de datos'
+            })
+            
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': f'Error al buscar código de alerta: {str(e)}'})
+
+@login_required
+def obtener_modelos_equipos(request):
+    """Vista para obtener modelos de equipos disponibles (AJAX)"""
+    try:
+        from clientes.models import ModeloEquipo
+        modelos = ModeloEquipo.objects.values('id', 'nombre').order_by('nombre')
+        return JsonResponse({
+            'success': True,
+            'modelos': list(modelos)
+        })
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': f'Error al obtener modelos: {str(e)}'})
+
+@login_required
+def gestionar_codigos_alerta(request):
+    """Vista para gestionar códigos de alerta"""
+    
+    # Solo gerentes y administrativos pueden gestionar códigos
+    if request.user.rol not in ['GERENTE', 'ADMINISTRATIVO']:
+        messages.error(request, 'No tienes permisos para gestionar códigos de alerta.')
+        return redirect('centroSoluciones:centro_soluciones_dashboard')
+    
+    # Obtener códigos con filtros
+    codigos = CodigoAlerta.objects.all()
+    
+    # Aplicar filtros
+    search = request.GET.get('search')
+    clasificacion = request.GET.get('clasificacion')
+    modelo = request.GET.get('modelo')
+    activo = request.GET.get('activo')
+    
+    if search:
+        codigos = codigos.filter(
+            Q(codigo__icontains=search) |
+            Q(descripcion__icontains=search) |
+            Q(modelo_equipo__icontains=search)
+        )
+    
+    if clasificacion:
+        codigos = codigos.filter(clasificacion=clasificacion)
+    
+    if modelo:
+        codigos = codigos.filter(modelo_equipo__icontains=modelo)
+    
+    if activo is not None:
+        codigos = codigos.filter(activo=activo == 'true')
+    
+    # Ordenar por código
+    codigos = codigos.order_by('codigo')
+    
+    # Paginación
+    paginator = Paginator(codigos, 20)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    # Obtener modelos únicos para el filtro
+    modelos_unicos = CodigoAlerta.objects.values_list('modelo_equipo', flat=True).distinct().order_by('modelo_equipo')
+    
+    context = {
+        'page_obj': page_obj,
+        'search_filtro': search,
+        'clasificacion_filtro': clasificacion,
+        'modelo_filtro': modelo,
+        'activo_filtro': activo,
+        'modelos_unicos': modelos_unicos,
+        'clasificaciones': CodigoAlerta.CLASIFICACION_CHOICES,
+    }
+    
+    return render(request, 'centroSoluciones/gestionar_codigos_alerta.html', context)
+
+@login_required
+def crear_codigo_alerta(request):
+    """Vista para crear un nuevo código de alerta"""
+    
+    # Solo gerentes y administrativos pueden crear códigos
+    if request.user.rol not in ['GERENTE', 'ADMINISTRATIVO']:
+        return JsonResponse({'success': False, 'message': 'No tienes permisos para crear códigos de alerta.'})
+    
+    if request.method == 'POST':
+        try:
+            codigo = request.POST.get('codigo')
+            modelo_equipo = request.POST.get('modelo_equipo')
+            descripcion = request.POST.get('descripcion')
+            clasificacion = request.POST.get('clasificacion')
+            instrucciones = request.POST.get('instrucciones_resolucion', '')
+            repuestos = request.POST.get('repuestos_comunes', '')
+            tiempo_estimado = request.POST.get('tiempo_estimado_resolucion')
+            
+            # Validaciones
+            if not all([codigo, modelo_equipo, descripcion, clasificacion]):
+                return JsonResponse({'success': False, 'message': 'Todos los campos obligatorios deben estar completos.'})
+            
+            # Verificar si el código ya existe
+            if CodigoAlerta.objects.filter(codigo=codigo).exists():
+                return JsonResponse({'success': False, 'message': f'El código {codigo} ya existe en la base de datos.'})
+            
+            # Crear el código
+            nuevo_codigo = CodigoAlerta(
+                codigo=codigo,
+                modelo_equipo=modelo_equipo,
+                descripcion=descripcion,
+                clasificacion=clasificacion,
+                instrucciones_resolucion=instrucciones,
+                repuestos_comunes=repuestos,
+                tiempo_estimado_resolucion=tiempo_estimado if tiempo_estimado else None,
+                creado_por=request.user
+            )
+            nuevo_codigo.save()
+            
+            return JsonResponse({
+                'success': True, 
+                'message': f'Código {codigo} creado exitosamente.',
+                'codigo_id': nuevo_codigo.id
+            })
+            
+        except Exception as e:
+            return JsonResponse({'success': False, 'message': f'Error al crear el código: {str(e)}'})
+    
+    return JsonResponse({'success': False, 'message': 'Método no permitido.'})
+
+@login_required
+def obtener_lista_codigos_alerta(request):
+    """Vista API para obtener lista de códigos de alerta (AJAX)"""
+    try:
+        codigos = CodigoAlerta.objects.filter(activo=True).values(
+            'codigo', 'modelo_equipo', 'descripcion', 'clasificacion'
+        ).order_by('codigo')
+        
+        return JsonResponse({
+            'success': True,
+            'codigos': list(codigos)
+        })
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': f'Error al obtener códigos: {str(e)}'})

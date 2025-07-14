@@ -1,0 +1,290 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Crear Venta - {{ equipo.numero_serie }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="h3 mb-4">
+                <i class="fas fa-shopping-cart"></i> Crear Venta - {{ equipo.numero_serie }}
+            </h1>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Nueva Venta</h6>
+                </div>
+                <div class="card-body">
+                    <form method="post" id="formVenta">
+                        {% csrf_token %}
+                        
+                        <!-- Información del Equipo -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h5 class="text-primary">Información del Equipo</h5>
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        <label class="form-label">Número de Serie</label>
+                                        <input type="text" class="form-control" value="{{ equipo.numero_serie }}" readonly>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label">Modelo</label>
+                                        <input type="text" class="form-control" value="{{ equipo.modelo }}" readonly>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label">Tipo</label>
+                                        <input type="text" class="form-control" value="{{ equipo.tipo_equipo }}" readonly>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label">Sucursal</label>
+                                        <input type="text" class="form-control" value="{{ equipo.sucursal }}" readonly>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Información de la Venta -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h5 class="text-primary">Información de la Venta</h5>
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <label for="cliente" class="form-label">Cliente *</label>
+                                        <select name="cliente" id="cliente" class="form-control" required>
+                                            <option value="">Seleccionar cliente...</option>
+                                            {% for cliente in clientes %}
+                                            <option value="{{ cliente.id }}">{{ cliente.razon_social }} - {{ cliente.cuit }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label for="fecha_venta" class="form-label">Fecha de Venta *</label>
+                                        <input type="date" name="fecha_venta" id="fecha_venta" class="form-control" required>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label for="precio_venta" class="form-label">Precio de Venta *</label>
+                                        <input type="number" name="precio_venta" id="precio_venta" class="form-control" step="0.01" required>
+                                    </div>
+                                </div>
+                                <div class="row mt-3">
+                                    <div class="col-md-6">
+                                        <label for="numero_factura" class="form-label">Número de Factura</label>
+                                        <input type="text" name="numero_factura" id="numero_factura" class="form-control">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="observaciones" class="form-label">Observaciones</label>
+                                        <textarea name="observaciones" id="observaciones" class="form-control" rows="2"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Checklist de Certificados -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h5 class="text-primary">Checklist de Certificados</h5>
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="check_garantia" name="check_garantia">
+                                            <label class="form-check-label" for="check_garantia">
+                                                <strong>Registro en Garantías</strong>
+                                            </label>
+                                        </div>
+                                        <select name="certificado_garantia" id="certificado_garantia" class="form-control mt-2" disabled>
+                                            <option value="">Seleccionar certificado...</option>
+                                            {% for cert in certificados_garantia %}
+                                            <option value="{{ cert.id }}" data-stock="{{ cert.stock_disponible }}">
+                                                {{ cert.nombre }} (Stock: {{ cert.stock_disponible }})
+                                            </option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="check_garantia_extendida" name="check_garantia_extendida">
+                                            <label class="form-check-label" for="check_garantia_extendida">
+                                                <strong>Garantía Extendida</strong>
+                                            </label>
+                                        </div>
+                                        <select name="certificado_garantia_extendida" id="certificado_garantia_extendida" class="form-control mt-2" disabled>
+                                            <option value="">Seleccionar certificado...</option>
+                                            {% for cert in certificados_garantia_extendida %}
+                                            <option value="{{ cert.id }}" data-stock="{{ cert.stock_disponible }}">
+                                                {{ cert.nombre }} (Stock: {{ cert.stock_disponible }})
+                                            </option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="check_svap" name="check_svap">
+                                            <label class="form-check-label" for="check_svap">
+                                                <strong>SVAP (John Deere Protect)</strong>
+                                            </label>
+                                        </div>
+                                        <select name="certificado_svap" id="certificado_svap" class="form-control mt-2" disabled>
+                                            <option value="">Seleccionar certificado...</option>
+                                            {% for cert in certificados_svap %}
+                                            <option value="{{ cert.id }}" data-stock="{{ cert.stock_disponible }}">
+                                                {{ cert.nombre }} (Stock: {{ cert.stock_disponible }})
+                                            </option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-12 text-center">
+                                <button type="button" class="btn btn-primary btn-lg" onclick="mostrarModalVerificacion()">
+                                    <i class="fas fa-check-circle"></i> Verificar y Crear Venta
+                                </button>
+                                <a href="{% url 'ventaMaquinarias:detalle_equipo_stock' equipo.id %}" class="btn btn-secondary btn-lg ml-2">
+                                    <i class="fas fa-arrow-left"></i> Volver
+                                </a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Verificación -->
+<div class="modal fade" id="modalVerificacion" tabindex="-1" aria-labelledby="modalVerificacionLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="modalVerificacionLabel">
+                    <i class="fas fa-clipboard-check"></i> Verificación de Datos
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i> Por favor, verifica que todos los datos sean correctos antes de proceder con la venta.
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6 class="text-primary">Información del Equipo</h6>
+                        <p><strong>Número de Serie:</strong> <span id="verif_serie"></span></p>
+                        <p><strong>Modelo:</strong> <span id="verif_modelo"></span></p>
+                        <p><strong>Cliente:</strong> <span id="verif_cliente"></span></p>
+                        <p><strong>Precio de Venta:</strong> $<span id="verif_precio"></span></p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="text-primary">Certificados Seleccionados</h6>
+                        <div id="verif_certificados">
+                            <p class="text-muted">Ningún certificado seleccionado</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="alert alert-warning mt-3">
+                    <i class="fas fa-exclamation-triangle"></i> 
+                    <strong>Importante:</strong> Al confirmar la venta, se descontará automáticamente 1 unidad del stock de cada certificado seleccionado.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times"></i> Cancelar
+                </button>
+                <button type="button" class="btn btn-success" onclick="confirmarVenta()">
+                    <i class="fas fa-check"></i> Confirmar Venta
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Habilitar/deshabilitar selects según checkboxes
+document.getElementById('check_garantia').addEventListener('change', function() {
+    document.getElementById('certificado_garantia').disabled = !this.checked;
+    if (!this.checked) {
+        document.getElementById('certificado_garantia').value = '';
+    }
+});
+
+document.getElementById('check_garantia_extendida').addEventListener('change', function() {
+    document.getElementById('certificado_garantia_extendida').disabled = !this.checked;
+    if (!this.checked) {
+        document.getElementById('certificado_garantia_extendida').value = '';
+    }
+});
+
+document.getElementById('check_svap').addEventListener('change', function() {
+    document.getElementById('certificado_svap').disabled = !this.checked;
+    if (!this.checked) {
+        document.getElementById('certificado_svap').value = '';
+    }
+});
+
+function mostrarModalVerificacion() {
+    // Validar formulario
+    const form = document.getElementById('formVenta');
+    if (!form.checkValidity()) {
+        form.reportValidity();
+        return;
+    }
+
+    // Llenar datos de verificación
+    document.getElementById('verif_serie').textContent = '{{ equipo.numero_serie }}';
+    document.getElementById('verif_modelo').textContent = '{{ equipo.modelo }}';
+    
+    const clienteSelect = document.getElementById('cliente');
+    const clienteOption = clienteSelect.options[clienteSelect.selectedIndex];
+    document.getElementById('verif_cliente').textContent = clienteOption.text;
+    
+    document.getElementById('verif_precio').textContent = document.getElementById('precio_venta').value;
+
+    // Mostrar certificados seleccionados
+    const certificadosDiv = document.getElementById('verif_certificados');
+    const certificadosSeleccionados = [];
+    
+    if (document.getElementById('check_garantia').checked) {
+        const cert = document.getElementById('certificado_garantia');
+        const option = cert.options[cert.selectedIndex];
+        certificadosSeleccionados.push(option.text);
+    }
+    
+    if (document.getElementById('check_garantia_extendida').checked) {
+        const cert = document.getElementById('certificado_garantia_extendida');
+        const option = cert.options[cert.selectedIndex];
+        certificadosSeleccionados.push(option.text);
+    }
+    
+    if (document.getElementById('check_svap').checked) {
+        const cert = document.getElementById('certificado_svap');
+        const option = cert.options[cert.selectedIndex];
+        certificadosSeleccionados.push(option.text);
+    }
+
+    if (certificadosSeleccionados.length > 0) {
+        certificadosDiv.innerHTML = certificadosSeleccionados.map(cert => `<p>• ${cert}</p>`).join('');
+    } else {
+        certificadosDiv.innerHTML = '<p class="text-muted">Ningún certificado seleccionado</p>';
+    }
+
+    // Mostrar modal
+    const modal = new bootstrap.Modal(document.getElementById('modalVerificacion'));
+    modal.show();
+}
+
+function confirmarVenta() {
+    // Enviar formulario
+    document.getElementById('formVenta').submit();
+}
+</script>
+{% endblock %} 

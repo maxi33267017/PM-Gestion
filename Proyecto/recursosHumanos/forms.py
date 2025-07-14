@@ -31,7 +31,7 @@ class RegistroHorasTecnicoForm(forms.ModelForm):
         self.fields['servicio'].queryset = servicios_query
 
         # Personalizar la etiqueta de los servicios en la lista desplegable
-        self.fields['servicio'].label_from_instance = lambda obj: f"Orden {obj.id} - {obj.preorden.equipo.numero_serie} - {obj.get_estado_display()}"
+        self.fields['servicio'].label_from_instance = lambda obj: f"Orden {obj.id} - {obj.preorden.cliente.razon_social} - {obj.preorden.equipo.numero_serie} - {obj.get_estado_display()}"
 
         # Agrupar actividades por disponibilidad y generación de ingreso
         actividades = ActividadTrabajo.objects.all().order_by('disponibilidad', 'genera_ingreso', 'nombre')

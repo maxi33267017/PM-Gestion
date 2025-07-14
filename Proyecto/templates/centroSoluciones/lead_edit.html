@@ -1,0 +1,160 @@
+{% extends 'base.html' %}
+{% block title %} | Editar Lead{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="display-6 mb-2">
+                        <i class="bi bi-pencil-square text-warning me-2"></i>Editar Lead
+                    </h1>
+                    <p class="lead text-muted">Modificar información del lead</p>
+                </div>
+                <div>
+                    <a href="{% url 'centroSoluciones:lead_detail' lead.id %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left me-2"></i>Volver al Detalle
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-pencil me-2"></i>Información del Lead
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <!-- Información del Cliente y Equipo (solo lectura) -->
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Cliente</label>
+                                <p class="form-control-plaintext">{{ lead.cliente.razon_social }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Equipo</label>
+                                <p class="form-control-plaintext">{{ lead.equipo.numero_serie }} - {{ lead.equipo.modelo.nombre }}</p>
+                            </div>
+                        </div>
+
+                        <!-- Campos editables -->
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="estado" class="form-label">Estado *</label>
+                                <select class="form-select" id="estado" name="estado" required>
+                                    <option value="NUEVO" {% if lead.estado == 'NUEVO' %}selected{% endif %}>Nuevo</option>
+                                    <option value="CONTACTADO" {% if lead.estado == 'CONTACTADO' %}selected{% endif %}>Contactado</option>
+                                    <option value="CALIFICADO" {% if lead.estado == 'CALIFICADO' %}selected{% endif %}>Calificado</option>
+                                    <option value="CONVERTIDO" {% if lead.estado == 'CONVERTIDO' %}selected{% endif %}>Convertido</option>
+                                    <option value="DESCARTADO" {% if lead.estado == 'DESCARTADO' %}selected{% endif %}>Descartado</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="clasificacion" class="form-label">Clasificación *</label>
+                                <select class="form-select" id="clasificacion" name="clasificacion" required>
+                                    <option value="JOHN_DEERE_PROTECT" {% if lead.clasificacion == 'JOHN_DEERE_PROTECT' %}selected{% endif %}>John Deere Protect</option>
+                                    <option value="MTTO_PREVENTIVO" {% if lead.clasificacion == 'MTTO_PREVENTIVO' %}selected{% endif %}>Mtto Preventivo</option>
+                                    <option value="PIP" {% if lead.clasificacion == 'PIP' %}selected{% endif %}>PIP</option>
+                                    <option value="REFORMA_COMPONENTES" {% if lead.clasificacion == 'REFORMA_COMPONENTES' %}selected{% endif %}>Reforma de componentes</option>
+                                    <option value="DIENTES_CUCHILLAS" {% if lead.clasificacion == 'DIENTES_CUCHILLAS' %}selected{% endif %}>Dientes / Cuchillas</option>
+                                    <option value="TREN_RODANTE" {% if lead.clasificacion == 'TREN_RODANTE' %}selected{% endif %}>Tren rodante</option>
+                                    <option value="GARANTIA_BASICA" {% if lead.clasificacion == 'GARANTIA_BASICA' %}selected{% endif %}>Garantía Básica</option>
+                                    <option value="GARANTIA_EXTENDIDA" {% if lead.clasificacion == 'GARANTIA_EXTENDIDA' %}selected{% endif %}>Garantía Extendida</option>
+                                    <option value="DISPONIBILIDAD" {% if lead.clasificacion == 'DISPONIBILIDAD' %}selected{% endif %}>Disponibilidad</option>
+                                    <option value="RECONEXION" {% if lead.clasificacion == 'RECONEXION' %}selected{% endif %}>Reconexión</option>
+                                    <option value="OTROS" {% if lead.clasificacion == 'OTROS' %}selected{% endif %}>Otros</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="valor_estimado" class="form-label">Valor Estimado (USD)</label>
+                                <input type="number" class="form-control" id="valor_estimado" name="valor_estimado" 
+                                       step="0.01" min="0" value="{{ lead.valor_estimado|default:'' }}" 
+                                       placeholder="0.00">
+                            </div>
+                            <div class="col-12">
+                                <label for="descripcion" class="form-label">Descripción *</label>
+                                <textarea class="form-control" id="descripcion" name="descripcion" rows="4" required>{{ lead.descripcion }}</textarea>
+                            </div>
+                            <div class="col-12">
+                                <label for="observaciones_contacto" class="form-label">Observaciones de Contacto</label>
+                                <textarea class="form-control" id="observaciones_contacto" name="observaciones_contacto" rows="3">{{ lead.observaciones_contacto }}</textarea>
+                                <div class="form-text">Información adicional sobre el contacto con el cliente</div>
+                            </div>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <!-- Botones de acción -->
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'centroSoluciones:lead_detail' lead.id %}" class="btn btn-outline-secondary">
+                                <i class="bi bi-x-circle me-2"></i>Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-warning">
+                                <i class="bi bi-check-circle me-2"></i>Guardar Cambios
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <!-- Información de Auditoría -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-clock-history me-2"></i>Información de Auditoría
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Creado por</label>
+                        <p class="form-control-plaintext">{{ lead.creado_por.get_nombre_completo }}</p>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Fecha de Creación</label>
+                        <p class="form-control-plaintext">{{ lead.fecha_creacion|date:"d/m/Y H:i" }}</p>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Última Modificación</label>
+                        <p class="form-control-plaintext">{{ lead.fecha_modificacion|date:"d/m/Y H:i" }}</p>
+                    </div>
+                    {% if lead.fecha_contacto %}
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Fecha de Primer Contacto</label>
+                        <p class="form-control-plaintext">{{ lead.fecha_contacto|date:"d/m/Y H:i" }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Acciones Rápidas -->
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-lightning-fill me-2"></i>Acciones Rápidas
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'centroSoluciones:lead_detail' lead.id %}" class="btn btn-outline-primary">
+                            <i class="bi bi-eye me-2"></i>Ver Detalle
+                        </a>
+                        <a href="{% url 'centroSoluciones:leads_list' %}" class="btn btn-outline-secondary">
+                            <i class="bi bi-list me-2"></i>Ver Todos los Leads
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

@@ -1,0 +1,640 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ tool.nombre }} - Detalle{% endblock %}
+
+{% block extra_css %}
+<style>
+    .detail-card {
+        border-radius: 10px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .status-badge {
+        font-size: 0.9rem;
+        padding: 0.5rem 1rem;
+    }
+    .timeline-item {
+        position: relative;
+        padding-left: 2rem;
+        margin-bottom: 1.5rem;
+    }
+    .timeline-item::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0.5rem;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: #007bff;
+    }
+    .timeline-item::after {
+        content: '';
+        position: absolute;
+        left: 5px;
+        top: 1.2rem;
+        width: 2px;
+        height: calc(100% + 0.5rem);
+        background: #e9ecef;
+    }
+    .timeline-item:last-child::after {
+        display: none;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item">
+                        <a href="{% url 'gestionDeTaller:personal_tools_list' %}">Herramientas Personales</a>
+                    </li>
+                    <li class="breadcrumb-item active">{{ tool.nombre }}</li>
+                </ol>
+            </nav>
+            <h1 class="h3 mb-0">{{ tool.nombre }}</h1>
+            <p class="text-muted">{{ tool.get_categoria_display }}</p>
+        </div>
+        <div>
+            <span class="badge status-badge 
+                {% if tool.estado == 'ASIGNADA' %}bg-success
+                {% elif tool.estado == 'DISPONIBLE' %}bg-primary
+                {% elif tool.estado == 'MANTENIMIENTO' %}bg-warning
+                {% else %}bg-secondary{% endif %}">
+                {{ tool.get_estado_display }}
+            </span>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Información de la herramienta -->
+        <div class="col-md-4">
+            <div class="card detail-card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-info-circle"></i> Información General
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <strong>Nombre:</strong>
+                        <p class="mb-1">{{ tool.nombre }}</p>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <strong>Categoría:</strong>
+                        <p class="mb-1">{{ tool.get_categoria_display }}</p>
+                    </div>
+                    
+                    {% if tool.marca %}
+                    <div class="mb-3">
+                        <strong>Marca:</strong>
+                        <p class="mb-1">{{ tool.marca }}</p>
+                    </div>
+                    {% endif %}
+                    
+                    {% if tool.modelo %}
+                    <div class="mb-3">
+                        <strong>Modelo:</strong>
+                        <p class="mb-1">{{ tool.modelo }}</p>
+                    </div>
+                    {% endif %}
+                    
+                    {% if tool.numero_serie %}
+                    <div class="mb-3">
+                        <strong>Número de Serie:</strong>
+                        <p class="mb-1">{{ tool.numero_serie }}</p>
+                    </div>
+                    {% endif %}
+                    
+                    {% if tool.fecha_adquisicion %}
+                    <div class="mb-3">
+                        <strong>Fecha de Adquisición:</strong>
+                        <p class="mb-1">{{ tool.fecha_adquisicion }}</p>
+                    </div>
+                    {% endif %}
+                    
+                    {% if tool.observaciones %}
+                    <div class="mb-3">
+                        <strong>Observaciones:</strong>
+                        <p class="mb-1">{{ tool.observaciones }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Asignación actual -->
+            {% if tool.asignacion_actual %}
+            <div class="card detail-card mb-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-user-check"></i> Asignación Actual
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <strong>Técnico:</strong>
+                        <p class="mb-1">{{ tool.asignacion_actual.tecnico.get_full_name }}</p>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <strong>Fecha de Asignación:</strong>
+                        <p class="mb-1">{{ tool.asignacion_actual.fecha_asignacion }}</p>
+                    </div>
+                    
+                    {% if tool.asignacion_actual.observaciones %}
+                    <div class="mb-3">
+                        <strong>Observaciones:</strong>
+                        <p class="mb-1">{{ tool.asignacion_actual.observaciones }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Acciones -->
+            <div class="card detail-card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-cogs"></i> Acciones
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        {% if tool.estado == 'DISPONIBLE' %}
+                        <a href="{% url 'gestionDeTaller:assign_personal_tool' tool.id %}" 
+                           class="btn btn-success">
+                            <i class="fas fa-user-plus"></i> Asignar a Técnico
+                        </a>
+                        {% endif %}
+                        
+                        {% if tool.estado == 'ASIGNADA' %}
+                        <a href="{% url 'gestionDeTaller:return_personal_tool' tool.id %}" 
+                           class="btn btn-warning">
+                            <i class="fas fa-undo"></i> Devolver Herramienta
+                        </a>
+                        {% endif %}
+                        
+                        <a href="{% url 'gestionDeTaller:audit_personal_tool' tool.id %}" 
+                           class="btn btn-info">
+                            <i class="fas fa-clipboard-check"></i> Realizar Auditoría
+                        </a>
+                        
+                        <a href="{% url 'gestionDeTaller:personal_tools_list' %}" 
+                           class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left"></i> Volver a la Lista
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Historial -->
+        <div class="col-md-8">
+            <!-- Pestañas -->
+            <ul class="nav nav-tabs" id="historialTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="asignaciones-tab" data-bs-toggle="tab" 
+                            data-bs-target="#asignaciones" type="button" role="tab">
+                        <i class="fas fa-user-clock"></i> Asignaciones
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="auditorias-tab" data-bs-toggle="tab" 
+                            data-bs-target="#auditorias" type="button" role="tab">
+                        <i class="fas fa-clipboard-check"></i> Auditorías
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="certificacion-tab" data-bs-toggle="tab" 
+                            data-bs-target="#certificacion" type="button" role="tab">
+                        <i class="fas fa-certificate"></i> Certificación
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="items-tab" data-bs-toggle="tab" 
+                            data-bs-target="#items" type="button" role="tab">
+                        <i class="fas fa-tools"></i> Items
+                        {% if tool.items_requieren_reposicion > 0 %}
+                            <span class="badge bg-danger">{{ tool.items_requieren_reposicion }}</span>
+                        {% endif %}
+                    </button>
+                </li>
+            </ul>
+
+            <div class="tab-content" id="historialTabsContent">
+                <!-- Asignaciones -->
+                <div class="tab-pane fade show active" id="asignaciones" role="tabpanel">
+                    <div class="card detail-card mt-3">
+                        <div class="card-body">
+                            {% if asignaciones %}
+                            <div class="timeline">
+                                {% for asignacion in asignaciones %}
+                                <div class="timeline-item">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <h6 class="mb-1">{{ asignacion.tecnico.get_full_name }}</h6>
+                                            <p class="text-muted mb-1">
+                                                <i class="fas fa-calendar"></i> 
+                                                Asignada: {{ asignacion.fecha_asignacion }}
+                                            </p>
+                                            {% if asignacion.fecha_devolucion %}
+                                            <p class="text-muted mb-1">
+                                                <i class="fas fa-calendar-check"></i> 
+                                                Devuelta: {{ asignacion.fecha_devolucion }}
+                                            </p>
+                                            {% endif %}
+                                            {% if asignacion.observaciones_asignacion %}
+                                            <p class="mb-1">{{ asignacion.observaciones_asignacion }}</p>
+                                            {% endif %}
+                                            {% if asignacion.observaciones_devolucion %}
+                                            <p class="mb-1 text-muted">
+                                                <em>Devolución: {{ asignacion.observaciones_devolucion }}</em>
+                                            </p>
+                                            {% endif %}
+                                        </div>
+                                        <span class="badge 
+                                            {% if asignacion.estado == 'ACTIVA' %}bg-success
+                                            {% elif asignacion.estado == 'DEVUELTA' %}bg-secondary
+                                            {% else %}bg-warning{% endif %}">
+                                            {{ asignacion.get_estado_display }}
+                                        </span>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% else %}
+                            <div class="text-center py-4">
+                                <i class="fas fa-user-clock fa-3x text-muted mb-3"></i>
+                                <h5 class="text-muted">No hay asignaciones registradas</h5>
+                                <p class="text-muted">Esta herramienta no ha sido asignada a ningún técnico</p>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Auditorías -->
+                <div class="tab-pane fade" id="auditorias" role="tabpanel">
+                    <div class="card detail-card mt-3">
+                        <div class="card-body">
+                            {% if detalles_auditoria %}
+                            <div class="timeline">
+                                {% for detalle in detalles_auditoria %}
+                                <div class="timeline-item">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <h6 class="mb-1">
+                                                Auditoría {{ detalle.auditoria.get_tipo_auditoria_display }}
+                                            </h6>
+                                            <p class="text-muted mb-1">
+                                                <i class="fas fa-calendar"></i> 
+                                                {{ detalle.auditoria.fecha_auditoria }}
+                                            </p>
+                                            <p class="text-muted mb-1">
+                                                <i class="fas fa-user"></i> 
+                                                Auditor: {{ detalle.auditoria.auditor.get_full_name }}
+                                            </p>
+                                            <p class="text-muted mb-1">
+                                                <i class="fas fa-user-tie"></i> 
+                                                Técnico: {{ detalle.auditoria.tecnico.get_full_name }}
+                                            </p>
+                                            {% if detalle.auditoria.observaciones_generales %}
+                                            <p class="mb-1">{{ detalle.auditoria.observaciones_generales }}</p>
+                                            {% endif %}
+                                            
+                                            <!-- Detalle específico de la herramienta -->
+                                            <div class="mt-2">
+                                                <small class="text-muted">Estado de la herramienta:</small>
+                                                <div class="d-flex justify-content-between align-items-center mt-1">
+                                                    <span>Estado:</span>
+                                                    <span class="badge 
+                                                        {% if detalle.estado_herramienta == 'PRESENTE' %}bg-success
+                                                        {% elif detalle.estado_herramienta == 'AUSENTE' %}bg-danger
+                                                        {% elif detalle.estado_herramienta == 'DAÑADA' %}bg-warning
+                                                        {% else %}bg-secondary{% endif %}">
+                                                        {{ detalle.get_estado_herramienta_display }}
+                                                    </span>
+                                                </div>
+                                                {% if detalle.accion_requerida != 'NINGUNA' %}
+                                                <div class="d-flex justify-content-between align-items-center mt-1">
+                                                    <span>Acción requerida:</span>
+                                                    <span class="badge bg-info">{{ detalle.get_accion_requerida_display }}</span>
+                                                </div>
+                                                {% endif %}
+                                                {% if detalle.observaciones %}
+                                                <p class="mb-1 mt-2"><small>{{ detalle.observaciones }}</small></p>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% else %}
+                            <div class="text-center py-4">
+                                <i class="fas fa-clipboard-check fa-3x text-muted mb-3"></i>
+                                <h5 class="text-muted">No hay auditorías registradas</h5>
+                                <p class="text-muted">Esta herramienta no ha sido auditada</p>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Certificación -->
+                <div class="tab-pane fade" id="certificacion" role="tabpanel">
+                    <div class="card detail-card mt-3">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-certificate"></i> Información de Certificación
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <!-- Estado actual de certificación -->
+                            <div class="row mb-4">
+                                <div class="col-md-6">
+                                    <div class="card border-0 bg-light">
+                                        <div class="card-body text-center">
+                                            <h6 class="card-title">Estado de Certificación</h6>
+                                            {% if tool.certificacion_vencida %}
+                                                <div class="text-danger">
+                                                    <i class="fas fa-exclamation-triangle fa-2x mb-2"></i>
+                                                    <p class="mb-0"><strong>Certificación Vencida</strong></p>
+                                                    <small>Venció hace {{ tool.dias_vencimiento_certificacion|floatformat:0|cut:"-" }} días</small>
+                                                </div>
+                                            {% elif tool.certificacion_proxima_vencer %}
+                                                <div class="text-warning">
+                                                    <i class="fas fa-clock fa-2x mb-2"></i>
+                                                    <p class="mb-0"><strong>Próxima a Vencer</strong></p>
+                                                    <small>Vence en {{ tool.dias_vencimiento_certificacion }} días</small>
+                                                </div>
+                                            {% elif tool.fecha_vencimiento_certificacion %}
+                                                <div class="text-success">
+                                                    <i class="fas fa-check-circle fa-2x mb-2"></i>
+                                                    <p class="mb-0"><strong>Certificación Vigente</strong></p>
+                                                    <small>Vence en {{ tool.dias_vencimiento_certificacion }} días</small>
+                                                </div>
+                                            {% else %}
+                                                <div class="text-muted">
+                                                    <i class="fas fa-question-circle fa-2x mb-2"></i>
+                                                    <p class="mb-0"><strong>Sin Certificación</strong></p>
+                                                    <small>No requiere certificación</small>
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="card border-0 bg-light">
+                                        <div class="card-body">
+                                            <h6 class="card-title">Fechas de Certificación</h6>
+                                            {% if tool.fecha_certificacion %}
+                                                <p class="mb-1"><strong>Fecha de Certificación:</strong></p>
+                                                <p class="text-muted mb-2">{{ tool.fecha_certificacion }}</p>
+                                            {% endif %}
+                                            {% if tool.fecha_vencimiento_certificacion %}
+                                                <p class="mb-1"><strong>Fecha de Vencimiento:</strong></p>
+                                                <p class="text-muted mb-0">{{ tool.fecha_vencimiento_certificacion }}</p>
+                                            {% endif %}
+                                            {% if not tool.fecha_certificacion and not tool.fecha_vencimiento_certificacion %}
+                                                <p class="text-muted mb-0">No hay fechas de certificación registradas</p>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Formulario para editar certificación -->
+                            <div class="card border-primary">
+                                <div class="card-header bg-primary text-white">
+                                    <h6 class="card-title mb-0">
+                                        <i class="fas fa-edit"></i> Editar Certificación
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <form method="post" action="{% url 'gestionDeTaller:update_certification' tool.id %}">
+                                        {% csrf_token %}
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <label for="fecha_certificacion" class="form-label">Fecha de Certificación</label>
+                                                    <input type="date" class="form-control" id="fecha_certificacion" 
+                                                           name="fecha_certificacion" 
+                                                           value="{{ tool.fecha_certificacion|date:'Y-m-d'|default:'' }}">
+                                                    <div class="form-text">Fecha en que se realizó la certificación</div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <label for="fecha_vencimiento_certificacion" class="form-label">Fecha de Vencimiento</label>
+                                                    <input type="date" class="form-control" id="fecha_vencimiento_certificacion" 
+                                                           name="fecha_vencimiento_certificacion" 
+                                                           value="{{ tool.fecha_vencimiento_certificacion|date:'Y-m-d'|default:'' }}">
+                                                    <div class="form-text">Fecha en que vence la certificación</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="d-grid">
+                                            <button type="submit" class="btn btn-primary">
+                                                <i class="fas fa-save"></i> Guardar Cambios
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Items -->
+                <div class="tab-pane fade" id="items" role="tabpanel">
+                    <div class="card detail-card mt-3">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-tools"></i> Items de la Herramienta
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <!-- Resumen de items -->
+                            <div class="row mb-4">
+                                <div class="col-md-3">
+                                    <div class="card border-0 bg-light">
+                                        <div class="card-body text-center">
+                                            <h6 class="card-title">Total Items</h6>
+                                            <h3 class="text-primary">{{ tool.total_items }}</h3>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="card border-0 bg-light">
+                                        <div class="card-body text-center">
+                                            <h6 class="card-title">Presentes</h6>
+                                            <h3 class="text-success">{{ tool.items_presentes }}</h3>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="card border-0 bg-light">
+                                        <div class="card-body text-center">
+                                            <h6 class="card-title">Ausentes</h6>
+                                            <h3 class="text-danger">{{ tool.items_ausentes }}</h3>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="card border-0 bg-light">
+                                        <div class="card-body text-center">
+                                            <h6 class="card-title">Completitud</h6>
+                                            <h3 class="text-info">{{ tool.completitud_herramienta }}%</h3>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Lista de items -->
+                            {% if tool.items.all %}
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Item</th>
+                                                <th>Cantidad</th>
+                                                <th>Estado</th>
+                                                <th>Observaciones</th>
+                                                <th>Acciones</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for item in tool.items.all %}
+                                            <tr>
+                                                <td>
+                                                    <strong>{{ item.nombre }}</strong>
+                                                    {% if item.descripcion %}
+                                                        <br><small class="text-muted">{{ item.descripcion }}</small>
+                                                    {% endif %}
+                                                </td>
+                                                <td>{{ item.cantidad }}</td>
+                                                <td>
+                                                    <span class="badge 
+                                                        {% if item.estado == 'PRESENTE' %}bg-success
+                                                        {% elif item.estado == 'AUSENTE' %}bg-danger
+                                                        {% elif item.estado == 'DAÑADO' %}bg-warning
+                                                        {% elif item.estado == 'DESGASTADO' %}bg-secondary
+                                                        {% else %}bg-dark{% endif %}">
+                                                        {{ item.get_estado_display }}
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    {% if item.observaciones %}
+                                                        <small>{{ item.observaciones }}</small>
+                                                    {% else %}
+                                                        <span class="text-muted">-</span>
+                                                    {% endif %}
+                                                </td>
+                                                <td>
+                                                    <button class="btn btn-sm btn-outline-primary" 
+                                                            onclick="editarItem({{ item.id }})">
+                                                        <i class="fas fa-edit"></i>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {% else %}
+                                <div class="text-center py-4">
+                                    <i class="fas fa-tools fa-3x text-muted mb-3"></i>
+                                    <h5 class="text-muted">No hay items registrados</h5>
+                                    <p class="text-muted">Esta herramienta no tiene items individuales registrados</p>
+                                </div>
+                            {% endif %}
+
+                            <!-- Botón para agregar items -->
+                            <div class="mt-3">
+                                <button class="btn btn-primary" onclick="agregarItem()">
+                                    <i class="fas fa-plus"></i> Agregar Item
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para editar/agregar items -->
+<div class="modal fade" id="itemModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="itemModalTitle">Agregar Item</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="itemForm" method="post">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="nombre" class="form-label">Nombre del Item</label>
+                        <input type="text" class="form-control" id="nombre" name="nombre" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="descripcion" class="form-label">Descripción</label>
+                        <textarea class="form-control" id="descripcion" name="descripcion" rows="2"></textarea>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="cantidad" class="form-label">Cantidad</label>
+                                <input type="number" class="form-control" id="cantidad" name="cantidad" value="1" min="1" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="estado" class="form-label">Estado</label>
+                                <select class="form-control" id="estado" name="estado" required>
+                                    <option value="PRESENTE">Presente</option>
+                                    <option value="AUSENTE">Ausente</option>
+                                    <option value="DAÑADO">Dañado</option>
+                                    <option value="DESGASTADO">Desgastado</option>
+                                    <option value="VENCIDO">Vencido</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="observaciones" class="form-label">Observaciones</label>
+                        <textarea class="form-control" id="observaciones" name="observaciones" rows="2"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+function agregarItem() {
+    document.getElementById('itemModalTitle').textContent = 'Agregar Item';
+    document.getElementById('itemForm').action = "{% url 'gestionDeTaller:add_item' tool.id %}";
+    document.getElementById('itemForm').reset();
+    document.getElementById('nombre').readOnly = false;
+    new bootstrap.Modal(document.getElementById('itemModal')).show();
+}
+
+function editarItem(itemId) {
+    // Aquí puedes implementar la lógica para cargar los datos del item
+    // Por ahora, redirigimos al admin
+    window.open(`/admin/gestionDeTaller/itemherramientapersonal/${itemId}/change/`, '_blank');
+}
+</script>
+{% endblock %} 

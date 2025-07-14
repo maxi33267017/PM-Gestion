@@ -1,0 +1,537 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+    :root {
+        --primary-gradient: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        --success-gradient: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+        --warning-gradient: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+        --danger-gradient: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+        --info-gradient: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+        --dark-gradient: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        --card-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        --hover-shadow: 0 15px 40px rgba(0,0,0,0.15);
+        --border-radius: 20px;
+        --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .oc-header {
+        background: var(--dark-gradient);
+        color: white;
+        padding: 3rem 2rem;
+        border-radius: var(--border-radius);
+        margin-bottom: 2.5rem;
+        box-shadow: var(--card-shadow);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .oc-header::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="dots" width="20" height="20" patternUnits="userSpaceOnUse"><circle cx="10" cy="10" r="1" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23dots)"/></svg>');
+        pointer-events: none;
+    }
+    
+    .oc-header h1 {
+        margin: 0;
+        font-weight: 800;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        font-size: 3rem;
+        position: relative;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+    
+    .header-actions {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+        margin-top: 1rem;
+    }
+    
+    .header-btn {
+        border-radius: 25px;
+        padding: 0.8rem 1.5rem;
+        font-weight: 600;
+        transition: var(--transition);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-size: 0.9rem;
+        border: none;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        text-decoration: none;
+        color: white;
+    }
+    
+    .header-btn.primary {
+        background: var(--info-gradient);
+    }
+    
+    .header-btn.primary:hover {
+        background: var(--info-gradient);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4);
+        color: white;
+        text-decoration: none;
+    }
+    
+    .header-btn.success {
+        background: var(--success-gradient);
+    }
+    
+    .header-btn.success:hover {
+        background: var(--success-gradient);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(39, 174, 96, 0.4);
+        color: white;
+        text-decoration: none;
+    }
+    
+    .header-btn.warning {
+        background: var(--warning-gradient);
+    }
+    
+    .header-btn.warning:hover {
+        background: var(--warning-gradient);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(243, 156, 18, 0.4);
+        color: white;
+        text-decoration: none;
+    }
+    
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 2rem;
+        margin-bottom: 3rem;
+    }
+    
+    .stat-card {
+        background: white;
+        border-radius: var(--border-radius);
+        box-shadow: var(--card-shadow);
+        overflow: hidden;
+        border: 1px solid #e9ecef;
+        transition: var(--transition);
+        position: relative;
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--hover-shadow);
+    }
+    
+    .stat-header {
+        background: var(--dark-gradient);
+        color: white;
+        padding: 1.2rem 1.5rem;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .stat-header h5 {
+        margin: 0;
+        font-weight: 700;
+        font-size: 1.2rem;
+        position: relative;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        gap: 0.8rem;
+    }
+    
+    .stat-body {
+        padding: 2rem;
+        text-align: center;
+    }
+    
+    .stat-number {
+        font-size: 3rem;
+        font-weight: 900;
+        margin-bottom: 0.5rem;
+    }
+    
+    .stat-card.success .stat-number {
+        background: var(--success-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    
+    .stat-card.warning .stat-number {
+        background: var(--warning-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    
+    .stat-card.danger .stat-number {
+        background: var(--danger-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    
+    .stat-card.info .stat-number {
+        background: var(--info-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    
+    .stat-label {
+        color: #6c757d;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        font-size: 0.9rem;
+    }
+    
+    .content-section {
+        background: white;
+        border-radius: var(--border-radius);
+        box-shadow: var(--card-shadow);
+        overflow: hidden;
+        border: 1px solid #e9ecef;
+        margin-bottom: 2rem;
+    }
+    
+    .section-header {
+        background: var(--dark-gradient);
+        color: white;
+        padding: 1.5rem 2rem;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .section-header h5 {
+        margin: 0;
+        font-weight: 700;
+        font-size: 1.3rem;
+        position: relative;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+    
+    .section-body {
+        padding: 2rem;
+    }
+    
+    .alert-item {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1rem;
+        border-radius: 15px;
+        margin-bottom: 1rem;
+        transition: var(--transition);
+        border-left: 4px solid;
+    }
+    
+    .alert-item:hover {
+        transform: translateX(5px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+    
+    .alert-item.critical {
+        background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+        border-left-color: #dc3545;
+    }
+    
+    .alert-item.high {
+        background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+        border-left-color: #ffc107;
+    }
+    
+    .alert-item.medium {
+        background: linear-gradient(135deg, #d1ecf1 0%, #bee5eb 100%);
+        border-left-color: #17a2b8;
+    }
+    
+    .alert-item.low {
+        background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+        border-left-color: #28a745;
+    }
+    
+    .alert-icon {
+        font-size: 1.5rem;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        background: white;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    .alert-content {
+        flex: 1;
+    }
+    
+    .alert-title {
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+    }
+    
+    .alert-machine {
+        font-size: 0.9rem;
+        color: #6c757d;
+    }
+    
+    .alert-time {
+        font-size: 0.8rem;
+        color: #6c757d;
+    }
+    
+    .no-data {
+        text-align: center;
+        padding: 3rem 2rem;
+        color: #6c757d;
+    }
+    
+    .no-data i {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+    }
+    
+    .no-data h5 {
+        margin-bottom: 1rem;
+        font-weight: 600;
+    }
+    
+    .sync-form {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-radius: 15px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+    }
+    
+    .sync-form h6 {
+        margin-bottom: 1rem;
+        color: #495057;
+        font-weight: 600;
+    }
+    
+    .form-row {
+        display: flex;
+        gap: 1rem;
+        align-items: end;
+        margin-bottom: 1rem;
+    }
+    
+    .form-group {
+        flex: 1;
+    }
+    
+    .form-group label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+        color: #495057;
+    }
+    
+    .form-control {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        border: 2px solid #e9ecef;
+        border-radius: 10px;
+        font-size: 1rem;
+        transition: var(--transition);
+    }
+    
+    .form-control:focus {
+        outline: none;
+        border-color: #3498db;
+        box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+    }
+    
+    .btn-sync {
+        background: var(--success-gradient);
+        color: white;
+        border: none;
+        padding: 0.75rem 2rem;
+        border-radius: 10px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: var(--transition);
+    }
+    
+    .btn-sync:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(39, 174, 96, 0.4);
+    }
+</style>
+
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="oc-header">
+        <h1><i class="bi bi-gear-wide-connected"></i> Operations Center</h1>
+        <div class="header-actions">
+            <a href="{% url 'operationsCenter:lista_maquinas' %}" class="header-btn primary">
+                <i class="bi bi-truck"></i> Ver Máquinas
+            </a>
+            <a href="{% url 'operationsCenter:lista_alertas' %}" class="header-btn warning">
+                <i class="bi bi-exclamation-triangle"></i> Ver Alertas
+            </a>
+            <a href="{% url 'operationsCenter:lista_reportes_telemetria' %}" class="header-btn success">
+                <i class="bi bi-file-earmark-text"></i> Reportes
+            </a>
+            {% if user.rol == 'GERENTE' %}
+            <a href="{% url 'operationsCenter:configuracion_oc' %}" class="header-btn info">
+                <i class="bi bi-gear"></i> Configuración
+            </a>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Estadísticas -->
+    <div class="stats-grid">
+        <div class="stat-card info">
+            <div class="stat-header">
+                <h5><i class="bi bi-truck"></i> Máquinas Activas</h5>
+            </div>
+            <div class="stat-body">
+                <div class="stat-number">{{ total_machines }}</div>
+                <div class="stat-label">Total Sincronizadas</div>
+            </div>
+        </div>
+        
+        <div class="stat-card danger">
+            <div class="stat-header">
+                <h5><i class="bi bi-exclamation-triangle"></i> Alertas Activas</h5>
+            </div>
+            <div class="stat-body">
+                <div class="stat-number">{{ total_alerts }}</div>
+                <div class="stat-label">Requieren Atención</div>
+            </div>
+        </div>
+        
+        <div class="stat-card success">
+            <div class="stat-header">
+                <h5><i class="bi bi-people"></i> Clientes con Máquinas</h5>
+            </div>
+            <div class="stat-body">
+                <div class="stat-number">{{ total_clients_with_machines }}</div>
+                <div class="stat-label">Con Telemetría</div>
+            </div>
+        </div>
+        
+        <div class="stat-card warning">
+            <div class="stat-header">
+                <h5><i class="bi bi-tools"></i> Máquinas con Problemas</h5>
+            </div>
+            <div class="stat-body">
+                <div class="stat-number">{{ machines_with_issues }}</div>
+                <div class="stat-label">Alertas Críticas/Altas</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Sincronización -->
+    <div class="content-section">
+        <div class="section-header">
+            <h5><i class="bi bi-arrow-repeat"></i> Sincronización de Datos</h5>
+        </div>
+        <div class="section-body">
+            <form method="post" action="{% url 'operationsCenter:sincronizar_datos' %}" class="sync-form">
+                {% csrf_token %}
+                <h6>Sincronizar datos desde John Deere Operations Center</h6>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="days_back">Días hacia atrás:</label>
+                        <select name="days_back" id="days_back" class="form-control">
+                            <option value="1">1 día</option>
+                            <option value="3">3 días</option>
+                            <option value="7" selected>7 días</option>
+                            <option value="15">15 días</option>
+                            <option value="30">30 días</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn-sync">
+                        <i class="bi bi-arrow-repeat"></i> Sincronizar
+                    </button>
+                </div>
+                <small class="text-muted">
+                    <i class="bi bi-info-circle"></i> 
+                    Esto sincronizará máquinas, ubicaciones, horas de motor y alertas desde la API de John Deere.
+                </small>
+            </form>
+            
+            {% if stale_machines > 0 %}
+            <div class="alert alert-warning">
+                <i class="bi bi-exclamation-triangle"></i>
+                <strong>Atención:</strong> {{ stale_machines }} máquina(s) no se han sincronizado en más de 1 día.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Alertas Recientes -->
+    <div class="content-section">
+        <div class="section-header">
+            <h5><i class="bi bi-exclamation-triangle"></i> Alertas Recientes</h5>
+        </div>
+        <div class="section-body">
+            {% if recent_alerts %}
+                {% for alert in recent_alerts %}
+                <div class="alert-item {{ alert.severity|lower }}">
+                    <div class="alert-icon">
+                        {% if alert.severity == 'CRITICAL' %}
+                            <i class="bi bi-exclamation-triangle-fill text-danger"></i>
+                        {% elif alert.severity == 'HIGH' %}
+                            <i class="bi bi-exclamation-triangle text-warning"></i>
+                        {% elif alert.severity == 'MEDIUM' %}
+                            <i class="bi bi-info-circle text-info"></i>
+                        {% else %}
+                            <i class="bi bi-info-circle text-success"></i>
+                        {% endif %}
+                    </div>
+                    <div class="alert-content">
+                        <div class="alert-title">{{ alert.description|truncatechars:100 }}</div>
+                        <div class="alert-machine">{{ alert.machine }}</div>
+                    </div>
+                    <div class="alert-time">
+                        {{ alert.timestamp|timesince }} atrás
+                    </div>
+                </div>
+                {% endfor %}
+                
+                <div class="text-center mt-3">
+                    <a href="{% url 'operationsCenter:lista_alertas' %}" class="btn btn-outline-primary">
+                        Ver Todas las Alertas
+                    </a>
+                </div>
+            {% else %}
+                <div class="no-data">
+                    <i class="bi bi-check-circle"></i>
+                    <h5>¡Excelente!</h5>
+                    <p>No hay alertas activas en este momento.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-refresh cada 5 minutos
+    setTimeout(function() {
+        location.reload();
+    }, 300000);
+});
+</script>
+{% endblock %} 

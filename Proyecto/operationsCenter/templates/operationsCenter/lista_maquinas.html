@@ -1,0 +1,515 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+    :root {
+        --primary-gradient: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        --success-gradient: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+        --warning-gradient: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+        --danger-gradient: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+        --info-gradient: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+        --dark-gradient: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        --card-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        --hover-shadow: 0 15px 40px rgba(0,0,0,0.15);
+        --border-radius: 20px;
+        --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .machines-header {
+        background: var(--dark-gradient);
+        color: white;
+        padding: 3rem 2rem;
+        border-radius: var(--border-radius);
+        margin-bottom: 2.5rem;
+        box-shadow: var(--card-shadow);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .machines-header h1 {
+        margin: 0;
+        font-weight: 800;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        font-size: 3rem;
+        position: relative;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+    
+    .header-actions {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+        margin-top: 1rem;
+    }
+    
+    .header-btn {
+        border-radius: 25px;
+        padding: 0.8rem 1.5rem;
+        font-weight: 600;
+        transition: var(--transition);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-size: 0.9rem;
+        border: none;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        text-decoration: none;
+        color: white;
+    }
+    
+    .header-btn.primary {
+        background: var(--info-gradient);
+    }
+    
+    .header-btn.primary:hover {
+        background: var(--info-gradient);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4);
+        color: white;
+        text-decoration: none;
+    }
+    
+    .filters-section {
+        background: white;
+        border-radius: var(--border-radius);
+        box-shadow: var(--card-shadow);
+        overflow: hidden;
+        border: 1px solid #e9ecef;
+        margin-bottom: 2rem;
+    }
+    
+    .filters-header {
+        background: var(--dark-gradient);
+        color: white;
+        padding: 1.2rem 1.5rem;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .filters-header h5 {
+        margin: 0;
+        font-weight: 700;
+        font-size: 1.2rem;
+        position: relative;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        gap: 0.8rem;
+    }
+    
+    .filters-body {
+        padding: 1.5rem;
+    }
+    
+    .filters-row {
+        display: flex;
+        gap: 1rem;
+        align-items: end;
+        flex-wrap: wrap;
+    }
+    
+    .filter-group {
+        flex: 1;
+        min-width: 200px;
+    }
+    
+    .filter-group label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+        color: #495057;
+    }
+    
+    .filter-control {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        border: 2px solid #e9ecef;
+        border-radius: 10px;
+        font-size: 1rem;
+        transition: var(--transition);
+    }
+    
+    .filter-control:focus {
+        outline: none;
+        border-color: #3498db;
+        box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+    }
+    
+    .btn-filter {
+        background: var(--info-gradient);
+        color: white;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 10px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: var(--transition);
+    }
+    
+    .btn-filter:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4);
+    }
+    
+    .machines-table {
+        background: white;
+        border-radius: var(--border-radius);
+        box-shadow: var(--card-shadow);
+        overflow: hidden;
+        border: 1px solid #e9ecef;
+    }
+    
+    .table {
+        margin-bottom: 0;
+    }
+    
+    .table th {
+        background: var(--dark-gradient);
+        color: white;
+        border: none;
+        padding: 1rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-size: 0.9rem;
+    }
+    
+    .table td {
+        padding: 1rem;
+        vertical-align: middle;
+        border-bottom: 1px solid #e9ecef;
+    }
+    
+    .table tbody tr:hover {
+        background-color: #f8f9fa;
+        transition: var(--transition);
+    }
+    
+    .machine-info {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+    
+    .machine-icon {
+        width: 50px;
+        height: 50px;
+        background: var(--info-gradient);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.5rem;
+        font-weight: 600;
+    }
+    
+    .machine-details h6 {
+        margin: 0;
+        font-weight: 600;
+        color: #2c3e50;
+    }
+    
+    .machine-details small {
+        color: #6c757d;
+        font-size: 0.85rem;
+    }
+    
+    .status-badge {
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .status-badge.active {
+        background: var(--success-gradient);
+        color: white;
+    }
+    
+    .status-badge.inactive {
+        background: #6c757d;
+        color: white;
+    }
+    
+    .status-badge.with-alerts {
+        background: var(--danger-gradient);
+        color: white;
+    }
+    
+    .action-btn {
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        text-decoration: none;
+        transition: var(--transition);
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin: 0.25rem;
+    }
+    
+    .action-btn.primary {
+        background: var(--info-gradient);
+        color: white;
+    }
+    
+    .action-btn.primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+        color: white;
+    }
+    
+    .action-btn.warning {
+        background: var(--warning-gradient);
+        color: white;
+    }
+    
+    .action-btn.warning:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(243, 156, 18, 0.3);
+        color: white;
+    }
+    
+    .no-data {
+        text-align: center;
+        padding: 3rem 2rem;
+        color: #6c757d;
+    }
+    
+    .no-data i {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+    }
+    
+    .no-data h5 {
+        margin-bottom: 1rem;
+        font-weight: 600;
+    }
+    
+    .pagination {
+        justify-content: center;
+        margin-top: 2rem;
+    }
+    
+    .page-link {
+        border-radius: 8px;
+        margin: 0 0.25rem;
+        border: 2px solid #e9ecef;
+        color: #495057;
+        font-weight: 600;
+        transition: var(--transition);
+    }
+    
+    .page-link:hover {
+        background: var(--info-gradient);
+        border-color: #3498db;
+        color: white;
+    }
+    
+    .page-item.active .page-link {
+        background: var(--info-gradient);
+        border-color: #3498db;
+    }
+</style>
+
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="machines-header">
+        <h1><i class="bi bi-truck"></i> Máquinas Operations Center</h1>
+        <div class="header-actions">
+            <a href="{% url 'operationsCenter:dashboard_operations_center' %}" class="header-btn primary">
+                <i class="bi bi-arrow-left"></i> Volver al Dashboard
+            </a>
+        </div>
+    </div>
+    
+    <!-- Filtros -->
+    <div class="filters-section">
+        <div class="filters-header">
+            <h5><i class="bi bi-funnel"></i> Filtros</h5>
+        </div>
+        <div class="filters-body">
+            <form method="get" class="filters-row">
+                <div class="filter-group">
+                    <label for="search">Buscar</label>
+                    <input type="text" class="filter-control" id="search" name="search" 
+                           value="{{ search }}" placeholder="Número de serie, modelo, cliente...">
+                </div>
+                <div class="filter-group">
+                    <label for="status">Estado</label>
+                    <select class="filter-control" id="status" name="status">
+                        <option value="">Todos</option>
+                        <option value="with_alerts" {% if status_filter == 'with_alerts' %}selected{% endif %}>Con Alertas</option>
+                        <option value="no_alerts" {% if status_filter == 'no_alerts' %}selected{% endif %}>Sin Alertas</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="client">Cliente</label>
+                    <select class="filter-control" id="client" name="client">
+                        <option value="">Todos los clientes</option>
+                        {% for client in clients %}
+                        <option value="{{ client.id }}" {% if client_filter == client.id|stringformat:"s" %}selected{% endif %}>
+                            {{ client.razon_social }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <button type="submit" class="btn-filter">
+                        <i class="bi bi-search"></i> Filtrar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Tabla de máquinas -->
+    <div class="machines-table">
+        {% if page_obj %}
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th><i class="bi bi-truck me-2"></i>Máquina</th>
+                        <th><i class="bi bi-people me-2"></i>Cliente</th>
+                        <th><i class="bi bi-geo-alt me-2"></i>Última Ubicación</th>
+                        <th><i class="bi bi-clock me-2"></i>Última Sincronización</th>
+                        <th><i class="bi bi-exclamation-triangle me-2"></i>Estado</th>
+                        <th><i class="bi bi-gear me-2"></i>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for machine in page_obj %}
+                    <tr>
+                        <td>
+                            <div class="machine-info">
+                                <div class="machine-icon">
+                                    <i class="bi bi-truck"></i>
+                                </div>
+                                <div class="machine-details">
+                                    <h6>{{ machine.make_name }} {{ machine.model_name }}</h6>
+                                    <small>{{ machine.serial_number|default:machine.machine_id }}</small>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            {% if machine.equipo_local %}
+                                <strong>{{ machine.equipo_local.cliente.razon_social }}</strong>
+                            {% else %}
+                                <span class="text-muted">No asignado</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if machine.last_location_lat and machine.last_location_lng %}
+                                <small>
+                                    {{ machine.last_location_lat|floatformat:4 }}, {{ machine.last_location_lng|floatformat:4 }}
+                                </small><br>
+                                <small class="text-muted">{{ machine.last_location_timestamp|timesince }} atrás</small>
+                            {% else %}
+                                <span class="text-muted">Sin datos</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if machine.last_sync %}
+                                <small>{{ machine.last_sync|timesince }} atrás</small>
+                            {% else %}
+                                <span class="text-muted">Nunca</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if machine.has_active_alerts %}
+                                <span class="status-badge with-alerts">
+                                    <i class="bi bi-exclamation-triangle"></i> Con Alertas
+                                </span>
+                            {% elif machine.is_active %}
+                                <span class="status-badge active">
+                                    <i class="bi bi-check-circle"></i> Activa
+                                </span>
+                            {% else %}
+                                <span class="status-badge inactive">
+                                    <i class="bi bi-x-circle"></i> Inactiva
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{% url 'operationsCenter:detalle_maquina' machine.id %}" class="action-btn primary">
+                                <i class="bi bi-eye"></i> Ver
+                            </a>
+                            <a href="{% url 'operationsCenter:sincronizar_maquina' machine.id %}" class="action-btn warning">
+                                <i class="bi bi-arrow-repeat"></i> Sincronizar
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Paginación -->
+        {% if page_obj.has_other_pages %}
+        <nav aria-label="Paginación de máquinas">
+            <ul class="pagination">
+                {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page=1{% if search %}&search={{ search }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if client_filter %}&client={{ client_filter }}{% endif %}">
+                            <i class="bi bi-chevron-double-left"></i>
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if search %}&search={{ search }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if client_filter %}&client={{ client_filter }}{% endif %}">
+                            <i class="bi bi-chevron-left"></i>
+                        </a>
+                    </li>
+                {% endif %}
+                
+                {% for num in page_obj.paginator.page_range %}
+                    {% if page_obj.number == num %}
+                        <li class="page-item active">
+                            <span class="page-link">{{ num }}</span>
+                        </li>
+                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ num }}{% if search %}&search={{ search }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if client_filter %}&client={{ client_filter }}{% endif %}">{{ num }}</a>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if search %}&search={{ search }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if client_filter %}&client={{ client_filter }}{% endif %}">
+                            <i class="bi bi-chevron-right"></i>
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if search %}&search={{ search }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if client_filter %}&client={{ client_filter }}{% endif %}">
+                            <i class="bi bi-chevron-double-right"></i>
+                        </a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+        
+        {% else %}
+        <div class="no-data">
+            <i class="bi bi-truck"></i>
+            <h5>No se encontraron máquinas</h5>
+            <p>No hay máquinas que coincidan con los filtros aplicados.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %} 

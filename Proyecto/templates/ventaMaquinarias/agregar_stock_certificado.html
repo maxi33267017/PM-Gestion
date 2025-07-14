@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Agregar Stock - {{ certificado.nombre }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="h3 mb-4">
+                <i class="fas fa-plus"></i> Agregar Stock - {{ certificado.nombre }}
+            </h1>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Información del Certificado</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Nombre:</strong> {{ certificado.nombre }}</p>
+                            <p><strong>Tipo:</strong> {{ certificado.get_tipo_display }}</p>
+                            <p><strong>Stock Actual:</strong> 
+                                                        <span class="badge bg-{% if certificado.necesita_reposicion %}danger{% else %}success{% endif %}">
+                            {{ certificado.stock_disponible }}
+                        </span>
+                            </p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Stock Mínimo:</strong> {{ certificado.stock_minimo }}</p>
+                            <p><strong>Precio de Venta:</strong> ${{ certificado.precio_venta|floatformat:2 }}</p>
+                            <p><strong>Estado:</strong> 
+                                                        <span class="badge bg-{% if certificado.activo %}success{% else %}secondary{% endif %}">
+                            {% if certificado.activo %}Activo{% else %}Inactivo{% endif %}
+                        </span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Agregar Stock</h6>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <label for="cantidad">Cantidad a Agregar</label>
+                            <input type="number" class="form-control" id="cantidad" name="cantidad" min="1" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="motivo">Motivo (opcional)</label>
+                            <textarea class="form-control" id="motivo" name="motivo" rows="3" placeholder="Ej: Compra a proveedor, ajuste de inventario, etc."></textarea>
+                        </div>
+                        <div class="form-group">
+                            <button type="submit" class="btn btn-primary btn-block">
+                                <i class="fas fa-plus"></i> Agregar Stock
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Historial de movimientos -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Historial de Movimientos</h6>
+                </div>
+                <div class="card-body">
+                    {% if certificado.movimientos.all %}
+                        <div class="table-responsive">
+                            <table class="table table-bordered" width="100%" cellspacing="0">
+                                <thead>
+                                    <tr>
+                                        <th>Fecha</th>
+                                        <th>Tipo</th>
+                                        <th>Cantidad</th>
+                                        <th>Stock Anterior</th>
+                                        <th>Stock Nuevo</th>
+                                        <th>Usuario</th>
+                                        <th>Motivo</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for movimiento in certificado.movimientos.all|slice:":10" %}
+                                    <tr>
+                                        <td>{{ movimiento.fecha_movimiento|date:"d/m/Y H:i" }}</td>
+                                        <td>
+                                                                                <span class="badge bg-{% if movimiento.tipo_movimiento == 'ENTRADA' %}success{% elif movimiento.tipo_movimiento == 'SALIDA' %}danger{% else %}warning{% endif %}">
+                                        {{ movimiento.get_tipo_movimiento_display }}
+                                    </span>
+                                        </td>
+                                        <td>{{ movimiento.cantidad }}</td>
+                                        <td>{{ movimiento.stock_anterior }}</td>
+                                        <td>{{ movimiento.stock_nuevo }}</td>
+                                        <td>{{ movimiento.usuario.get_nombre_completo }}</td>
+                                        <td>{{ movimiento.motivo|default:"-" }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <p class="text-muted">No hay movimientos registrados para este certificado.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

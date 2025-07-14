@@ -55,6 +55,14 @@
                     </li>
                     {% endif %}
                     
+                    {% if user.rol == 'GERENTE' %}
+                    <li class="nav-item">
+                        <a class="nav-link {% if 'venta-maquinarias' in request.path %}active{% endif %}" href="{% url 'ventaMaquinarias:dashboard' %}">
+                            <i class="fas fa-truck me-1"></i>Venta Maquinarias
+                        </a>
+                    </li>
+                    {% endif %}
+                    
                     {% if user.rol == 'GERENTE' or user.rol == 'ADMINISTRATIVO' or user.rol == 'TECNICO' %}
                     <li class="nav-item">
                         <a class="nav-link {% if 'panel-admin' in request.path %}active{% endif %}" href="{% url 'crm:panel_admin' %}">

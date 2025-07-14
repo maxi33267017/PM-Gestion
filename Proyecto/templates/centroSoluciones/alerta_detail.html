@@ -16,7 +16,11 @@
                     <a href="{% url 'centroSoluciones:alertas_list' %}" class="btn btn-outline-secondary">
                         <i class="bi bi-arrow-left me-2"></i>Volver a Alertas
                     </a>
-                    {% if user.rol == 'TECNICO' and alerta.tecnico_asignado == user and alerta.estado == 'ASIGNADA' %}
+                    {% if user.rol == 'TECNICO' and alerta.tecnico_asignado == user and alerta.estado in 'ASIGNADA,EN_PROCESO' %}
+                    <a href="{% url 'centroSoluciones:procesar_alerta' alerta.id %}" class="btn btn-warning">
+                        <i class="bi bi-tools me-2"></i>Procesar Alerta
+                    </a>
+                    {% elif user.rol == 'GERENTE' and alerta.estado in 'PENDIENTE,ASIGNADA,EN_PROCESO' %}
                     <a href="{% url 'centroSoluciones:procesar_alerta' alerta.id %}" class="btn btn-warning">
                         <i class="bi bi-tools me-2"></i>Procesar Alerta
                     </a>
@@ -98,6 +102,55 @@
                 </div>
             </div>
             {% endif %}
+
+            <!-- Información de Conexión SAR -->
+            {% if alerta.conexion_sar_realizada %}
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-wifi me-2 text-success"></i>Conexión SAR Realizada
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Fecha de Conexión</label>
+                            <p class="form-control-plaintext">{{ alerta.fecha_conexion_sar|date:"d/m/Y H:i" }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Estado</label>
+                            <p class="form-control-plaintext">
+                                <span class="badge bg-success">Conexión SAR Completada</span>
+                            </p>
+                        </div>
+                    </div>
+                    {% if alerta.resultado_conexion_sar %}
+                    <div class="mt-3">
+                        <label class="form-label fw-bold">Resultado de la Conexión</label>
+                        <p class="form-control-plaintext">{{ alerta.resultado_conexion_sar|linebreaks }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Información de Oportunidad CRM -->
+            {% if alerta.oportunidad_crm_creada %}
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-graph-up me-2 text-primary"></i>Oportunidad CRM Creada
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle me-2"></i>
+                        Se ha creado una oportunidad en el CRM basada en esta alerta. 
+                        Puede consultar el embudo de ventas para más detalles.
+                    </div>
+                </div>
+            </div>
+            {% endif %}
         </div>
 
         <!-- Panel Lateral -->
@@ -161,7 +214,7 @@
                     <div class="mb-3">
                         <label class="form-label fw-bold">Tiempo Pendiente</label>
                         <p class="form-control-plaintext text-warning">
-                            {{ alerta.tiempo_pendiente.days }} días, {{ alerta.tiempo_pendiente.seconds|floatformat:0|div:3600|floatformat:0 }} horas
+                            {{ alerta.tiempo_pendiente.days }} días, {{ tiempo_pendiente_horas }} horas
                         </p>
                     </div>
                     {% endif %}
@@ -169,7 +222,7 @@
                     <div class="mb-3">
                         <label class="form-label fw-bold">Tiempo Total de Resolución</label>
                         <p class="form-control-plaintext text-success">
-                            {{ alerta.tiempo_resolucion.days }} días, {{ alerta.tiempo_resolucion.seconds|floatformat:0|div:3600|floatformat:0 }} horas
+                            {{ alerta.tiempo_resolucion.days }} días, {{ tiempo_resolucion_horas }} horas
                         </p>
                     </div>
                     {% endif %}

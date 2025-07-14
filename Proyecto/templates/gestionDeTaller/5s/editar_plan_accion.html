@@ -1,0 +1,555 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+    :root {
+        --primary-gradient: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        --success-gradient: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+        --warning-gradient: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+        --danger-gradient: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+        --info-gradient: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+        --dark-gradient: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        --card-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        --hover-shadow: 0 15px 40px rgba(0,0,0,0.15);
+        --border-radius: 20px;
+        --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .plan-header {
+        background: var(--dark-gradient);
+        color: white;
+        padding: 3rem 2rem;
+        border-radius: var(--border-radius);
+        margin-bottom: 2.5rem;
+        box-shadow: var(--card-shadow);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .plan-header::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="dots" width="20" height="20" patternUnits="userSpaceOnUse"><circle cx="10" cy="10" r="1" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23dots)"/></svg>');
+        pointer-events: none;
+    }
+    
+    .plan-header h1 {
+        margin: 0;
+        font-weight: 800;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        font-size: 3rem;
+        position: relative;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+    
+    .header-actions {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+    
+    .header-btn {
+        border-radius: 25px;
+        padding: 0.8rem 1.5rem;
+        font-weight: 600;
+        transition: var(--transition);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-size: 0.9rem;
+        border: none;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        text-decoration: none;
+        color: white;
+    }
+    
+    .header-btn.secondary {
+        background: var(--dark-gradient);
+    }
+    
+    .header-btn.secondary:hover {
+        background: var(--dark-gradient);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(44, 62, 80, 0.4);
+        color: white;
+        text-decoration: none;
+    }
+    
+    .messages-container { margin-bottom: 2rem; }
+    
+    .custom-alert {
+        border-radius: var(--border-radius);
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        border: none;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        position: relative;
+        overflow: hidden;
+        font-weight: 500;
+    }
+    
+    .custom-alert.success {
+        background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+        color: #155724;
+        border-left: 4px solid #28a745;
+    }
+    
+    .custom-alert.error {
+        background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+        color: #721c24;
+        border-left: 4px solid #dc3545;
+    }
+    
+    .custom-alert.warning {
+        background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+        color: #856404;
+        border-left: 4px solid #ffc107;
+    }
+    
+    .custom-alert.info {
+        background: linear-gradient(135deg, #d1ecf1 0%, #bee5eb 100%);
+        color: #0c5460;
+        border-left: 4px solid #17a2b8;
+    }
+    
+    .info-card, .form-card {
+        background: white;
+        border-radius: var(--border-radius);
+        box-shadow: var(--card-shadow);
+        overflow: hidden;
+        border: 1px solid #e9ecef;
+        margin-bottom: 2rem;
+    }
+    
+    .info-card-header, .form-header {
+        background: var(--dark-gradient);
+        color: white;
+        padding: 1.2rem 1.5rem;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .info-card-header h5, .form-header h5 {
+        margin: 0;
+        font-weight: 700;
+        font-size: 1.2rem;
+        position: relative;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        gap: 0.8rem;
+    }
+    
+    .info-body, .form-body {
+        padding: 2rem;
+    }
+    
+    .info-row {
+        margin-bottom: 1.2rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .info-row strong {
+        color: #2c3e50;
+        font-weight: 600;
+    }
+    
+    .progress {
+        height: 25px !important;
+        border-radius: 15px;
+        background: #e9ecef;
+        overflow: hidden;
+        box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .progress-bar {
+        border-radius: 15px;
+        font-weight: 700;
+        font-size: 0.8rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+        transition: var(--transition);
+    }
+    
+    .progress-bar.bg-success { background: var(--success-gradient) !important; }
+    .progress-bar.bg-warning { background: var(--warning-gradient) !important; }
+    .progress-bar.bg-danger { background: var(--danger-gradient) !important; }
+    
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+    
+    .form-label {
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 0.5rem;
+        display: block;
+    }
+    
+    .form-control, .form-select {
+        border-radius: 10px;
+        border: 2px solid #e9ecef;
+        padding: 0.75rem 1rem;
+        font-size: 1rem;
+        transition: var(--transition);
+        background: #f8f9fa;
+    }
+    
+    .form-control:focus, .form-select:focus {
+        border-color: #3498db;
+        box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
+        background: white;
+    }
+    
+    .btn-submit {
+        background: var(--success-gradient);
+        border: none;
+        border-radius: 25px;
+        padding: 1rem 2rem;
+        font-weight: 600;
+        color: white;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        transition: var(--transition);
+        box-shadow: 0 4px 15px rgba(39, 174, 96, 0.3);
+    }
+    
+    .btn-submit:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(39, 174, 96, 0.4);
+        background: var(--success-gradient);
+        color: white;
+    }
+    
+    @media (max-width: 768px) {
+        .plan-header { padding: 2rem 1.5rem; text-align: center; }
+        .plan-header h1 { font-size: 2rem; flex-direction: column; gap: 0.5rem; }
+        .header-actions { justify-content: center; margin-top: 1rem; }
+        .header-btn { padding: 0.7rem 1.2rem; font-size: 0.85rem; }
+        .info-body, .form-body { padding: 1.2rem; }
+    }
+</style>
+
+<main class="container-fluid mt-4">
+    <!-- Header mejorado -->
+    <div class="plan-header d-flex justify-content-between align-items-center">
+        <h1><i class="bi bi-pencil-square"></i> Editar Plan de Acción 5S</h1>
+        <div class="header-actions">
+            <a href="{% url 'gestionDeTaller:detalle_plan_accion_5s' plan.id %}" class="header-btn secondary">
+                <i class="bi bi-arrow-left"></i> Volver al Detalle
+            </a>
+        </div>
+    </div>
+
+    <!-- Mensajes -->
+    {% if messages %}
+    <div class="messages-container">
+        {% for message in messages %}
+        <div class="custom-alert {{ message.tags }}">
+            <i class="bi bi-{% if message.tags == 'success' %}check-circle{% elif message.tags == 'error' %}exclamation-triangle{% elif message.tags == 'warning' %}exclamation-triangle{% else %}info-circle{% endif %}"></i>
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Información de la Revisión -->
+    <div class="info-card">
+        <div class="info-card-header">
+            <h5><i class="bi bi-clipboard-check"></i> Información de la Revisión</h5>
+        </div>
+        <div class="info-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="info-row">
+                        <strong>Sucursal:</strong>
+                        <span>{{ plan.revision.sucursal }}</span>
+                    </div>
+                    <div class="info-row">
+                        <strong>Fecha de Revisión:</strong>
+                        <span>{{ plan.revision.fecha_revision|date:"d/m/Y" }}</span>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="info-row">
+                        <strong>Puntuación Actual:</strong>
+                        <div class="progress" style="width: 200px;">
+                            <div class="progress-bar {% if revision.porcentaje_conformidad >= 80 %}bg-success{% elif revision.porcentaje_conformidad >= 60 %}bg-warning{% else %}bg-danger{% endif %}" 
+                                 role="progressbar" 
+                                 style="width: {{ revision.porcentaje_conformidad }}%;" 
+                                 aria-valuenow="{{ revision.porcentaje_conformidad }}" 
+                                 aria-valuemin="0" 
+                                 aria-valuemax="100">
+                                {{ revision.porcentaje_conformidad }}%
+                            </div>
+                        </div>
+                    </div>
+                    <div class="info-row">
+                        <strong>Items No Conformes:</strong>
+                        <span class="badge bg-danger">{{ items_no_conformes|length }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Formulario de Edición -->
+    <div class="form-card">
+        <div class="form-header">
+            <h5><i class="bi bi-pencil-square"></i> Editar Plan de Acción</h5>
+        </div>
+        <div class="form-body">
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="{{ form.item_no_conforme.id_for_label }}" class="form-label">
+                                <i class="bi bi-exclamation-triangle me-2"></i>Item No Conforme
+                            </label>
+                            {{ form.item_no_conforme }}
+                            {% if form.item_no_conforme.errors %}
+                            <div class="text-danger mt-1">
+                                {% for error in form.item_no_conforme.errors %}
+                                <small>{{ error }}</small>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="{{ form.responsable.id_for_label }}" class="form-label">
+                                <i class="bi bi-person-check me-2"></i>Responsable
+                            </label>
+                            {{ form.responsable }}
+                            {% if form.responsable.errors %}
+                            <div class="text-danger mt-1">
+                                {% for error in form.responsable.errors %}
+                                <small>{{ error }}</small>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="{{ form.fecha_limite.id_for_label }}" class="form-label">
+                                <i class="bi bi-calendar-event me-2"></i>Fecha Límite
+                            </label>
+                            {{ form.fecha_limite }}
+                            {% if form.fecha_limite.errors %}
+                            <div class="text-danger mt-1">
+                                {% for error in form.fecha_limite.errors %}
+                                <small>{{ error }}</small>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="{{ form.estado.id_for_label }}" class="form-label">
+                                <i class="bi bi-flag me-2"></i>Estado
+                            </label>
+                            {{ form.estado }}
+                            {% if form.estado.errors %}
+                            <div class="text-danger mt-1">
+                                {% for error in form.estado.errors %}
+                                <small>{{ error }}</small>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="{{ form.accion_correctiva.id_for_label }}" class="form-label">
+                        <i class="bi bi-lightbulb me-2"></i>Acción Correctiva
+                    </label>
+                    {{ form.accion_correctiva }}
+                    {% if form.accion_correctiva.errors %}
+                    <div class="text-danger mt-1">
+                        {% for error in form.accion_correctiva.errors %}
+                        <small>{{ error }}</small>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label for="{{ form.observaciones.id_for_label }}" class="form-label">
+                        <i class="bi bi-chat-text me-2"></i>Observaciones
+                    </label>
+                    {{ form.observaciones }}
+                    {% if form.observaciones.errors %}
+                    <div class="text-danger mt-1">
+                        {% for error in form.observaciones.errors %}
+                        <small>{{ error }}</small>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="text-center mt-4">
+                    <button type="submit" name="plan_accion" class="btn btn-submit">
+                        <i class="bi bi-check-circle me-2"></i>Actualizar Plan de Acción
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Sección para corregir items no conformes -->
+    {% if items_no_conformes %}
+    <div class="form-card">
+        <div class="form-header">
+            <h5><i class="bi bi-check-circle"></i> Corregir Items No Conformes</h5>
+        </div>
+        <div class="form-body">
+            <div class="alert alert-info">
+                <i class="bi bi-info-circle me-2"></i>
+                <strong>Puntuación actual:</strong> {{ revision.porcentaje_conformidad }}% | 
+                <strong>Items no conformes:</strong> {{ items_no_conformes|length }}
+            </div>
+            <form method="post">
+                {% csrf_token %}
+                <div class="row">
+                    {% for campo, nombre in items_no_conformes %}
+                    <div class="col-md-6 mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="corregir_{{ campo }}" name="corregir_{{ campo }}">
+                            <label class="form-check-label" for="corregir_{{ campo }}">
+                                <i class="bi bi-exclamation-triangle text-warning me-2"></i>{{ nombre }}
+                            </label>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                <div class="text-center mt-3">
+                    <button type="submit" name="corregir_items" class="btn btn-warning">
+                        <i class="bi bi-check-circle me-2"></i>Marcar Seleccionados como Conforme y Actualizar Puntuación
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    {% else %}
+    <div class="form-card">
+        <div class="form-header">
+            <h5><i class="bi bi-check-circle"></i> Estado de la Revisión</h5>
+        </div>
+        <div class="form-body">
+            <div class="alert alert-success">
+                <i class="bi bi-check-circle me-2"></i>
+                <strong>¡Excelente!</strong> Todos los items están conformes. Puntuación: {{ revision.porcentaje_conformidad }}%
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Sección para subir múltiples evidencias -->
+    <div class="form-card">
+        <div class="form-header">
+            <h5><i class="bi bi-images"></i> Subir Evidencias Múltiples</h5>
+        </div>
+        <div class="form-body">
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div id="evidencias-container">
+                    <div class="evidencia-item mb-3">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <label class="form-label">Evidencia 1</label>
+                                <input type="file" name="evidencias" class="form-control" accept="image/*">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Descripción (opcional)</label>
+                                <input type="text" name="descripciones" class="form-control" placeholder="Descripción de la evidencia">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="text-center mt-3">
+                    <button type="button" id="agregar-evidencia" class="btn btn-info me-2">
+                        <i class="bi bi-plus-circle me-2"></i>Agregar Otra Evidencia
+                    </button>
+                    <button type="submit" name="subir_evidencias" class="btn btn-success">
+                        <i class="bi bi-upload me-2"></i>Subir Evidencias
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Mostrar evidencias existentes -->
+    {% if evidencias %}
+    <div class="form-card">
+        <div class="form-header">
+            <h5><i class="bi bi-images"></i> Evidencias Existentes</h5>
+        </div>
+        <div class="form-body">
+            <div class="row">
+                {% for evidencia in evidencias %}
+                <div class="col-md-4 mb-3">
+                    <div class="card">
+                        <img src="{{ evidencia.imagen.url }}" class="card-img-top" alt="Evidencia" style="height: 200px; object-fit: cover;">
+                        <div class="card-body">
+                            {% if evidencia.descripcion %}
+                            <p class="card-text">{{ evidencia.descripcion }}</p>
+                            {% endif %}
+                            <small class="text-muted">{{ evidencia.fecha_subida|date:"d/m/Y H:i" }}</small>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</main>
+
+<script>
+document.getElementById('agregar-evidencia').addEventListener('click', function() {
+    const container = document.getElementById('evidencias-container');
+    const itemCount = container.children.length + 1;
+    
+    const newItem = document.createElement('div');
+    newItem.className = 'evidencia-item mb-3';
+    newItem.innerHTML = `
+        <div class="row">
+            <div class="col-md-8">
+                <label class="form-label">Evidencia ${itemCount}</label>
+                <input type="file" name="evidencias" class="form-control" accept="image/*">
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Descripción (opcional)</label>
+                <input type="text" name="descripciones" class="form-control" placeholder="Descripción de la evidencia">
+            </div>
+        </div>
+    `;
+    
+    container.appendChild(newItem);
+});
+</script>
+{% endblock %} 

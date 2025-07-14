@@ -41,4 +41,7 @@ urlpatterns = [
     path('embudo-ventas-origen/<str:origen>/', views.embudo_ventas_origen, name='embudo_ventas_origen'),
     path('embudo-ventas-detalle/<int:embudo_id>/', views.embudo_ventas_detalle, name='embudo_ventas_detalle'),
     path('crear-contacto/', views.crear_contacto, name='crear_contacto'),
+    # URLs para Reportes de Facturación
+    path('reporte-facturacion/', views.reporte_facturacion, name='reporte_facturacion'),
+    path('exportar-reporte-excel/', views.exportar_reporte_excel, name='exportar_reporte_excel'),
 ]

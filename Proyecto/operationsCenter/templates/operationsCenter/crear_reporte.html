@@ -1,0 +1,696 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Crear Reporte de Telemetría - Operations Center{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --primary-color: #2c3e50;
+        --secondary-color: #3498db;
+        --success-color: #27ae60;
+        --warning-color: #f39c12;
+        --danger-color: #e74c3c;
+        --info-color: #17a2b8;
+        --light-color: #ecf0f1;
+        --dark-color: #2c3e50;
+        --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        --info-gradient: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+        --success-gradient: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+        --warning-gradient: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+    }
+
+    .report-creator {
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        margin: 20px 0;
+        overflow: hidden;
+    }
+
+    .report-header {
+        background: var(--primary-gradient);
+        color: white;
+        padding: 30px;
+        text-align: center;
+    }
+
+    .report-header h1 {
+        margin: 0;
+        font-size: 2.5rem;
+        font-weight: 300;
+    }
+
+    .report-header p {
+        margin: 10px 0 0 0;
+        opacity: 0.9;
+        font-size: 1.1rem;
+    }
+
+    .report-body {
+        padding: 40px;
+    }
+
+    .form-section {
+        margin-bottom: 40px;
+        padding: 30px;
+        background: #f8f9fa;
+        border-radius: 10px;
+        border-left: 5px solid var(--secondary-color);
+    }
+
+    .form-section h3 {
+        color: var(--primary-color);
+        margin-bottom: 20px;
+        font-size: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .form-section h3 i {
+        color: var(--secondary-color);
+    }
+
+    .form-group {
+        margin-bottom: 25px;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 600;
+        color: var(--primary-color);
+        font-size: 1rem;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 12px 15px;
+        border: 2px solid #e9ecef;
+        border-radius: 8px;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        background: white;
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: var(--secondary-color);
+        box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+    }
+
+    .form-control:disabled {
+        background: #f8f9fa;
+        cursor: not-allowed;
+    }
+
+    .date-inputs {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
+
+    .checkbox-group {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 15px;
+        margin-top: 15px;
+    }
+
+    .checkbox-item {
+        display: flex;
+        align-items: center;
+        padding: 15px;
+        background: white;
+        border: 2px solid #e9ecef;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .checkbox-item:hover {
+        border-color: var(--secondary-color);
+        background: #f8f9fa;
+    }
+
+    .checkbox-item input[type="checkbox"] {
+        margin-right: 12px;
+        transform: scale(1.2);
+    }
+
+    .checkbox-item label {
+        margin: 0;
+        cursor: pointer;
+        font-weight: 500;
+        color: var(--primary-color);
+    }
+
+    .machines-selection {
+        max-height: 400px;
+        overflow-y: auto;
+        border: 2px solid #e9ecef;
+        border-radius: 8px;
+        background: white;
+    }
+
+    .machine-item {
+        display: flex;
+        align-items: center;
+        padding: 15px;
+        border-bottom: 1px solid #e9ecef;
+        transition: background 0.3s ease;
+    }
+
+    .machine-item:last-child {
+        border-bottom: none;
+    }
+
+    .machine-item:hover {
+        background: #f8f9fa;
+    }
+
+    .machine-item input[type="checkbox"] {
+        margin-right: 15px;
+        transform: scale(1.2);
+    }
+
+    .machine-info {
+        flex: 1;
+    }
+
+    .machine-name {
+        font-weight: 600;
+        color: var(--primary-color);
+        margin-bottom: 5px;
+    }
+
+    .machine-details {
+        font-size: 0.9rem;
+        color: #6c757d;
+    }
+
+    .machine-status {
+        margin-left: 15px;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+
+    .status-active {
+        background: #d4edda;
+        color: #155724;
+    }
+
+    .status-inactive {
+        background: #f8d7da;
+        color: #721c24;
+    }
+
+    .status-alerts {
+        background: #fff3cd;
+        color: #856404;
+    }
+
+    .btn-group {
+        display: flex;
+        gap: 15px;
+        justify-content: center;
+        margin-top: 30px;
+    }
+
+    .btn {
+        padding: 12px 30px;
+        border: none;
+        border-radius: 8px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .btn-primary {
+        background: var(--info-gradient);
+        color: white;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
+    }
+
+    .btn-secondary {
+        background: #6c757d;
+        color: white;
+    }
+
+    .btn-secondary:hover {
+        background: #5a6268;
+        transform: translateY(-2px);
+    }
+
+    .btn-success {
+        background: var(--success-gradient);
+        color: white;
+    }
+
+    .btn-success:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(39, 174, 96, 0.3);
+    }
+
+    .preview-section {
+        background: #e8f4fd;
+        border: 2px dashed var(--secondary-color);
+        border-radius: 10px;
+        padding: 20px;
+        margin-top: 20px;
+        text-align: center;
+    }
+
+    .preview-section h4 {
+        color: var(--secondary-color);
+        margin-bottom: 10px;
+    }
+
+    .preview-content {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+        margin-top: 15px;
+    }
+
+    .preview-item {
+        background: white;
+        padding: 15px;
+        border-radius: 8px;
+        border-left: 4px solid var(--secondary-color);
+    }
+
+    .preview-item h5 {
+        margin: 0 0 10px 0;
+        color: var(--primary-color);
+        font-size: 0.9rem;
+    }
+
+    .preview-item p {
+        margin: 0;
+        color: #6c757d;
+        font-size: 0.8rem;
+    }
+
+    .loading {
+        display: none;
+        text-align: center;
+        padding: 20px;
+    }
+
+    .spinner {
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid var(--secondary-color);
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        animation: spin 1s linear infinite;
+        margin: 0 auto 15px;
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    .alert {
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        border-left: 4px solid;
+    }
+
+    .alert-info {
+        background: #d1ecf1;
+        border-color: var(--info-color);
+        color: #0c5460;
+    }
+
+    .alert-warning {
+        background: #fff3cd;
+        border-color: var(--warning-color);
+        color: #856404;
+    }
+
+    @media (max-width: 768px) {
+        .report-body {
+            padding: 20px;
+        }
+        
+        .date-inputs {
+            grid-template-columns: 1fr;
+        }
+        
+        .checkbox-group {
+            grid-template-columns: 1fr;
+        }
+        
+        .btn-group {
+            flex-direction: column;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="report-creator">
+    <div class="report-header">
+        <h1><i class="bi bi-file-earmark-text"></i> Crear Reporte de Telemetría</h1>
+        <p>Genera reportes detallados de telemetría para equipos de John Deere</p>
+    </div>
+
+    <div class="report-body">
+        <form method="post" id="reportForm">
+            {% csrf_token %}
+            
+            <!-- Selección de Cliente -->
+            <div class="form-section">
+                <h3><i class="bi bi-people"></i> Selección de Cliente</h3>
+                <div class="form-group">
+                    <label for="cliente">Cliente *</label>
+                    <select class="form-control" id="cliente" name="cliente" required>
+                        <option value="">Selecciona un cliente</option>
+                        {% for client in clients %}
+                        <option value="{{ client.id }}">{{ client.razon_social }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <!-- Selección de Equipos -->
+            <div class="form-section" id="equiposSection" style="display: none;">
+                <h3><i class="bi bi-truck"></i> Selección de Equipos</h3>
+                <div class="form-group">
+                    <label>Equipos Disponibles</label>
+                    <div class="machines-selection" id="machinesList">
+                        <!-- Los equipos se cargarán dinámicamente -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Configuración del Reporte -->
+            <div class="form-section">
+                <h3><i class="bi bi-gear"></i> Configuración del Reporte</h3>
+                
+                <div class="form-group">
+                    <label for="report_type">Tipo de Reporte *</label>
+                    <select class="form-control" id="report_type" name="report_type" required>
+                        <option value="">Selecciona el tipo de reporte</option>
+                        <option value="DAILY">Reporte Diario</option>
+                        <option value="WEEKLY">Reporte Semanal</option>
+                        <option value="MONTHLY">Reporte Mensual</option>
+                        <option value="CUSTOM">Reporte Personalizado</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Período del Reporte *</label>
+                    <div class="date-inputs">
+                        <div>
+                            <label for="start_date">Fecha de Inicio</label>
+                            <input type="date" class="form-control" id="start_date" name="start_date" required>
+                        </div>
+                        <div>
+                            <label for="end_date">Fecha de Fin</label>
+                            <input type="date" class="form-control" id="end_date" name="end_date" required>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Información a Incluir</label>
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="include_location" name="include_location" checked>
+                            <label for="include_location">
+                                <i class="bi bi-geo-alt"></i> Ubicación y Ruta
+                            </label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="include_hours" name="include_hours" checked>
+                            <label for="include_hours">
+                                <i class="bi bi-clock"></i> Horas de Motor
+                            </label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="include_alerts" name="include_alerts" checked>
+                            <label for="include_alerts">
+                                <i class="bi bi-exclamation-triangle"></i> Alertas y Eventos
+                            </label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="include_usage" name="include_usage" checked>
+                            <label for="include_usage">
+                                <i class="bi bi-fuel-pump"></i> Consumo de Combustible
+                            </label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="include_engine" name="include_engine" checked>
+                            <label for="include_engine">
+                                <i class="bi bi-speedometer2"></i> Uso del Motor
+                            </label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="include_maintenance" name="include_maintenance">
+                            <label for="include_maintenance">
+                                <i class="bi bi-tools"></i> Mantenimiento Sugerido
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Vista Previa -->
+            <div class="form-section" id="previewSection" style="display: none;">
+                <h3><i class="bi bi-eye"></i> Vista Previa del Reporte</h3>
+                <div class="preview-section">
+                    <h4>Resumen del Reporte</h4>
+                    <div class="preview-content" id="previewContent">
+                        <!-- Contenido de vista previa -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Botones de Acción -->
+            <div class="btn-group">
+                <a href="{% url 'operationsCenter:lista_reportes_telemetria' %}" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left"></i> Cancelar
+                </a>
+                <button type="button" class="btn btn-primary" id="previewBtn">
+                    <i class="bi bi-eye"></i> Vista Previa
+                </button>
+                <button type="submit" class="btn btn-success" id="generateBtn">
+                    <i class="bi bi-file-earmark-pdf"></i> Generar Reporte
+                </button>
+            </div>
+
+            <!-- Loading -->
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>Generando reporte...</p>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Alertas -->
+{% if messages %}
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }}">
+        {{ message }}
+    </div>
+    {% endfor %}
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const clienteSelect = document.getElementById('cliente');
+    const equiposSection = document.getElementById('equiposSection');
+    const machinesList = document.getElementById('machinesList');
+    const previewSection = document.getElementById('previewSection');
+    const previewContent = document.getElementById('previewContent');
+    const previewBtn = document.getElementById('previewBtn');
+    const generateBtn = document.getElementById('generateBtn');
+    const loading = document.getElementById('loading');
+    const form = document.getElementById('reportForm');
+
+    // Cargar equipos cuando se selecciona un cliente
+    clienteSelect.addEventListener('change', function() {
+        const clienteId = this.value;
+        if (clienteId) {
+            loadMachines(clienteId);
+            equiposSection.style.display = 'block';
+        } else {
+            equiposSection.style.display = 'none';
+            previewSection.style.display = 'none';
+        }
+    });
+
+    // Cargar máquinas del cliente
+    function loadMachines(clienteId) {
+        fetch(`/operations-center/api/machines-by-client/${clienteId}/`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    displayMachines(data.machines);
+                } else {
+                    machinesList.innerHTML = '<p class="text-muted">No se encontraron equipos para este cliente.</p>';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                machinesList.innerHTML = '<p class="text-danger">Error al cargar equipos.</p>';
+            });
+    }
+
+    // Mostrar máquinas en la lista
+    function displayMachines(machines) {
+        if (machines.length === 0) {
+            machinesList.innerHTML = '<p class="text-muted">No hay equipos disponibles para este cliente.</p>';
+            return;
+        }
+
+        let html = '';
+        machines.forEach(machine => {
+            const statusClass = machine.has_active_alerts ? 'status-alerts' : 
+                              machine.is_active ? 'status-active' : 'status-inactive';
+            const statusText = machine.has_active_alerts ? 'Con Alertas' : 
+                             machine.is_active ? 'Activa' : 'Inactiva';
+
+            html += `
+                <div class="machine-item">
+                    <input type="checkbox" name="machines" value="${machine.id}" id="machine_${machine.id}">
+                    <div class="machine-info">
+                        <div class="machine-name">${machine.make_name} ${machine.model_name}</div>
+                        <div class="machine-details">
+                            S/N: ${machine.serial_number || machine.machine_id}
+                            ${machine.equipo_local ? `| Cliente: ${machine.equipo_local.cliente.razon_social}` : ''}
+                        </div>
+                    </div>
+                    <span class="machine-status ${statusClass}">${statusText}</span>
+                </div>
+            `;
+        });
+        machinesList.innerHTML = html;
+    }
+
+    // Vista previa del reporte
+    previewBtn.addEventListener('click', function() {
+        const selectedMachines = document.querySelectorAll('input[name="machines"]:checked');
+        const reportType = document.getElementById('report_type').value;
+        const startDate = document.getElementById('start_date').value;
+        const endDate = document.getElementById('end_date').value;
+
+        if (selectedMachines.length === 0) {
+            alert('Selecciona al menos un equipo.');
+            return;
+        }
+
+        if (!reportType || !startDate || !endDate) {
+            alert('Completa todos los campos requeridos.');
+            return;
+        }
+
+        // Generar vista previa
+        const previewData = {
+            machines_count: selectedMachines.length,
+            report_type: reportType,
+            period: `${startDate} a ${endDate}`,
+            include_location: document.getElementById('include_location').checked,
+            include_hours: document.getElementById('include_hours').checked,
+            include_alerts: document.getElementById('include_alerts').checked,
+            include_usage: document.getElementById('include_usage').checked,
+            include_engine: document.getElementById('include_engine').checked,
+            include_maintenance: document.getElementById('include_maintenance').checked
+        };
+
+        displayPreview(previewData);
+        previewSection.style.display = 'block';
+    });
+
+    // Mostrar vista previa
+    function displayPreview(data) {
+        const sections = [];
+        
+        if (data.include_location) sections.push('Ubicación y Ruta');
+        if (data.include_hours) sections.push('Horas de Motor');
+        if (data.include_alerts) sections.push('Alertas y Eventos');
+        if (data.include_usage) sections.push('Consumo de Combustible');
+        if (data.include_engine) sections.push('Uso del Motor');
+        if (data.include_maintenance) sections.push('Mantenimiento Sugerido');
+
+        previewContent.innerHTML = `
+            <div class="preview-item">
+                <h5>Equipos Incluidos</h5>
+                <p>${data.machines_count} equipos seleccionados</p>
+            </div>
+            <div class="preview-item">
+                <h5>Tipo de Reporte</h5>
+                <p>${data.report_type}</p>
+            </div>
+            <div class="preview-item">
+                <h5>Período</h5>
+                <p>${data.period}</p>
+            </div>
+            <div class="preview-item">
+                <h5>Secciones Incluidas</h5>
+                <p>${sections.join(', ')}</p>
+            </div>
+        `;
+    }
+
+    // Envío del formulario
+    form.addEventListener('submit', function(e) {
+        const selectedMachines = document.querySelectorAll('input[name="machines"]:checked');
+        
+        if (selectedMachines.length === 0) {
+            e.preventDefault();
+            alert('Selecciona al menos un equipo para el reporte.');
+            return;
+        }
+
+        // Mostrar loading
+        loading.style.display = 'block';
+        generateBtn.disabled = true;
+    });
+
+    // Configurar fechas por defecto según el tipo de reporte
+    document.getElementById('report_type').addEventListener('change', function() {
+        const today = new Date();
+        const startDate = document.getElementById('start_date');
+        const endDate = document.getElementById('end_date');
+
+        switch(this.value) {
+            case 'DAILY':
+                startDate.value = today.toISOString().split('T')[0];
+                endDate.value = today.toISOString().split('T')[0];
+                break;
+            case 'WEEKLY':
+                const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+                startDate.value = weekAgo.toISOString().split('T')[0];
+                endDate.value = today.toISOString().split('T')[0];
+                break;
+            case 'MONTHLY':
+                const monthAgo = new Date(today.getFullYear(), today.getMonth() - 1, today.getDate());
+                startDate.value = monthAgo.toISOString().split('T')[0];
+                endDate.value = today.toISOString().split('T')[0];
+                break;
+        }
+    });
+});
+</script>
+{% endblock %} 

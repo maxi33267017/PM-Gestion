@@ -1,0 +1,159 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Gestionar Certificados{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="h3 mb-4">
+                <i class="fas fa-certificate"></i> Gestión de Certificados
+            </h1>
+        </div>
+    </div>
+
+    <!-- Estadísticas -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                Total de Certificados
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_certificados }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-certificate fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                Bajo Stock
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ certificados_bajo_stock }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-exclamation-triangle fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Filtros</h6>
+                </div>
+                <div class="card-body">
+                    <form method="get" class="row">
+                        <div class="col-md-4">
+                            <label for="tipo">Tipo de Certificado</label>
+                            <select name="tipo" id="tipo" class="form-control">
+                                <option value="">Todos</option>
+                                {% for tipo_codigo, tipo_nombre in tipos %}
+                                <option value="{{ tipo_codigo }}" {% if filtros.tipo == tipo_codigo %}selected{% endif %}>
+                                    {{ tipo_nombre }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="activo">Estado</label>
+                            <select name="activo" id="activo" class="form-control">
+                                <option value="">Todos</option>
+                                <option value="true" {% if filtros.activo == 'true' %}selected{% endif %}>Activo</option>
+                                <option value="false" {% if filtros.activo == 'false' %}selected{% endif %}>Inactivo</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 d-flex align-items-end">
+                            <button type="submit" class="btn btn-primary mr-2">
+                                <i class="fas fa-search"></i> Filtrar
+                            </button>
+                            <a href="{% url 'ventaMaquinarias:gestion_certificados' %}" class="btn btn-secondary">
+                                <i class="fas fa-times"></i> Limpiar
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lista de certificados -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 font-weight-bold text-primary">Certificados</h6>
+                    <a href="/admin/ventaMaquinarias/certificado/add/" class="btn btn-success btn-sm">
+                        <i class="fas fa-plus"></i> Nuevo Certificado
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if certificados %}
+                        <div class="table-responsive">
+                            <table class="table table-bordered" width="100%" cellspacing="0">
+                                <thead>
+                                    <tr>
+                                        <th>Nombre</th>
+                                        <th>Tipo</th>
+                                        <th>Stock Disponible</th>
+                                        <th>Stock Mínimo</th>
+                                        <th>Estado</th>
+                                        <th>Precio Venta</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for certificado in certificados %}
+                                    <tr>
+                                        <td>{{ certificado.nombre }}</td>
+                                        <td>{{ certificado.get_tipo_display }}</td>
+                                        <td>
+                                            <span class="badge bg-{% if certificado.necesita_reposicion %}danger{% else %}success{% endif %}">
+                                                {{ certificado.stock_disponible }}
+                                            </span>
+                                        </td>
+                                        <td>{{ certificado.stock_minimo }}</td>
+                                        <td>
+                                            <span class="badge bg-{% if certificado.activo %}success{% else %}secondary{% endif %}">
+                                                {% if certificado.activo %}Activo{% else %}Inactivo{% endif %}
+                                            </span>
+                                        </td>
+                                        <td>${{ certificado.precio_venta|floatformat:2 }}</td>
+                                        <td>
+                                            <a href="{% url 'ventaMaquinarias:agregar_stock_certificado' certificado.id %}" class="btn btn-sm btn-primary">
+                                                <i class="fas fa-plus"></i> Agregar Stock
+                                            </a>
+                                            <a href="/admin/ventaMaquinarias/certificado/{{ certificado.id }}/change/" class="btn btn-sm btn-info">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <p class="text-muted">No hay certificados que coincidan con los filtros.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

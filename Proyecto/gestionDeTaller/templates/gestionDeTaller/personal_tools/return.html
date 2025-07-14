@@ -1,0 +1,176 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Devolver {{ tool.nombre }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .return-card {
+        border-radius: 10px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .assignment-info {
+        background: #e8f5e8;
+        border: 1px solid #28a745;
+        border-radius: 8px;
+        padding: 1rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item">
+                        <a href="{% url 'gestionDeTaller:personal_tools_list' %}">Herramientas Personales</a>
+                    </li>
+                    <li class="breadcrumb-item">
+                        <a href="{% url 'gestionDeTaller:personal_tool_detail' tool.id %}">{{ tool.nombre }}</a>
+                    </li>
+                    <li class="breadcrumb-item active">Devolver</li>
+                </ol>
+            </nav>
+            <h1 class="h3 mb-0">Devolver Herramienta</h1>
+            <p class="text-muted">Devolver {{ tool.nombre }} al inventario</p>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card return-card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-undo"></i> Devolución de Herramienta
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <!-- Información de la asignación actual -->
+                    {% if tool.asignacion_actual %}
+                    <div class="assignment-info mb-4">
+                        <h6 class="mb-3">
+                            <i class="fas fa-user-check"></i> Asignación Actual
+                        </h6>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <strong>Técnico:</strong>
+                                <p class="mb-1">{{ tool.asignacion_actual.tecnico.get_full_name }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <strong>Fecha de Asignación:</strong>
+                                <p class="mb-1">{{ tool.asignacion_actual.fecha_asignacion }}</p>
+                            </div>
+                        </div>
+                        {% if tool.asignacion_actual.observaciones %}
+                        <div class="mt-2">
+                            <strong>Observaciones de Asignación:</strong>
+                            <p class="mb-1">{{ tool.asignacion_actual.observaciones }}</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+
+                    <!-- Información de la herramienta -->
+                    <div class="mb-4">
+                        <h6 class="mb-3">
+                            <i class="fas fa-tools"></i> Información de la Herramienta
+                        </h6>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <strong>Herramienta:</strong>
+                                <p class="mb-1">{{ tool.nombre }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <strong>Categoría:</strong>
+                                <p class="mb-1">{{ tool.get_categoria_display }}</p>
+                            </div>
+                        </div>
+                        {% if tool.marca or tool.modelo %}
+                        <div class="row">
+                            {% if tool.marca %}
+                            <div class="col-md-6">
+                                <strong>Marca:</strong>
+                                <p class="mb-1">{{ tool.marca }}</p>
+                            </div>
+                            {% endif %}
+                            {% if tool.modelo %}
+                            <div class="col-md-6">
+                                <strong>Modelo:</strong>
+                                <p class="mb-1">{{ tool.modelo }}</p>
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Formulario de devolución -->
+                    <form method="POST">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label for="fecha_devolucion" class="form-label">
+                                <i class="fas fa-calendar"></i> Fecha de Devolución <span class="text-danger">*</span>
+                            </label>
+                            <input type="date" name="fecha_devolucion" id="fecha_devolucion" 
+                                   class="form-control" required
+                                   value="{{ request.POST.fecha_devolucion|default:'' }}">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="observaciones" class="form-label">
+                                <i class="fas fa-comment"></i> Observaciones de Devolución
+                            </label>
+                            <textarea name="observaciones" id="observaciones" class="form-control" 
+                                      rows="3" placeholder="Observaciones sobre la devolución (estado de la herramienta, motivo, etc.)...">{{ request.POST.observaciones|default:'' }}</textarea>
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'gestionDeTaller:personal_tool_detail' tool.id %}" 
+                               class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left"></i> Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-warning">
+                                <i class="fas fa-check"></i> Confirmar Devolución
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Establecer fecha actual por defecto si no hay fecha seleccionada
+        const fechaInput = document.getElementById('fecha_devolucion');
+        if (!fechaInput.value) {
+            const today = new Date().toISOString().split('T')[0];
+            fechaInput.value = today;
+        }
+        
+        // Validación del formulario
+        const form = document.querySelector('form');
+        form.addEventListener('submit', function(e) {
+            const fecha = document.getElementById('fecha_devolucion').value;
+            
+            if (!fecha) {
+                e.preventDefault();
+                alert('Por favor complete la fecha de devolución.');
+                return false;
+            }
+            
+            // Confirmar devolución
+            if (!confirm('¿Está seguro de que desea devolver esta herramienta? La asignación actual será finalizada.')) {
+                e.preventDefault();
+                return false;
+            }
+        });
+    });
+</script>
+{% endblock %} 

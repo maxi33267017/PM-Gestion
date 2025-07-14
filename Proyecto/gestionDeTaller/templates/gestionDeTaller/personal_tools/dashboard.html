@@ -1,0 +1,300 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Dashboard - Herramientas Personales{% endblock %}
+
+{% block extra_css %}
+<style>
+    .stats-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 15px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        transition: transform 0.2s;
+    }
+    .stats-card:hover {
+        transform: translateY(-2px);
+    }
+    .stats-card.success {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    }
+    .stats-card.info {
+        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    }
+    .stats-card.warning {
+        background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+    }
+    .activity-card {
+        border-radius: 10px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .chart-container {
+        background: white;
+        border-radius: 10px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .activity-item {
+        border-left: 3px solid #007bff;
+        padding-left: 1rem;
+        margin-bottom: 1rem;
+    }
+    .activity-item.audit {
+        border-left-color: #28a745;
+    }
+    .activity-item.assignment {
+        border-left-color: #ffc107;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item">
+                        <a href="{% url 'gestionDeTaller:personal_tools_list' %}">Herramientas Personales</a>
+                    </li>
+                    <li class="breadcrumb-item active">Dashboard</li>
+                </ol>
+            </nav>
+            <h1 class="h3 mb-0">Dashboard de Herramientas Personales</h1>
+            <p class="text-muted">Resumen y estadísticas del sistema de herramientas personales</p>
+        </div>
+        <div>
+            <a href="{% url 'gestionDeTaller:personal_tools_list' %}" class="btn btn-primary">
+                <i class="fas fa-list"></i> Ver Lista
+            </a>
+            <a href="{% url 'gestionDeTaller:personal_tools_reports' %}" class="btn btn-secondary">
+                <i class="fas fa-file-alt"></i> Reportes
+            </a>
+        </div>
+    </div>
+
+    <!-- Estadísticas principales -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="stats-card">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h3 class="mb-0">{{ total_herramientas }}</h3>
+                        <small>Total Herramientas</small>
+                    </div>
+                    <i class="fas fa-tools fa-2x opacity-75"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card success">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h3 class="mb-0">{{ herramientas_asignadas }}</h3>
+                        <small>Asignadas</small>
+                    </div>
+                    <i class="fas fa-user-check fa-2x opacity-75"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card info">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h3 class="mb-0">{{ herramientas_disponibles }}</h3>
+                        <small>Disponibles</small>
+                    </div>
+                    <i class="fas fa-check-circle fa-2x opacity-75"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card warning">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h3 class="mb-0">{{ herramientas_mantenimiento }}</h3>
+                        <small>En Mantenimiento</small>
+                    </div>
+                    <i class="fas fa-wrench fa-2x opacity-75"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alertas y métricas adicionales -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="alert alert-warning">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-exclamation-triangle fa-2x me-3"></i>
+                    <div>
+                        <h6 class="mb-1">Auditorías Pendientes</h6>
+                        <p class="mb-0">{{ auditorias_pendientes }} herramientas requieren auditoría (últimos 6 meses)</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="alert alert-info">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-chart-line fa-2x me-3"></i>
+                    <div>
+                        <h6 class="mb-1">Estado del Sistema</h6>
+                        <p class="mb-0">
+                            {% if auditorias_pendientes > 0 %}
+                                {{ auditorias_pendientes }} auditorías pendientes
+                            {% else %}
+                                Todas las auditorías al día
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Gráfico por categorías -->
+        <div class="col-md-6 mb-4">
+            <div class="chart-container">
+                <h5 class="mb-3">
+                    <i class="fas fa-chart-pie"></i> Herramientas por Categoría
+                </h5>
+                {% if herramientas_por_categoria %}
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Categoría</th>
+                                <th>Total</th>
+                                <th>Asignadas</th>
+                                <th>Mantenimiento</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for categoria in herramientas_por_categoria %}
+                            <tr>
+                                <td>{{ categoria.categoria__nombre }}</td>
+                                <td>
+                                    <span class="badge bg-primary">{{ categoria.total }}</span>
+                                </td>
+                                <td>
+                                    <span class="badge bg-success">{{ categoria.asignadas }}</span>
+                                </td>
+                                <td>
+                                    <span class="badge bg-warning">{{ categoria.mantenimiento }}</span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-4">
+                    <i class="fas fa-chart-pie fa-3x text-muted mb-3"></i>
+                    <p class="text-muted">No hay datos disponibles</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Actividad reciente -->
+        <div class="col-md-6 mb-4">
+            <div class="activity-card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-clock"></i> Actividad Reciente
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if ultimas_auditorias or asignaciones_recientes %}
+                    <div class="activity-list">
+                        {% for auditoria in ultimas_auditorias|slice:":5" %}
+                        <div class="activity-item audit">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <strong>{{ auditoria.herramienta.nombre }}</strong>
+                                    <br>
+                                    <small class="text-muted">
+                                        Auditoría {{ auditoria.get_tipo_auditoria_display }} por {{ auditoria.auditor.get_full_name }}
+                                    </small>
+                                </div>
+                                <small class="text-muted">{{ auditoria.fecha_auditoria }}</small>
+                            </div>
+                        </div>
+                        {% endfor %}
+                        
+                        {% for asignacion in asignaciones_recientes|slice:":5" %}
+                        <div class="activity-item assignment">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <strong>{{ asignacion.herramienta.nombre }}</strong>
+                                    <br>
+                                    <small class="text-muted">
+                                        Asignada a {{ asignacion.tecnico.get_full_name }}
+                                    </small>
+                                </div>
+                                <small class="text-muted">{{ asignacion.fecha_asignacion }}</small>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-clock fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">No hay actividad reciente</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Acciones rápidas -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card activity-card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-bolt"></i> Acciones Rápidas
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <a href="{% url 'gestionDeTaller:personal_tools_list' %}?estado=DISPONIBLE" 
+                               class="btn btn-outline-primary w-100">
+                                <i class="fas fa-user-plus"></i>
+                                <br>Asignar Herramientas
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{% url 'gestionDeTaller:personal_tools_list' %}?estado=ASIGNADA" 
+                               class="btn btn-outline-warning w-100">
+                                <i class="fas fa-undo"></i>
+                                <br>Devolver Herramientas
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{% url 'gestionDeTaller:personal_tools_list' %}" 
+                               class="btn btn-outline-info w-100">
+                                <i class="fas fa-clipboard-check"></i>
+                                <br>Realizar Auditorías
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{% url 'gestionDeTaller:personal_tools_reports' %}" 
+                               class="btn btn-outline-secondary w-100">
+                                <i class="fas fa-file-alt"></i>
+                                <br>Generar Reportes
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

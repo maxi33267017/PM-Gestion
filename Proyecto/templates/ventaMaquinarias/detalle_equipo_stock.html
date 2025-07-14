@@ -1,0 +1,131 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Detalle Equipo - {{ equipo.numero_serie }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="h3 mb-4">
+                <i class="fas fa-box"></i> Detalle Equipo - {{ equipo.numero_serie }}
+            </h1>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 font-weight-bold text-primary">Información del Equipo</h6>
+                    <div>
+                        {% if equipo.estado == 'EN_STOCK' %}
+                            <a href="{% url 'ventaMaquinarias:crear_venta' equipo.id %}" class="btn btn-success">
+                                <i class="fas fa-shopping-cart"></i> Crear Venta
+                            </a>
+                        {% elif venta_existente %}
+                            <a href="{% url 'ventaMaquinarias:detalle_venta' venta_existente.id %}" class="btn btn-info">
+                                <i class="fas fa-eye"></i> Ver Venta
+                            </a>
+                        {% endif %}
+                        <a href="/admin/ventaMaquinarias/equipostock/{{ equipo.id }}/change/" class="btn btn-primary">
+                            <i class="fas fa-edit"></i> Editar
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5 class="text-primary">Información General</h5>
+                            <table class="table table-borderless">
+                                <tr>
+                                    <td><strong>Número de Serie:</strong></td>
+                                    <td>{{ equipo.numero_serie }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Modelo:</strong></td>
+                                    <td>{{ equipo.modelo }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Tipo de Equipo:</strong></td>
+                                    <td>{{ equipo.tipo_equipo }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Estado:</strong></td>
+                                    <td>
+                                        <span class="badge badge-{% if equipo.estado == 'EN_STOCK' %}success{% elif equipo.estado == 'VENDIDO' %}danger{% elif equipo.estado == 'RESERVADO' %}warning{% else %}secondary{% endif %}">
+                                            {{ equipo.get_estado_display }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Sucursal:</strong></td>
+                                    <td>{{ equipo.sucursal }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Año de Fabricación:</strong></td>
+                                    <td>{{ equipo.año_fabricacion }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <h5 class="text-primary">Información de Compra</h5>
+                            <table class="table table-borderless">
+                                <tr>
+                                    <td><strong>Fecha de Compra JD:</strong></td>
+                                    <td>{{ equipo.fecha_compra_jd|date:"d/m/Y" }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Número de Orden:</strong></td>
+                                    <td>{{ equipo.numero_orden_compra|default:"No especificado" }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Costo de Compra:</strong></td>
+                                    <td>${{ equipo.costo_compra|floatformat:2 }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Días en Stock:</strong></td>
+                                    <td>{{ equipo.dias_en_stock }} días</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Ubicación Física:</strong></td>
+                                    <td>{{ equipo.ubicacion_fisica|default:"No especificada" }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Color:</strong></td>
+                                    <td>{{ equipo.color|default:"No especificado" }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+
+                    {% if equipo.observaciones %}
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <h5 class="text-primary">Observaciones</h5>
+                            <div class="alert alert-info">
+                                {{ equipo.observaciones }}
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {% if venta_existente %}
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <h5 class="text-primary">Información de Venta</h5>
+                            <div class="alert alert-warning">
+                                <strong>Este equipo ya tiene una venta asociada.</strong><br>
+                                Cliente: {{ venta_existente.cliente.razon_social }}<br>
+                                Fecha de Venta: {{ venta_existente.fecha_venta|date:"d/m/Y" }}<br>
+                                Precio: ${{ venta_existente.precio_venta|floatformat:2 }}
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

@@ -52,10 +52,10 @@
             <div class="card shadow-sm border-info">
                 <div class="card-body text-center">
                     <h5 class="card-title text-info">
-                        <i class="bi bi-graph-up me-2"></i>Valor Probabilizado
+                        <i class="bi bi-check-circle me-2"></i>Valor de Cierre
                     </h5>
-                    <p class="card-text display-6 text-info">${{ total_valor_probabilizado|floatformat:0 }}</p>
-                    <small class="text-muted">USD ponderado</small>
+                    <p class="card-text display-6 text-info">${{ total_valor_cierre|floatformat:0 }}</p>
+                    <small class="text-muted">USD concretado</small>
                 </div>
             </div>
         </div>
@@ -246,7 +246,7 @@
                                     <th>Etapa</th>
                                     <th>Origen</th>
                                     <th>Valor Estimado</th>
-                                    <th>Probabilidad</th>
+                                    <th>Valor de Cierre</th>
                                     <th>Última Actividad</th>
                                     <th>Acciones</th>
                                 </tr>
@@ -273,12 +273,11 @@
                                         {% endif %}
                                     </td>
                                     <td>
-                                        <div class="progress" style="height: 20px;">
-                                            <div class="progress-bar bg-success" role="progressbar" 
-                                                 style="width: {{ embudo.probabilidad_cierre }}%">
-                                                {{ embudo.probabilidad_cierre }}%
-                                            </div>
-                                        </div>
+                                        {% if embudo.valor_cierre %}
+                                            <span class="text-primary fw-bold">${{ embudo.valor_cierre|floatformat:0 }}</span>
+                                        {% else %}
+                                            <span class="text-muted">No concretado</span>
+                                        {% endif %}
                                     </td>
                                     <td>
                                         <small class="text-muted">{{ embudo.fecha_ultima_actividad|date:"d/m/Y H:i" }}</small>
@@ -306,6 +305,9 @@
         </div>
     </div>
 </div>
+
+<!-- Espacio adicional al final para evitar que se corte el contenido -->
+<div style="height: 50px;"></div>
 {% endblock %}
 
 {% block extra_css %}

@@ -1,0 +1,299 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Importar Herramientas Especiales{% endblock %}
+
+{% block extra_css %}
+<style>
+    .import-container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+    
+    .upload-area {
+        border: 2px dashed #ddd;
+        border-radius: 8px;
+        padding: 40px;
+        text-align: center;
+        margin: 20px 0;
+        background-color: #f9f9f9;
+        transition: all 0.3s ease;
+    }
+    
+    .upload-area:hover {
+        border-color: #007bff;
+        background-color: #f0f8ff;
+    }
+    
+    .upload-area.dragover {
+        border-color: #007bff;
+        background-color: #e3f2fd;
+    }
+    
+    .file-input {
+        display: none;
+    }
+    
+    .upload-btn {
+        background-color: #007bff;
+        color: white;
+        padding: 12px 24px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 16px;
+        margin: 10px;
+    }
+    
+    .upload-btn:hover {
+        background-color: #0056b3;
+    }
+    
+    .template-btn {
+        background-color: #28a745;
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-block;
+        margin: 10px;
+    }
+    
+    .template-btn:hover {
+        background-color: #218838;
+        color: white;
+        text-decoration: none;
+    }
+    
+    .instructions {
+        background-color: #e7f3ff;
+        border-left: 4px solid #007bff;
+        padding: 20px;
+        margin: 20px 0;
+        border-radius: 0 5px 5px 0;
+    }
+    
+    .instructions h4 {
+        color: #007bff;
+        margin-top: 0;
+    }
+    
+    .instructions ul {
+        margin-bottom: 0;
+    }
+    
+    .file-info {
+        margin-top: 15px;
+        padding: 10px;
+        background-color: #f8f9fa;
+        border-radius: 5px;
+        display: none;
+    }
+    
+    .progress-bar {
+        width: 100%;
+        height: 20px;
+        background-color: #f0f0f0;
+        border-radius: 10px;
+        overflow: hidden;
+        margin: 10px 0;
+        display: none;
+    }
+    
+    .progress-fill {
+        height: 100%;
+        background-color: #007bff;
+        width: 0%;
+        transition: width 0.3s ease;
+    }
+    
+    .back-btn {
+        background-color: #6c757d;
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-block;
+        margin: 10px;
+    }
+    
+    .back-btn:hover {
+        background-color: #5a6268;
+        color: white;
+        text-decoration: none;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="import-container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fas fa-upload"></i> Importar Herramientas Especiales</h2>
+        <a href="{% url 'gestionDeTaller:herramientas_especiales_list' %}" class="back-btn">
+            <i class="fas fa-arrow-left"></i> Volver
+        </a>
+    </div>
+
+    <div class="instructions">
+        <h4><i class="fas fa-info-circle"></i> Instrucciones de Importación</h4>
+        <ul>
+            <li>El archivo Excel debe contener las siguientes columnas:</li>
+            <ul>
+                <li><strong>CODIGO ( Ver Notas p/descripcion)</strong>: Código único de la herramienta</li>
+                <li><strong>ITEMS</strong>: Descripción o nombre de la herramienta</li>
+                <li><strong>CANTIDAD</strong>: Cantidad disponible</li>
+                <li><strong>UBICACION</strong>: Ubicación física de la herramienta</li>
+                <li><strong>IMAGEN</strong>: Nombre del archivo de imagen (opcional)</li>
+            </ul>
+            <li>Las herramientas existentes se actualizarán si tienen el mismo código</li>
+            <li>Las herramientas nuevas se crearán automáticamente</li>
+            <li>Formatos soportados: .xlsx, .xls</li>
+        </ul>
+    </div>
+
+    <div class="text-center mb-4">
+        <a href="{% url 'gestionDeTaller:descargar_template_excel' %}" class="template-btn">
+            <i class="fas fa-download"></i> Descargar Template Excel
+        </a>
+    </div>
+
+    <form method="post" enctype="multipart/form-data" id="importForm">
+        {% csrf_token %}
+        <div class="upload-area" id="uploadArea">
+            <i class="fas fa-cloud-upload-alt fa-3x text-muted mb-3"></i>
+            <h4>Seleccionar archivo Excel</h4>
+            <p class="text-muted">Arrastra y suelta tu archivo aquí o haz clic para seleccionar</p>
+            <input type="file" name="archivo_excel" id="archivo_excel" class="file-input" accept=".xlsx,.xls">
+            <button type="button" class="upload-btn" onclick="document.getElementById('archivo_excel').click()">
+                <i class="fas fa-folder-open"></i> Seleccionar Archivo
+            </button>
+        </div>
+
+        <div class="file-info" id="fileInfo">
+            <strong>Archivo seleccionado:</strong> <span id="fileName"></span>
+            <br>
+            <strong>Tamaño:</strong> <span id="fileSize"></span>
+        </div>
+
+        <div class="progress-bar" id="progressBar">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+
+        <div class="text-center">
+            <button type="submit" class="upload-btn" id="submitBtn" style="display: none;">
+                <i class="fas fa-upload"></i> Importar Herramientas
+            </button>
+        </div>
+    </form>
+
+    {% if messages %}
+    <div class="mt-4">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const uploadArea = document.getElementById('uploadArea');
+    const fileInput = document.getElementById('archivo_excel');
+    const fileInfo = document.getElementById('fileInfo');
+    const fileName = document.getElementById('fileName');
+    const fileSize = document.getElementById('fileSize');
+    const submitBtn = document.getElementById('submitBtn');
+    const progressBar = document.getElementById('progressBar');
+    const progressFill = document.getElementById('progressFill');
+
+    // Drag and drop functionality
+    uploadArea.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        uploadArea.classList.add('dragover');
+    });
+
+    uploadArea.addEventListener('dragleave', function(e) {
+        e.preventDefault();
+        uploadArea.classList.remove('dragover');
+    });
+
+    uploadArea.addEventListener('drop', function(e) {
+        e.preventDefault();
+        uploadArea.classList.remove('dragover');
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            fileInput.files = files;
+            handleFileSelect();
+        }
+    });
+
+    // File input change
+    fileInput.addEventListener('change', handleFileSelect);
+
+    function handleFileSelect() {
+        const file = fileInput.files[0];
+        if (file) {
+            // Validate file type
+            const validTypes = ['.xlsx', '.xls'];
+            const fileExtension = '.' + file.name.split('.').pop().toLowerCase();
+            
+            if (!validTypes.includes(fileExtension)) {
+                alert('Por favor seleccione un archivo Excel válido (.xlsx o .xls)');
+                fileInput.value = '';
+                return;
+            }
+
+            // Show file info
+            fileName.textContent = file.name;
+            fileSize.textContent = formatFileSize(file.size);
+            fileInfo.style.display = 'block';
+            submitBtn.style.display = 'inline-block';
+        } else {
+            fileInfo.style.display = 'none';
+            submitBtn.style.display = 'none';
+        }
+    }
+
+    function formatFileSize(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+
+    // Form submission
+    document.getElementById('importForm').addEventListener('submit', function(e) {
+        const file = fileInput.files[0];
+        if (!file) {
+            e.preventDefault();
+            alert('Por favor seleccione un archivo antes de continuar.');
+            return;
+        }
+
+        // Show progress bar
+        progressBar.style.display = 'block';
+        progressFill.style.width = '0%';
+        
+        // Simulate progress (since we can't track actual upload progress easily)
+        let progress = 0;
+        const interval = setInterval(function() {
+            progress += Math.random() * 15;
+            if (progress > 90) progress = 90;
+            progressFill.style.width = progress + '%';
+        }, 200);
+
+        // Store interval to clear it later
+        this.dataset.progressInterval = interval;
+    });
+});
+</script>
+{% endblock %} 

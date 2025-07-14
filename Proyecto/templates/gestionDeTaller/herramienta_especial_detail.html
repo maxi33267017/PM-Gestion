@@ -1,0 +1,391 @@
+{% extends 'base.html' %}
+{% block title %} | {{ herramienta.codigo }} - {{ herramienta.nombre }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="display-6 mb-2">
+                        <i class="bi bi-tools text-primary me-2"></i>{{ herramienta.codigo }}
+                    </h1>
+                    <p class="lead text-muted">{{ herramienta.nombre }}</p>
+                </div>
+                <div>
+                    <a href="{% url 'gestionDeTaller:herramientas_especiales_list' %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left me-2"></i>Volver al Listado
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Información Principal -->
+        <div class="col-lg-8">
+            <!-- Detalles de la Herramienta -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-info-circle me-2"></i>Información de la Herramienta
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="text-primary">Código</h6>
+                            <p class="mb-3"><strong>{{ herramienta.codigo }}</strong></p>
+                            
+                            <h6 class="text-primary">Nombre</h6>
+                            <p class="mb-3">{{ herramienta.nombre }}</p>
+                            
+                            <h6 class="text-primary">Ubicación</h6>
+                            <p class="mb-3">
+                                <span class="badge bg-secondary">{{ herramienta.ubicacion }}</span>
+                            </p>
+                            
+                            <h6 class="text-primary">Cantidad</h6>
+                            <p class="mb-3">
+                                <span class="badge bg-info">{{ herramienta.cantidad }}</span>
+                            </p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-primary">Estado Actual</h6>
+                            <p class="mb-3">
+                                {% if herramienta.disponible %}
+                                    <span class="badge bg-success fs-6">Disponible</span>
+                                {% else %}
+                                    <span class="badge bg-danger fs-6">No Disponible</span>
+                                    {% if herramienta.reserva_actual %}
+                                        <br><small class="text-muted mt-2 d-block">
+                                            Reservada por: {{ herramienta.reserva_actual.usuario.get_full_name|default:herramienta.reserva_actual.usuario.username }}
+                                        </small>
+                                    {% endif %}
+                                {% endif %}
+                            </p>
+                            
+                            <h6 class="text-primary">Fecha de Creación</h6>
+                            <p class="mb-3">
+                                <small>{{ herramienta.fecha_creacion|date:"d/m/Y H:i" }}</small>
+                            </p>
+                            
+                            {% if herramienta.nota %}
+                            <h6 class="text-primary">Nota</h6>
+                            <p class="mb-3">{{ herramienta.nota }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    {% if herramienta.foto %}
+                    <hr>
+                    <h6 class="text-primary">Foto</h6>
+                    <div class="text-center">
+                        <img src="{{ herramienta.foto.url }}" alt="{{ herramienta.nombre }}" 
+                             class="img-fluid rounded" style="max-height: 300px;">
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Reservas Activas -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-calendar-check me-2"></i>Reservas Activas
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if reservas_activas %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Fecha</th>
+                                    <th>Usuario</th>
+                                    <th>Estado</th>
+                                    <th>Pre-Orden/Servicio</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for reserva in reservas_activas %}
+                                <tr>
+                                    <td>{{ reserva.fecha_reserva|date:"d/m/Y" }}</td>
+                                    <td>
+                                        {% if reserva.usuario %}
+                                            {{ reserva.usuario.get_full_name|default:reserva.usuario.username }}
+                                        {% else %}
+                                            <span class="text-muted">Usuario no disponible</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if reserva.estado == 'RESERVADA' %}
+                                            <span class="badge bg-primary">{{ reserva.get_estado_display }}</span>
+                                        {% elif reserva.estado == 'RETIRADA' %}
+                                            <span class="badge bg-warning">{{ reserva.get_estado_display }}</span>
+                                        {% elif reserva.estado == 'DEVUELTA' %}
+                                            <span class="badge bg-success">{{ reserva.get_estado_display }}</span>
+                                        {% elif reserva.estado == 'CANCELADA' %}
+                                            <span class="badge bg-danger">{{ reserva.get_estado_display }}</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">{{ reserva.get_estado_display }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if reserva.preorden %}
+                                            <span class="badge bg-primary">PO: {{ reserva.preorden.numero }}</span>
+                                        {% elif reserva.servicio %}
+                                            <span class="badge bg-info">Servicio: {{ reserva.servicio.id }}</span>
+                                        {% else %}
+                                            <span class="text-muted">Sin asociación</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if reserva.estado == 'RESERVADA' %}
+                                            <form method="post" action="{% url 'gestionDeTaller:retirar_herramienta' reserva.id %}" class="d-inline">
+                                                {% csrf_token %}
+                                                <button type="submit" class="btn btn-sm btn-success me-1" 
+                                                        onclick="return confirm('¿Confirmar retiro de la herramienta?')">
+                                                    <i class="bi bi-box-arrow-up me-1"></i>Retirar
+                                                </button>
+                                            </form>
+                                            <form method="post" action="{% url 'gestionDeTaller:cancelar_reserva' reserva.id %}" class="d-inline">
+                                                {% csrf_token %}
+                                                <button type="submit" class="btn btn-sm btn-danger" 
+                                                        onclick="return confirm('¿Confirmar cancelación de la reserva?')">
+                                                    <i class="bi bi-x-circle me-1"></i>Cancelar
+                                                </button>
+                                            </form>
+                                        {% elif reserva.estado == 'RETIRADA' %}
+                                            <form method="post" action="{% url 'gestionDeTaller:devolver_herramienta' reserva.id %}" class="d-inline">
+                                                {% csrf_token %}
+                                                <button type="submit" class="btn btn-sm btn-primary" 
+                                                        onclick="return confirm('¿Confirmar devolución de la herramienta?')">
+                                                    <i class="bi bi-box-arrow-in-down me-1"></i>Devolver
+                                                </button>
+                                            </form>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="bi bi-calendar-x display-4 text-muted mb-3"></i>
+                        <p class="text-muted">No hay reservas activas para esta herramienta.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Historial de Movimientos -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-clock-history me-2"></i>Historial de Movimientos
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if logs %}
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Fecha</th>
+                                    <th>Usuario</th>
+                                    <th>Acción</th>
+                                    <th>Observaciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for log in logs %}
+                                <tr>
+                                    <td>
+                                        <small>{{ log.fecha|date:"d/m/Y H:i" }}</small>
+                                    </td>
+                                    <td>
+                                        <small>
+                                            {% if log.usuario %}
+                                                {{ log.usuario.get_full_name|default:log.usuario.username }}
+                                            {% else %}
+                                                <span class="text-muted">Usuario no disponible</span>
+                                            {% endif %}
+                                        </small>
+                                    </td>
+                                    <td>
+                                        {% if log.accion == 'RESERVA' %}
+                                            <span class="badge bg-primary">{{ log.get_accion_display }}</span>
+                                        {% elif log.accion == 'RETIRO' %}
+                                            <span class="badge bg-warning">{{ log.get_accion_display }}</span>
+                                        {% elif log.accion == 'DEVOLUCION' %}
+                                            <span class="badge bg-success">{{ log.get_accion_display }}</span>
+                                        {% elif log.accion == 'CANCELACION' %}
+                                            <span class="badge bg-danger">{{ log.get_accion_display }}</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">{{ log.get_accion_display }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <small>{{ log.observaciones|default:"-" }}</small>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="bi bi-clock display-4 text-muted mb-3"></i>
+                        <p class="text-muted">No hay movimientos registrados para esta herramienta.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Acciones Rápidas -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-gear me-2"></i>Acciones
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if herramienta.disponible %}
+                        <!-- Reservar Herramienta -->
+                        <button type="button" class="btn btn-primary w-100 mb-3" data-bs-toggle="modal" data-bs-target="#reservarModal">
+                            <i class="bi bi-calendar-plus me-2"></i>Reservar Herramienta
+                        </button>
+                        
+                        <!-- Retirar sin Reserva -->
+                        <button type="button" class="btn btn-warning w-100 mb-3" data-bs-toggle="modal" data-bs-target="#retirarSinReservaModal">
+                            <i class="bi bi-box-arrow-up me-2"></i>Retirar sin Reserva
+                        </button>
+                    {% else %}
+                        <div class="alert alert-warning">
+                            <i class="bi bi-exclamation-triangle me-2"></i>
+                            <strong>Herramienta no disponible</strong><br>
+                            <small>La herramienta está actualmente reservada o retirada.</small>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Información Adicional -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-info-circle me-2"></i>Información Adicional
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <h6 class="text-primary">Creado por</h6>
+                    <p class="mb-3">
+                        <small>{{ herramienta.creado_por.get_full_name|default:herramienta.creado_por.username }}</small>
+                    </p>
+                    
+                    <h6 class="text-primary">Última Modificación</h6>
+                    <p class="mb-0">
+                        <small>{{ herramienta.fecha_modificacion|date:"d/m/Y H:i" }}</small>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para Reservar -->
+<div class="modal fade" id="reservarModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Reservar Herramienta</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" action="{% url 'gestionDeTaller:reservar_herramienta' herramienta.id %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="fecha_reserva" class="form-label">Fecha de Reserva *</label>
+                        <input type="date" class="form-control" id="fecha_reserva" name="fecha_reserva" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="preorden" class="form-label">Pre-Orden (Opcional)</label>
+                        <select class="form-select" id="preorden" name="preorden">
+                            <option value="">Sin pre-orden</option>
+                            {% for preorden in preordenes %}
+                            <option value="{{ preorden.id }}">{{ preorden.numero }} - {{ preorden.cliente.razon_social }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="servicio" class="form-label">Servicio (Opcional)</label>
+                        <select class="form-select" id="servicio" name="servicio">
+                            <option value="">Sin servicio</option>
+                            {% for servicio in servicios %}
+                            <option value="{{ servicio.id }}">Servicio #{{ servicio.id }} - {{ servicio.preorden.cliente.razon_social }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="observaciones" class="form-label">Observaciones</label>
+                        <textarea class="form-control" id="observaciones" name="observaciones" rows="3"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Reservar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para Retirar sin Reserva -->
+<div class="modal fade" id="retirarSinReservaModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Retirar sin Reserva</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" action="{% url 'gestionDeTaller:retirar_sin_reserva' herramienta.id %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        <strong>Atención:</strong> Esta acción retirará la herramienta sin una reserva previa.
+                    </div>
+                    <div class="mb-3">
+                        <label for="observaciones_retiro" class="form-label">Observaciones *</label>
+                        <textarea class="form-control" id="observaciones_retiro" name="observaciones" rows="3" required 
+                                  placeholder="Explique el motivo del retiro sin reserva..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-warning">Retirar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Establecer fecha mínima para reservas (hoy)
+    const fechaReserva = document.getElementById('fecha_reserva');
+    if (fechaReserva) {
+        const today = new Date().toISOString().split('T')[0];
+        fechaReserva.min = today;
+    }
+});
+</script>
+{% endblock %} 

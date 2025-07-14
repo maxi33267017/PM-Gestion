@@ -1,0 +1,519 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+    :root {
+        --primary-gradient: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        --success-gradient: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+        --warning-gradient: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+        --danger-gradient: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+        --info-gradient: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+        --dark-gradient: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        --card-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        --hover-shadow: 0 15px 40px rgba(0,0,0,0.15);
+        --border-radius: 20px;
+        --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .config-header {
+        background: var(--dark-gradient);
+        color: white;
+        padding: 3rem 2rem;
+        border-radius: var(--border-radius);
+        margin-bottom: 2.5rem;
+        box-shadow: var(--card-shadow);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .config-header h1 {
+        margin: 0;
+        font-weight: 800;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        font-size: 3rem;
+        position: relative;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+    
+    .config-card {
+        background: white;
+        border-radius: var(--border-radius);
+        box-shadow: var(--card-shadow);
+        overflow: hidden;
+        border: 1px solid #e9ecef;
+        margin-bottom: 2rem;
+    }
+    
+    .config-header-card {
+        background: var(--dark-gradient);
+        color: white;
+        padding: 1.5rem 2rem;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .config-header-card h5 {
+        margin: 0;
+        font-weight: 700;
+        font-size: 1.3rem;
+        position: relative;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+    
+    .config-body {
+        padding: 2rem;
+    }
+    
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+    
+    .form-group label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+        color: #495057;
+    }
+    
+    .form-control {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        border: 2px solid #e9ecef;
+        border-radius: 10px;
+        font-size: 1rem;
+        transition: var(--transition);
+    }
+    
+    .form-control:focus {
+        outline: none;
+        border-color: #3498db;
+        box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+    }
+    
+    .form-control[readonly] {
+        background-color: #f8f9fa;
+        color: #6c757d;
+    }
+    
+    .btn-save {
+        background: var(--success-gradient);
+        color: white;
+        border: none;
+        padding: 0.75rem 2rem;
+        border-radius: 10px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: var(--transition);
+    }
+    
+    .btn-save:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(39, 174, 96, 0.4);
+    }
+    
+    .btn-test {
+        background: var(--info-gradient);
+        color: white;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 10px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: var(--transition);
+        margin-left: 1rem;
+    }
+    
+    .btn-test:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4);
+    }
+    
+    .btn-auth {
+        background: var(--warning-gradient);
+        color: white;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 10px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: var(--transition);
+        margin-left: 1rem;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .btn-auth:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(243, 156, 18, 0.4);
+        color: white;
+        text-decoration: none;
+    }
+    
+    .btn-debug {
+        background: #6c757d;
+        color: white;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 10px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: var(--transition);
+        margin-left: 1rem;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .btn-debug:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(108, 117, 125, 0.4);
+        color: white;
+        text-decoration: none;
+    }
+    
+    .btn-connect {
+        background: var(--success-gradient);
+        color: white;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 10px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: var(--transition);
+        margin-left: 1rem;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .btn-connect:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(39, 174, 96, 0.4);
+        color: white;
+        text-decoration: none;
+    }
+    
+    .btn-status {
+        background: #17a2b8;
+        color: white;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 10px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: var(--transition);
+        margin-left: 1rem;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .btn-status:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(23, 162, 184, 0.4);
+        color: white;
+        text-decoration: none;
+    }
+    
+    .info-box {
+        background: linear-gradient(135deg, #d1ecf1 0%, #bee5eb 100%);
+        border: 1px solid #bee5eb;
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .info-box h6 {
+        color: #0c5460;
+        margin-bottom: 1rem;
+        font-weight: 600;
+    }
+    
+    .info-box p {
+        color: #0c5460;
+        margin-bottom: 0.5rem;
+    }
+    
+    .info-box ul {
+        color: #0c5460;
+        margin-bottom: 0;
+    }
+    
+    .test-result {
+        margin-top: 1rem;
+        padding: 1rem;
+        border-radius: 10px;
+        display: none;
+    }
+    
+    .test-result.success {
+        background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+        border: 1px solid #c3e6cb;
+        color: #155724;
+    }
+    
+    .test-result.error {
+        background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+        border: 1px solid #f5c6cb;
+        color: #721c24;
+    }
+    
+    .status-indicators {
+        margin-top: 1rem;
+    }
+    
+    .status-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 0.5rem;
+        padding: 0.5rem;
+        border-radius: 8px;
+        background: #f8f9fa;
+    }
+    
+    .status-item i {
+        font-size: 1.2rem;
+    }
+    
+    .text-success {
+        color: #28a745 !important;
+    }
+    
+    .text-danger {
+        color: #dc3545 !important;
+    }
+</style>
+
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="config-header">
+        <h1><i class="bi bi-gear"></i> Configuración Operations Center</h1>
+    </div>
+    
+    <!-- Información de la API -->
+    <div class="info-box">
+        <h6><i class="bi bi-info-circle"></i> Información de la API John Deere</h6>
+        <p><strong>Application ID:</strong> 0oaphj738dbaZfEA65d7</p>
+        <p><strong>Secret:</strong> YMh-14nNEHvVsobX5fRdaN6a6NnRCYKZhD0611kCohQfxquoy0sxzUH-rjHSB55_</p>
+        <p><strong>Redirect URI:</strong> http://localhost:8000/operations-center/callback/</p>
+        <p><strong>Estado:</strong> SANDBOX</p>
+        <p><strong>Permisos disponibles:</strong></p>
+        <ul>
+            <li><strong>eq1:</strong> Equipment Access Level 1 - Ver equipos, RDA, Setup & WDT</li>
+            <li><strong>ag1:</strong> Locations Access Level 1 - Ver ubicaciones (clientes, granjas, campos)</li>
+            <li><strong>org1:</strong> Organization Management Access Level 1 - Ver personal, operadores y socios</li>
+            <li><strong>offline_access:</strong> API Authentication - Solicitar refresh token</li>
+        </ul>
+    </div>
+    
+    <!-- Formulario de configuración -->
+    <div class="config-card">
+        <div class="config-header-card">
+            <h5><i class="bi bi-gear-fill"></i> Configuración de Conexión</h5>
+        </div>
+        <div class="config-body">
+            <form method="post">
+                {% csrf_token %}
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="client_id">Client ID</label>
+                            <input type="text" class="form-control" id="client_id" name="client_id" 
+                                   value="{{ config.client_id|default:'0oaphj738dbaZfEA65d7' }}" required>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="client_secret">Client Secret</label>
+                            <input type="password" class="form-control" id="client_secret" name="client_secret" 
+                                   value="{{ config.client_secret|default:'YMh-14nNEHvVsobX5fRdaN6a6NnRCYKZhD0611kCohQfxquoy0sxzUH-rjHSB55_' }}" required>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="redirect_uri">Redirect URI</label>
+                            <input type="url" class="form-control" id="redirect_uri" name="redirect_uri" 
+                                   value="{{ config.redirect_uri|default:'https://localhost:8000/callback' }}" required>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="organization_id">Organization ID</label>
+                            <input type="text" class="form-control" id="organization_id" name="organization_id" 
+                                   value="{{ config.organization_id|default:'' }}" placeholder="Se obtendrá automáticamente">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="access_token">Access Token</label>
+                            <textarea class="form-control" id="access_token" name="access_token" rows="3" 
+                                      placeholder="Se obtendrá automáticamente">{{ config.access_token|default:'' }}</textarea>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="refresh_token">Refresh Token</label>
+                            <textarea class="form-control" id="refresh_token" name="refresh_token" rows="3" 
+                                      placeholder="Se obtendrá automáticamente">{{ config.refresh_token|default:'' }}</textarea>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="token_expires_at">Token Expires At</label>
+                            <input type="datetime-local" class="form-control" id="token_expires_at" name="token_expires_at" 
+                                   value="{{ config.token_expires_at|date:'Y-m-d\TH:i'|default:'' }}">
+                        </div>
+                    </div>
+                </div>
+                
+                                        <div class="form-actions">
+                            <button type="submit" class="btn-save">
+                                <i class="bi bi-check-circle"></i> Guardar Configuración
+                            </button>
+                            <button type="button" class="btn-test" onclick="testConnection()">
+                                <i class="bi bi-arrow-repeat"></i> Probar Conexión
+                            </button>
+                            <a href="{% url 'operationsCenter:iniciar_oauth' %}" class="btn-auth">
+                                <i class="bi bi-shield-lock"></i> Autenticar con John Deere
+                            </a>
+                            <a href="{% url 'operationsCenter:debug_oauth_config' %}" class="btn-debug">
+                                <i class="bi bi-bug"></i> Debug OAuth
+                            </a>
+                            <a href="{% url 'operationsCenter:habilitar_conexiones_organizaciones' %}" class="btn-connect">
+                                <i class="bi bi-link-45deg"></i> Habilitar Conexiones
+                            </a>
+                            <a href="{% url 'operationsCenter:verificar_estado_conexiones' %}" class="btn-status">
+                                <i class="bi bi-eye"></i> Ver Estado
+                            </a>
+                        </div>
+            </form>
+            
+            <div id="test-result" class="test-result"></div>
+        </div>
+    </div>
+    
+    <!-- Instrucciones -->
+    <div class="config-card">
+        <div class="config-header-card">
+            <h5><i class="bi bi-question-circle"></i> Instrucciones de Configuración</h5>
+        </div>
+        <div class="config-body">
+            <h6>Pasos para configurar la API:</h6>
+            <ol>
+                <li><strong>Guardar Configuración:</strong> Asegúrate de que los datos básicos (Client ID, Secret, Redirect URI) estén guardados.</li>
+                <li><strong>Autenticación OAuth:</strong> Haz clic en "Autenticar con John Deere" para iniciar el flujo de autorización.</li>
+                <li><strong>Autorizar Aplicación:</strong> En la página de John Deere, autoriza el acceso a tu cuenta.</li>
+                <li><strong>Obtener Organization ID:</strong> Una vez autenticado, el sistema obtendrá automáticamente el ID de la organización.</li>
+                <li><strong>Probar conexión:</strong> Usa el botón "Probar Conexión" para verificar que todo funciona.</li>
+            </ol>
+            
+            <h6>Estado actual:</h6>
+            <div class="status-indicators">
+                <div class="status-item">
+                    <i class="bi bi-check-circle-fill text-success"></i>
+                    <span>Configuración básica: <strong>Completada</strong></span>
+                </div>
+                <div class="status-item">
+                    <i class="bi bi-{% if config.access_token %}check-circle-fill text-success{% else %}x-circle-fill text-danger{% endif %}"></i>
+                    <span>Autenticación OAuth: <strong>{% if config.access_token %}Completada{% else %}Pendiente{% endif %}</strong></span>
+                </div>
+                <div class="status-item">
+                    <i class="bi bi-{% if config.organization_id %}check-circle-fill text-success{% else %}x-circle-fill text-danger{% endif %}"></i>
+                    <span>Organization ID: <strong>{% if config.organization_id %}Configurado{% else %}Pendiente{% endif %}</strong></span>
+                </div>
+            </div>
+            
+            <h6>Nota importante:</h6>
+            <p>Esta configuración está en modo SANDBOX. Para producción, necesitarás solicitar acceso completo a la API de John Deere.</p>
+        </div>
+    </div>
+</div>
+
+<script>
+function testConnection() {
+    const testResult = document.getElementById('test-result');
+    const testButton = document.querySelector('.btn-test');
+    
+    testButton.disabled = true;
+    testButton.innerHTML = '<i class="bi bi-arrow-clockwise spin"></i> Probando...';
+    testResult.style.display = 'none';
+    
+    fetch('{% url "operationsCenter:api_test_connection" %}')
+        .then(response => response.json())
+        .then(data => {
+            testResult.style.display = 'block';
+            testResult.className = 'test-result ' + (data.success ? 'success' : 'error');
+            
+            if (data.success) {
+                testResult.innerHTML = `
+                    <h6><i class="bi bi-check-circle"></i> Conexión Exitosa</h6>
+                    <p>Se encontraron ${data.organizations.length} organización(es) disponibles.</p>
+                    ${data.organizations.map(org => `<p><strong>${org.name}</strong> (ID: ${org.id})</p>`).join('')}
+                `;
+            } else {
+                testResult.innerHTML = `
+                    <h6><i class="bi bi-x-circle"></i> Error de Conexión</h6>
+                    <p>${data.message}</p>
+                `;
+            }
+        })
+        .catch(error => {
+            testResult.style.display = 'block';
+            testResult.className = 'test-result error';
+            testResult.innerHTML = `
+                <h6><i class="bi bi-x-circle"></i> Error de Conexión</h6>
+                <p>Error al conectar con la API: ${error.message}</p>
+            `;
+        })
+        .finally(() => {
+            testButton.disabled = false;
+            testButton.innerHTML = '<i class="bi bi-arrow-repeat"></i> Probar Conexión';
+        });
+}
+
+// Auto-guardar cuando se cambian los campos principales
+document.addEventListener('DOMContentLoaded', function() {
+    const mainFields = ['client_id', 'client_secret', 'redirect_uri'];
+    mainFields.forEach(fieldId => {
+        const field = document.getElementById(fieldId);
+        if (field) {
+            field.addEventListener('change', function() {
+                // Opcional: auto-guardar o mostrar indicador de cambios
+                console.log('Campo modificado:', fieldId);
+            });
+        }
+    });
+});
+</script>
+
+<style>
+.spin {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+</style>
+{% endblock %} 

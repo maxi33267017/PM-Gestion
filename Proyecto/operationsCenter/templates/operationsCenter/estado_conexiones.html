@@ -1,0 +1,117 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3><i class="bi bi-link-45deg"></i> Estado de Conexiones con Organizaciones</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-4">
+                        <div class="col-md-3">
+                            <div class="card bg-primary text-white">
+                                <div class="card-body text-center">
+                                    <h4>{{ total_orgs }}</h4>
+                                    <p>Total Organizaciones</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-success text-white">
+                                <div class="card-body text-center">
+                                    <h4>{{ connected_orgs }}</h4>
+                                    <p>Conectadas</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-warning text-white">
+                                <div class="card-body text-center">
+                                    <h4>{{ pending_orgs }}</h4>
+                                    <p>Pendientes</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-info text-white">
+                                <div class="card-body text-center">
+                                    <h4>{{ connection_percentage|floatformat:1 }}%</h4>
+                                    <p>Progreso</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {% if pending_orgs > 0 %}
+                    <div class="alert alert-warning">
+                        <h5><i class="bi bi-exclamation-triangle"></i> Atención</h5>
+                        <p>Tienes {{ pending_orgs }} organizaciones pendientes de conexión. Para que la sincronización funcione correctamente, necesitas habilitar el acceso a las organizaciones.</p>
+                        <a href="{% url 'operationsCenter:habilitar_conexiones_organizaciones' %}" class="btn btn-warning">
+                            <i class="bi bi-link-45deg"></i> Habilitar Conexiones
+                        </a>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-success">
+                        <h5><i class="bi bi-check-circle"></i> ¡Excelente!</h5>
+                        <p>Todas las organizaciones están conectadas. La sincronización debería funcionar correctamente.</p>
+                    </div>
+                    {% endif %}
+
+                    <h5>Detalle de Organizaciones:</h5>
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Organización</th>
+                                    <th>ID</th>
+                                    <th>Tipo</th>
+                                    <th>Estado</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for org in organizations %}
+                                <tr>
+                                    <td>{{ org.name }}</td>
+                                    <td><code>{{ org.id }}</code></td>
+                                    <td>{{ org.type|title }}</td>
+                                    <td>
+                                        {% if org.status == 'Conectada' %}
+                                            <span class="badge bg-success">
+                                                <i class="bi bi-check-circle"></i> Conectada
+                                            </span>
+                                        {% elif org.status == 'Pendiente' %}
+                                            <span class="badge bg-warning">
+                                                <i class="bi bi-clock"></i> Pendiente
+                                            </span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">
+                                                <i class="bi bi-question-circle"></i> Desconocido
+                                            </span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="mt-4">
+                        <a href="{% url 'operationsCenter:configuracion_oc' %}" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left"></i> Volver a Configuración
+                        </a>
+                        <a href="{% url 'operationsCenter:dashboard_operations_center' %}" class="btn btn-primary">
+                            <i class="bi bi-speedometer2"></i> Ir al Dashboard
+                        </a>
+                        <button onclick="location.reload()" class="btn btn-info">
+                            <i class="bi bi-arrow-clockwise"></i> Actualizar Estado
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

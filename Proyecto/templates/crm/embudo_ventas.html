@@ -121,7 +121,7 @@
                             <th>Cliente</th>
                             <th>Etapa</th>
                             <th>Valor Estimado</th>
-                            <th>Probabilidad</th>
+                            <th>Valor de Cierre</th>
                             <th>Origen</th>
                             <th>Campaña</th>
                             <th>Fecha Ingreso</th>
@@ -151,12 +151,11 @@
                                 {% endif %}
                             </td>
                             <td>
-                                <div class="d-flex align-items-center">
-                                    <div class="progress me-2" style="width: 60px; height: 6px;">
-                                        <div class="progress-bar bg-success" style="width: {{ embudo.probabilidad_cierre }}%"></div>
-                                    </div>
-                                    <small>{{ embudo.probabilidad_cierre }}%</small>
-                                </div>
+                                {% if embudo.valor_cierre %}
+                                    <span class="text-primary fw-bold">${{ embudo.valor_cierre|floatformat:0 }}</span>
+                                {% else %}
+                                    <span class="text-muted">No concretado</span>
+                                {% endif %}
                             </td>
                             <td>
                                 <span class="badge bg-secondary">{{ embudo.get_origen_display }}</span>

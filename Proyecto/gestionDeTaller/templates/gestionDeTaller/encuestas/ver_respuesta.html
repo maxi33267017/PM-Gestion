@@ -16,19 +16,39 @@
             <div class="mt-4">
                 <h6>Detalles de la Respuesta:</h6>
                 <p>
-                    <strong>Calificación NPS:</strong> {{ respuesta.calificacion }}/10<br>
-                    <strong>Categoría:</strong> 
-                    <span class="badge {% if respuesta.calificacion >= 9 %}bg-success
-                                     {% elif respuesta.calificacion >= 7 %}bg-warning
+                    <strong>Cumplimiento del Acuerdo:</strong> 
+                    <span class="badge {% if respuesta.cumplimiento_acuerdo >= 9 %}bg-success
+                                     {% elif respuesta.cumplimiento_acuerdo >= 7 %}bg-warning
                                      {% else %}bg-danger{% endif %}">
-                        {{ respuesta.get_nps_category }}
+                        {{ respuesta.cumplimiento_acuerdo }}/10
                     </span><br>
-                    <strong>Comentarios:</strong><br>
-                    {{ respuesta.comentarios|linebreaks }}
+                    {% if respuesta.motivo_cumplimiento_bajo %}
+                        <strong>Motivo (si ≤7):</strong> {{ respuesta.motivo_cumplimiento_bajo }}<br>
+                    {% endif %}
+                    
+                    <strong>Probabilidad de Recomendación (NPS):</strong> 
+                    <span class="badge {% if respuesta.probabilidad_recomendacion >= 9 %}bg-success
+                                     {% elif respuesta.probabilidad_recomendacion >= 7 %}bg-warning
+                                     {% else %}bg-danger{% endif %}">
+                        {{ respuesta.probabilidad_recomendacion }}/10
+                    </span><br>
+                    {% if respuesta.motivo_recomendacion_baja %}
+                        <strong>Motivo (si ≤7):</strong> {{ respuesta.motivo_recomendacion_baja }}<br>
+                    {% endif %}
+                    
+                    {% if respuesta.problemas_pendientes %}
+                        <strong>Problemas Pendientes:</strong><br>
+                        {{ respuesta.problemas_pendientes|linebreaks }}<br>
+                    {% endif %}
+                    
+                    {% if respuesta.comentarios_generales %}
+                        <strong>Comentarios Generales:</strong><br>
+                        {{ respuesta.comentarios_generales|linebreaks }}<br>
+                    {% endif %}
                 </p>
                 <p>
-                    <strong>Respondido por:</strong> {{ respuesta.nombre_respondente }}<br>
-                    <strong>Cargo:</strong> {{ respuesta.cargo_respondente }}
+                    <strong>Respondido por:</strong> {{ respuesta.nombre_respondente|default:"No especificado" }}<br>
+                    <strong>Cargo:</strong> {{ respuesta.cargo_respondente|default:"No especificado" }}
                 </p>
             </div>
             

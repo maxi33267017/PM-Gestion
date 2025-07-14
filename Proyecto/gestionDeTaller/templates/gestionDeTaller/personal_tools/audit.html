@@ -1,0 +1,424 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Auditar {{ tool.nombre }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .audit-card {
+        border-radius: 10px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .tool-info {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 1rem;
+    }
+    .checklist-item {
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+    }
+    .checklist-item:hover {
+        border-color: #007bff;
+        box-shadow: 0 2px 4px rgba(0,123,255,0.1);
+    }
+    .form-check-input:checked {
+        background-color: #28a745;
+        border-color: #28a745;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item">
+                        <a href="{% url 'gestionDeTaller:personal_tools_list' %}">Herramientas Personales</a>
+                    </li>
+                    <li class="breadcrumb-item">
+                        <a href="{% url 'gestionDeTaller:personal_tool_detail' tool.id %}">{{ tool.nombre }}</a>
+                    </li>
+                    <li class="breadcrumb-item active">Auditar</li>
+                </ol>
+            </nav>
+            <h1 class="h3 mb-0">Auditoría de Herramienta</h1>
+            <p class="text-muted">Realizar auditoría de {{ tool.nombre }}</p>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card audit-card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-clipboard-check"></i> Formulario de Auditoría
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <!-- Información de la herramienta -->
+                    <div class="tool-info mb-4">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <strong>Herramienta:</strong>
+                                <p class="mb-1">{{ tool.nombre }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <strong>Categoría:</strong>
+                                <p class="mb-1">{{ tool.get_categoria_display }}</p>
+                            </div>
+                        </div>
+                        {% if tool.marca or tool.modelo %}
+                        <div class="row">
+                            {% if tool.marca %}
+                            <div class="col-md-6">
+                                <strong>Marca:</strong>
+                                <p class="mb-1">{{ tool.marca }}</p>
+                            </div>
+                            {% endif %}
+                            {% if tool.modelo %}
+                            <div class="col-md-6">
+                                <strong>Modelo:</strong>
+                                <p class="mb-1">{{ tool.modelo }}</p>
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                        {% if tool.asignacion_actual %}
+                        <div class="row">
+                            <div class="col-md-6">
+                                <strong>Técnico Asignado:</strong>
+                                <p class="mb-1">{{ tool.asignacion_actual.tecnico.get_full_name }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <strong>Fecha de Asignación:</strong>
+                                <p class="mb-1">{{ tool.asignacion_actual.fecha_asignacion }}</p>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Formulario de auditoría -->
+                    <form method="POST" id="auditForm">
+                        {% csrf_token %}
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="fecha_auditoria" class="form-label">
+                                        <i class="fas fa-calendar"></i> Fecha de Auditoría <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="date" name="fecha_auditoria" id="fecha_auditoria" 
+                                           class="form-control" required
+                                           value="{{ request.POST.fecha_auditoria|default:'' }}">
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="tipo_auditoria" class="form-label">
+                                        <i class="fas fa-tasks"></i> Tipo de Auditoría <span class="text-danger">*</span>
+                                    </label>
+                                    <select name="tipo_auditoria" id="tipo_auditoria" class="form-select" required>
+                                        <option value="">Seleccionar tipo...</option>
+                                        {% for tipo in tipos_auditoria %}
+                                            <option value="{{ tipo.0 }}" 
+                                                    {% if request.POST.tipo_auditoria == tipo.0 %}selected{% endif %}>
+                                                {{ tipo.1 }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="observaciones" class="form-label">
+                                <i class="fas fa-comment"></i> Observaciones Generales
+                            </label>
+                            <textarea name="observaciones" id="observaciones" class="form-control" 
+                                      rows="3" placeholder="Observaciones generales sobre la auditoría...">{{ request.POST.observaciones|default:'' }}</textarea>
+                        </div>
+
+                        <!-- Checklist dinámico -->
+                        <div class="mb-4">
+                            <h6 class="mb-3">
+                                <i class="fas fa-list-check"></i> Checklist de Auditoría General
+                            </h6>
+                            <div id="checklistContainer">
+                                {% for campo in campos_auditoria %}
+                                <div class="checklist-item">
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <label class="form-label fw-bold">{{ campo.nombre }}</label>
+                                        </div>
+                                        <div class="col-md-4">
+                                            {% if campo.tipo == 'boolean' %}
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" 
+                                                       id="cumple_{{ forloop.counter }}" 
+                                                       data-campo="{{ campo.nombre }}"
+                                                       data-tipo="{{ campo.tipo }}">
+                                                <label class="form-check-label" for="cumple_{{ forloop.counter }}">
+                                                    Cumple con el estándar
+                                                </label>
+                                            </div>
+                                            {% else %}
+                                            <input type="{{ campo.tipo }}" class="form-control" 
+                                                   id="valor_{{ forloop.counter }}"
+                                                   data-campo="{{ campo.nombre }}"
+                                                   data-tipo="{{ campo.tipo }}"
+                                                   placeholder="Valor encontrado">
+                                            {% endif %}
+                                        </div>
+                                        <div class="col-md-4">
+                                            <input type="text" class="form-control" 
+                                                   id="observacion_{{ forloop.counter }}"
+                                                   placeholder="Observaciones específicas">
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <!-- Auditoría de Items -->
+                        {% if tool.items.all %}
+                        <div class="mb-4">
+                            <h6 class="mb-3">
+                                <i class="fas fa-tools"></i> Auditoría de Items Individuales
+                                <span class="badge bg-primary">{{ tool.total_items }} items</span>
+                            </h6>
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle"></i>
+                                <strong>Instrucciones:</strong> Marque el estado de cada item individual. Los items ausentes o dañados se marcarán automáticamente para reposición.
+                            </div>
+                            <div id="itemsContainer">
+                                {% for item in tool.items.all %}
+                                <div class="checklist-item item-audit" data-item-id="{{ item.id }}">
+                                    <div class="row align-items-center">
+                                        <div class="col-md-3">
+                                            <label class="form-label fw-bold mb-1">{{ item.nombre }}</label>
+                                            {% if item.descripcion %}
+                                                <br><small class="text-muted">{{ item.descripcion }}</small>
+                                            {% endif %}
+                                            <br><small class="text-info">Cantidad: {{ item.cantidad }}</small>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <select class="form-select item-estado" 
+                                                    data-item-id="{{ item.id }}"
+                                                    data-original-estado="{{ item.estado }}">
+                                                <option value="PRESENTE" {% if item.estado == 'PRESENTE' %}selected{% endif %}>Presente</option>
+                                                <option value="AUSENTE" {% if item.estado == 'AUSENTE' %}selected{% endif %}>Ausente</option>
+                                                <option value="DAÑADO" {% if item.estado == 'DAÑADO' %}selected{% endif %}>Dañado</option>
+                                                <option value="DESGASTADO" {% if item.estado == 'DESGASTADO' %}selected{% endif %}>Desgastado</option>
+                                                <option value="VENCIDO" {% if item.estado == 'VENCIDO' %}selected{% endif %}>Vencido</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <input type="text" class="form-control item-observaciones" 
+                                                   placeholder="Observaciones del item"
+                                                   data-item-id="{{ item.id }}">
+                                        </div>
+                                        <div class="col-md-2">
+                                            <div class="form-check">
+                                                <input class="form-check-input item-requiere-reposicion" 
+                                                       type="checkbox" 
+                                                       data-item-id="{{ item.id }}"
+                                                       {% if item.estado in 'AUSENTE,DAÑADO,VENCIDO' %}checked{% endif %}>
+                                                <label class="form-check-label" for="item-{{ item.id }}">
+                                                    Reposición
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <!-- Campos ocultos para los datos -->
+                        <input type="hidden" name="detalles" id="detalles" value="">
+                        <input type="hidden" name="items_data" id="items_data" value="">
+
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'gestionDeTaller:personal_tool_detail' tool.id %}" 
+                               class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left"></i> Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-info">
+                                <i class="fas fa-save"></i> Guardar Auditoría
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Establecer fecha actual por defecto si no hay fecha seleccionada
+        const fechaInput = document.getElementById('fecha_auditoria');
+        if (!fechaInput.value) {
+            const today = new Date().toISOString().split('T')[0];
+            fechaInput.value = today;
+        }
+        
+        // Función para recopilar datos del checklist
+        function collectChecklistData() {
+            const detalles = [];
+            const checklistItems = document.querySelectorAll('.checklist-item');
+            
+            checklistItems.forEach((item, index) => {
+                const campo = item.querySelector('[data-campo]').getAttribute('data-campo');
+                const tipo = item.querySelector('[data-tipo]').getAttribute('data-tipo');
+                const observaciones = item.querySelector('input[placeholder*="Observaciones"]').value;
+                
+                let valorEncontrado = '';
+                let cumple = false;
+                
+                if (tipo === 'boolean') {
+                    const checkbox = item.querySelector('input[type="checkbox"]');
+                    cumple = checkbox.checked;
+                    valorEncontrado = cumple ? 'Cumple' : 'No cumple';
+                } else {
+                    const input = item.querySelector('input[data-tipo]');
+                    valorEncontrado = input.value;
+                    cumple = valorEncontrado.trim() !== '';
+                }
+                
+                detalles.push({
+                    campo: campo,
+                    esperado: tipo === 'boolean' ? 'Cumple con estándar' : 'Valor válido',
+                    encontrado: valorEncontrado,
+                    cumple: cumple,
+                    observaciones: observaciones
+                });
+            });
+            
+            return detalles;
+        }
+        
+        // Validación del formulario
+        const auditForm = document.getElementById('auditForm');
+        auditForm.addEventListener('submit', function(e) {
+            const fecha = document.getElementById('fecha_auditoria').value;
+            const tipo = document.getElementById('tipo_auditoria').value;
+            
+            if (!fecha || !tipo) {
+                e.preventDefault();
+                alert('Por favor complete todos los campos obligatorios.');
+                return false;
+            }
+            
+            // Recopilar datos del checklist
+            const detalles = collectChecklistData();
+            document.getElementById('detalles').value = JSON.stringify(detalles);
+            
+            // Confirmar envío
+            if (!confirm('¿Está seguro de que desea guardar esta auditoría?')) {
+                e.preventDefault();
+                return false;
+            }
+        });
+        
+        // Actualizar estado de checkboxes para campos boolean
+        document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                const item = this.closest('.checklist-item');
+                const observacionInput = item.querySelector('input[placeholder*="Observaciones"]');
+                
+                if (this.checked) {
+                    observacionInput.placeholder = 'Observaciones (opcional)';
+                } else {
+                    observacionInput.placeholder = 'Observaciones (recomendado)';
+                }
+            });
+        });
+
+        // Manejo de auditoría de items
+        function collectItemsData() {
+            const itemsData = [];
+            const itemAudits = document.querySelectorAll('.item-audit');
+            
+            itemAudits.forEach(itemAudit => {
+                const itemId = itemAudit.getAttribute('data-item-id');
+                const estadoSelect = itemAudit.querySelector('.item-estado');
+                const observacionesInput = itemAudit.querySelector('.item-observaciones');
+                const reposicionCheckbox = itemAudit.querySelector('.item-requiere-reposicion');
+                
+                itemsData.push({
+                    item_id: itemId,
+                    estado: estadoSelect.value,
+                    observaciones: observacionesInput.value,
+                    requiere_reposicion: reposicionCheckbox.checked
+                });
+            });
+            
+            return itemsData;
+        }
+
+        // Actualizar checkbox de reposición cuando cambia el estado
+        document.querySelectorAll('.item-estado').forEach(select => {
+            select.addEventListener('change', function() {
+                const itemId = this.getAttribute('data-item-id');
+                const reposicionCheckbox = document.querySelector(`.item-requiere-reposicion[data-item-id="${itemId}"]`);
+                
+                if (this.value === 'AUSENTE' || this.value === 'DAÑADO' || this.value === 'VENCIDO') {
+                    reposicionCheckbox.checked = true;
+                } else {
+                    reposicionCheckbox.checked = false;
+                }
+            });
+        });
+
+        // Actualizar estado cuando cambia el checkbox de reposición
+        document.querySelectorAll('.item-requiere-reposicion').forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                const itemId = this.getAttribute('data-item-id');
+                const estadoSelect = document.querySelector(`.item-estado[data-item-id="${itemId}"]`);
+                
+                if (this.checked && estadoSelect.value === 'PRESENTE') {
+                    estadoSelect.value = 'AUSENTE';
+                }
+            });
+        });
+
+        // Modificar la validación del formulario para incluir items
+        auditForm.addEventListener('submit', function(e) {
+            const fecha = document.getElementById('fecha_auditoria').value;
+            const tipo = document.getElementById('tipo_auditoria').value;
+            
+            if (!fecha || !tipo) {
+                e.preventDefault();
+                alert('Por favor complete todos los campos obligatorios.');
+                return false;
+            }
+            
+            // Recopilar datos del checklist general
+            const detalles = collectChecklistData();
+            document.getElementById('detalles').value = JSON.stringify(detalles);
+            
+            // Recopilar datos de items
+            const itemsData = collectItemsData();
+            document.getElementById('items_data').value = JSON.stringify(itemsData);
+            
+            // Confirmar envío
+            if (!confirm('¿Está seguro de que desea guardar esta auditoría? Se actualizarán los estados de todos los items.')) {
+                e.preventDefault();
+                return false;
+            }
+        });
+    });
+</script>
+{% endblock %} 

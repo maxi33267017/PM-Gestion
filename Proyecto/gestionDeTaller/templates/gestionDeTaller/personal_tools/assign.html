@@ -1,0 +1,182 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Asignar {{ tool.nombre }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .assign-card {
+        border-radius: 10px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .tool-info {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 1rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item">
+                        <a href="{% url 'gestionDeTaller:personal_tools_list' %}">Herramientas Personales</a>
+                    </li>
+                    <li class="breadcrumb-item">
+                        <a href="{% url 'gestionDeTaller:personal_tool_detail' tool.id %}">{{ tool.nombre }}</a>
+                    </li>
+                    <li class="breadcrumb-item active">Asignar</li>
+                </ol>
+            </nav>
+            <h1 class="h3 mb-0">Asignar Herramienta</h1>
+            <p class="text-muted">Asignar {{ tool.nombre }} a un técnico</p>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card assign-card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-user-plus"></i> Asignación de Herramienta
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <!-- Información de la herramienta -->
+                    <div class="tool-info mb-4">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <strong>Herramienta:</strong>
+                                <p class="mb-1">{{ tool.nombre }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <strong>Categoría:</strong>
+                                <p class="mb-1">{{ tool.get_categoria_display }}</p>
+                            </div>
+                        </div>
+                        {% if tool.marca or tool.modelo %}
+                        <div class="row">
+                            {% if tool.marca %}
+                            <div class="col-md-6">
+                                <strong>Marca:</strong>
+                                <p class="mb-1">{{ tool.marca }}</p>
+                            </div>
+                            {% endif %}
+                            {% if tool.modelo %}
+                            <div class="col-md-6">
+                                <strong>Modelo:</strong>
+                                <p class="mb-1">{{ tool.modelo }}</p>
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Formulario de asignación -->
+                    <form method="POST">
+                        {% csrf_token %}
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="tecnico" class="form-label">
+                                        <i class="fas fa-user"></i> Técnico <span class="text-danger">*</span>
+                                    </label>
+                                    <select name="tecnico" id="tecnico" class="form-select" required>
+                                        <option value="">Seleccionar técnico...</option>
+                                        {% for tecnico in tecnicos %}
+                                            <option value="{{ tecnico.id }}" 
+                                                    {% if request.POST.tecnico == tecnico.id|stringformat:"s" %}selected{% endif %}>
+                                                {{ tecnico.get_full_name }} ({{ tecnico.email }})
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="fecha_asignacion" class="form-label">
+                                        <i class="fas fa-calendar"></i> Fecha de Asignación <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="date" name="fecha_asignacion" id="fecha_asignacion" 
+                                           class="form-control" required
+                                           value="{{ request.POST.fecha_asignacion|default:'' }}">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="observaciones" class="form-label">
+                                <i class="fas fa-comment"></i> Observaciones
+                            </label>
+                            <textarea name="observaciones" id="observaciones" class="form-control" 
+                                      rows="3" placeholder="Observaciones sobre la asignación...">{{ request.POST.observaciones|default:'' }}</textarea>
+                        </div>
+
+                        <!-- Advertencia si hay asignación actual -->
+                        {% if tool.asignacion_actual %}
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <strong>Advertencia:</strong> Esta herramienta está actualmente asignada a 
+                            <strong>{{ tool.asignacion_actual.tecnico.get_full_name }}</strong> desde 
+                            {{ tool.asignacion_actual.fecha_asignacion }}. 
+                            Al realizar una nueva asignación, la asignación actual será finalizada automáticamente.
+                        </div>
+                        {% endif %}
+
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'gestionDeTaller:personal_tool_detail' tool.id %}" 
+                               class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left"></i> Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-check"></i> Confirmar Asignación
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Establecer fecha actual por defecto si no hay fecha seleccionada
+        const fechaInput = document.getElementById('fecha_asignacion');
+        if (!fechaInput.value) {
+            const today = new Date().toISOString().split('T')[0];
+            fechaInput.value = today;
+        }
+        
+        // Validación del formulario
+        const form = document.querySelector('form');
+        form.addEventListener('submit', function(e) {
+            const tecnico = document.getElementById('tecnico').value;
+            const fecha = document.getElementById('fecha_asignacion').value;
+            
+            if (!tecnico || !fecha) {
+                e.preventDefault();
+                alert('Por favor complete todos los campos obligatorios.');
+                return false;
+            }
+            
+            // Confirmar si hay asignación actual
+            {% if tool.asignacion_actual %}
+            if (!confirm('¿Está seguro de que desea reasignar esta herramienta? La asignación actual será finalizada.')) {
+                e.preventDefault();
+                return false;
+            }
+            {% endif %}
+        });
+    });
+</script>
+{% endblock %} 

@@ -14,6 +14,9 @@
                     <p class="lead text-muted">Gestión de leads proporcionados por John Deere</p>
                 </div>
                 <div>
+                    <a href="{% url 'crm:embudo_ventas_origen' 'LEAD_JD' %}" class="btn btn-primary">
+                        <i class="bi bi-funnel me-2"></i>Ver Embudo de Ventas
+                    </a>
                     <button type="button" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#modalNuevoLead">
                         <i class="bi bi-plus-circle me-2"></i>Nuevo Lead
                     </button>
@@ -153,14 +156,23 @@
                                         </td>
                                         <td>
                                             <div class="btn-group" role="group">
-                                                <button type="button" class="btn btn-sm btn-outline-primary" 
-                                                        data-bs-toggle="tooltip" title="Ver detalles">
+                                                <a href="{% url 'centroSoluciones:lead_detail' lead.id %}" 
+                                                   class="btn btn-sm btn-outline-primary" 
+                                                   data-bs-toggle="tooltip" title="Ver detalles">
                                                     <i class="bi bi-eye"></i>
-                                                </button>
-                                                <button type="button" class="btn btn-sm btn-outline-warning" 
-                                                        data-bs-toggle="tooltip" title="Editar">
+                                                </a>
+                                                <a href="{% url 'centroSoluciones:lead_edit' lead.id %}" 
+                                                   class="btn btn-sm btn-outline-warning" 
+                                                   data-bs-toggle="tooltip" title="Editar">
                                                     <i class="bi bi-pencil"></i>
-                                                </button>
+                                                </a>
+                                                {% if lead.embudo_ventas %}
+                                                <a href="{% url 'crm:embudo_ventas_detalle' lead.embudo_ventas.id %}" 
+                                                   class="btn btn-sm btn-outline-info" 
+                                                   data-bs-toggle="tooltip" title="Ver embudo de ventas">
+                                                    <i class="bi bi-funnel"></i>
+                                                </a>
+                                                {% endif %}
                                             </div>
                                         </td>
                                     </tr>

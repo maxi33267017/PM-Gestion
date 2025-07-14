@@ -60,10 +60,33 @@
                 </div>
             </div>
 
-            {% if plan.evidencia_despues %}
+            {% if plan.evidencias.exists %}
             <div class="card shadow-sm">
                 <div class="card-header">
-                    <h5 class="card-title mb-0">Evidencia Después</h5>
+                    <h5 class="card-title mb-0">Evidencias Después</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for evidencia in plan.evidencias.all %}
+                        <div class="col-md-4 mb-3">
+                            <div class="card">
+                                <img src="{{ evidencia.imagen.url }}" class="card-img-top" alt="Evidencia" style="height: 200px; object-fit: cover;">
+                                <div class="card-body">
+                                    {% if evidencia.descripcion %}
+                                    <p class="card-text">{{ evidencia.descripcion }}</p>
+                                    {% endif %}
+                                    <p class="card-text small text-muted">Fecha de subida: {{ evidencia.fecha_subida|date:"d/m/Y H:i" }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% elif plan.evidencia_despues %}
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Evidencia Después (Legacy)</h5>
                 </div>
                 <div class="card-body">
                     <div class="row">

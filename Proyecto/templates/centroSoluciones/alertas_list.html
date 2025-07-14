@@ -21,9 +21,9 @@
                 </div>
                 {% if es_admin %}
                 <div>
-                    <a href="/admin/centroSoluciones/alertaequipo/add/" class="btn btn-success">
+                    <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalNuevaAlerta">
                         <i class="bi bi-plus-circle me-2"></i>Nueva Alerta
-                    </a>
+                    </button>
                 </div>
                 {% endif %}
             </div>
@@ -102,6 +102,8 @@
                                     <th>PIN</th>
                                     <th>Clasificación</th>
                                     <th>Estado</th>
+                                    <th>SAR</th>
+                                    <th>CRM</th>
                                     {% if es_admin %}
                                     <th>Técnico</th>
                                     {% endif %}
@@ -135,6 +137,20 @@
                                             <span class="badge bg-secondary">Cancelada</span>
                                         {% endif %}
                                     </td>
+                                    <td>
+                                        {% if alerta.conexion_sar_realizada %}
+                                            <span class="badge bg-success" title="Conexión SAR realizada">✓</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary" title="Sin conexión SAR">✗</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if alerta.oportunidad_crm_creada %}
+                                            <span class="badge bg-primary" title="Oportunidad CRM creada">✓</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary" title="Sin oportunidad CRM">✗</span>
+                                        {% endif %}
+                                    </td>
                                     {% if es_admin %}
                                     <td>
                                         {% if alerta.tecnico_asignado %}
@@ -151,7 +167,12 @@
                                                class="btn btn-outline-primary" title="Ver detalle">
                                                 <i class="bi bi-eye"></i>
                                             </a>
-                                            {% if user.rol == 'TECNICO' and alerta.estado == 'ASIGNADA' %}
+                                            {% if user.rol == 'TECNICO' and alerta.tecnico_asignado == user and alerta.estado in 'ASIGNADA,EN_PROCESO' %}
+                                            <a href="{% url 'centroSoluciones:procesar_alerta' alerta.id %}" 
+                                               class="btn btn-outline-warning" title="Procesar alerta">
+                                                <i class="bi bi-tools"></i>
+                                            </a>
+                                            {% elif user.rol == 'GERENTE' and alerta.estado in 'PENDIENTE,ASIGNADA,EN_PROCESO' %}
                                             <a href="{% url 'centroSoluciones:procesar_alerta' alerta.id %}" 
                                                class="btn btn-outline-warning" title="Procesar alerta">
                                                 <i class="bi bi-tools"></i>
@@ -225,4 +246,423 @@
     </div>
     {% endif %}
 </div>
+
+<!-- Modal Nueva Alerta -->
+<div class="modal fade" id="modalNuevaAlerta" tabindex="-1" aria-labelledby="modalNuevaAlertaLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalNuevaAlertaLabel">
+                    <i class="bi bi-exclamation-triangle-fill text-warning me-2"></i>Nueva Alerta de Equipo
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="formNuevaAlerta">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="cliente_alerta" class="form-label">Cliente *</label>
+                            <select class="form-select" id="cliente_alerta" name="cliente" required>
+                                <option value="">Seleccionar cliente...</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="pin_equipo" class="form-label">PIN del Equipo *</label>
+                            <select class="form-select" id="pin_equipo" name="pin_equipo" required>
+                                <option value="">Primero selecciona un cliente...</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="clasificacion_alerta" class="form-label">Clasificación *</label>
+                            <select class="form-select" id="clasificacion_alerta" name="clasificacion" required>
+                                <option value="">Seleccionar clasificación...</option>
+                                <option value="CRITICA">Crítica</option>
+                                <option value="ALTA">Alta</option>
+                                <option value="MEDIA">Media</option>
+                                <option value="BAJA">Baja</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="codigo_alerta" class="form-label">Código de Alerta *</label>
+                            <div class="input-group">
+                                <select class="form-select" id="codigo_alerta_select" style="display: none;">
+                                    <option value="">Seleccionar código existente...</option>
+                                </select>
+                                <input type="text" class="form-control" id="codigo_alerta" name="codigo" required>
+                                <button class="btn btn-outline-secondary" type="button" id="buscar_codigo_btn">
+                                    <i class="fas fa-search"></i> Buscar
+                                </button>
+                                <button class="btn btn-outline-primary" type="button" id="toggle_codigo_btn">
+                                    <i class="fas fa-list"></i> Lista
+                                </button>
+                            </div>
+                            <div class="mt-2">
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="tipo_codigo" id="codigo_nuevo" value="nuevo" checked>
+                                    <label class="form-check-label" for="codigo_nuevo">Nuevo código</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="tipo_codigo" id="codigo_existente" value="existente">
+                                    <label class="form-check-label" for="codigo_existente">Código existente</label>
+                                </div>
+                            </div>
+                            <div id="codigo_info" class="mt-2" style="display: none;">
+                                <div class="alert alert-info">
+                                    <strong>Información del código:</strong>
+                                    <div id="codigo_descripcion"></div>
+                                    <div id="codigo_clasificacion"></div>
+                                    <div id="codigo_instrucciones"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="tecnico_asignado" class="form-label">Técnico Asignado</label>
+                            <select class="form-select" id="tecnico_asignado" name="tecnico_asignado">
+                                <option value="">Sin asignar</option>
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label for="descripcion_alerta" class="form-label">Descripción *</label>
+                            <textarea class="form-control" id="descripcion_alerta" name="descripcion" rows="3" required></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-success">
+                        <i class="bi bi-check-circle me-2"></i>Crear Alerta
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Estilos específicos para los modales -->
+<style>
+    .modal .form-select {
+        border-radius: 8px;
+        border: 2px solid #e9ecef;
+        padding: 0.75rem 1rem;
+        font-size: 0.95rem;
+        background-color: white;
+        color: #2c3e50;
+        transition: all 0.3s ease;
+    }
+    
+    .modal .form-select:focus {
+        border-color: #2c3e50;
+        box-shadow: 0 0 0 0.2rem rgba(44, 62, 80, 0.25);
+        outline: none;
+    }
+    
+    .modal .form-select option {
+        background-color: white;
+        color: #2c3e50;
+        padding: 8px 12px;
+        font-size: 0.95rem;
+    }
+    
+    .modal .form-select option:hover {
+        background-color: #f8f9fa;
+    }
+    
+    .modal .form-select option:checked {
+        background-color: #2c3e50;
+        color: white;
+    }
+    
+    #tecnico_asignado {
+        background-color: white !important;
+        color: #2c3e50 !important;
+    }
+    
+    #tecnico_asignado option {
+        background-color: white !important;
+        color: #2c3e50 !important;
+        padding: 8px 12px !important;
+    }
+    
+    #tecnico_asignado option:hover {
+        background-color: #f8f9fa !important;
+    }
+    
+    #tecnico_asignado option:checked {
+        background-color: #2c3e50 !important;
+        color: white !important;
+    }
+    
+    .modal select.form-select {
+        background-color: white !important;
+        color: #2c3e50 !important;
+        border: 2px solid #e9ecef !important;
+        padding: 0.75rem 1rem !important;
+        font-size: 0.95rem !important;
+        border-radius: 8px !important;
+    }
+    
+    .modal select.form-select option {
+        background-color: white !important;
+        color: #2c3e50 !important;
+        padding: 8px 12px !important;
+        font-size: 0.95rem !important;
+        border: none !important;
+    }
+    
+    .modal select.form-select option:hover {
+        background-color: #f8f9fa !important;
+        color: #2c3e50 !important;
+    }
+    
+    .modal select.form-select option:checked {
+        background-color: #2c3e50 !important;
+        color: white !important;
+    }
+    
+    .modal select.form-select:focus {
+        border-color: #2c3e50 !important;
+        box-shadow: 0 0 0 0.2rem rgba(44, 62, 80, 0.25) !important;
+        outline: none !important;
+    }
+    
+    .modal select.form-select,
+    .modal select.form-select option {
+        -webkit-appearance: none !important;
+        -moz-appearance: none !important;
+        appearance: none !important;
+    }
+</style>
+
+<!-- JavaScript para el modal -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Cargar clientes al abrir el modal
+    $('#modalNuevaAlerta').on('show.bs.modal', function () {
+        cargarClientes();
+        cargarTecnicos();
+    });
+    
+    // Cargar equipos cuando se selecciona un cliente
+    $('#cliente_alerta').on('change', function() {
+        const clienteId = $(this).val();
+        if (clienteId) {
+            cargarEquipos(clienteId);
+        } else {
+            $('#pin_equipo').html('<option value="">Primero selecciona un cliente...</option>');
+        }
+    });
+    
+    // Manejar envío del formulario
+    $('#formNuevaAlerta').on('submit', function(e) {
+        e.preventDefault();
+        crearAlerta();
+    });
+    
+    // Buscar código de alerta
+    $('#buscar_codigo_btn').on('click', function() {
+        const codigo = $('#codigo_alerta').val();
+        if (codigo) {
+            buscarCodigoAlerta(codigo);
+        } else {
+            alert('Por favor, ingresa un código de alerta para buscar.');
+        }
+    });
+    
+    // Buscar código al presionar Enter en el campo
+    $('#codigo_alerta').on('keypress', function(e) {
+        if (e.which === 13) { // Enter key
+            e.preventDefault();
+            $('#buscar_codigo_btn').click();
+        }
+    });
+    
+    // Manejar cambio entre nuevo código y código existente
+    $('input[name="tipo_codigo"]').on('change', function() {
+        const tipo = $(this).val();
+        if (tipo === 'existente') {
+            $('#codigo_alerta').hide();
+            $('#codigo_alerta_select').show();
+            cargarCodigosExistentes();
+        } else {
+            $('#codigo_alerta_select').hide();
+            $('#codigo_alerta').show();
+        }
+    });
+    
+    // Manejar selección de código existente
+    $('#codigo_alerta_select').on('change', function() {
+        const codigoSeleccionado = $(this).val();
+        if (codigoSeleccionado) {
+            $('#codigo_alerta').val(codigoSeleccionado);
+            buscarCodigoAlerta(codigoSeleccionado);
+        }
+    });
+    
+    // Botón para mostrar lista de códigos
+    $('#toggle_codigo_btn').on('click', function() {
+        const tipo = $('input[name="tipo_codigo"]:checked').val();
+        if (tipo === 'nuevo') {
+            $('input[name="tipo_codigo"][value="existente"]').prop('checked', true).trigger('change');
+        } else {
+            $('input[name="tipo_codigo"][value="nuevo"]').prop('checked', true).trigger('change');
+        }
+    });
+    
+    function cargarClientes() {
+        $.ajax({
+            url: '{% url "centroSoluciones:obtener_clientes" %}',
+            method: 'GET',
+            success: function(response) {
+                if (response.success) {
+                    const select = $('#cliente_alerta');
+                    select.html('<option value="">Seleccionar cliente...</option>');
+                    response.clientes.forEach(function(cliente) {
+                        select.append(`<option value="${cliente.id}">${cliente.razon_social}</option>`);
+                    });
+                } else {
+                    console.error('Error al cargar clientes:', response.message);
+                }
+            },
+            error: function() {
+                console.error('Error al cargar clientes');
+            }
+        });
+    }
+    
+    function cargarEquipos(clienteId) {
+        $.ajax({
+            url: '{% url "centroSoluciones:obtener_pins_equipos_cliente" %}',
+            method: 'GET',
+            data: { cliente_id: clienteId },
+            success: function(response) {
+                if (response.success) {
+                    const select = $('#pin_equipo');
+                    select.html('<option value="">Seleccionar equipo...</option>');
+                    response.pins.forEach(function(equipo) {
+                        select.append(`<option value="${equipo.pin}">${equipo.pin}</option>`);
+                    });
+                } else {
+                    console.error('Error al cargar equipos:', response.message);
+                }
+            },
+            error: function() {
+                console.error('Error al cargar equipos');
+            }
+        });
+    }
+    
+    function cargarTecnicos() {
+        $.ajax({
+            url: '{% url "centroSoluciones:obtener_tecnicos" %}',
+            method: 'GET',
+            success: function(response) {
+                if (response.success) {
+                    const select = $('#tecnico_asignado');
+                    select.html('<option value="">Sin asignar</option>');
+                    response.tecnicos.forEach(function(tecnico) {
+                        const nombreCompleto = `${tecnico.first_name} ${tecnico.last_name}`.trim();
+                        select.append(`<option value="${tecnico.id}">${nombreCompleto}</option>`);
+                    });
+                } else {
+                    console.error('Error al cargar técnicos:', response.message);
+                }
+            },
+            error: function() {
+                console.error('Error al cargar técnicos');
+            }
+        });
+    }
+    
+    function cargarCodigosExistentes() {
+        $.ajax({
+            url: '{% url "centroSoluciones:obtener_lista_codigos_alerta" %}',
+            method: 'GET',
+            success: function(response) {
+                if (response.success) {
+                    // Llenar el select
+                    const select = $('#codigo_alerta_select');
+                    select.html('<option value="">Seleccionar código existente...</option>');
+                    response.codigos.forEach(function(item) {
+                        select.append(`<option value="${item.codigo}">${item.codigo} - ${item.modelo_equipo}</option>`);
+                    });
+                } else {
+                    console.error('Error al cargar códigos:', response.message);
+                }
+            },
+            error: function() {
+                console.error('Error al cargar códigos existentes');
+                alert('Error al cargar los códigos existentes. Por favor, intenta nuevamente.');
+            }
+        });
+    }
+    
+    function buscarCodigoAlerta(codigo) {
+        $.ajax({
+            url: '{% url "centroSoluciones:obtener_codigo_alerta" %}',
+            method: 'GET',
+            data: { codigo: codigo },
+            success: function(response) {
+                if (response.success) {
+                    const codigoAlerta = response.codigo_alerta;
+                    
+                    // Mostrar información del código
+                    $('#codigo_descripcion').html(`<strong>Descripción:</strong> ${codigoAlerta.descripcion}`);
+                    $('#codigo_clasificacion').html(`<strong>Clasificación:</strong> ${codigoAlerta.clasificacion}`);
+                    
+                    if (codigoAlerta.instrucciones_resolucion) {
+                        $('#codigo_instrucciones').html(`<strong>Instrucciones:</strong> ${codigoAlerta.instrucciones_resolucion}`);
+                    } else {
+                        $('#codigo_instrucciones').html('');
+                    }
+                    
+                    // Llenar automáticamente los campos
+                    $('#descripcion_alerta').val(codigoAlerta.descripcion);
+                    $('#clasificacion_alerta').val(codigoAlerta.clasificacion);
+                    
+                    // Mostrar el panel de información
+                    $('#codigo_info').show();
+                    
+                } else {
+                    // Ocultar panel de información
+                    $('#codigo_info').hide();
+                    alert(response.message || 'Código no encontrado en la base de datos.');
+                }
+            },
+            error: function() {
+                $('#codigo_info').hide();
+                console.error('Error al buscar código de alerta');
+                alert('Error al buscar el código de alerta. Por favor, intenta nuevamente.');
+            }
+        });
+    }
+    
+    function crearAlerta() {
+        const formData = {
+            cliente: $('#cliente_alerta').val(),
+            pin_equipo: $('#pin_equipo').val(),
+            clasificacion: $('#clasificacion_alerta').val(),
+            codigo: $('#codigo_alerta').val(),
+            tecnico_asignado: $('#tecnico_asignado').val() || null,
+            descripcion: $('#descripcion_alerta').val(),
+            csrfmiddlewaretoken: $('[name=csrfmiddlewaretoken]').val()
+        };
+        
+        $.ajax({
+            url: '{% url "centroSoluciones:crear_alerta" %}',
+            method: 'POST',
+            data: formData,
+            success: function(response) {
+                $('#modalNuevaAlerta').modal('hide');
+                // Recargar la página para mostrar la nueva alerta
+                location.reload();
+            },
+            error: function(xhr) {
+                console.error('Error al crear alerta:', xhr.responseText);
+                alert('Error al crear la alerta. Por favor, intenta nuevamente.');
+            }
+        });
+    }
+});
+</script>
 {% endblock %} 

@@ -1,0 +1,132 @@
+<form method="post">
+    {% csrf_token %}
+    <!-- Pregunta 1: Cumplimiento del acuerdo -->
+    <div class="card mb-3">
+        <div class="card-header">
+            <h6 class="mb-0">1. Cumplimiento del Acuerdo</h6>
+        </div>
+        <div class="card-body">
+            <div class="form-group mb-3">
+                <label for="{{ form.cumplimiento_acuerdo.id_for_label }}" class="form-label">
+                    <strong>{{ form.cumplimiento_acuerdo.label }}</strong>
+                </label>
+                {{ form.cumplimiento_acuerdo }}
+            </div>
+            <div class="form-group mb-3" id="motivo-cumplimiento" style="display: none;">
+                <label for="{{ form.motivo_cumplimiento_bajo.id_for_label }}" class="form-label">
+                    <strong>{{ form.motivo_cumplimiento_bajo.label }}</strong>
+                </label>
+                {{ form.motivo_cumplimiento_bajo }}
+            </div>
+        </div>
+    </div>
+
+    <!-- Pregunta 2: Probabilidad de recomendación -->
+    <div class="card mb-3">
+        <div class="card-header">
+            <h6 class="mb-0">2. Probabilidad de Recomendación (NPS)</h6>
+        </div>
+        <div class="card-body">
+            <div class="form-group mb-3">
+                <label for="{{ form.probabilidad_recomendacion.id_for_label }}" class="form-label">
+                    <strong>{{ form.probabilidad_recomendacion.label }}</strong>
+                </label>
+                {{ form.probabilidad_recomendacion }}
+            </div>
+            <div class="form-group mb-3" id="motivo-recomendacion" style="display: none;">
+                <label for="{{ form.motivo_recomendacion_baja.id_for_label }}" class="form-label">
+                    <strong>{{ form.motivo_recomendacion_baja.label }}</strong>
+                </label>
+                {{ form.motivo_recomendacion_baja }}
+            </div>
+        </div>
+    </div>
+
+    <!-- Pregunta 3: Problemas pendientes -->
+    <div class="card mb-3">
+        <div class="card-header">
+            <h6 class="mb-0">3. Problemas Pendientes</h6>
+        </div>
+        <div class="card-body">
+            <div class="form-group mb-3">
+                <label for="{{ form.problemas_pendientes.id_for_label }}" class="form-label">
+                    <strong>{{ form.problemas_pendientes.label }}</strong>
+                </label>
+                {{ form.problemas_pendientes }}
+            </div>
+        </div>
+    </div>
+
+    <!-- Información del respondente -->
+    <div class="card mb-3">
+        <div class="card-header">
+            <h6 class="mb-0">Información del Respondente</h6>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group mb-3">
+                        <label for="{{ form.nombre_respondente.id_for_label }}" class="form-label">
+                            <strong>{{ form.nombre_respondente.label }}</strong>
+                        </label>
+                        {{ form.nombre_respondente }}
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group mb-3">
+                        <label for="{{ form.cargo_respondente.id_for_label }}" class="form-label">
+                            <strong>{{ form.cargo_respondente.label }}</strong>
+                        </label>
+                        {{ form.cargo_respondente }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Comentarios adicionales -->
+    <div class="card mb-3">
+        <div class="card-header">
+            <h6 class="mb-0">Comentarios Adicionales</h6>
+        </div>
+        <div class="card-body">
+            <div class="form-group mb-3">
+                <label for="{{ form.comentarios_generales.id_for_label }}" class="form-label">
+                    <strong>{{ form.comentarios_generales.label }}</strong>
+                </label>
+                {{ form.comentarios_generales }}
+            </div>
+        </div>
+    </div>
+
+    <div class="text-center">
+        <button type="submit" class="btn btn-primary">Guardar Respuesta</button>
+        <a href="{% url 'gestionDeTaller:lista_encuestas' %}" class="btn btn-secondary">Cancelar</a>
+    </div>
+</form>
+
+<script>
+// Mostrar/ocultar campos de motivo según la calificación
+const cumplimiento = document.getElementById('{{ form.cumplimiento_acuerdo.id_for_label }}');
+const motivoCumplimiento = document.getElementById('motivo-cumplimiento');
+if (cumplimiento) {
+    cumplimiento.addEventListener('change', function() {
+        if (parseInt(this.value) <= 7) {
+            motivoCumplimiento.style.display = 'block';
+        } else {
+            motivoCumplimiento.style.display = 'none';
+        }
+    });
+}
+const recomendacion = document.getElementById('{{ form.probabilidad_recomendacion.id_for_label }}');
+const motivoRecomendacion = document.getElementById('motivo-recomendacion');
+if (recomendacion) {
+    recomendacion.addEventListener('change', function() {
+        if (parseInt(this.value) <= 7) {
+            motivoRecomendacion.style.display = 'block';
+        } else {
+            motivoRecomendacion.style.display = 'none';
+        }
+    });
+}
+</script> 

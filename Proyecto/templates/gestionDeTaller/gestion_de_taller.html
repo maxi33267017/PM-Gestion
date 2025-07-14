@@ -322,6 +322,48 @@
                 </div>
             </div>
         </div>
+        
+        <!-- Herramientas Especiales -->
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="module-card">
+                <div class="module-card-header">
+                    <div class="module-icon">
+                        <i class="bi bi-wrench"></i>
+                    </div>
+                    <h5 class="module-title">Herramientas Especiales</h5>
+                </div>
+                <div class="module-card-body">
+                    <p class="module-description">
+                        Gestiona las herramientas especiales John Deere, reservas, retiros y devoluciones con seguimiento completo.
+                    </p>
+                    <a href="{% url 'gestionDeTaller:herramientas_especiales_list' %}" class="btn btn-module">
+                        <i class="bi bi-arrow-right"></i>
+                        Herramientas
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Herramientas Personales -->
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="module-card">
+                <div class="module-card-header">
+                    <div class="module-icon">
+                        <i class="bi bi-person-gear"></i>
+                    </div>
+                    <h5 class="module-title">Herramientas Personales</h5>
+                </div>
+                <div class="module-card-body">
+                    <p class="module-description">
+                        Gestiona herramientas y EPP asignados a técnicos, auditorías semestrales y seguimiento de asignaciones.
+                    </p>
+                    <a href="{% url 'gestionDeTaller:personal_tools_list' %}" class="btn btn-module">
+                        <i class="bi bi-arrow-right"></i>
+                        Herramientas Personales
+                    </a>
+                </div>
+            </div>
+        </div>
     </div>
 </main>
 {% endblock %}

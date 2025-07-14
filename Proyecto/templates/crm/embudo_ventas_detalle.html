@@ -59,20 +59,33 @@
                                 {% endif %}
                             </p>
                             
-                            <h6>Probabilidad de Cierre</h6>
+                            <h6>Valor de Cierre</h6>
                             <p class="mb-3">
-                                <div class="progress" style="height: 25px;">
-                                    <div class="progress-bar bg-success" role="progressbar" 
-                                         style="width: {{ embudo.probabilidad_cierre }}%">
-                                        {{ embudo.probabilidad_cierre }}%
-                                    </div>
-                                </div>
+                                {% if embudo.valor_cierre %}
+                                    <span class="text-primary fs-4">${{ embudo.valor_cierre|floatformat:0 }}</span>
+                                    {% if embudo.venta_concretada %}
+                                        <span class="badge bg-success ms-2">Venta Concretada</span>
+                                    {% endif %}
+                                {% else %}
+                                    <span class="text-muted">No concretada</span>
+                                {% endif %}
                             </p>
                             
-                            <h6>Valor Probabilizado</h6>
+                            {% if embudo.venta_concretada %}
+                            <h6>Diferencia Estimado vs Cierre</h6>
                             <p class="mb-3">
-                                <span class="text-info fs-5">${{ embudo.valor_probabilizado|floatformat:0 }}</span>
+                                <span class="fs-5 {% if embudo.diferencia_estimado_cierre >= 0 %}text-success{% else %}text-danger{% endif %}">
+                                    ${{ embudo.diferencia_estimado_cierre|floatformat:0 }}
+                                </span>
+                                <small class="text-muted">
+                                    {% if embudo.diferencia_estimado_cierre >= 0 %}
+                                        (Sobre estimado)
+                                    {% else %}
+                                        (Sub estimado)
+                                    {% endif %}
+                                </small>
                             </p>
+                            {% endif %}
                         </div>
                     </div>
                     
@@ -131,6 +144,124 @@
                         <p class="text-muted">{{ embudo.campana.nombre }}</p>
                     </div>
                     {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cambio de Etapa -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-arrow-repeat me-2"></i>Cambiar Etapa del Embudo
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="cambiar_etapa">
+                        <div class="row align-items-end">
+                            <div class="col-md-6">
+                                <label for="etapa" class="form-label">Nueva Etapa</label>
+                                <select name="etapa" id="etapa" class="form-select" required>
+                                    <option value="CONTACTO_INICIAL" {% if embudo.etapa == 'CONTACTO_INICIAL' %}selected{% endif %}>Contacto Inicial</option>
+                                    <option value="CALIFICACION" {% if embudo.etapa == 'CALIFICACION' %}selected{% endif %}>Calificación</option>
+                                    <option value="PROPUESTA" {% if embudo.etapa == 'PROPUESTA' %}selected{% endif %}>Propuesta</option>
+                                    <option value="NEGOCIACION" {% if embudo.etapa == 'NEGOCIACION' %}selected{% endif %}>Negociación</option>
+                                    <option value="CIERRE" {% if embudo.etapa == 'CIERRE' %}selected{% endif %}>Cierre</option>
+                                    <option value="PERDIDO" {% if embudo.etapa == 'PERDIDO' %}selected{% endif %}>Perdido</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-check-circle me-2"></i>Actualizar Etapa
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Editar Valores del Embudo -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-currency-dollar me-2"></i>Editar Valores del Embudo
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="actualizar_valores">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="valor_estimado" class="form-label">Valor Estimado (USD)</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">$</span>
+                                        <input type="number" 
+                                               class="form-control" 
+                                               id="valor_estimado" 
+                                               name="valor_estimado" 
+                                               value="{{ embudo.valor_estimado|default:'' }}"
+                                               step="0.01" 
+                                               min="0"
+                                               placeholder="Ingrese el valor estimado">
+                                    </div>
+                                    <div class="form-text">Valor total estimado de la venta</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="valor_cierre" class="form-label">Valor de Cierre (USD)</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">$</span>
+                                        <input type="number" 
+                                               class="form-control" 
+                                               id="valor_cierre" 
+                                               name="valor_cierre" 
+                                               value="{{ embudo.valor_cierre|default:'' }}"
+                                               step="0.01" 
+                                               min="0"
+                                               placeholder="Valor final de la venta">
+                                    </div>
+                                    <div class="form-text">Valor efectivamente vendido (si se concretó)</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="alert alert-info">
+                                    <i class="bi bi-info-circle me-2"></i>
+                                    {% if embudo.venta_concretada %}
+                                        <strong>Diferencia Estimado vs Cierre:</strong> 
+                                        {% if embudo.diferencia_estimado_cierre >= 0 %}
+                                            <span class="text-success">+${{ embudo.diferencia_estimado_cierre|floatformat:0 }}</span>
+                                            <small class="text-muted">(Sobre estimado)</small>
+                                        {% else %}
+                                            <span class="text-danger">${{ embudo.diferencia_estimado_cierre|floatformat:0 }}</span>
+                                            <small class="text-muted">(Sub estimado)</small>
+                                        {% endif %}
+                                    {% else %}
+                                        <strong>Ingrese el valor de cierre para ver la diferencia</strong>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-12">
+                                <button type="submit" class="btn btn-success">
+                                    <i class="bi bi-save me-2"></i>Guardar Cambios
+                                </button>
+                            </div>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
@@ -245,6 +376,9 @@
     </div>
 </div>
 
+<!-- Espacio adicional al final para evitar que se corte el contenido -->
+<div style="height: 50px;"></div>
+
 <!-- Modal para Nuevo Contacto -->
 <div class="modal fade" id="nuevoContactoModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
@@ -320,6 +454,56 @@
     </div>
 </div>
 {% endblock %}
+
+<script>
+// Calcular diferencia estimado vs cierre en tiempo real
+document.addEventListener('DOMContentLoaded', function() {
+    const valorEstimadoInput = document.getElementById('valor_estimado');
+    const valorCierreInput = document.getElementById('valor_cierre');
+    const diferenciaAlert = document.querySelector('.alert-info');
+    
+    function calcularDiferencia() {
+        const valorEstimado = parseFloat(valorEstimadoInput.value) || 0;
+        const valorCierre = parseFloat(valorCierreInput.value) || 0;
+        
+        // Actualizar el texto del alert
+        if (diferenciaAlert) {
+            let alertText = `<i class="bi bi-info-circle me-2"></i>`;
+            
+            if (valorCierre > 0) {
+                const diferencia = valorCierre - valorEstimado;
+                const diferenciaText = diferencia >= 0 ? 
+                    `<span class="text-success">+$${diferencia.toLocaleString('en-US', {minimumFractionDigits: 0, maximumFractionDigits: 0})}</span>` :
+                    `<span class="text-danger">$${diferencia.toLocaleString('en-US', {minimumFractionDigits: 0, maximumFractionDigits: 0})}</span>`;
+                
+                alertText += `<strong>Diferencia Estimado vs Cierre:</strong> ${diferenciaText}`;
+                
+                if (diferencia >= 0) {
+                    alertText += ` <small class="text-muted">(Sobre estimado)</small>`;
+                } else {
+                    alertText += ` <small class="text-muted">(Sub estimado)</small>`;
+                }
+            } else {
+                alertText += `<strong>Ingrese el valor de cierre para ver la diferencia</strong>`;
+            }
+            
+            diferenciaAlert.innerHTML = alertText;
+        }
+    }
+    
+    // Escuchar cambios en los inputs
+    if (valorEstimadoInput) {
+        valorEstimadoInput.addEventListener('input', calcularDiferencia);
+    }
+    
+    if (valorCierreInput) {
+        valorCierreInput.addEventListener('input', calcularDiferencia);
+    }
+    
+    // Calcular valor inicial
+    calcularDiferencia();
+});
+</script>
 
 {% block extra_css %}
 <style>

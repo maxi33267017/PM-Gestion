@@ -1,0 +1,248 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Actualizar Checklist de Procesos - Venta #{{ venta.id }}{% endblock %}
+
+{% block extra_css %}
+<link href="{% static 'bootstrap-5.3.2-dist/css/bootstrap.min.css' %}" rel="stylesheet">
+<style>
+    .checklist-container {
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        padding: 30px;
+        margin: 20px 0;
+    }
+    .proceso-item {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 15px;
+        border-left: 4px solid #dee2e6;
+        transition: all 0.3s ease;
+    }
+    .proceso-item.completado {
+        border-left-color: #28a745;
+        background: #d4edda;
+    }
+    .proceso-item h6 {
+        margin-bottom: 10px;
+        color: #495057;
+    }
+    .progreso-container {
+        background: #e9ecef;
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 30px;
+    }
+    .progreso-bar {
+        height: 25px;
+        border-radius: 15px;
+        background: linear-gradient(90deg, #28a745 0%, #20c997 100%);
+        transition: width 0.5s ease;
+    }
+    .venta-info {
+        background: #e3f2fd;
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 20px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="fas fa-tasks text-primary"></i> Checklist de Procesos JD - Venta #{{ venta.id }}</h2>
+                <a href="{% url 'ventaMaquinarias:detalle_venta' venta.id %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left"></i> Volver al Detalle
+                </a>
+            </div>
+
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            <!-- Información de la Venta -->
+            <div class="venta-info">
+                <div class="row">
+                    <div class="col-md-3">
+                        <strong>Equipo:</strong><br>
+                        {{ venta.equipo_stock.numero_serie }}
+                    </div>
+                    <div class="col-md-3">
+                        <strong>Cliente:</strong><br>
+                        {{ venta.cliente.razon_social }}
+                    </div>
+                    <div class="col-md-3">
+                        <strong>Fecha de Venta:</strong><br>
+                        {{ venta.fecha_venta|date:"d/m/Y" }}
+                    </div>
+                    <div class="col-md-3">
+                        <strong>Vendedor:</strong><br>
+                        {{ venta.vendedor.get_full_name|default:venta.vendedor.username }}
+                    </div>
+                </div>
+            </div>
+
+            <div class="checklist-container">
+                <!-- Barra de Progreso -->
+                <div class="progreso-container">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h5 class="mb-0">Progreso de Procesos</h5>
+                        <span class="badge bg-primary fs-6">
+                            {% if checklist %}
+                                {{ checklist.procesos_completados }}/{{ checklist.total_procesos }}
+                            {% else %}
+                                0/4
+                            {% endif %}
+                        </span>
+                    </div>
+                    <div class="progress" style="height: 25px;">
+                        <div class="progreso-bar" role="progressbar" 
+                             style="width: {% if checklist %}{{ checklist.porcentaje_completado }}{% else %}0{% endif %}%">
+                        </div>
+                    </div>
+                    <div class="text-center mt-2">
+                        <small class="text-muted">
+                            {% if checklist %}
+                                {{ checklist.porcentaje_completado|floatformat:1 }}% completado
+                            {% else %}
+                                0% completado
+                            {% endif %}
+                        </small>
+                    </div>
+                </div>
+
+                <form method="post" id="formChecklist">
+                    {% csrf_token %}
+                    
+                    <!-- Procesos de John Deere -->
+                    <h5 class="mb-4"><i class="fas fa-cogs"></i> Procesos de John Deere</h5>
+                    
+                    <!-- Registro en Garantías -->
+                    <div class="proceso-item {% if checklist.registro_garantias %}completado{% endif %}" id="proceso-garantias">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="registro_garantias" name="registro_garantias" 
+                                   {% if checklist.registro_garantias %}checked{% endif %}>
+                            <label class="form-check-label" for="registro_garantias">
+                                <h6><i class="fas fa-shield-alt"></i> Registro en Garantías</h6>
+                                <p class="mb-0 text-muted">Proceso de registro del equipo en el sistema de garantías de John Deere</p>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Garantía Extendida -->
+                    <div class="proceso-item {% if checklist.garantia_extendida %}completado{% endif %}" id="proceso-garantia-extendida">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="garantia_extendida" name="garantia_extendida" 
+                                   {% if checklist.garantia_extendida %}checked{% endif %}>
+                            <label class="form-check-label" for="garantia_extendida">
+                                <h6><i class="fas fa-clock"></i> Garantía Extendida</h6>
+                                <p class="mb-0 text-muted">Proceso de activación de garantía extendida para el equipo</p>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Operations Center -->
+                    <div class="proceso-item {% if checklist.operations_center %}completado{% endif %}" id="proceso-operations-center">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="operations_center" name="operations_center" 
+                                   {% if checklist.operations_center %}checked{% endif %}>
+                            <label class="form-check-label" for="operations_center">
+                                <h6><i class="fas fa-satellite-dish"></i> Operations Center</h6>
+                                <p class="mb-0 text-muted">Registro del equipo en el sistema Operations Center de John Deere</p>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- SVAP -->
+                    <div class="proceso-item {% if checklist.svap %}completado{% endif %}" id="proceso-svap">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="svap" name="svap" 
+                                   {% if checklist.svap %}checked{% endif %}>
+                            <label class="form-check-label" for="svap">
+                                <h6><i class="fas fa-shield-virus"></i> SVAP (John Deere Protect)</h6>
+                                <p class="mb-0 text-muted">Activación del servicio SVAP para protección del equipo</p>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Observaciones -->
+                    <div class="mt-4">
+                        <label for="observaciones" class="form-label">Observaciones del Checklist</label>
+                        <textarea class="form-control" id="observaciones" name="observaciones" rows="3" 
+                                  placeholder="Observaciones adicionales sobre los procesos realizados...">{% if checklist %}{{ checklist.observaciones }}{% endif %}</textarea>
+                    </div>
+
+                    <!-- Información de Actualización -->
+                    {% if checklist %}
+                        <div class="mt-3">
+                            <small class="text-muted">
+                                <i class="fas fa-info-circle"></i>
+                                Última actualización: {{ checklist.fecha_actualizacion|date:"d/m/Y H:i" }}
+                                {% if checklist.usuario_actualizacion %}
+                                    por {{ checklist.usuario_actualizacion.get_full_name|default:checklist.usuario_actualizacion.username }}
+                                {% endif %}
+                            </small>
+                        </div>
+                    {% endif %}
+
+                    <!-- Botones de Acción -->
+                    <div class="d-flex justify-content-between mt-4">
+                        <a href="{% url 'ventaMaquinarias:detalle_venta' venta.id %}" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Actualizar Checklist
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'bootstrap-5.3.2-dist/js/bootstrap.bundle.min.js' %}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Actualizar estilo de los procesos cuando se marcan/desmarcan
+    const checkboxes = ['registro_garantias', 'garantia_extendida', 'operations_center', 'svap'];
+    
+    checkboxes.forEach(function(checkboxId) {
+        const checkbox = document.getElementById(checkboxId);
+        const procesoItem = document.getElementById('proceso-' + checkboxId.replace('_', '-'));
+        
+        checkbox.addEventListener('change', function() {
+            if (this.checked) {
+                procesoItem.classList.add('completado');
+            } else {
+                procesoItem.classList.remove('completado');
+            }
+        });
+    });
+    
+    // Confirmar antes de enviar el formulario
+    const form = document.getElementById('formChecklist');
+    form.addEventListener('submit', function(e) {
+        const checkboxesMarcados = checkboxes.filter(id => document.getElementById(id).checked).length;
+        
+        if (checkboxesMarcados === 0) {
+            if (!confirm('¿Está seguro de que desea marcar todos los procesos como no completados?')) {
+                e.preventDefault();
+                return false;
+            }
+        }
+    });
+});
+</script>
+{% endblock %} 

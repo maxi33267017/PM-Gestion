@@ -1,0 +1,403 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2>
+                <i class="bi bi-file-earmark-text me-2"></i>Reporte de Facturación
+            </h2>
+            <p class="text-muted">{{ titulo_periodo }} - {{ fecha_inicio|date:"d/m/Y" }} al {{ fecha_fin|date:"d/m/Y" }}</p>
+        </div>
+        <div>
+            <a href="{% url 'crm:analisis_clientes' %}" class="btn btn-outline-secondary me-2">
+                <i class="fas fa-arrow-left me-2"></i>Volver al Análisis
+            </a>
+            <button onclick="window.print()" class="btn btn-primary me-2">
+                <i class="bi bi-printer me-2"></i>Imprimir Reporte
+            </button>
+            <a href="{% url 'crm:exportar_reporte_excel' %}?{{ request.GET.urlencode }}" class="btn btn-success">
+                <i class="bi bi-file-earmark-excel me-2"></i>Exportar a Excel
+            </a>
+        </div>
+    </div>
+
+    <!-- Resumen Ejecutivo -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h6 class="card-title">Facturación Total</h6>
+                    <h3 class="mb-0">${{ total_facturacion|floatformat:0 }}</h3>
+                    <small>{{ total_servicios }} servicios</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h6 class="card-title">Promedio por Servicio</h6>
+                    <h3 class="mb-0">${{ promedio_por_servicio|floatformat:0 }}</h3>
+                    <small>Valor promedio</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <h6 class="card-title">Clientes Activos</h6>
+                    <h3 class="mb-0">{{ clientes_ordenados|length }}</h3>
+                    <small>Con facturación</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-dark">
+                <div class="card-body">
+                    <h6 class="card-title">Top Cliente</h6>
+                    <h3 class="mb-0">${{ clientes_ordenados.0.facturacion_total|floatformat:0 }}</h3>
+                    <small>{{ clientes_ordenados.0.cliente.razon_social|truncatechars:20 }}</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Estadísticas por Segmento -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-pie-chart me-2"></i>Facturación por Segmento
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="bg-success rounded-circle me-3" style="width: 20px; height: 20px;"></div>
+                                <div>
+                                    <strong>Segmento A</strong><br>
+                                    <small class="text-muted">${{ estadisticas_segmento.A|floatformat:0 }}</small>
+                                </div>
+                            </div>
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="bg-warning rounded-circle me-3" style="width: 20px; height: 20px;"></div>
+                                <div>
+                                    <strong>Segmento B</strong><br>
+                                    <small class="text-muted">${{ estadisticas_segmento.B|floatformat:0 }}</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="bg-secondary rounded-circle me-3" style="width: 20px; height: 20px;"></div>
+                                <div>
+                                    <strong>Segmento C</strong><br>
+                                    <small class="text-muted">${{ estadisticas_segmento.C|floatformat:0 }}</small>
+                                </div>
+                            </div>
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="bg-info rounded-circle me-3" style="width: 20px; height: 20px;"></div>
+                                <div>
+                                    <strong>Nuevos</strong><br>
+                                    <small class="text-muted">${{ estadisticas_segmento.NUEVO|floatformat:0 }}</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-graph-up me-2"></i>Facturación Mensual
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if estadisticas_mensuales %}
+                        <canvas id="graficoFacturacion" width="400" height="200"></canvas>
+                        <div class="table-responsive mt-3">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Mes</th>
+                                        <th>Facturación</th>
+                                        <th>Servicios</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for mes, stats in estadisticas_mensuales.items %}
+                                    <tr>
+                                        <td>{{ stats.nombre }}</td>
+                                        <td>${{ stats.facturacion|floatformat:0 }}</td>
+                                        <td>{{ stats.servicios }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <p class="text-muted text-center">No disponible para este tipo de reporte</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabla de Clientes -->
+    <div class="card shadow-sm">
+        <div class="card-header">
+            <h5 class="mb-0">
+                <i class="bi bi-table me-2"></i>Facturación por Cliente
+                {% if top_clientes %}
+                    <span class="badge bg-primary ms-2">Top {{ top_clientes }}</span>
+                {% endif %}
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>#</th>
+                            <th>Cliente</th>
+                            <th>Segmento</th>
+                            <th>Facturación Total</th>
+                            <th>Servicios</th>
+                            <th>Mano de Obra</th>
+                            <th>Gastos</th>
+                            <th>Repuestos</th>
+                            <th>Promedio/Servicio</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for cliente_data in clientes_ordenados %}
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td>
+                                <strong>{{ cliente_data.cliente.razon_social }}</strong><br>
+                                <small class="text-muted">{{ cliente_data.cliente.email|default:"Sin email" }}</small>
+                            </td>
+                            <td>
+                                {% if cliente_data.cliente.analisiscliente %}
+                                    <span class="badge {% if cliente_data.cliente.analisiscliente.categoria == 'A' %}bg-success{% elif cliente_data.cliente.analisiscliente.categoria == 'B' %}bg-warning{% else %}bg-secondary{% endif %}">
+                                        Segmento {{ cliente_data.cliente.analisiscliente.categoria }}
+                                    </span>
+                                {% else %}
+                                    <span class="badge bg-info">Nuevo</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <strong>${{ cliente_data.facturacion_total|floatformat:0 }}</strong>
+                            </td>
+                            <td>
+                                <span class="badge bg-primary">{{ cliente_data.cantidad_servicios }}</span>
+                            </td>
+                            <td>${{ cliente_data.mano_obra_total|floatformat:0 }}</td>
+                            <td>${{ cliente_data.gastos_total|floatformat:0 }}</td>
+                            <td>${{ cliente_data.repuestos_total|floatformat:0 }}</td>
+                            <td>
+                                ${{ cliente_data.promedio_por_servicio|floatformat:0 }}
+                            </td>
+                            <td>
+                                <button class="btn btn-outline-primary btn-sm" onclick="toggleDetalle({{ forloop.counter }})" title="Ver Detalle">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <a href="{% url 'crm:dashboard_cliente' cliente_data.cliente.id %}" class="btn btn-outline-info btn-sm" title="Dashboard Cliente">
+                                    <i class="fas fa-chart-bar"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        
+                        <!-- Fila de detalle expandible -->
+                        {% if nivel_detalle in 'detallado,completo' and cliente_data.servicios %}
+                        <tr id="detalle-{{ forloop.counter }}" class="detalle-row" style="display: none;">
+                            <td colspan="10">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h6 class="mb-0">Servicios de {{ cliente_data.cliente.razon_social }}</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="table-responsive">
+                                            <table class="table table-sm">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Fecha</th>
+                                                        <th>Servicio</th>
+                                                        <th>Mano de Obra</th>
+                                                        <th>Gastos</th>
+                                                        <th>Repuestos</th>
+                                                        <th>Total</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {% for servicio_data in cliente_data.servicios %}
+                                                    <tr>
+                                                        <td>{{ servicio_data.fecha|date:"d/m/Y" }}</td>
+                                                        <td>{{ servicio_data.servicio.descripcion|truncatechars:50 }}</td>
+                                                        <td>${{ servicio_data.mano_obra|floatformat:0 }}</td>
+                                                        <td>${{ servicio_data.gastos|floatformat:0 }}</td>
+                                                        <td>${{ servicio_data.repuestos|floatformat:0 }}</td>
+                                                        <td><strong>${{ servicio_data.total|floatformat:0 }}</strong></td>
+                                                    </tr>
+                                                    {% endfor %}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endif %}
+                        {% empty %}
+                        <tr>
+                            <td colspan="10" class="text-center text-muted">
+                                <i class="bi bi-inbox me-2"></i>No hay datos de facturación para el período seleccionado
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Información del Reporte -->
+    <div class="card shadow-sm mt-4">
+        <div class="card-header">
+            <h5 class="mb-0">
+                <i class="bi bi-info-circle me-2"></i>Información del Reporte
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>Tipo de Reporte:</strong> {{ tipo_reporte|title }}</p>
+                    <p><strong>Período:</strong> {{ titulo_periodo }}</p>
+                    <p><strong>Nivel de Detalle:</strong> {{ nivel_detalle|title }}</p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>Fecha de Generación:</strong> {{ fecha_generacion|date:"d/m/Y H:i" }}</p>
+                    <p><strong>Total de Clientes:</strong> {{ clientes_ordenados|length }}</p>
+                    {% if top_clientes %}
+                        <p><strong>Límite de Clientes:</strong> Top {{ top_clientes }}</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Margen inferior -->
+    <div style="height: 50px;"></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+function toggleDetalle(index) {
+    const detalleRow = document.getElementById(`detalle-${index}`);
+    if (detalleRow) {
+        if (detalleRow.style.display === 'none') {
+            detalleRow.style.display = 'table-row';
+        } else {
+            detalleRow.style.display = 'none';
+        }
+    }
+}
+
+// Configuración para impresión
+window.addEventListener('beforeprint', function() {
+    // Ocultar botones de acción antes de imprimir
+    const actionButtons = document.querySelectorAll('.btn');
+    actionButtons.forEach(btn => btn.style.display = 'none');
+});
+
+window.addEventListener('afterprint', function() {
+    // Mostrar botones de acción después de imprimir
+    const actionButtons = document.querySelectorAll('.btn');
+    actionButtons.forEach(btn => btn.style.display = '');
+});
+
+// Gráfico de facturación mensual
+document.addEventListener('DOMContentLoaded', function() {
+    {% if estadisticas_mensuales %}
+    const ctx = document.getElementById('graficoFacturacion');
+    if (ctx) {
+        const datosMensuales = {
+            labels: [
+                {% for mes, stats in estadisticas_mensuales.items %}
+                    '{{ stats.nombre }}',
+                {% endfor %}
+            ],
+            datasets: [{
+                label: 'Facturación Mensual',
+                data: [
+                    {% for mes, stats in estadisticas_mensuales.items %}
+                        {{ stats.facturacion }},
+                    {% endfor %}
+                ],
+                borderColor: 'rgb(75, 192, 192)',
+                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                tension: 0.1,
+                fill: true
+            }]
+        };
+        
+        new Chart(ctx, {
+            type: 'line',
+            data: datosMensuales,
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    title: {
+                        display: true,
+                        text: 'Evolución de Facturación Mensual'
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return '$' + value.toLocaleString();
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+    {% endif %}
+});
+</script>
+
+<style>
+@media print {
+    .btn {
+        display: none !important;
+    }
+    
+    .card {
+        border: 1px solid #ddd !important;
+        box-shadow: none !important;
+    }
+    
+    .table-dark {
+        background-color: #f8f9fa !important;
+        color: #000 !important;
+    }
+    
+    .table-dark th {
+        background-color: #e9ecef !important;
+        color: #000 !important;
+    }
+}
+</style>
+{% endblock %} 

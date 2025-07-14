@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3><i class="bi bi-file-earmark-text"></i> Reportes de Telemetría</h3>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <a href="{% url 'operationsCenter:crear_reporte_telemetria' %}" class="btn btn-primary">
+                            <i class="bi bi-plus-circle"></i> Crear Nuevo Reporte
+                        </a>
+                        <a href="{% url 'operationsCenter:dashboard_operations_center' %}" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left"></i> Volver al Dashboard
+                        </a>
+                    </div>
+                    
+                    {% if page_obj %}
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Cliente</th>
+                                    <th>Tipo</th>
+                                    <th>Período</th>
+                                    <th>Estado</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for report in page_obj %}
+                                <tr>
+                                    <td>{{ report.cliente.razon_social }}</td>
+                                    <td>{{ report.get_report_type_display }}</td>
+                                    <td>{{ report.start_date|date:"d/m/Y" }} - {{ report.end_date|date:"d/m/Y" }}</td>
+                                    <td>
+                                        <span class="badge {% if report.status == 'SENT' %}bg-success{% elif report.status == 'GENERATED' %}bg-info{% elif report.status == 'FAILED' %}bg-danger{% else %}bg-warning{% endif %}">
+                                            {{ report.get_status_display }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'operationsCenter:detalle_reporte_telemetria' report.id %}" class="btn btn-sm btn-primary">
+                                            <i class="bi bi-eye"></i> Ver
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Paginación -->
+                    {% if page_obj.has_other_pages %}
+                    <nav aria-label="Paginación de reportes">
+                        <ul class="pagination justify-content-center">
+                            {% if page_obj.has_previous %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page=1">Primera</a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Anterior</a>
+                                </li>
+                            {% endif %}
+                            
+                            <li class="page-item active">
+                                <span class="page-link">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+                            </li>
+                            
+                            {% if page_obj.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.next_page_number }}">Siguiente</a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">Última</a>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                    {% endif %}
+                    
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="bi bi-file-earmark-text" style="font-size: 4rem; color: #6c757d;"></i>
+                        <h5 class="mt-3">No hay reportes</h5>
+                        <p class="text-muted">Aún no se han generado reportes de telemetría.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

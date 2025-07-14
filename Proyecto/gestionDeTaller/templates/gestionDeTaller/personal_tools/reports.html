@@ -1,0 +1,321 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Reportes - Herramientas Personales{% endblock %}
+
+{% block extra_css %}
+<style>
+    .report-card {
+        border-radius: 10px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .filter-section {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    .stats-summary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+    .table-responsive {
+        border-radius: 8px;
+        overflow: hidden;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item">
+                        <a href="{% url 'gestionDeTaller:personal_tools_list' %}">Herramientas Personales</a>
+                    </li>
+                    <li class="breadcrumb-item active">Reportes</li>
+                </ol>
+            </nav>
+            <h1 class="h3 mb-0">Reportes de Herramientas Personales</h1>
+            <p class="text-muted">Análisis detallado de asignaciones y auditorías</p>
+        </div>
+        <div>
+            <a href="{% url 'gestionDeTaller:personal_tools_list' %}" class="btn btn-primary">
+                <i class="fas fa-list"></i> Ver Lista
+            </a>
+            <a href="{% url 'gestionDeTaller:personal_tools_dashboard' %}" class="btn btn-info">
+                <i class="fas fa-chart-bar"></i> Dashboard
+            </a>
+        </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="filter-section">
+        <form method="GET" class="row g-3">
+            <div class="col-md-3">
+                <label for="fecha_inicio" class="form-label">Fecha Inicio</label>
+                <input type="date" name="fecha_inicio" id="fecha_inicio" 
+                       class="form-control" value="{{ fecha_inicio|default:'' }}">
+            </div>
+            <div class="col-md-3">
+                <label for="fecha_fin" class="form-label">Fecha Fin</label>
+                <input type="date" name="fecha_fin" id="fecha_fin" 
+                       class="form-control" value="{{ fecha_fin|default:'' }}">
+            </div>
+            <div class="col-md-2">
+                <label for="categoria" class="form-label">Categoría</label>
+                <select name="categoria" id="categoria" class="form-select">
+                    <option value="">Todas</option>
+                    {% for categoria in categorias %}
+                        <option value="{{ categoria.id }}" 
+                                {% if categoria_id == categoria.id|stringformat:"s" %}selected{% endif %}>
+                            {{ categoria.nombre }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label for="tecnico" class="form-label">Técnico</label>
+                <select name="tecnico" id="tecnico" class="form-select">
+                    <option value="">Todos</option>
+                    {% for tecnico in tecnicos %}
+                        <option value="{{ tecnico.id }}" 
+                                {% if tecnico_id == tecnico.id|stringformat:"s" %}selected{% endif %}>
+                            {{ tecnico.get_full_name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary me-2">
+                    <i class="fas fa-search"></i> Filtrar
+                </button>
+                <a href="{% url 'gestionDeTaller:personal_tools_reports' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-times"></i> Limpiar
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Resumen estadístico -->
+    <div class="stats-summary">
+        <div class="row text-center">
+            <div class="col-md-3">
+                <h4 class="mb-0">{{ total_asignaciones }}</h4>
+                <small>Total Asignaciones</small>
+            </div>
+            <div class="col-md-3">
+                <h4 class="mb-0">{{ total_auditorias }}</h4>
+                <small>Total Auditorías</small>
+            </div>
+            <div class="col-md-3">
+                <h4 class="mb-0">{{ auditorias_exitosas }}</h4>
+                <small>Auditorías Exitosas</small>
+            </div>
+            <div class="col-md-3">
+                <h4 class="mb-0">{{ auditorias_con_incidencias }}</h4>
+                <small>Con Incidencias</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pestañas de reportes -->
+    <ul class="nav nav-tabs" id="reportTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="asignaciones-tab" data-bs-toggle="tab" 
+                    data-bs-target="#asignaciones" type="button" role="tab">
+                <i class="fas fa-user-clock"></i> Asignaciones
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="auditorias-tab" data-bs-toggle="tab" 
+                    data-bs-target="#auditorias" type="button" role="tab">
+                <i class="fas fa-clipboard-check"></i> Auditorías
+            </button>
+        </li>
+    </ul>
+
+    <div class="tab-content" id="reportTabsContent">
+        <!-- Reporte de Asignaciones -->
+        <div class="tab-pane fade show active" id="asignaciones" role="tabpanel">
+            <div class="card report-card mt-3">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-user-clock"></i> Reporte de Asignaciones
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if asignaciones %}
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Herramienta</th>
+                                    <th>Categoría</th>
+                                    <th>Técnico</th>
+                                    <th>Fecha Asignación</th>
+                                    <th>Fecha Devolución</th>
+                                    <th>Estado</th>
+                                    <th>Observaciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for asignacion in asignaciones %}
+                                <tr>
+                                    <td>
+                                        <a href="{% url 'gestionDeTaller:personal_tool_detail' asignacion.herramienta.id %}">
+                                            {{ asignacion.herramienta.nombre }}
+                                        </a>
+                                    </td>
+                                    <td>{{ asignacion.herramienta.get_categoria_display }}</td>
+                                    <td>{{ asignacion.tecnico.get_full_name }}</td>
+                                    <td>{{ asignacion.fecha_asignacion }}</td>
+                                    <td>
+                                        {% if asignacion.fecha_devolucion %}
+                                            {{ asignacion.fecha_devolucion }}
+                                        {% else %}
+                                            <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="badge 
+                                            {% if asignacion.estado == 'ACTIVA' %}bg-success
+                                            {% elif asignacion.estado == 'DEVUELTA' %}bg-secondary
+                                            {% else %}bg-warning{% endif %}">
+                                            {{ asignacion.get_estado_display }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% if asignacion.observaciones_asignacion %}
+                                            <small>{{ asignacion.observaciones_asignacion|truncatechars:50 }}</small>
+                                        {% else %}
+                                            <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-user-clock fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">No hay asignaciones en el período seleccionado</h5>
+                        <p class="text-muted">Intenta ajustar los filtros de búsqueda</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Reporte de Auditorías -->
+        <div class="tab-pane fade" id="auditorias" role="tabpanel">
+            <div class="card report-card mt-3">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-clipboard-check"></i> Reporte de Auditorías
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if auditorias %}
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Herramienta</th>
+                                    <th>Categoría</th>
+                                    <th>Tipo</th>
+                                    <th>Auditor</th>
+                                    <th>Fecha</th>
+                                    <th>Resultado</th>
+                                    <th>Observaciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for auditoria in auditorias %}
+                                <tr>
+                                    <td>
+                                        <a href="{% url 'gestionDeTaller:personal_tool_detail' auditoria.herramienta.id %}">
+                                            {{ auditoria.herramienta.nombre }}
+                                        </a>
+                                    </td>
+                                    <td>{{ auditoria.herramienta.get_categoria_display }}</td>
+                                    <td>{{ auditoria.get_tipo_auditoria_display }}</td>
+                                    <td>{{ auditoria.auditor.get_full_name }}</td>
+                                    <td>{{ auditoria.fecha_auditoria }}</td>
+                                    <td>
+                                        {% with detalles=auditoria.detalles.all %}
+                                            {% if detalles %}
+                                                {% if detalles|length == detalles|length|add:"0" %}
+                                                    <span class="badge bg-success">Cumple</span>
+                                                {% else %}
+                                                    <span class="badge bg-danger">Incidencias</span>
+                                                {% endif %}
+                                            {% else %}
+                                                <span class="badge bg-secondary">Sin detalles</span>
+                                            {% endif %}
+                                        {% endwith %}
+                                    </td>
+                                    <td>
+                                        {% if auditoria.observaciones %}
+                                            <small>{{ auditoria.observaciones|truncatechars:50 }}</small>
+                                        {% else %}
+                                            <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-clipboard-check fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">No hay auditorías en el período seleccionado</h5>
+                        <p class="text-muted">Intenta ajustar los filtros de búsqueda</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Auto-submit form when filters change
+        const filterSelects = document.querySelectorAll('#categoria, #tecnico');
+        filterSelects.forEach(select => {
+            select.addEventListener('change', function() {
+                this.closest('form').submit();
+            });
+        });
+        
+        // Validación de fechas
+        const fechaInicio = document.getElementById('fecha_inicio');
+        const fechaFin = document.getElementById('fecha_fin');
+        
+        fechaInicio.addEventListener('change', function() {
+            if (fechaFin.value && this.value > fechaFin.value) {
+                alert('La fecha de inicio no puede ser posterior a la fecha de fin.');
+                this.value = '';
+            }
+        });
+        
+        fechaFin.addEventListener('change', function() {
+            if (fechaInicio.value && this.value < fechaInicio.value) {
+                alert('La fecha de fin no puede ser anterior a la fecha de inicio.');
+                this.value = '';
+            }
+        });
+    });
+</script>
+{% endblock %} 

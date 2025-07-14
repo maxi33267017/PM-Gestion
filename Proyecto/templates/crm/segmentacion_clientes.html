@@ -436,7 +436,7 @@
         </div>
         <div class="filtros-body">
             <form method="get" class="row g-3">
-                <div class="col-md-3">
+                <div class="col-md-2">
                     <label for="periodo" class="form-label fw-bold">
                         <i class="bi bi-calendar-range me-1"></i>Período de Análisis
                     </label>
@@ -447,7 +447,7 @@
                         <option value="730" {% if periodo_dias == 730 %}selected{% endif %}>Últimos 2 años</option>
                     </select>
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-2">
                     <label for="sucursal" class="form-label fw-bold">
                         <i class="bi bi-building me-1"></i>Sucursal
                     </label>
@@ -460,7 +460,7 @@
                         {% endfor %}
                     </select>
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-2">
                     <label for="segmento" class="form-label fw-bold">
                         <i class="bi bi-tags me-1"></i>Segmento
                     </label>
@@ -472,7 +472,16 @@
                         <option value="NUEVO" {% if segmento_filtro == 'NUEVO' %}selected{% endif %}>Clientes Nuevos</option>
                     </select>
                 </div>
-                <div class="col-md-3 d-flex align-items-end">
+                <div class="col-md-2">
+                    <label for="solo_activos" class="form-label fw-bold">
+                        <i class="bi bi-person-check me-1"></i>Estado del Cliente
+                    </label>
+                    <select name="solo_activos" id="solo_activos" class="form-select">
+                        <option value="true" {% if solo_activos %}selected{% endif %}>Solo Activos</option>
+                        <option value="false" {% if not solo_activos %}selected{% endif %}>Todos los Clientes</option>
+                    </select>
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
                     <button type="submit" class="btn btn-primary me-2">
                         <i class="bi bi-search me-2"></i>Filtrar
                     </button>

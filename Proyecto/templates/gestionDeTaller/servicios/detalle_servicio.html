@@ -859,6 +859,16 @@
                             </div>
                         </div>
 
+                        <!-- Widget OR (Orden de Servicio) -->
+                        <div class="col-md-6 col-lg-4 mb-3">
+                            <div class="widget-card">
+                                <div class="widget-content">
+                                    <div class="widget-label">OR (Orden de Servicio)</div>
+                                    <div class="widget-value">{{ servicio.orden_servicio|default:"No asignado" }}</div>
+                                </div>
+                            </div>
+                        </div>
+
                         <!-- Widget Observaciones -->
                         <div class="col-md-6 col-lg-4 mb-3">
                             <div class="widget-card">
@@ -1387,6 +1397,12 @@
                             {{ form_editar.horometro_servicio }}
                         </div>
                         <div class="mb-3">
+                            <label for="id_orden_servicio" class="form-label">
+                                <i class="fas fa-hashtag me-2"></i>OR (Orden de Servicio)
+                            </label>
+                            {{ form_editar.orden_servicio }}
+                        </div>
+                        <div class="mb-3">
                             <label for="id_prioridad" class="form-label">
                                 <i class="fas fa-exclamation-circle me-2"></i>Prioridad
                             </label>
@@ -1496,7 +1512,7 @@
     <!-- Modal para agregar venta de repuesto -->
     {% if user.rol != 'TECNICO' %}
     <div class="modal fade" id="modalAgregarRepuesto" tabindex="-1" aria-labelledby="modalAgregarRepuestoLabel" aria-hidden="true">
-        <div class="modal-dialog">
+        <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <form method="POST" action="{% url 'gestionDeTaller:agregar_repuesto' servicio.id %}">
                     {% csrf_token %}
@@ -1507,14 +1523,161 @@
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
-                        {{ form_repuesto.as_p }}
+                        <!-- Opciones de entrada -->
+                        <div class="mb-3">
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="tipo_entrada" id="buscar_repuesto" value="buscar" checked>
+                                <label class="form-check-label" for="buscar_repuesto">
+                                    <i class="fas fa-search me-1"></i>Buscar en Base de Datos
+                                </label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="tipo_entrada" id="nuevo_repuesto" value="nuevo">
+                                <label class="form-check-label" for="nuevo_repuesto">
+                                    <i class="fas fa-plus me-1"></i>Crear Nuevo Repuesto
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Sección de búsqueda -->
+                        <div id="seccion_busqueda">
+                            <div class="row mb-3">
+                                <div class="col-md-8">
+                                    <label for="codigo_busqueda" class="form-label">Código del Repuesto</label>
+                                    <input type="text" class="form-control" id="codigo_busqueda" placeholder="Ingrese el código del repuesto...">
+                                </div>
+                                <div class="col-md-4 d-flex align-items-end">
+                                    <button type="button" class="btn btn-primary" onclick="buscarRepuesto()">
+                                        <i class="fas fa-search me-2"></i>Buscar
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- Resultado de búsqueda -->
+                            <div id="resultado_busqueda" style="display: none;">
+                                <div class="alert alert-success">
+                                    <h6><i class="fas fa-check-circle me-2"></i>Repuesto Encontrado</h6>
+                                    <div id="info_repuesto"></div>
+                                </div>
+                            </div>
+                            
+                            <div id="no_encontrado" style="display: none;">
+                                <div class="alert alert-warning">
+                                    <h6><i class="fas fa-exclamation-triangle me-2"></i>Repuesto No Encontrado</h6>
+                                    <p class="mb-2">El repuesto no existe en la base de datos.</p>
+                                    <button type="button" class="btn btn-warning btn-sm" onclick="mostrarFormularioNuevo()">
+                                        <i class="fas fa-plus me-2"></i>Crear Nuevo Repuesto
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Sección de nuevo repuesto -->
+                        <div id="seccion_nuevo" style="display: none;">
+                            <div class="alert alert-info">
+                                <h6><i class="fas fa-info-circle me-2"></i>Crear Nuevo Repuesto</h6>
+                                <p class="mb-0">Complete los datos del nuevo repuesto. Los campos marcados con * son obligatorios.</p>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="nuevo_codigo" class="form-label">Código del Repuesto *</label>
+                                        <input type="text" class="form-control" id="nuevo_codigo" name="nuevo_codigo" required disabled>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="nuevo_precio_venta" class="form-label">Precio de Venta *</label>
+                                        <input type="number" class="form-control" id="nuevo_precio_venta" name="nuevo_precio_venta" 
+                                               step="0.01" min="0" required disabled>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="nuevo_descripcion" class="form-label">Descripción</label>
+                                <textarea class="form-control" id="nuevo_descripcion" name="nuevo_descripcion" rows="2"></textarea>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="nuevo_costo" class="form-label">Costo</label>
+                                        <input type="number" class="form-control" id="nuevo_costo" name="nuevo_costo" 
+                                               step="0.01" min="0">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="nuevo_categoria" class="form-label">Categoría</label>
+                                        <input type="text" class="form-control" id="nuevo_categoria" name="nuevo_categoria" 
+                                               placeholder="Ej: Filtros, Aceites...">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="nuevo_proveedor" class="form-label">Proveedor</label>
+                                <input type="text" class="form-control" id="nuevo_proveedor" name="nuevo_proveedor">
+                            </div>
+                            
+                            <div class="text-center">
+                                <button type="button" class="btn btn-success" onclick="crearRepuesto()">
+                                    <i class="fas fa-save me-2"></i>Crear y Usar Repuesto
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Campos del formulario original (ocultos inicialmente) -->
+                        <div id="formulario_venta" style="display: none;">
+                            <hr>
+                            <h6><i class="fas fa-shopping-cart me-2"></i>Datos de la Venta</h6>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="id_codigo" class="form-label">Código</label>
+                                        <input type="text" class="form-control" id="id_codigo" name="codigo" readonly>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="id_cantidad" class="form-label">Cantidad *</label>
+                                        <input type="number" class="form-control" id="id_cantidad" name="cantidad" min="1" value="1" required>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="id_descripcion" class="form-label">Descripción</label>
+                                <textarea class="form-control" id="id_descripcion" name="descripcion" rows="2"></textarea>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="id_costo_unitario" class="form-label">Costo Unitario</label>
+                                        <input type="number" class="form-control" id="id_costo_unitario" name="costo_unitario" 
+                                               step="0.01" min="0">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="id_precio_unitario" class="form-label">Precio Unitario *</label>
+                                        <input type="number" class="form-control" id="id_precio_unitario" name="precio_unitario" 
+                                               step="0.01" min="0" required>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
                             <i class="fas fa-times me-2"></i>Cancelar
                         </button>
-                        <button type="submit" class="btn btn-dark">
-                            <i class="fas fa-save me-2"></i>Guardar Repuesto
+                        <button type="submit" class="btn btn-dark" id="btn_guardar_venta" style="display: none;">
+                            <i class="fas fa-save me-2"></i>Guardar Venta
                         </button>
                     </div>
                 </form>
@@ -1526,6 +1689,7 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', () => {
+        // Funcionalidad para cambiar estado de pedidos
         document.querySelectorAll('.cambiar-estado').forEach(select => {
             select.addEventListener('change', function () {
                 const pedidoId = this.dataset.id;
@@ -1559,6 +1723,263 @@
                 });
             });
         });
+
+        // Funcionalidad para el modal de repuestos
+        const radioBuscar = document.getElementById('buscar_repuesto');
+        const radioNuevo = document.getElementById('nuevo_repuesto');
+        const seccionBusqueda = document.getElementById('seccion_busqueda');
+        const seccionNuevo = document.getElementById('seccion_nuevo');
+
+        if (radioBuscar && radioNuevo) {
+            radioBuscar.addEventListener('change', function() {
+                if (this.checked) {
+                    seccionBusqueda.style.display = 'block';
+                    seccionNuevo.style.display = 'none';
+                    resetearFormulario();
+                    // Deshabilitar campos de nuevo repuesto
+                    const nuevoCodigo = document.getElementById('nuevo_codigo');
+                    const nuevoPrecio = document.getElementById('nuevo_precio_venta');
+                    if (nuevoCodigo) nuevoCodigo.disabled = true;
+                    if (nuevoPrecio) nuevoPrecio.disabled = true;
+                }
+            });
+
+            radioNuevo.addEventListener('change', function() {
+                if (this.checked) {
+                    seccionBusqueda.style.display = 'none';
+                    seccionNuevo.style.display = 'block';
+                    resetearFormulario();
+                    // Habilitar campos de nuevo repuesto
+                    const nuevoCodigo = document.getElementById('nuevo_codigo');
+                    const nuevoPrecio = document.getElementById('nuevo_precio_venta');
+                    if (nuevoCodigo) nuevoCodigo.disabled = false;
+                    if (nuevoPrecio) nuevoPrecio.disabled = false;
+                }
+            });
+        }
+    });
+
+    // Función para buscar repuesto
+    function buscarRepuesto() {
+        const codigo = document.getElementById('codigo_busqueda').value.trim();
+        
+        if (!codigo) {
+            alert('Por favor ingrese un código de repuesto');
+            return;
+        }
+
+        fetch(`{% url 'gestionDeTaller:obtener_repuesto' %}?codigo=${encodeURIComponent(codigo)}`, {
+            method: 'GET',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                mostrarRepuestoEncontrado(data.repuesto);
+            } else {
+                mostrarRepuestoNoEncontrado();
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error al buscar el repuesto');
+        });
+    }
+
+    // Función para mostrar repuesto encontrado
+    function mostrarRepuestoEncontrado(repuesto) {
+        document.getElementById('resultado_busqueda').style.display = 'block';
+        document.getElementById('no_encontrado').style.display = 'none';
+        
+        document.getElementById('info_repuesto').innerHTML = `
+            <div class="row">
+                <div class="col-md-6">
+                    <strong>Código:</strong> ${repuesto.codigo}<br>
+                    <strong>Descripción:</strong> ${repuesto.descripcion || 'Sin descripción'}<br>
+                    <strong>Categoría:</strong> ${repuesto.categoria || 'Sin categoría'}
+                </div>
+                <div class="col-md-6">
+                    <strong>Costo:</strong> $${repuesto.costo || 'N/A'}<br>
+                    <strong>Precio de Venta:</strong> $${repuesto.precio_venta}<br>
+                    <strong>Proveedor:</strong> ${repuesto.proveedor || 'Sin proveedor'}
+                </div>
+            </div>
+            <div class="mt-3">
+                <button type="button" class="btn btn-success btn-sm" onclick="usarRepuestoEncontrado('${repuesto.codigo}', '${repuesto.descripcion || ''}', ${repuesto.costo || 0}, ${repuesto.precio_venta})">
+                    <i class="fas fa-check me-2"></i>Usar este Repuesto
+                </button>
+            </div>
+        `;
+    }
+
+    // Función para mostrar repuesto no encontrado
+    function mostrarRepuestoNoEncontrado() {
+        document.getElementById('resultado_busqueda').style.display = 'none';
+        document.getElementById('no_encontrado').style.display = 'block';
+    }
+
+    // Función para usar repuesto encontrado
+    function usarRepuestoEncontrado(codigo, descripcion, costo, precio) {
+        try {
+            // Llenar el formulario de venta
+            const codigoField = document.getElementById('id_codigo');
+            const descripcionField = document.getElementById('id_descripcion');
+            const costoField = document.getElementById('id_costo_unitario');
+            const precioField = document.getElementById('id_precio_unitario');
+            
+            if (codigoField) codigoField.value = codigo;
+            if (descripcionField) descripcionField.value = descripcion || '';
+            if (costoField) costoField.value = costo || '';
+            if (precioField) precioField.value = precio || '';
+            
+            // Mostrar formulario de venta
+            const formularioVenta = document.getElementById('formulario_venta');
+            const btnGuardar = document.getElementById('btn_guardar_venta');
+            
+            if (formularioVenta) formularioVenta.style.display = 'block';
+            if (btnGuardar) btnGuardar.style.display = 'block';
+            
+            // Ocultar secciones de búsqueda
+            const seccionBusqueda = document.getElementById('seccion_busqueda');
+            const seccionNuevo = document.getElementById('seccion_nuevo');
+            
+            if (seccionBusqueda) seccionBusqueda.style.display = 'none';
+            if (seccionNuevo) seccionNuevo.style.display = 'none';
+            
+            // Deshabilitar campos de nuevo repuesto cuando se usa uno encontrado
+            const nuevoCodigo = document.getElementById('nuevo_codigo');
+            const nuevoPrecio = document.getElementById('nuevo_precio_venta');
+            if (nuevoCodigo) nuevoCodigo.disabled = true;
+            if (nuevoPrecio) nuevoPrecio.disabled = true;
+            
+            console.log('Repuesto seleccionado:', { codigo, descripcion, costo, precio });
+        } catch (error) {
+            console.error('Error en usarRepuestoEncontrado:', error);
+            alert('Error al seleccionar el repuesto. Por favor intenta nuevamente.');
+        }
+    }
+
+    // Función para mostrar formulario de nuevo repuesto
+    function mostrarFormularioNuevo() {
+        document.getElementById('seccion_busqueda').style.display = 'none';
+        document.getElementById('seccion_nuevo').style.display = 'block';
+        document.getElementById('nuevo_codigo').value = document.getElementById('codigo_busqueda').value;
+        // Habilitar campos de nuevo repuesto
+        const nuevoCodigo = document.getElementById('nuevo_codigo');
+        const nuevoPrecio = document.getElementById('nuevo_precio_venta');
+        if (nuevoCodigo) nuevoCodigo.disabled = false;
+        if (nuevoPrecio) nuevoPrecio.disabled = false;
+    }
+
+    // Función para crear nuevo repuesto
+    function crearRepuesto() {
+        try {
+            const codigo = document.getElementById('nuevo_codigo').value;
+            const descripcion = document.getElementById('nuevo_descripcion').value;
+            const costo = document.getElementById('nuevo_costo').value;
+            const precioVenta = document.getElementById('nuevo_precio_venta').value;
+            const categoria = document.getElementById('nuevo_categoria').value;
+            const proveedor = document.getElementById('nuevo_proveedor').value;
+
+            // Validar campos requeridos
+            if (!codigo || !precioVenta) {
+                alert('El código y precio de venta son obligatorios');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('codigo', codigo);
+            formData.append('descripcion', descripcion);
+            formData.append('costo', costo);
+            formData.append('precio_venta', precioVenta);
+            formData.append('categoria', categoria);
+            formData.append('proveedor', proveedor);
+
+            fetch('{% url "gestionDeTaller:crear_repuesto" %}', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                },
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Repuesto creado exitosamente');
+                    // Usar el repuesto recién creado
+                    usarRepuestoEncontrado(
+                        codigo,
+                        descripcion,
+                        parseFloat(costo) || '',
+                        parseFloat(precioVenta) || ''
+                    );
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error al crear el repuesto');
+            });
+        } catch (error) {
+            console.error('Error en crearRepuesto:', error);
+            alert('Error al crear el repuesto. Por favor verifica los datos.');
+        }
+    }
+
+    // Función para resetear formulario
+    function resetearFormulario() {
+        document.getElementById('resultado_busqueda').style.display = 'none';
+        document.getElementById('no_encontrado').style.display = 'none';
+        document.getElementById('formulario_venta').style.display = 'none';
+        document.getElementById('btn_guardar_venta').style.display = 'none';
+        
+        // Limpiar campos
+        document.getElementById('codigo_busqueda').value = '';
+        document.getElementById('nuevo_codigo').value = '';
+        document.getElementById('nuevo_descripcion').value = '';
+        document.getElementById('nuevo_costo').value = '';
+        document.getElementById('nuevo_precio_venta').value = '';
+        document.getElementById('nuevo_categoria').value = '';
+        document.getElementById('nuevo_proveedor').value = '';
+        
+        document.getElementById('id_codigo').value = '';
+        document.getElementById('id_descripcion').value = '';
+        document.getElementById('id_costo_unitario').value = '';
+        document.getElementById('id_precio_unitario').value = '';
+        document.getElementById('id_cantidad').value = '1';
+    }
+
+    // DEBUG: Capturar el submit del formulario de venta de repuesto
+    document.addEventListener('DOMContentLoaded', function() {
+        var formRepuesto = document.querySelector('#modalAgregarRepuesto form');
+        if (formRepuesto) {
+            formRepuesto.addEventListener('submit', function(e) {
+                console.log('=== DEBUG: SUBMIT FORMULARIO ===');
+                console.log('Formulario:', this);
+                console.log('Datos del formulario:');
+                
+                const formData = new FormData(this);
+                for (let [key, value] of formData.entries()) {
+                    console.log(key + ':', value);
+                }
+                
+                // Verificar si los campos requeridos están presentes
+                const codigo = this.querySelector('[name="codigo"]');
+                const cantidad = this.querySelector('[name="cantidad"]');
+                const precio_unitario = this.querySelector('[name="precio_unitario"]');
+                
+                console.log('Campo código:', codigo ? codigo.value : 'NO ENCONTRADO');
+                console.log('Campo cantidad:', cantidad ? cantidad.value : 'NO ENCONTRADO');
+                console.log('Campo precio_unitario:', precio_unitario ? precio_unitario.value : 'NO ENCONTRADO');
+                
+                alert('Enviando formulario de venta de repuesto - Revisa la consola para más detalles');
+            });
+        } else {
+            console.error('DEBUG: No se encontró el formulario de venta de repuesto');
+        }
     });
 </script>
 

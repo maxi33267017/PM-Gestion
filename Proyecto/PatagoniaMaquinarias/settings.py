@@ -44,6 +44,8 @@ INSTALLED_APPS = [
     'informes.apps.InformesConfig',
     'recursosHumanos.apps.RecursoshumanosConfig',
     'centroSoluciones.apps.CentrosolucionesConfig',
+    'operationsCenter',
+    'ventaMaquinarias',
     'crispy_forms',
     'crispy_bootstrap5',
     'django_select2',

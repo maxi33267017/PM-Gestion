@@ -16,7 +16,7 @@
             <p class="text-muted">Detalle completo de la oportunidad de venta</p>
         </div>
         <div>
-            <a href="{% url 'crm:embudo_ventas' %}" class="btn btn-outline-secondary">
+            <a href="{% url 'crm:embudo_ventas_dashboard' %}" class="btn btn-outline-secondary">
                 <i class="fas fa-arrow-left me-2"></i>Volver al Embudo
             </a>
         </div>
@@ -61,21 +61,16 @@
                         </div>
                         
                         <div class="col-md-6">
-                            <h6 class="text-primary">Valor Estimado</h6>
-                            <p class="mb-3">
-                                {% if embudo.valor_estimado %}
-                                <strong class="text-success fs-4">${{ embudo.valor_estimado|floatformat:0 }}</strong>
-                                {% else %}
-                                <span class="text-muted">No especificado</span>
-                                {% endif %}
-                            </p>
-                            
-                            <h6 class="text-primary">Probabilidad de Cierre</h6>
+                            <h6 class="text-primary">Valor de Cierre</h6>
                             <div class="mb-3">
-                                <div class="progress mb-2" style="height: 8px;">
-                                    <div class="progress-bar bg-success" style="width: {{ embudo.probabilidad_cierre }}%"></div>
-                                </div>
-                                <small class="text-muted">{{ embudo.probabilidad_cierre }}%</small>
+                                {% if embudo.valor_cierre %}
+                                    <span class="text-primary fw-bold fs-4">${{ embudo.valor_cierre|floatformat:0 }}</span>
+                                    {% if embudo.venta_concretada %}
+                                        <span class="badge bg-success ms-2">Venta Concretada</span>
+                                    {% endif %}
+                                {% else %}
+                                    <span class="text-muted">No concretado</span>
+                                {% endif %}
                             </div>
                             
                             <h6 class="text-primary">Fecha de Ingreso</h6>
@@ -195,8 +190,13 @@
                             <small class="text-muted">Contactos</small>
                         </div>
                         <div class="col-6">
-                            <h4 class="text-success">{{ embudo.probabilidad_cierre }}%</h4>
-                            <small class="text-muted">Probabilidad</small>
+                            {% if embudo.valor_cierre %}
+                                <h4 class="text-success">${{ embudo.valor_cierre|floatformat:0 }}</h4>
+                                <small class="text-muted">Valor Cierre</small>
+                            {% else %}
+                                <h4 class="text-muted">-</h4>
+                                <small class="text-muted">Sin Cierre</small>
+                            {% endif %}
                         </div>
                     </div>
                 </div>

@@ -1,0 +1,233 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Crear Nuevo Equipo en Stock - Venta Maquinarias{% endblock %}
+
+{% block extra_css %}
+<link href="{% static 'bootstrap-5.3.2-dist/css/bootstrap.min.css' %}" rel="stylesheet">
+<link href="{% static 'DataTables/DataTables-1.13.8/css/dataTables.bootstrap5.min.css' %}" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet" />
+<style>
+    .form-container {
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        padding: 30px;
+        margin: 20px 0;
+    }
+    .form-section {
+        border-left: 4px solid #007bff;
+        padding-left: 20px;
+        margin-bottom: 30px;
+    }
+    .form-section h5 {
+        color: #007bff;
+        margin-bottom: 15px;
+    }
+    .required-field::after {
+        content: " *";
+        color: red;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="fas fa-plus-circle text-primary"></i> Crear Nuevo Equipo en Stock</h2>
+                <a href="{% url 'ventaMaquinarias:lista_equipos_stock' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left"></i> Volver a Lista
+                </a>
+            </div>
+
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            <div class="form-container">
+                <form method="post" id="formCrearEquipo">
+                    {% csrf_token %}
+                    
+                    <!-- Información Básica del Equipo -->
+                    <div class="form-section">
+                        <h5><i class="fas fa-info-circle"></i> Información Básica</h5>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="numero_serie" class="form-label required-field">Número de Serie</label>
+                                <input type="text" class="form-control" id="numero_serie" name="numero_serie" required>
+                                <div class="form-text">Número de serie único del equipo</div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="modelo" class="form-label required-field">Modelo</label>
+                                <select class="form-select" id="modelo" name="modelo" required>
+                                    <option value="">Seleccionar modelo...</option>
+                                    {% for modelo in modelos %}
+                                        <option value="{{ modelo.id }}">{{ modelo.nombre }} - {{ modelo.marca }} ({{ modelo.tipo_equipo.nombre }})</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="tipo_equipo" class="form-label required-field">Tipo de Equipo</label>
+                                <select class="form-select" id="tipo_equipo" name="tipo_equipo" required>
+                                    <option value="">Seleccionar tipo...</option>
+                                    {% for tipo in tipos_equipo %}
+                                        <option value="{{ tipo.id }}">{{ tipo.nombre }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="año_fabricacion" class="form-label required-field">Año de Fabricación</label>
+                                <input type="number" class="form-control" id="año_fabricacion" name="año_fabricacion" 
+                                       min="1900" max="2030" required>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="color" class="form-label">Color</label>
+                                <input type="text" class="form-control" id="color" name="color" placeholder="Ej: Verde, Amarillo, etc.">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="sucursal" class="form-label required-field">Sucursal</label>
+                                <select class="form-select" id="sucursal" name="sucursal" required>
+                                    <option value="">Seleccionar sucursal...</option>
+                                    {% for sucursal in sucursales %}
+                                        <option value="{{ sucursal.id }}">{{ sucursal.nombre }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Información de Compra -->
+                    <div class="form-section">
+                        <h5><i class="fas fa-shopping-cart"></i> Información de Compra</h5>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="fecha_compra_jd" class="form-label required-field">Fecha de Compra a JD</label>
+                                <input type="date" class="form-control" id="fecha_compra_jd" name="fecha_compra_jd" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="numero_orden_compra" class="form-label">Número de Orden de Compra</label>
+                                <input type="text" class="form-control" id="numero_orden_compra" name="numero_orden_compra" placeholder="Opcional">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="costo_compra" class="form-label required-field">Costo de Compra</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input type="number" class="form-control" id="costo_compra" name="costo_compra" 
+                                           step="0.01" min="0" required>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Observaciones -->
+                    <div class="form-section">
+                        <h5><i class="fas fa-comment"></i> Observaciones</h5>
+                        <div class="mb-3">
+                            <label for="observaciones" class="form-label">Observaciones Adicionales</label>
+                            <textarea class="form-control" id="observaciones" name="observaciones" rows="3" 
+                                      placeholder="Información adicional sobre el equipo..."></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Botones de Acción -->
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'ventaMaquinarias:lista_equipos_stock' %}" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Crear Equipo
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'DataTables/jQuery-3.7.0/jquery-3.7.0.min.js' %}"></script>
+<script src="{% static 'bootstrap-5.3.2-dist/js/bootstrap.bundle.min.js' %}"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Inicializar Select2 para el select de modelo
+    $('#modelo').select2({
+        theme: 'bootstrap-5',
+        placeholder: 'Seleccionar modelo...',
+        allowClear: true,
+        width: '100%',
+        language: 'es',
+        minimumInputLength: 1,
+        templateResult: function(data) {
+            if (data.loading) return data.text;
+            if (data.id === '') return data.text;
+            return $('<span>' + data.text + '</span>');
+        }
+    });
+    
+    // Validación del formulario
+    const form = document.getElementById('formCrearEquipo');
+    
+    form.addEventListener('submit', function(e) {
+        const numeroSerie = document.getElementById('numero_serie').value.trim();
+        const modelo = document.getElementById('modelo').value;
+        const tipoEquipo = document.getElementById('tipo_equipo').value;
+        const añoFabricacion = document.getElementById('año_fabricacion').value;
+        const sucursal = document.getElementById('sucursal').value;
+        const fechaCompra = document.getElementById('fecha_compra_jd').value;
+        const numeroOrden = document.getElementById('numero_orden_compra').value.trim();
+        const costoCompra = document.getElementById('costo_compra').value;
+        
+        // Validar campos requeridos
+        if (!numeroSerie || !modelo || !tipoEquipo || !añoFabricacion || !sucursal || !fechaCompra || !costoCompra) {
+            e.preventDefault();
+            alert('Por favor complete todos los campos requeridos (*)');
+            return false;
+        }
+        
+        // Validar año de fabricación
+        const añoActual = new Date().getFullYear();
+        if (añoFabricacion < 1900 || añoFabricacion > añoActual + 1) {
+            e.preventDefault();
+            alert('El año de fabricación debe estar entre 1900 y ' + (añoActual + 1));
+            return false;
+        }
+        
+        // Validar costo de compra
+        if (parseFloat(costoCompra) <= 0) {
+            e.preventDefault();
+            alert('El costo de compra debe ser mayor a 0');
+            return false;
+        }
+        
+        // Validar fecha de compra
+        const fechaCompraDate = new Date(fechaCompra);
+        const fechaActual = new Date();
+        if (fechaCompraDate > fechaActual) {
+            e.preventDefault();
+            alert('La fecha de compra no puede ser futura');
+            return false;
+        }
+    });
+    
+    // Establecer fecha actual como valor por defecto
+    const fechaActual = new Date().toISOString().split('T')[0];
+    document.getElementById('fecha_compra_jd').value = fechaActual;
+});
+</script>
+{% endblock %} 

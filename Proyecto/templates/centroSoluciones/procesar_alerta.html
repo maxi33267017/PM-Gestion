@@ -10,11 +10,11 @@
                     <h1 class="display-6 mb-2">
                         <i class="bi bi-tools text-warning me-2"></i>Procesar Alerta {{ alerta.codigo }}
                     </h1>
-                    <p class="lead text-muted">Actualizar estado y observaciones de la alerta</p>
+                    <p class="lead text-muted">Actualizar estado, conexión SAR y crear oportunidades CRM</p>
                 </div>
                 <div>
-                    <a href="{% url 'centroSoluciones:alertas_list' %}" class="btn btn-outline-secondary">
-                        <i class="bi bi-arrow-left me-2"></i>Volver a Alertas
+                    <a href="{% url 'centroSoluciones:alerta_detail' alerta.id %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left me-2"></i>Volver al Detalle
                     </a>
                 </div>
             </div>
@@ -79,7 +79,7 @@
                     <div class="mb-3">
                         <label class="form-label fw-bold">Tiempo Pendiente</label>
                         <p class="form-control-plaintext text-warning">
-                            {{ alerta.tiempo_pendiente.days }} días, {{ alerta.tiempo_pendiente.seconds|floatformat:0|div:3600|floatformat:0 }} horas
+                            {{ alerta.tiempo_pendiente.days }} días, {{ alerta_tiempo_pendiente_seconds_hours }} horas
                         </p>
                     </div>
                     {% endif %}
@@ -89,15 +89,17 @@
 
         <!-- Formulario de Procesamiento -->
         <div class="col-md-8">
-            <div class="card shadow-sm">
-                <div class="card-header">
-                    <h5 class="mb-0">
-                        <i class="bi bi-clipboard-check me-2"></i>Actualizar Estado y Observaciones
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <form method="post">
-                        {% csrf_token %}
+            <form method="post">
+                {% csrf_token %}
+                
+                <!-- Estado y Observaciones -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="bi bi-clipboard-check me-2"></i>Estado y Observaciones
+                        </h5>
+                    </div>
+                    <div class="card-body">
                         <div class="row g-3">
                             <div class="col-md-6">
                                 <label for="estado" class="form-label">Nuevo Estado *</label>
@@ -115,7 +117,7 @@
                             </div>
                             <div class="col-12">
                                 <label for="observaciones_tecnico" class="form-label">Observaciones del Técnico *</label>
-                                <textarea class="form-control" id="observaciones_tecnico" name="observaciones_tecnico" rows="6" required 
+                                <textarea class="form-control" id="observaciones_tecnico" name="observaciones_tecnico" rows="4" required 
                                           placeholder="Describe las acciones realizadas, diagnóstico, solución aplicada, etc...">{{ alerta.observaciones_tecnico }}</textarea>
                                 <div class="form-text">
                                     Incluye detalles sobre el diagnóstico, acciones realizadas, repuestos utilizados, 
@@ -123,20 +125,93 @@
                                 </div>
                             </div>
                         </div>
-                        
-                        <hr class="my-4">
-                        
-                        <div class="d-flex justify-content-between">
-                            <a href="{% url 'centroSoluciones:alertas_list' %}" class="btn btn-secondary">
-                                <i class="bi bi-x-circle me-2"></i>Cancelar
-                            </a>
-                            <button type="submit" class="btn btn-success">
-                                <i class="bi bi-check-circle me-2"></i>Guardar Cambios
-                            </button>
-                        </div>
-                    </form>
+                    </div>
                 </div>
-            </div>
+
+                <!-- Conexión SAR -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="bi bi-wifi me-2"></i>Conexión SAR
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="conexion_sar_realizada" name="conexion_sar_realizada" 
+                                   {% if alerta.conexion_sar_realizada %}checked{% endif %}>
+                            <label class="form-check-label fw-bold" for="conexion_sar_realizada">
+                                Realicé conexión SAR al equipo
+                            </label>
+                        </div>
+                        <div id="resultado_sar_section" class="{% if not alerta.conexion_sar_realizada %}d-none{% endif %}">
+                            <label for="resultado_conexion_sar" class="form-label">Resultado de la Conexión SAR</label>
+                            <textarea class="form-control" id="resultado_conexion_sar" name="resultado_conexion_sar" rows="3" 
+                                      placeholder="Describe el resultado de la conexión SAR, diagnóstico remoto, etc...">{{ alerta.resultado_conexion_sar }}</textarea>
+                            <div class="form-text">
+                                Detalla qué información obtuviste de la conexión SAR, si identificaste problemas, 
+                                si se requieren repuestos, etc.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Oportunidad CRM -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="bi bi-graph-up me-2"></i>Crear Oportunidad CRM
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="crear_oportunidad" name="crear_oportunidad">
+                            <label class="form-check-label fw-bold" for="crear_oportunidad">
+                                Identifiqué una oportunidad de negocio
+                            </label>
+                        </div>
+                        <div id="oportunidad_section" class="d-none">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label for="tipo_oportunidad" class="form-label">Tipo de Oportunidad *</label>
+                                    <select class="form-select" id="tipo_oportunidad" name="tipo_oportunidad">
+                                        <option value="">Seleccionar tipo...</option>
+                                        <option value="SERVICIO">Servicio Técnico</option>
+                                        <option value="REPUESTOS">Venta de Repuestos</option>
+                                        <option value="MANTENIMIENTO">Mantenimiento Preventivo</option>
+                                        <option value="GARANTIA">Garantía Extendida</option>
+                                        <option value="UPGRADE">Upgrade de Equipo</option>
+                                        <option value="OTRO">Otro</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="valor_estimado" class="form-label">Valor Estimado (USD)</label>
+                                    <input type="number" class="form-control" id="valor_estimado" name="valor_estimado" 
+                                           placeholder="0.00" step="0.01" min="0">
+                                </div>
+                                <div class="col-12">
+                                    <label for="descripcion_oportunidad" class="form-label">Descripción de la Oportunidad *</label>
+                                    <textarea class="form-control" id="descripcion_oportunidad" name="descripcion_oportunidad" rows="3" 
+                                              placeholder="Describe la oportunidad identificada, necesidades del cliente, etc..."></textarea>
+                                    <div class="form-text">
+                                        Explica qué oportunidad identificaste durante la atención de la alerta, 
+                                        qué necesita el cliente, y por qué es una oportunidad de negocio.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Botones de Acción -->
+                <div class="d-flex justify-content-between">
+                    <a href="{% url 'centroSoluciones:alerta_detail' alerta.id %}" class="btn btn-secondary">
+                        <i class="bi bi-x-circle me-2"></i>Cancelar
+                    </a>
+                    <button type="submit" class="btn btn-success">
+                        <i class="bi bi-check-circle me-2"></i>Procesar Alerta
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
@@ -145,11 +220,36 @@
 {% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Validación del formulario
+    // Elementos del formulario
     const form = document.querySelector('form');
     const estadoSelect = document.getElementById('estado');
     const observacionesTextarea = document.getElementById('observaciones_tecnico');
+    const conexionSarCheckbox = document.getElementById('conexion_sar_realizada');
+    const resultadoSarSection = document.getElementById('resultado_sar_section');
+    const crearOportunidadCheckbox = document.getElementById('crear_oportunidad');
+    const oportunidadSection = document.getElementById('oportunidad_section');
+    const tipoOportunidadSelect = document.getElementById('tipo_oportunidad');
+    const descripcionOportunidadTextarea = document.getElementById('descripcion_oportunidad');
     
+    // Mostrar/ocultar sección de resultado SAR
+    conexionSarCheckbox.addEventListener('change', function() {
+        if (this.checked) {
+            resultadoSarSection.classList.remove('d-none');
+        } else {
+            resultadoSarSection.classList.add('d-none');
+        }
+    });
+    
+    // Mostrar/ocultar sección de oportunidad CRM
+    crearOportunidadCheckbox.addEventListener('change', function() {
+        if (this.checked) {
+            oportunidadSection.classList.remove('d-none');
+        } else {
+            oportunidadSection.classList.add('d-none');
+        }
+    });
+    
+    // Validación del formulario
     form.addEventListener('submit', function(e) {
         let isValid = true;
         
@@ -169,6 +269,23 @@ document.addEventListener('DOMContentLoaded', function() {
             observacionesTextarea.classList.remove('is-invalid');
         }
         
+        // Validar oportunidad CRM si se está creando
+        if (crearOportunidadCheckbox.checked) {
+            if (!tipoOportunidadSelect.value) {
+                tipoOportunidadSelect.classList.add('is-invalid');
+                isValid = false;
+            } else {
+                tipoOportunidadSelect.classList.remove('is-invalid');
+            }
+            
+            if (!descripcionOportunidadTextarea.value.trim()) {
+                descripcionOportunidadTextarea.classList.add('is-invalid');
+                isValid = false;
+            } else {
+                descripcionOportunidadTextarea.classList.remove('is-invalid');
+            }
+        }
+        
         if (!isValid) {
             e.preventDefault();
             alert('Por favor, completa todos los campos requeridos.');
@@ -181,6 +298,14 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     observacionesTextarea.addEventListener('input', function() {
+        this.classList.remove('is-invalid');
+    });
+    
+    tipoOportunidadSelect.addEventListener('change', function() {
+        this.classList.remove('is-invalid');
+    });
+    
+    descripcionOportunidadTextarea.addEventListener('input', function() {
         this.classList.remove('is-invalid');
     });
 });

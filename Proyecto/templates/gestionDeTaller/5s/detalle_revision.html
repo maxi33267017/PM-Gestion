@@ -100,6 +100,10 @@
     .s5-header h5 { margin: 0; font-weight: 700; font-size: 1.1rem; position: relative; z-index: 1; display: flex; align-items: center; gap: 0.8rem; }
     .s5-body { padding: 1.5rem; }
     .evidence-img { border-radius: 15px; box-shadow: 0 4px 15px rgba(44,62,80,0.08); object-fit: cover; width: 100%; max-height: 250px; }
+    .evidence-item { background: white; border-radius: 15px; padding: 1rem; box-shadow: 0 2px 10px rgba(0,0,0,0.1); transition: var(--transition); }
+    .evidence-item:hover { transform: translateY(-5px); box-shadow: 0 8px 25px rgba(0,0,0,0.15); }
+    .evidence-info { margin-top: 0.5rem; }
+    .evidence-description { font-size: 0.85rem; color: #6c757d; margin-top: 0.5rem; }
     .action-btn { border-radius: 20px; padding: 0.5rem 1rem; font-weight: 600; transition: var(--transition); text-transform: uppercase; letter-spacing: 0.5px; font-size: 0.8rem; border: none; box-shadow: 0 4px 15px rgba(0,0,0,0.1); text-decoration: none; display: flex; align-items: center; gap: 0.3rem; color: white; }
     .action-btn.info { background: var(--info-gradient); }
     .action-btn.info:hover { background: var(--info-gradient); transform: translateY(-2px); box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4); }
@@ -178,19 +182,31 @@
         </div>
     </div>
     <!-- Evidencias Fotográficas -->
-    {% if revision.evidencias %}
+    {% if evidencias %}
     <div class="evidence-card">
         <div class="evidence-header">
-            <h5><i class="bi bi-camera"></i> Evidencias Fotográficas</h5>
+            <h5><i class="bi bi-camera"></i> Evidencias Fotográficas ({{ evidencias.count }})</h5>
         </div>
         <div class="info-body">
             <div class="row">
-                <div class="col-md-4 mb-3">
-                    <img src="{{ revision.evidencias.url }}" class="evidence-img" alt="Evidencia">
-                    <a href="{{ revision.evidencias.url }}" target="_blank" class="action-btn info w-100 mt-2">
-                        <i class="bi bi-image"></i> Ver Imagen Completa
-                    </a>
+                {% for evidencia in evidencias %}
+                <div class="col-md-4 col-lg-3 mb-3">
+                    <div class="evidence-item">
+                        <img src="{{ evidencia.imagen.url }}" class="evidence-img" alt="Evidencia {{ forloop.counter }}">
+                        <div class="evidence-info">
+                            <small class="text-muted">
+                                <i class="bi bi-calendar"></i> {{ evidencia.fecha_subida|date:"d/m/Y H:i" }}
+                            </small>
+                            {% if evidencia.descripcion %}
+                            <p class="evidence-description">{{ evidencia.descripcion }}</p>
+                            {% endif %}
+                        </div>
+                        <a href="{{ evidencia.imagen.url }}" target="_blank" class="action-btn info w-100 mt-2">
+                            <i class="bi bi-image"></i> Ver Imagen Completa
+                        </a>
+                    </div>
                 </div>
+                {% endfor %}
             </div>
         </div>
     </div>

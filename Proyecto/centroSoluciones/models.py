@@ -44,6 +44,12 @@ class AlertaEquipo(models.Model):
     fecha_resolucion = models.DateTimeField(null=True, blank=True, verbose_name="Fecha de Resolución")
     observaciones_tecnico = models.TextField(blank=True, verbose_name="Observaciones del Técnico")
     
+    # Campos para procesamiento SAR
+    conexion_sar_realizada = models.BooleanField(default=False, verbose_name="Conexión SAR Realizada")
+    fecha_conexion_sar = models.DateTimeField(null=True, blank=True, verbose_name="Fecha de Conexión SAR")
+    resultado_conexion_sar = models.TextField(blank=True, verbose_name="Resultado de Conexión SAR")
+    oportunidad_crm_creada = models.BooleanField(default=False, verbose_name="Oportunidad CRM Creada")
+    
     # Campos de auditoría
     fecha_creacion = models.DateTimeField(auto_now_add=True, verbose_name="Fecha de Creación")
     fecha_modificacion = models.DateTimeField(auto_now=True, verbose_name="Última Modificación")
@@ -76,6 +82,10 @@ class AlertaEquipo(models.Model):
         # Actualizar fecha de resolución cuando se resuelve
         if self.estado == 'RESUELTA' and not self.fecha_resolucion:
             self.fecha_resolucion = timezone.now()
+        
+        # Actualizar fecha de conexión SAR cuando se marca como realizada
+        if self.conexion_sar_realizada and not self.fecha_conexion_sar:
+            self.fecha_conexion_sar = timezone.now()
         
         super().save(*args, **kwargs)
     
@@ -209,6 +219,15 @@ class LeadJohnDeere(models.Model):
             'OTROS': 'secondary',
         }
         return colors.get(self.clasificacion, 'secondary')
+    
+    @property
+    def embudo_ventas(self):
+        """Retorna el embudo de ventas asociado a este lead"""
+        try:
+            from crm.models import EmbudoVentas
+            return EmbudoVentas.objects.filter(lead_jd=self).first()
+        except:
+            return None
 
 
 class AsignacionAlerta(models.Model):
@@ -238,3 +257,78 @@ class AsignacionAlerta(models.Model):
     
     def __str__(self):
         return f"Asignación: {self.alerta.codigo} → {self.tecnico.get_nombre_completo()}"
+
+
+class CodigoAlerta(models.Model):
+    """Modelo para almacenar códigos de alerta con sus descripciones por modelo de equipo"""
+    
+    CLASIFICACION_CHOICES = [
+        ('CRITICA', 'Crítica'),
+        ('ALTA', 'Alta'),
+        ('MEDIA', 'Media'),
+        ('BAJA', 'Baja'),
+    ]
+    
+    # Información del código de alerta
+    codigo = models.CharField(max_length=20, verbose_name="Código de Alerta", unique=True)
+    modelo_equipo = models.CharField(max_length=100, verbose_name="Modelo de Equipo")
+    descripcion = models.TextField(verbose_name="Descripción del Código")
+    clasificacion = models.CharField(
+        max_length=10, 
+        choices=CLASIFICACION_CHOICES, 
+        default='MEDIA',
+        verbose_name="Clasificación por Defecto"
+    )
+    
+    # Campos adicionales
+    instrucciones_resolucion = models.TextField(
+        blank=True, 
+        verbose_name="Instrucciones de Resolución",
+        help_text="Pasos recomendados para resolver este tipo de alerta"
+    )
+    repuestos_comunes = models.TextField(
+        blank=True, 
+        verbose_name="Repuestos Comunes",
+        help_text="Repuestos que suelen necesitarse para este tipo de alerta"
+    )
+    tiempo_estimado_resolucion = models.PositiveIntegerField(
+        null=True, 
+        blank=True, 
+        verbose_name="Tiempo Estimado de Resolución (horas)"
+    )
+    
+    # Campos de auditoría
+    fecha_creacion = models.DateTimeField(auto_now_add=True, verbose_name="Fecha de Creación")
+    fecha_modificacion = models.DateTimeField(auto_now=True, verbose_name="Última Modificación")
+    creado_por = models.ForeignKey(
+        Usuario, 
+        on_delete=models.SET_NULL, 
+        null=True, 
+        related_name='codigos_alerta_creados',
+        verbose_name="Creado por"
+    )
+    activo = models.BooleanField(default=True, verbose_name="Activo")
+    
+    class Meta:
+        verbose_name = "Código de Alerta"
+        verbose_name_plural = "Códigos de Alerta"
+        ordering = ['codigo', 'modelo_equipo']
+        indexes = [
+            models.Index(fields=['codigo']),
+            models.Index(fields=['modelo_equipo']),
+            models.Index(fields=['clasificacion']),
+            models.Index(fields=['activo']),
+        ]
+    
+    def __str__(self):
+        return f"{self.codigo} - {self.modelo_equipo}"
+    
+    def get_prioridad_color(self):
+        """Retorna el color CSS para la prioridad"""
+        colors = {
+            'CRITICA': 'danger',
+            'ALTA': 'warning',
+            'MEDIA': 'info',
+            'BAJA': 'success',
+        }
+        return colors.get(self.clasificacion, 'secondary')

@@ -40,8 +40,14 @@ from .models import (
     PreOrden, Servicio, PedidoRepuestosTerceros, GastoAsistencia,
     VentaRepuesto, Revision5S, PlanAccion5S, CostoPersonalTaller,
     AnalisisTaller, Evidencia, ChecklistSalidaCampo, EncuestaServicio,
-    RespuestaEncuesta, InsatisfaccionCliente, ObservacionServicio
+    RespuestaEncuesta, InsatisfaccionCliente, ObservacionServicio, Repuesto,
+    HerramientaEspecial, ReservaHerramienta, LogHerramienta,
+    HerramientaPersonal, AsignacionHerramientaPersonal, AuditoriaHerramientaPersonal,
+    DetalleAuditoriaHerramienta
 )
+from recursosHumanos.models import Usuario
+from .models import EvidenciaPlanAccion5S
+from recursosHumanos.models import Usuario
 
 @login_required
 def equipos_por_cliente(request, cliente_id):
@@ -94,6 +100,22 @@ def lista_servicios(request):
             servicios = Servicio.objects.none()  # Si no hay sucursal, no hay servicios
     else:
         servicios = Servicio.objects.all()  # Superusuarios u otros roles ven todo
+
+    # Ordenar servicios por prioridad de estado (en proceso, en espera, programados primero)
+    # Usar Case/When para ordenamiento personalizado
+    from django.db.models import Case, When, IntegerField
+    
+    servicios = servicios.annotate(
+        orden_estado=Case(
+            When(estado='EN_PROCESO', then=1),
+            When(estado='ESPERA_REPUESTOS', then=2),
+            When(estado='PROGRAMADO', then=3),
+            When(estado='A_FACTURAR', then=4),
+            When(estado='COMPLETADO', then=5),
+            default=6,
+            output_field=IntegerField(),
+        )
+    ).order_by('orden_estado', '-fecha_servicio', '-id')
 
     # Procesar el formulario de filtro
     form_filtro = FiltroExportacionServiciosForm(request.POST or request.GET or None)
@@ -240,12 +262,22 @@ def lista_servicios(request):
     preorden_form = PreordenForm(user=usuario)
     servicio_form = ServicioForm(user=usuario)
 
+    # Calcular contadores por estado
+    contadores_estado = {
+        'en_proceso': servicios.filter(estado='EN_PROCESO').count(),
+        'espera_repuestos': servicios.filter(estado='ESPERA_REPUESTOS').count(),
+        'programado': servicios.filter(estado='PROGRAMADO').count(),
+        'a_facturar': servicios.filter(estado='A_FACTURAR').count(),
+        'completado': servicios.filter(estado='COMPLETADO').count(),
+    }
+
     context = {
         'servicios': servicios,
         'form_filtro': form_filtro,
         'preorden_form': preorden_form,
         'servicio_form': servicio_form,
         'puede_exportar': usuario.rol in ['GERENTE', 'ADMINISTRACION'],
+        'contadores_estado': contadores_estado,
     }
 
     return render(request, 'gestionDeTaller/servicios/lista_servicios.html', context)
@@ -590,16 +622,34 @@ def agregar_venta_repuesto(request, servicio_id):
     servicio = get_object_or_404(Servicio, id=servicio_id)
     
     if request.method == 'POST':
+        # Debug: imprimir los datos recibidos
+        print("Datos POST recibidos:", request.POST)
+        
         form = VentaRepuestoForm(request.POST)
+        print("Formulario válido:", form.is_valid())
+        print("Errores del formulario:", form.errors)
+        
         if form.is_valid():
             repuesto = form.save(commit=False)
             repuesto.servicio = servicio
             repuesto.save()
+            messages.success(request, "Venta de repuesto agregada exitosamente.")
             return redirect('gestionDeTaller:detalle_servicio', servicio_id=servicio.id)
-    else:
-        form = VentaRepuestoForm()
+        else:
+            # Debug: mostrar errores específicos del formulario
+            error_messages = []
+            for field, errors in form.errors.items():
+                for error in errors:
+                    error_messages.append(f"{field}: {error}")
+            
+            if error_messages:
+                messages.error(request, f"Errores en el formulario: {'; '.join(error_messages)}")
+            else:
+                messages.error(request, "Error al guardar la venta de repuesto. Por favor verifica los datos.")
+            return redirect('gestionDeTaller:detalle_servicio', servicio_id=servicio.id)
     
-    return render(request, 'gestionDeTaller/servicios/agregar_repuesto.html', {'form': form, 'servicio': servicio})
+    # Si no es POST, redirigir al detalle del servicio
+    return redirect('gestionDeTaller:detalle_servicio', servicio_id=servicio.id)
 
 
     
@@ -1528,6 +1578,16 @@ def crear_revision_5s(request):
             revision = form.save(commit=False)
             revision.evaluador = request.user
             revision.save()
+            
+            # Procesar múltiples evidencias
+            evidencias = request.FILES.getlist('evidencias')
+            for evidencia in evidencias:
+                from .models import EvidenciaRevision5S
+                EvidenciaRevision5S.objects.create(
+                    revision=revision,
+                    imagen=evidencia
+                )
+            
             messages.success(request, 'Revisión 5S creada exitosamente.')
             return redirect('gestionDeTaller:detalle_revision_5s', revision_id=revision.id)
     else:
@@ -1538,9 +1598,11 @@ def crear_revision_5s(request):
 def detalle_revision_5s(request, revision_id):
     revision = get_object_or_404(Revision5S, id=revision_id)
     planes_accion = revision.planes_accion.all()
+    evidencias = revision.evidencias.all()
     return render(request, 'gestionDeTaller/5s/detalle_revision.html', {
         'revision': revision,
-        'planes_accion': planes_accion
+        'planes_accion': planes_accion,
+        'evidencias': evidencias
     })
 
 @login_required
@@ -1631,6 +1693,108 @@ def lista_planes_accion_5s(request):
     }
     return render(request, 'gestionDeTaller/5s/lista_planes_accion.html', context)
 
+@login_required
+def detalle_plan_accion_5s(request, plan_id):
+    """
+    Vista para mostrar los detalles de un plan de acción 5S específico.
+    """
+    plan = get_object_or_404(PlanAccion5S, id=plan_id)
+    
+    context = {
+        'plan': plan,
+    }
+    return render(request, 'gestionDeTaller/5s/detalle_plan_accion.html', context)
+
+@login_required
+def editar_plan_accion_5s(request, plan_id):
+    """
+    Vista para editar un plan de acción 5S existente.
+    """
+    plan = get_object_or_404(PlanAccion5S, id=plan_id)
+    revision = plan.revision
+    
+    # Obtener todos los items no conformes de la revisión
+    items_no_conformes = []
+    campos_5s = [
+        ('bancos_trabajo', 'Bancos de Trabajo'),
+        ('herramientas_funcionales', 'Herramientas Funcionales'),
+        ('piezas_organizadas', 'Piezas Organizadas'),
+        ('herramientas_devueltas', 'Herramientas Devueltas'),
+        ('box_limpios', 'Box Limpios'),
+        ('sala_garantia', 'Sala Garantía'),
+        ('piso_limpio', 'Piso Limpio'),
+        ('instrumentos_limpios', 'Instrumentos Limpios'),
+        ('paredes_limpias', 'Paredes Limpias'),
+        ('personal_uniformado', 'Personal Uniformado'),
+        ('epp_usado', 'EPP Usado'),
+        ('herramientas_calibradas', 'Herramientas Calibradas'),
+        ('residuos_gestionados', 'Residuos Gestionados'),
+        ('documentacion_actualizada', 'Documentación Actualizada'),
+        ('procedimientos_seguidos', 'Procedimientos Seguidos'),
+    ]
+    
+    for campo, nombre in campos_5s:
+        if getattr(revision, campo) == 'NO_CONFORME':
+            items_no_conformes.append((campo, nombre))
+    
+    if request.method == 'POST':
+        # Procesar formulario del plan de acción
+        if 'plan_accion' in request.POST:
+            form = PlanAccion5SForm(request.POST, request.FILES, instance=plan)
+            if form.is_valid():
+                form.save()
+                messages.success(request, 'Plan de acción actualizado exitosamente.')
+                return redirect('gestionDeTaller:detalle_plan_accion_5s', plan_id=plan.id)
+        
+        # Procesar corrección de items no conformes
+        elif 'corregir_items' in request.POST:
+            # Guardar puntuación anterior
+            puntuacion_anterior = revision.porcentaje_conformidad
+            
+            # Actualizar los campos de la revisión
+            for campo, nombre in items_no_conformes:
+                if request.POST.get(f'corregir_{campo}') == 'on':
+                    setattr(revision, campo, 'CONFORME')
+            
+            # Recalcular puntuación
+            revision.calcular_conformidad()
+            revision.save()
+            
+            puntuacion_nueva = revision.porcentaje_conformidad
+            messages.success(request, f'Items corregidos exitosamente. Puntuación: {puntuacion_anterior}% → {puntuacion_nueva}%')
+            return redirect('gestionDeTaller:detalle_plan_accion_5s', plan_id=plan.id)
+        
+        # Procesar subida de múltiples evidencias
+        elif 'subir_evidencias' in request.POST:
+            imagenes = request.FILES.getlist('evidencias')
+            descripciones = request.POST.getlist('descripciones')
+            
+            for i, imagen in enumerate(imagenes):
+                if imagen:
+                    descripcion = descripciones[i] if i < len(descripciones) else ''
+                    EvidenciaPlanAccion5S.objects.create(
+                        plan_accion=plan,
+                        imagen=imagen,
+                        descripcion=descripcion
+                    )
+            
+            messages.success(request, f'{len(imagenes)} evidencias subidas exitosamente.')
+            return redirect('gestionDeTaller:detalle_plan_accion_5s', plan_id=plan.id)
+    else:
+        form = PlanAccion5SForm(instance=plan)
+    
+    # Obtener evidencias existentes
+    evidencias = plan.evidencias.all()
+    
+    context = {
+        'form': form,
+        'plan': plan,
+        'revision': revision,
+        'items_no_conformes': items_no_conformes,
+        'evidencias': evidencias,
+    }
+    return render(request, 'gestionDeTaller/5s/editar_plan_accion.html', context)
+
 # Vistas para encuestas
 @login_required
 def lista_encuestas(request):
@@ -1650,12 +1814,12 @@ def lista_encuestas(request):
     
     # Calcular estadísticas NPS
     respuestas = RespuestaEncuesta.objects.all()
-    promotores_count = respuestas.filter(calificacion__gte=9).count()
-    pasivos_count = respuestas.filter(calificacion__gte=7, calificacion__lt=9).count()
-    detractores_count = respuestas.filter(calificacion__lt=7).count()
+    promotores_count = respuestas.filter(probabilidad_recomendacion__gte=9).count()
+    pasivos_count = respuestas.filter(probabilidad_recomendacion__gte=7, probabilidad_recomendacion__lt=9).count()
+    detractores_count = respuestas.filter(probabilidad_recomendacion__lt=7).count()
     
     # Calcular promedio NPS
-    nps_promedio = respuestas.aggregate(Avg('calificacion'))['calificacion__avg'] or 0
+    nps_promedio = respuestas.aggregate(Avg('probabilidad_recomendacion'))['probabilidad_recomendacion__avg'] or 0
     
     context = {
         'servicios': servicios,
@@ -1755,8 +1919,75 @@ def estadisticas_encuestas(request):
     return render(request, 'gestionDeTaller/encuestas/estadisticas.html', context)
 
 @login_required
+def reenviar_encuesta(request, encuesta_id):
+    # Verificar que el usuario sea Gerente o Administrativo
+    if request.user.rol not in ['GERENTE', 'ADMINISTRATIVO']:
+        messages.error(request, 'No tienes permiso para realizar esta acción.')
+        return redirect('gestionDeTaller:gestion_de_taller')
+    
+    try:
+        encuesta = EncuestaServicio.objects.get(id=encuesta_id)
+        servicio = encuesta.servicio
+        cliente = servicio.preorden.cliente
+        
+        # Obtener destinatarios
+        destinatarios = [cliente.email] if cliente.email else []
+        for contacto in cliente.contactos.all():
+            if contacto.email:
+                destinatarios.append(contacto.email)
+        
+        if not destinatarios:
+            messages.error(request, 'No hay direcciones de correo disponibles para este cliente.')
+            return redirect('gestionDeTaller:lista_encuestas')
+        
+        # Crear mensaje de correo
+        mensaje_correo = f"""
+        <html>
+        <body>
+            <h2>Encuesta de Satisfacción - Servicio #{servicio.id}</h2>
+            <p>Estimado cliente,</p>
+            <p>Le enviamos nuevamente la encuesta de satisfacción para el servicio realizado en su equipo.</p>
+            <p><strong>Detalles del servicio:</strong></p>
+            <ul>
+                <li><strong>Cliente:</strong> {cliente.razon_social}</li>
+                <li><strong>Equipo:</strong> {servicio.preorden.equipo.numero_serie}</li>
+                <li><strong>Fecha de servicio:</strong> {servicio.fecha_servicio.strftime('%d/%m/%Y')}</li>
+            </ul>
+            <p>Por favor, complete la encuesta para ayudarnos a mejorar nuestros servicios.</p>
+            <p>Gracias por su tiempo.</p>
+        </body>
+        </html>
+        """
+        
+        # Enviar el correo
+        asunto = f"Encuesta de Satisfacción - Servicio #{servicio.id} (Reenvío)"
+        email = EmailMultiAlternatives(
+            asunto,
+            strip_tags(mensaje_correo),
+            to=destinatarios,
+            cc=settings.CC_EMAILS
+        )
+        email.attach_alternative(mensaje_correo, "text/html")
+        email.send()
+        
+        # Actualizar fecha de envío
+        encuesta.fecha_envio = timezone.now()
+        encuesta.save()
+        
+        messages.success(request, 'Encuesta reenviada exitosamente.')
+        return redirect('gestionDeTaller:lista_encuestas')
+        
+    except EncuestaServicio.DoesNotExist:
+        messages.error(request, 'La encuesta no existe.')
+        return redirect('gestionDeTaller:lista_encuestas')
+    except Exception as e:
+        messages.error(request, f'Error al reenviar la encuesta: {str(e)}')
+        return redirect('gestionDeTaller:lista_encuestas')
+
+@login_required
 def cargar_respuesta_encuesta(request, encuesta_id):
     encuesta = get_object_or_404(EncuestaServicio, id=encuesta_id)
+    servicio = encuesta.servicio
     
     if request.method == 'POST':
         form = RespuestaEncuestaForm(request.POST)
@@ -1764,22 +1995,20 @@ def cargar_respuesta_encuesta(request, encuesta_id):
             respuesta = form.save(commit=False)
             respuesta.encuesta = encuesta
             respuesta.save()
-            
             # Actualizar el estado y la fecha de respuesta de la encuesta
             encuesta.estado = 'RESPONDIDA'
             encuesta.fecha_respuesta = respuesta.fecha_respuesta
             encuesta.save()
-            
             messages.success(request, 'Respuesta guardada exitosamente.')
             return redirect('gestionDeTaller:lista_encuestas')
     else:
         form = RespuestaEncuestaForm()
     
-    context = {
+    return render(request, 'gestionDeTaller/encuestas/cargar_respuesta.html', {
         'form': form,
-        'encuesta': encuesta
-    }
-    return render(request, 'gestionDeTaller/encuestas/cargar_respuesta.html', context)
+        'servicio': servicio,
+        'encuesta': encuesta,
+    })
 
 @login_required
 def ver_respuesta_encuesta(request, encuesta_id):
@@ -1803,8 +2032,8 @@ def registrar_insatisfaccion(request, encuesta_id):
     
     # Verificar si la encuesta tiene una respuesta con calificación de detractor
     respuesta = encuesta.respuestas.first()
-    if not respuesta or respuesta.calificacion >= 7:
-        messages.error(request, 'Solo se pueden registrar insatisfacciones para encuestas con calificación menor a 7.')
+    if not respuesta or respuesta.probabilidad_recomendacion >= 7:
+        messages.error(request, 'Solo se pueden registrar insatisfacciones para encuestas con probabilidad de recomendación menor a 7.')
         return redirect('gestionDeTaller:lista_encuestas')
     
     if request.method == 'POST':
@@ -1980,3 +2209,1090 @@ def eliminar_observacion(request, observacion_id):
     
     return redirect('gestionDeTaller:detalle_servicio', servicio_id=servicio_id)
 
+@login_required
+def calendario_semanal_tecnicos(request):
+    """Vista para el calendario semanal por técnicos"""
+    from datetime import datetime, timedelta
+    from django.utils import timezone
+    
+    # Obtener la semana actual o la semana seleccionada
+    fecha_str = request.GET.get('fecha')
+    if fecha_str:
+        try:
+            fecha_actual = datetime.strptime(fecha_str, '%Y-%m-%d').date()
+        except ValueError:
+            fecha_actual = timezone.now().date()
+    else:
+        fecha_actual = timezone.now().date()
+    
+    # Calcular el lunes de la semana
+    lunes = fecha_actual - timedelta(days=fecha_actual.weekday())
+    sabado = lunes + timedelta(days=5)  # Sábado
+    
+    # Obtener todos los técnicos
+    tecnicos = Usuario.objects.filter(rol='TECNICO', is_active=True).order_by('apellido', 'nombre')
+    
+    # Obtener las preórdenes para la semana
+    preordenes = PreOrden.objects.filter(
+        fecha_estimada__range=[lunes, sabado],
+        activo=True
+    ).prefetch_related('tecnicos', 'cliente', 'equipo')
+    
+    # Obtener los servicios en proceso (no completados) que deben mostrarse todos los días
+    # Los servicios en proceso se muestran desde su fecha de creación hasta que se completen
+    # Mostrar servicios EN_PROCESO y PROGRAMADO (excluir ESPERA_REPUESTOS y A_FACTURAR)
+    servicios = Servicio.objects.filter(
+        estado__in=['PROGRAMADO', 'EN_PROCESO']
+    ).prefetch_related('preorden__tecnicos', 'preorden__cliente', 'preorden__equipo')
+    
+    # Crear diccionario de elementos por técnico y fecha
+    calendario_tecnicos = {}
+    
+    for tecnico in tecnicos:
+        calendario_tecnicos[tecnico.id] = {
+            'tecnico': tecnico,
+            'dias': {}
+        }
+        
+        # Inicializar cada día de la semana
+        for i in range(6):  # Lunes a Sábado
+            fecha = lunes + timedelta(days=i)
+            calendario_tecnicos[tecnico.id]['dias'][fecha] = {
+                'preordenes': [],
+                'servicios_programados': [],
+                'servicios_en_proceso': []
+            }
+    
+    # Asignar preórdenes a los técnicos correspondientes (solo en su fecha estimada)
+    for preorden in preordenes:
+        for tecnico in preorden.tecnicos.all():
+            if tecnico.id in calendario_tecnicos:
+                fecha = preorden.fecha_estimada
+                if fecha in calendario_tecnicos[tecnico.id]['dias']:
+                    calendario_tecnicos[tecnico.id]['dias'][fecha]['preordenes'].append(preorden)
+    
+    # Asignar servicios a los técnicos correspondientes (todos los días hasta completarse)
+    for servicio in servicios:
+        for tecnico in servicio.preorden.tecnicos.all():
+            if tecnico.id in calendario_tecnicos:
+                # Los servicios se muestran todos los días de la semana hasta ser completados
+                for i in range(6):  # Lunes a Sábado
+                    fecha = lunes + timedelta(days=i)
+                    if fecha in calendario_tecnicos[tecnico.id]['dias']:
+                        if servicio.estado == 'PROGRAMADO':
+                            calendario_tecnicos[tecnico.id]['dias'][fecha]['servicios_programados'].append(servicio)
+                        elif servicio.estado == 'EN_PROCESO':
+                            calendario_tecnicos[tecnico.id]['dias'][fecha]['servicios_en_proceso'].append(servicio)
+    
+    # Calcular fechas de navegación
+    semana_anterior = lunes - timedelta(days=7)
+    semana_siguiente = lunes + timedelta(days=7)
+    
+    # Nombres de los días
+    nombres_dias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado']
+    
+    context = {
+        'calendario_tecnicos': calendario_tecnicos,
+        'lunes': lunes,
+        'sabado': sabado,
+        'nombres_dias': nombres_dias,
+        'semana_anterior': semana_anterior,
+        'semana_siguiente': semana_siguiente,
+        'fecha_actual': fecha_actual,
+    }
+    
+    return render(request, 'gestionDeTaller/preorden/calendario_semanal_tecnicos.html', context)
+
+
+@login_required
+def gestionar_repuestos(request):
+    """Vista para gestionar repuestos"""
+    
+    # Solo gerentes y administrativos pueden gestionar repuestos
+    if request.user.rol not in ['GERENTE', 'ADMINISTRATIVO']:
+        messages.error(request, 'No tienes permisos para gestionar repuestos.')
+        return redirect('gestionDeTaller:lista_servicios')
+    
+    # Obtener repuestos con filtros
+    repuestos = Repuesto.objects.all()
+    
+    # Aplicar filtros
+    search = request.GET.get('search')
+    categoria = request.GET.get('categoria')
+    proveedor = request.GET.get('proveedor')
+    activo = request.GET.get('activo')
+    
+    if search:
+        repuestos = repuestos.filter(
+            Q(codigo__icontains=search) |
+            Q(descripcion__icontains=search) |
+            Q(categoria__icontains=search) |
+            Q(proveedor__icontains=search)
+        )
+    
+    if categoria:
+        repuestos = repuestos.filter(categoria__icontains=categoria)
+    
+    if proveedor:
+        repuestos = repuestos.filter(proveedor__icontains=proveedor)
+    
+    if activo is not None:
+        repuestos = repuestos.filter(activo=activo == 'true')
+    
+    # Ordenar por código
+    repuestos = repuestos.order_by('codigo')
+    
+    # Paginación
+    paginator = Paginator(repuestos, 20)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    # Obtener categorías y proveedores únicos para los filtros
+    categorias_unicas = Repuesto.objects.values_list('categoria', flat=True).distinct().exclude(categoria='').order_by('categoria')
+    proveedores_unicos = Repuesto.objects.values_list('proveedor', flat=True).distinct().exclude(proveedor='').order_by('proveedor')
+    
+    context = {
+        'page_obj': page_obj,
+        'search_filtro': search,
+        'categoria_filtro': categoria,
+        'proveedor_filtro': proveedor,
+        'activo_filtro': activo,
+        'categorias_unicas': categorias_unicas,
+        'proveedores_unicos': proveedores_unicos,
+    }
+    
+    return render(request, 'gestionDeTaller/gestionar_repuestos.html', context)
+
+@login_required
+def crear_repuesto(request):
+    """Vista para crear un nuevo repuesto"""
+    
+    # Solo gerentes y administrativos pueden crear repuestos
+    if request.user.rol not in ['GERENTE', 'ADMINISTRATIVO']:
+        return JsonResponse({'success': False, 'message': 'No tienes permisos para crear repuestos.'})
+    
+    if request.method == 'POST':
+        try:
+            codigo = request.POST.get('codigo')
+            descripcion = request.POST.get('descripcion', '')
+            costo = request.POST.get('costo')
+            precio_venta = request.POST.get('precio_venta')
+            categoria = request.POST.get('categoria', '')
+            proveedor = request.POST.get('proveedor', '')
+            
+            # Validaciones
+            if not all([codigo, precio_venta]):
+                return JsonResponse({'success': False, 'message': 'El código y precio de venta son obligatorios.'})
+            
+            # Verificar si el código ya existe
+            if Repuesto.objects.filter(codigo=codigo).exists():
+                return JsonResponse({'success': False, 'message': f'El código {codigo} ya existe en la base de datos.'})
+            
+            # Crear el repuesto
+            nuevo_repuesto = Repuesto(
+                codigo=codigo,
+                descripcion=descripcion,
+                costo=float(costo) if costo else None,
+                precio_venta=float(precio_venta),
+                categoria=categoria,
+                proveedor=proveedor,
+                creado_por=request.user
+            )
+            nuevo_repuesto.save()
+            
+            return JsonResponse({
+                'success': True, 
+                'message': f'Repuesto {codigo} creado exitosamente.',
+                'repuesto_id': nuevo_repuesto.id
+            })
+            
+        except Exception as e:
+            return JsonResponse({'success': False, 'message': f'Error al crear el repuesto: {str(e)}'})
+    
+    return JsonResponse({'success': False, 'message': 'Método no permitido.'})
+
+@login_required
+def obtener_repuesto(request):
+    """Vista para obtener información de un repuesto específico (AJAX)"""
+    codigo = request.GET.get('codigo')
+    
+    if not codigo:
+        return JsonResponse({'success': False, 'message': 'Código de repuesto requerido'})
+    
+    try:
+        # Buscar el repuesto
+        repuesto = Repuesto.objects.filter(
+            codigo=codigo,
+            activo=True
+        ).first()
+        
+        if repuesto:
+            return JsonResponse({
+                'success': True,
+                'repuesto': {
+                    'codigo': repuesto.codigo,
+                    'descripcion': repuesto.descripcion,
+                    'costo': float(repuesto.costo) if repuesto.costo else None,
+                    'precio_venta': float(repuesto.precio_venta),
+                    'categoria': repuesto.categoria,
+                    'proveedor': repuesto.proveedor,
+                }
+            })
+        else:
+            return JsonResponse({
+                'success': False, 
+                'message': f'Repuesto {codigo} no encontrado en la base de datos'
+            })
+            
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': f'Error al buscar repuesto: {str(e)}'})
+
+@login_required
+def obtener_lista_repuestos(request):
+    """Vista API para obtener lista de repuestos (AJAX)"""
+    try:
+        repuestos = Repuesto.objects.filter(activo=True).values(
+            'codigo', 'descripcion', 'costo', 'precio_venta', 'categoria', 'proveedor'
+        ).order_by('codigo')
+        
+        return JsonResponse({
+            'success': True,
+            'repuestos': list(repuestos)
+        })
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': f'Error al obtener repuestos: {str(e)}'})
+
+# Vistas para Herramientas Especiales
+@login_required
+def herramientas_especiales_list(request):
+    """Lista de herramientas especiales"""
+    herramientas = HerramientaEspecial.objects.all()
+    
+    # Filtros
+    codigo_filtro = request.GET.get('codigo', '')
+    ubicacion_filtro = request.GET.get('ubicacion', '')
+    disponible_filtro = request.GET.get('disponible', '')
+    
+    if codigo_filtro:
+        herramientas = herramientas.filter(codigo__icontains=codigo_filtro)
+    
+    if ubicacion_filtro:
+        herramientas = herramientas.filter(ubicacion__icontains=ubicacion_filtro)
+    
+    if disponible_filtro == 'disponible':
+        herramientas = [h for h in herramientas if h.disponible]
+    elif disponible_filtro == 'no_disponible':
+        herramientas = [h for h in herramientas if not h.disponible]
+    
+    # Paginación
+    paginator = Paginator(herramientas, 20)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    context = {
+        'page_obj': page_obj,
+        'codigo_filtro': codigo_filtro,
+        'ubicacion_filtro': ubicacion_filtro,
+        'disponible_filtro': disponible_filtro,
+    }
+    
+    return render(request, 'gestionDeTaller/herramientas_especiales_list.html', context)
+
+
+@login_required
+def herramienta_especial_detail(request, herramienta_id):
+    """Detalle de una herramienta especial"""
+    herramienta = get_object_or_404(HerramientaEspecial, id=herramienta_id)
+    
+    # Obtener reservas activas
+    reservas_activas = herramienta.reservas.filter(
+        estado__in=['RESERVADA', 'RETIRADA']
+    ).order_by('-fecha_reserva')
+    
+    # Obtener historial de logs
+    logs = herramienta.logs.all()[:20]  # Últimos 20 logs
+    
+    # Obtener pre-órdenes y servicios para el formulario de reserva
+    preordenes = PreOrden.objects.filter(activo=True)
+    servicios = Servicio.objects.filter(estado__in=['PROGRAMADO', 'EN_PROCESO'])
+    
+    context = {
+        'herramienta': herramienta,
+        'reservas_activas': reservas_activas,
+        'logs': logs,
+        'preordenes': preordenes,
+        'servicios': servicios,
+    }
+    
+    return render(request, 'gestionDeTaller/herramienta_especial_detail.html', context)
+
+
+@login_required
+def reservar_herramienta(request, herramienta_id):
+    """Reservar una herramienta especial"""
+    herramienta = get_object_or_404(HerramientaEspecial, id=herramienta_id)
+    
+    if request.method == 'POST':
+        fecha_reserva = request.POST.get('fecha_reserva')
+        preorden_id = request.POST.get('preorden')
+        servicio_id = request.POST.get('servicio')
+        observaciones = request.POST.get('observaciones', '')
+        
+        try:
+            # Verificar si ya está reservada para esa fecha
+            if herramienta.reservas.filter(
+                fecha_reserva=fecha_reserva,
+                estado__in=['RESERVADA', 'RETIRADA']
+            ).exists():
+                messages.error(request, 'La herramienta ya está reservada para esa fecha.')
+                return redirect('gestionDeTaller:herramienta_especial_detail', herramienta_id=herramienta.id)
+            
+            # Crear la reserva
+            reserva = ReservaHerramienta.objects.create(
+                herramienta=herramienta,
+                usuario=request.user,
+                fecha_reserva=fecha_reserva,
+                preorden_id=preorden_id if preorden_id else None,
+                servicio_id=servicio_id if servicio_id else None,
+                observaciones=observaciones
+            )
+            
+            # Crear log
+            LogHerramienta.objects.create(
+                herramienta=herramienta,
+                usuario=request.user,
+                accion='RESERVA',
+                reserva=reserva,
+                observaciones=f"Herramienta reservada para {fecha_reserva} por {request.user.get_full_name() or request.user.username}"
+            )
+            
+            messages.success(request, f'Herramienta {herramienta.codigo} reservada exitosamente.')
+            return redirect('gestionDeTaller:herramienta_especial_detail', herramienta_id=herramienta.id)
+            
+        except Exception as e:
+            messages.error(request, f'Error al crear la reserva: {str(e)}')
+    
+    return redirect('gestionDeTaller:herramienta_especial_detail', herramienta_id=herramienta.id)
+
+
+@login_required
+def retirar_herramienta(request, reserva_id):
+    """Marcar herramienta como retirada"""
+    reserva = get_object_or_404(ReservaHerramienta, id=reserva_id)
+    
+    if request.method == 'POST':
+        try:
+            reserva.marcar_retirada()
+            messages.success(request, f'Herramienta {reserva.herramienta.codigo} marcada como retirada.')
+        except Exception as e:
+            messages.error(request, f'Error al marcar como retirada: {str(e)}')
+    
+    return redirect('gestionDeTaller:herramienta_especial_detail', herramienta_id=reserva.herramienta.id)
+
+
+@login_required
+def devolver_herramienta(request, reserva_id):
+    """Marcar herramienta como devuelta"""
+    reserva = get_object_or_404(ReservaHerramienta, id=reserva_id)
+    
+    if request.method == 'POST':
+        try:
+            reserva.marcar_devuelta()
+            messages.success(request, f'Herramienta {reserva.herramienta.codigo} marcada como devuelta.')
+        except Exception as e:
+            messages.error(request, f'Error al marcar como devuelta: {str(e)}')
+    
+    return redirect('gestionDeTaller:herramienta_especial_detail', herramienta_id=reserva.herramienta.id)
+
+
+@login_required
+def cancelar_reserva(request, reserva_id):
+    """Cancelar una reserva"""
+    reserva = get_object_or_404(ReservaHerramienta, id=reserva_id)
+    
+    if request.method == 'POST':
+        try:
+            reserva.estado = 'CANCELADA'
+            reserva.save()
+            
+            # Crear log
+            LogHerramienta.objects.create(
+                herramienta=reserva.herramienta,
+                usuario=request.user,
+                accion='CANCELACION',
+                reserva=reserva,
+                observaciones=f"Reserva cancelada por {request.user.get_full_name() or request.user.username}"
+            )
+            
+            messages.success(request, f'Reserva de {reserva.herramienta.codigo} cancelada exitosamente.')
+        except Exception as e:
+            messages.error(request, f'Error al cancelar la reserva: {str(e)}')
+    
+    return redirect('gestionDeTaller:herramienta_especial_detail', herramienta_id=reserva.herramienta.id)
+
+
+@login_required
+def retirar_sin_reserva(request, herramienta_id):
+    """Retirar herramienta sin reserva previa"""
+    herramienta = get_object_or_404(HerramientaEspecial, id=herramienta_id)
+    
+    if request.method == 'POST':
+        observaciones = request.POST.get('observaciones', '')
+        
+        try:
+            # Crear reserva con estado RETIRADA
+            reserva = ReservaHerramienta.objects.create(
+                herramienta=herramienta,
+                usuario=request.user,
+                fecha_reserva=timezone.now().date(),
+                estado='RETIRADA',
+                fecha_retiro=timezone.now(),
+                observaciones=observaciones
+            )
+            
+            # Crear log
+            LogHerramienta.objects.create(
+                herramienta=herramienta,
+                usuario=request.user,
+                accion='RETIRO',
+                reserva=reserva,
+                observaciones=f"Retiro sin reserva previa por {request.user.get_full_name() or request.user.username} - {observaciones}"
+            )
+            
+            messages.success(request, f'Herramienta {herramienta.codigo} retirada sin reserva previa.')
+        except Exception as e:
+            messages.error(request, f'Error al retirar la herramienta: {str(e)}')
+    
+    return redirect('gestionDeTaller:herramienta_especial_detail', herramienta_id=herramienta.id)
+
+@login_required
+def importar_herramientas_especiales(request):
+    """Vista para importar herramientas especiales desde Excel"""
+    if request.method == 'POST':
+        try:
+            # Verificar que se haya subido un archivo
+            if 'archivo_excel' not in request.FILES:
+                messages.error(request, 'Por favor seleccione un archivo Excel.')
+                return render(request, 'gestionDeTaller/importar_herramientas_especiales.html')
+            
+            archivo = request.FILES['archivo_excel']
+            
+            # Verificar que sea un archivo Excel
+            if not archivo.name.endswith(('.xlsx', '.xls')):
+                messages.error(request, 'Por favor seleccione un archivo Excel válido (.xlsx o .xls).')
+                return render(request, 'gestionDeTaller/importar_herramientas_especiales.html')
+            
+            # Leer el archivo Excel
+            df = pd.read_excel(archivo)
+            
+            # Verificar que tenga las columnas necesarias
+            columnas_requeridas = ['CODIGO ( Ver Notas p/descripcion)', 'ITEMS', 'CANTIDAD', 'UBICACION', 'IMAGEN']
+            columnas_faltantes = [col for col in columnas_requeridas if col not in df.columns]
+            
+            if columnas_faltantes:
+                messages.error(request, f'El archivo Excel debe contener las siguientes columnas: {", ".join(columnas_faltantes)}')
+                return render(request, 'gestionDeTaller/importar_herramientas_especiales.html')
+            
+            # Procesar los datos
+            herramientas_creadas = 0
+            herramientas_actualizadas = 0
+            errores = []
+            
+            for index, row in df.iterrows():
+                try:
+                    codigo = str(row['CODIGO ( Ver Notas p/descripcion)']).strip()
+                    if pd.isna(codigo) or codigo == '':
+                        continue
+                    
+                    # Obtener o crear la herramienta
+                    herramienta, created = HerramientaEspecial.objects.get_or_create(
+                        codigo=codigo,
+                        defaults={
+                            'nombre': str(row['ITEMS']) if not pd.isna(row['ITEMS']) else f'Herramienta {codigo}',
+                            'cantidad': int(row['CANTIDAD']) if not pd.isna(row['CANTIDAD']) else 1,
+                            'ubicacion': str(row['UBICACION']) if not pd.isna(row['UBICACION']) else 'Sin ubicación',
+                            'nota': f'Importado desde Excel - Fila {index + 2}',
+                            'creado_por': request.user
+                        }
+                    )
+                    
+                    if created:
+                        herramientas_creadas += 1
+                    else:
+                        # Actualizar datos existentes
+                        herramienta.nombre = str(row['ITEMS']) if not pd.isna(row['ITEMS']) else f'Herramienta {codigo}'
+                        herramienta.cantidad = int(row['CANTIDAD']) if not pd.isna(row['CANTIDAD']) else 1
+                        herramienta.ubicacion = str(row['UBICACION']) if not pd.isna(row['UBICACION']) else 'Sin ubicación'
+                        herramienta.save()
+                        herramientas_actualizadas += 1
+                    
+                    # Procesar imagen si existe
+                    nombre_imagen = str(row['IMAGEN']) if not pd.isna(row['IMAGEN']) else None
+                    if nombre_imagen and nombre_imagen != 'nan':
+                        # Aquí podrías implementar la lógica para copiar las imágenes
+                        # Por ahora solo registramos que existe una imagen
+                        if not herramienta.nota:
+                            herramienta.nota = f'Imagen: {nombre_imagen}'
+                        else:
+                            herramienta.nota += f' | Imagen: {nombre_imagen}'
+                        herramienta.save()
+                        
+                except Exception as e:
+                    errores.append(f'Fila {index + 2}: {str(e)}')
+            
+            # Mostrar resultados
+            if herramientas_creadas > 0:
+                messages.success(request, f'Se crearon {herramientas_creadas} herramientas nuevas.')
+            
+            if herramientas_actualizadas > 0:
+                messages.info(request, f'Se actualizaron {herramientas_actualizadas} herramientas existentes.')
+            
+            if errores:
+                for error in errores[:10]:  # Mostrar solo los primeros 10 errores
+                    messages.warning(request, error)
+                if len(errores) > 10:
+                    messages.warning(request, f'... y {len(errores) - 10} errores más.')
+            
+            return redirect('gestionDeTaller:herramientas_especiales_list')
+            
+        except Exception as e:
+            messages.error(request, f'Error al procesar el archivo: {str(e)}')
+    
+    return render(request, 'gestionDeTaller/importar_herramientas_especiales.html')
+
+
+# Personal Tools Views
+@login_required
+def personal_tools_list(request):
+    """Lista de herramientas personales"""
+    tools = HerramientaPersonal.objects.select_related('creado_por').all()
+    
+    # Filtros
+    categoria_id = request.GET.get('categoria')
+    estado = request.GET.get('estado')
+    tecnico_id = request.GET.get('tecnico')
+    
+    if categoria_id:
+        tools = tools.filter(categoria=categoria_id)
+    if estado:
+        tools = tools.filter(estado=estado)
+    if tecnico_id:
+        tools = tools.filter(asignacion_actual__tecnico_id=tecnico_id)
+    
+    categorias = HerramientaPersonal.CATEGORIA_CHOICES
+    tecnicos = Usuario.objects.filter(rol='TECNICO').order_by('first_name', 'last_name')
+    
+    # Calcular estadísticas
+    total_herramientas = tools.count()
+    herramientas_asignadas = tools.filter(estado='ASIGNADA').count()
+    herramientas_disponibles = tools.filter(estado='DISPONIBLE').count()
+    herramientas_mantenimiento = tools.filter(estado='MANTENIMIENTO').count()
+    
+    # Estadísticas de certificación
+    herramientas_certificacion_vencida = tools.filter(
+        fecha_vencimiento_certificacion__lt=timezone.now().date()
+    ).count()
+    herramientas_certificacion_proxima_vencer = tools.filter(
+        fecha_vencimiento_certificacion__lte=timezone.now().date() + timedelta(days=30),
+        fecha_vencimiento_certificacion__gt=timezone.now().date()
+    ).count()
+    
+    context = {
+        'tools': tools,
+        'categorias': categorias,
+        'tecnicos': tecnicos,
+        'estados': HerramientaPersonal.ESTADO_CHOICES,
+        'total_herramientas': total_herramientas,
+        'herramientas_asignadas': herramientas_asignadas,
+        'herramientas_disponibles': herramientas_disponibles,
+        'herramientas_mantenimiento': herramientas_mantenimiento,
+        'herramientas_certificacion_vencida': herramientas_certificacion_vencida,
+        'herramientas_certificacion_proxima_vencer': herramientas_certificacion_proxima_vencer,
+    }
+    return render(request, 'gestionDeTaller/personal_tools/list.html', context)
+
+@login_required
+def personal_tool_detail(request, tool_id):
+    """Detalle de herramienta personal"""
+    try:
+        tool = HerramientaPersonal.objects.select_related(
+            'creado_por'
+        ).prefetch_related(
+            'asignaciones__tecnico',
+            'asignaciones__asignado_por'
+        ).get(id=tool_id)
+    except HerramientaPersonal.DoesNotExist:
+        messages.error(request, 'Herramienta no encontrada')
+        return redirect('personal_tools_list')
+    
+    # Obtener auditorías a través de DetalleAuditoriaHerramienta
+    from .models import DetalleAuditoriaHerramienta
+    detalles_auditoria = DetalleAuditoriaHerramienta.objects.filter(
+        herramienta=tool
+    ).select_related(
+        'auditoria__auditor',
+        'auditoria__tecnico'
+    ).order_by('-auditoria__fecha_auditoria')
+    
+    context = {
+        'tool': tool,
+        'asignaciones': tool.asignaciones.all().order_by('-fecha_asignacion'),
+        'detalles_auditoria': detalles_auditoria,
+    }
+    return render(request, 'gestionDeTaller/personal_tools/detail.html', context)
+
+@login_required
+def assign_personal_tool(request, tool_id):
+    """Asignar herramienta personal a técnico"""
+    try:
+        tool = HerramientaPersonal.objects.get(id=tool_id)
+    except HerramientaPersonal.DoesNotExist:
+        messages.error(request, 'Herramienta no encontrada')
+        return redirect('gestionDeTaller:personal_tools_list')
+    
+    if request.method == 'POST':
+        tecnico_id = request.POST.get('tecnico')
+        fecha_asignacion = request.POST.get('fecha_asignacion')
+        observaciones = request.POST.get('observaciones', '')
+        
+        if not tecnico_id or not fecha_asignacion:
+            messages.error(request, 'Todos los campos son obligatorios')
+        else:
+            try:
+                tecnico = Usuario.objects.get(id=tecnico_id)
+                
+                # Finalizar asignación actual si existe
+                if tool.asignacion_actual:
+                    asignacion_actual = tool.asignacion_actual
+                    asignacion_actual.fecha_devolucion = timezone.now().date()
+                    asignacion_actual.estado = 'DEVUELTA'
+                    asignacion_actual.save()
+                
+                # Crear nueva asignación
+                nueva_asignacion = AsignacionHerramientaPersonal.objects.create(
+                    herramienta=tool,
+                    tecnico=tecnico,
+                    fecha_asignacion=fecha_asignacion,
+                    observaciones_asignacion=observaciones,
+                    estado_asignacion='ENTREGADA',
+                    asignado_por=request.user
+                )
+                
+                # Actualizar estado de la herramienta
+                tool.estado = 'ASIGNADA'
+                tool.save()
+                
+                messages.success(request, f'Herramienta asignada exitosamente a {tecnico.get_full_name()}')
+                return redirect('gestionDeTaller:personal_tool_detail', tool_id=tool.id)
+                
+            except Usuario.DoesNotExist:
+                messages.error(request, 'Técnico no encontrado')
+    
+    tecnicos = Usuario.objects.filter(rol='TECNICO').order_by('first_name', 'last_name')
+    context = {
+        'tool': tool,
+        'tecnicos': tecnicos,
+    }
+    return render(request, 'gestionDeTaller/personal_tools/assign.html', context)
+
+@login_required
+def return_personal_tool(request, tool_id):
+    """Devolver herramienta personal"""
+    try:
+        tool = HerramientaPersonal.objects.get(id=tool_id)
+    except HerramientaPersonal.DoesNotExist:
+        messages.error(request, 'Herramienta no encontrada')
+        return redirect('gestionDeTaller:personal_tools_list')
+    
+    if request.method == 'POST':
+        fecha_devolucion = request.POST.get('fecha_devolucion')
+        observaciones = request.POST.get('observaciones', '')
+        
+        if not fecha_devolucion:
+            messages.error(request, 'La fecha de devolución es obligatoria')
+        else:
+            if tool.asignacion_actual:
+                asignacion = tool.asignacion_actual
+                asignacion.fecha_devolucion = fecha_devolucion
+                asignacion.estado = 'DEVUELTA'
+                asignacion.observaciones_devolucion = observaciones
+                asignacion.save()
+                
+                # Actualizar estado de la herramienta
+                tool.estado = 'DISPONIBLE'
+                tool.save()
+                
+                messages.success(request, 'Herramienta devuelta exitosamente')
+                return redirect('gestionDeTaller:personal_tool_detail', tool_id=tool.id)
+            else:
+                messages.error(request, 'La herramienta no está asignada actualmente')
+    
+    context = {
+        'tool': tool,
+    }
+    return render(request, 'gestionDeTaller/personal_tools/return.html', context)
+
+@login_required
+def audit_personal_tool(request, tool_id):
+    """Realizar auditoría de herramienta personal"""
+    try:
+        tool = HerramientaPersonal.objects.get(id=tool_id)
+    except HerramientaPersonal.DoesNotExist:
+        messages.error(request, 'Herramienta no encontrada')
+        return redirect('gestionDeTaller:personal_tools_list')
+    
+    if request.method == 'POST':
+        fecha_auditoria = request.POST.get('fecha_auditoria')
+        tipo_auditoria = request.POST.get('tipo_auditoria')
+        observaciones = request.POST.get('observaciones', '')
+        
+        if not fecha_auditoria or not tipo_auditoria:
+            messages.error(request, 'Fecha y tipo de auditoría son obligatorios')
+        else:
+            # Crear auditoría
+            auditoria = AuditoriaHerramientaPersonal.objects.create(
+                herramienta=tool,
+                auditor=request.user,
+                fecha_auditoria=fecha_auditoria,
+                tipo_auditoria=tipo_auditoria,
+                observaciones=observaciones
+            )
+            
+            # Procesar detalles de auditoría
+            detalles_data = json.loads(request.POST.get('detalles', '[]'))
+            for detalle in detalles_data:
+                DetalleAuditoriaHerramientaPersonal.objects.create(
+                    auditoria=auditoria,
+                    campo=detalle['campo'],
+                    valor_esperado=detalle['esperado'],
+                    valor_encontrado=detalle['encontrado'],
+                    cumple=detalle['cumple'],
+                    observaciones=detalle.get('observaciones', '')
+                )
+            
+            # Procesar auditoría de items
+            items_data = json.loads(request.POST.get('items_data', '[]'))
+            for item_data in items_data:
+                try:
+                    item = ItemHerramientaPersonal.objects.get(
+                        id=item_data['item_id'],
+                        herramienta=tool
+                    )
+                    estado_anterior = item.estado
+                    item.estado = item_data['estado']
+                    if item_data.get('observaciones'):
+                        item.observaciones = item_data['observaciones']
+                    item.save()
+                    
+                    # Registrar cambio de estado si hubo cambio
+                    if estado_anterior != item.estado:
+                        LogCambioItemHerramienta.objects.create(
+                            item=item,
+                            auditoria=auditoria,
+                            estado_anterior=estado_anterior,
+                            estado_nuevo=item.estado,
+                            observaciones=item_data.get('observaciones', '')
+                        )
+                except ItemHerramientaPersonal.DoesNotExist:
+                    continue
+            
+            # Actualizar estado de la herramienta si es necesario
+            if tipo_auditoria == 'MANTENIMIENTO' and any(not d.cumple for d in auditoria.detalles.all()):
+                tool.estado = 'MANTENIMIENTO'
+                tool.save()
+            
+            messages.success(request, 'Auditoría realizada exitosamente')
+            return redirect('gestionDeTaller:personal_tool_detail', tool_id=tool.id)
+    
+    # Obtener campos de auditoría según el tipo de herramienta
+    campos_auditoria = []
+    if tool.categoria == 'HERRAMIENTA_ADICIONAL':
+        campos_auditoria = [
+            {'nombre': 'Estado físico', 'tipo': 'text'},
+            {'nombre': 'Funcionamiento', 'tipo': 'boolean'},
+            {'nombre': 'Limpieza', 'tipo': 'boolean'},
+            {'nombre': 'Completitud', 'tipo': 'boolean'},
+        ]
+    elif tool.categoria == 'EPP':
+        campos_auditoria = [
+            {'nombre': 'Estado físico', 'tipo': 'text'},
+            {'nombre': 'Fecha de vencimiento', 'tipo': 'date'},
+            {'nombre': 'Limpieza', 'tipo': 'boolean'},
+            {'nombre': 'Ajuste correcto', 'tipo': 'boolean'},
+        ]
+    
+    context = {
+        'tool': tool,
+        'campos_auditoria': campos_auditoria,
+        'tipos_auditoria': AuditoriaHerramientaPersonal.TIPO_AUDITORIA_CHOICES,
+    }
+    return render(request, 'gestionDeTaller/personal_tools/audit.html', context)
+
+@login_required
+def personal_tools_dashboard(request):
+    """Dashboard de herramientas personales"""
+    # Estadísticas generales
+    total_herramientas = HerramientaPersonal.objects.count()
+    herramientas_asignadas = HerramientaPersonal.objects.filter(estado='ASIGNADA').count()
+    herramientas_mantenimiento = HerramientaPersonal.objects.filter(estado='MANTENIMIENTO').count()
+    herramientas_disponibles = HerramientaPersonal.objects.filter(estado='DISPONIBLE').count()
+    
+    # Auditorías pendientes (últimos 6 meses)
+    seis_meses_atras = timezone.now().date() - timedelta(days=180)
+    auditorias_pendientes = HerramientaPersonal.objects.filter(
+        Q(detalleauditoriaherramienta__isnull=True) | 
+        Q(detalleauditoriaherramienta__auditoria__fecha_auditoria__lt=seis_meses_atras)
+    ).distinct().count()
+    
+    # Herramientas por categoría
+    herramientas_por_categoria = HerramientaPersonal.objects.values(
+        'categoria'
+    ).annotate(
+        total=Count('id'),
+        asignadas=Count('id', filter=Q(estado='ASIGNADA')),
+        mantenimiento=Count('id', filter=Q(estado='MANTENIMIENTO'))
+    )
+    
+    # Últimas auditorías
+    ultimas_auditorias = AuditoriaHerramientaPersonal.objects.select_related(
+        'herramienta', 'auditor'
+    ).order_by('-fecha_auditoria')[:10]
+    
+    # Asignaciones recientes
+    asignaciones_recientes = AsignacionHerramientaPersonal.objects.select_related(
+        'herramienta', 'tecnico'
+    ).order_by('-fecha_asignacion')[:10]
+    
+    context = {
+        'total_herramientas': total_herramientas,
+        'herramientas_asignadas': herramientas_asignadas,
+        'herramientas_mantenimiento': herramientas_mantenimiento,
+        'herramientas_disponibles': herramientas_disponibles,
+        'auditorias_pendientes': auditorias_pendientes,
+        'herramientas_por_categoria': herramientas_por_categoria,
+        'ultimas_auditorias': ultimas_auditorias,
+        'asignaciones_recientes': asignaciones_recientes,
+    }
+    return render(request, 'gestionDeTaller/personal_tools/dashboard.html', context)
+
+@login_required
+def personal_tools_reports(request):
+    """Reportes de herramientas personales"""
+    # Filtros
+    fecha_inicio = request.GET.get('fecha_inicio')
+    fecha_fin = request.GET.get('fecha_fin')
+    categoria_id = request.GET.get('categoria')
+    tecnico_id = request.GET.get('tecnico')
+    
+    # Asignaciones
+    asignaciones = AsignacionHerramientaPersonal.objects.select_related(
+        'herramienta', 'tecnico'
+    ).all()
+    
+    # Auditorías
+    auditorias = AuditoriaHerramientaPersonal.objects.select_related(
+        'tecnico', 'auditor'
+    ).all()
+    
+    if fecha_inicio:
+        asignaciones = asignaciones.filter(fecha_asignacion__gte=fecha_inicio)
+        auditorias = auditorias.filter(fecha_auditoria__gte=fecha_inicio)
+    
+    if fecha_fin:
+        asignaciones = asignaciones.filter(fecha_asignacion__lte=fecha_fin)
+        auditorias = auditorias.filter(fecha_auditoria__lte=fecha_fin)
+    
+    if categoria_id:
+        asignaciones = asignaciones.filter(herramienta__categoria=categoria_id)
+        auditorias = auditorias.filter(herramienta__categoria=categoria_id)
+    
+    if tecnico_id:
+        asignaciones = asignaciones.filter(tecnico_id=tecnico_id)
+        auditorias = auditorias.filter(herramienta__asignacion_actual__tecnico_id=tecnico_id)
+    
+    # Estadísticas
+    total_asignaciones = asignaciones.count()
+    total_auditorias = auditorias.count()
+    
+    # Auditorías por resultado
+    auditorias_exitosas = auditorias.filter(
+        detalles_auditoria__estado_herramienta='PRESENTE'
+    ).distinct().count()
+    auditorias_con_incidencias = auditorias.filter(
+        detalles_auditoria__estado_herramienta__in=['AUSENTE', 'DAÑADA', 'DESGASTADA', 'VENCIDA']
+    ).distinct().count()
+    
+    categorias = HerramientaPersonal.CATEGORIA_CHOICES
+    tecnicos = Usuario.objects.filter(rol='TECNICO').order_by('first_name', 'last_name')
+    
+    context = {
+        'asignaciones': asignaciones.order_by('-fecha_asignacion'),
+        'auditorias': auditorias.order_by('-fecha_auditoria'),
+        'total_asignaciones': total_asignaciones,
+        'total_auditorias': total_auditorias,
+        'auditorias_exitosas': auditorias_exitosas,
+        'auditorias_con_incidencias': auditorias_con_incidencias,
+        'categorias': categorias,
+        'tecnicos': tecnicos,
+        'fecha_inicio': fecha_inicio,
+        'fecha_fin': fecha_fin,
+        'categoria_id': categoria_id,
+        'tecnico_id': tecnico_id,
+    }
+    return render(request, 'gestionDeTaller/personal_tools/reports.html', context)
+
+@login_required
+def descargar_template_excel(request):
+    """Vista para descargar un template de Excel para importación"""
+    try:
+        # Crear un DataFrame de ejemplo
+        datos_ejemplo = [
+            {
+                'CODIGO ( Ver Notas p/descripcion)': 'JT01674A',
+                'ITEMS': 'Herramienta especial para motor',
+                'CANTIDAD': 1,
+                'UBICACION': 'JD 01',
+                'IMAGEN': 'JT01674A.jpg'
+            },
+            {
+                'CODIGO ( Ver Notas p/descripcion)': 'JDG11263',
+                'ITEMS': 'Kit de diagnóstico',
+                'CANTIDAD': 2,
+                'UBICACION': 'JD 02',
+                'IMAGEN': 'JDG11263.JPG'
+            }
+        ]
+        
+        df = pd.DataFrame(datos_ejemplo)
+        
+        # Crear el archivo Excel en memoria
+        output = io.BytesIO()
+        with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+            df.to_excel(writer, sheet_name='Herramientas', index=False)
+            
+            # Obtener el workbook y worksheet para formatear
+            workbook = writer.book
+            worksheet = writer.sheets['Herramientas']
+            
+            # Formato para encabezados
+            header_format = workbook.add_format({
+                'bold': True,
+                'text_wrap': True,
+                'valign': 'top',
+                'fg_color': '#D7E4BC',
+                'border': 1
+            })
+            
+            # Aplicar formato a los encabezados
+            for col_num, value in enumerate(df.columns.values):
+                worksheet.write(0, col_num, value, header_format)
+            
+            # Ajustar ancho de columnas
+            worksheet.set_column('A:A', 25)  # Código
+            worksheet.set_column('B:B', 40)  # Items
+            worksheet.set_column('C:C', 10)  # Cantidad
+            worksheet.set_column('D:D', 15)  # Ubicación
+            worksheet.set_column('E:E', 20)  # Imagen
+        
+        output.seek(0)
+        
+        # Crear la respuesta HTTP
+        response = HttpResponse(
+            output.read(),
+            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        )
+        response['Content-Disposition'] = 'attachment; filename="template_herramientas_especiales.xlsx"'
+        
+        return response
+        
+    except Exception as e:
+        messages.error(request, f'Error al generar el template: {str(e)}')
+        return redirect('gestionDeTaller:importar_herramientas_especiales')
+
+@login_required
+def update_certification(request, tool_id):
+    """Actualizar información de certificación de herramienta personal"""
+    try:
+        tool = HerramientaPersonal.objects.get(id=tool_id)
+    except HerramientaPersonal.DoesNotExist:
+        messages.error(request, 'Herramienta no encontrada')
+        return redirect('personal_tools_list')
+    
+    if request.method == 'POST':
+        fecha_certificacion = request.POST.get('fecha_certificacion')
+        fecha_vencimiento = request.POST.get('fecha_vencimiento_certificacion')
+        
+        # Convertir fechas vacías a None
+        if fecha_certificacion == '':
+            fecha_certificacion = None
+        if fecha_vencimiento == '':
+            fecha_vencimiento = None
+        
+        # Validar que si hay fecha de vencimiento, debe haber fecha de certificación
+        if fecha_vencimiento and not fecha_certificacion:
+            messages.error(request, 'Si se especifica una fecha de vencimiento, debe especificar también la fecha de certificación')
+            return redirect('personal_tool_detail', tool_id=tool.id)
+        
+        # Validar que la fecha de vencimiento no sea anterior a la fecha de certificación
+        if fecha_certificacion and fecha_vencimiento:
+            from datetime import datetime
+            fecha_cert = datetime.strptime(fecha_certificacion, '%Y-%m-%d').date()
+            fecha_venc = datetime.strptime(fecha_vencimiento, '%Y-%m-%d').date()
+            if fecha_venc < fecha_cert:
+                messages.error(request, 'La fecha de vencimiento no puede ser anterior a la fecha de certificación')
+                return redirect('personal_tool_detail', tool_id=tool.id)
+        
+        # Actualizar la herramienta
+        tool.fecha_certificacion = fecha_certificacion
+        tool.fecha_vencimiento_certificacion = fecha_vencimiento
+        tool.save()
+        
+        messages.success(request, 'Información de certificación actualizada exitosamente')
+        return redirect('personal_tool_detail', tool_id=tool.id)
+    
+    # Si no es POST, redirigir al detalle
+    return redirect('personal_tool_detail', tool_id=tool.id)
+
+
+@login_required
+def add_item(request, tool_id):
+    """Agregar item a herramienta personal"""
+    try:
+        tool = HerramientaPersonal.objects.get(id=tool_id)
+    except HerramientaPersonal.DoesNotExist:
+        messages.error(request, 'Herramienta no encontrada')
+        return redirect('personal_tools_list')
+    
+    if request.method == 'POST':
+        nombre = request.POST.get('nombre')
+        descripcion = request.POST.get('descripcion', '')
+        cantidad = request.POST.get('cantidad', 1)
+        estado = request.POST.get('estado', 'PRESENTE')
+        observaciones = request.POST.get('observaciones', '')
+        
+        if not nombre:
+            messages.error(request, 'El nombre del item es obligatorio')
+        else:
+            try:
+                # Verificar si ya existe un item con el mismo nombre
+                if tool.items.filter(nombre=nombre).exists():
+                    messages.error(request, f'Ya existe un item llamado "{nombre}" en esta herramienta')
+                else:
+                    # Crear el nuevo item
+                    ItemHerramientaPersonal.objects.create(
+                        herramienta=tool,
+                        nombre=nombre,
+                        descripcion=descripcion,
+                        cantidad=cantidad,
+                        estado=estado,
+                        observaciones=observaciones
+                    )
+                    
+                    messages.success(request, f'Item "{nombre}" agregado exitosamente')
+                    return redirect('personal_tool_detail', tool_id=tool.id)
+                    
+            except Exception as e:
+                messages.error(request, f'Error al crear el item: {str(e)}')
+    
+    # Si no es POST, redirigir al detalle
+    return redirect('personal_tool_detail', tool_id=tool.id)

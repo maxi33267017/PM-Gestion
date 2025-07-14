@@ -9,6 +9,11 @@ urlpatterns = [
     path('alertas/<int:alerta_id>/', views.alerta_detail, name='alerta_detail'),
     path('alertas/<int:alerta_id>/procesar/', views.procesar_alerta, name='procesar_alerta'),
     path('leads/', views.leads_list, name='leads_list'),
+    path('leads/<int:lead_id>/', views.lead_detail, name='lead_detail'),
+    path('leads/<int:lead_id>/editar/', views.lead_edit, name='lead_edit'),
+    # Gestión de códigos de alerta
+    path('codigos-alerta/', views.gestionar_codigos_alerta, name='gestionar_codigos_alerta'),
+    path('crear-codigo-alerta/', views.crear_codigo_alerta, name='crear_codigo_alerta'),
     # Nuevas URLs para formularios modales
     path('crear-alerta/', views.crear_alerta, name='crear_alerta'),
     path('crear-lead/', views.crear_lead, name='crear_lead'),
@@ -16,4 +21,8 @@ urlpatterns = [
     path('obtener-pins-equipos-cliente/', views.obtener_pins_equipos_cliente, name='obtener_pins_equipos_cliente'),
     path('obtener-tecnicos/', views.obtener_tecnicos, name='obtener_tecnicos'),
     path('obtener-clientes/', views.obtener_clientes, name='obtener_clientes'),
+    # URLs para códigos de alerta
+    path('obtener-codigo-alerta/', views.obtener_codigo_alerta, name='obtener_codigo_alerta'),
+    path('obtener-lista-codigos-alerta/', views.obtener_lista_codigos_alerta, name='obtener_lista_codigos_alerta'),
+    path('obtener-modelos-equipos/', views.obtener_modelos_equipos, name='obtener_modelos_equipos'),
 ] 

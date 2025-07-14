@@ -1,0 +1,204 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Equipos en Stock{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="h3 mb-4">
+                <i class="fas fa-boxes"></i> Equipos en Stock
+            </h1>
+        </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Filtros</h6>
+                </div>
+                <div class="card-body">
+                    <form method="get" class="row">
+                        <div class="col-md-3">
+                            <label for="estado">Estado</label>
+                            <select name="estado" id="estado" class="form-control">
+                                <option value="">Todos</option>
+                                {% for estado_codigo, estado_nombre in estados %}
+                                <option value="{{ estado_codigo }}" {% if filtros.estado == estado_codigo %}selected{% endif %}>
+                                    {{ estado_nombre }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="sucursal">Sucursal</label>
+                            <select name="sucursal" id="sucursal" class="form-control">
+                                <option value="">Todas</option>
+                                {% for sucursal in sucursales %}
+                                <option value="{{ sucursal.id }}" {% if filtros.sucursal == sucursal.id|stringformat:"s" %}selected{% endif %}>
+                                    {{ sucursal.nombre }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="tipo_equipo">Tipo de Equipo</label>
+                            <select name="tipo_equipo" id="tipo_equipo" class="form-control">
+                                <option value="">Todos</option>
+                                {% for tipo in tipos_equipo %}
+                                <option value="{{ tipo.id }}" {% if filtros.tipo_equipo == tipo.id|stringformat:"s" %}selected{% endif %}>
+                                    {{ tipo.nombre }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="search">Buscar</label>
+                            <input type="text" name="search" id="search" class="form-control" 
+                                   value="{{ filtros.search }}" placeholder="Serie, modelo, orden...">
+                        </div>
+                        <div class="col-12 mt-3">
+                            <button type="submit" class="btn btn-primary mr-2">
+                                <i class="fas fa-search"></i> Filtrar
+                            </button>
+                            <a href="{% url 'ventaMaquinarias:lista_equipos_stock' %}" class="btn btn-secondary">
+                                <i class="fas fa-times"></i> Limpiar
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lista de equipos -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 font-weight-bold text-primary">Equipos en Stock</h6>
+                    <a href="{% url 'ventaMaquinarias:crear_equipo_stock' %}" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Nuevo Equipo
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if page_obj %}
+                        <div class="table-responsive">
+                            <table class="table table-bordered" width="100%" cellspacing="0">
+                                <thead>
+                                    <tr>
+                                        <th>Número de Serie</th>
+                                        <th>Modelo</th>
+                                        <th>Tipo</th>
+                                        <th>Sucursal</th>
+                                        <th>Estado</th>
+                                        <th>Días en Stock</th>
+                                        <th>Costo Compra</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for equipo in page_obj %}
+                                    <tr>
+                                        <td>
+                                            <strong>{{ equipo.numero_serie }}</strong>
+                                        </td>
+                                        <td>{{ equipo.modelo }}</td>
+                                        <td>{{ equipo.tipo_equipo }}</td>
+                                        <td>{{ equipo.sucursal }}</td>
+                                        <td>
+                                            <span class="badge badge-{% if equipo.estado == 'EN_STOCK' %}success{% elif equipo.estado == 'VENDIDO' %}danger{% elif equipo.estado == 'RESERVADO' %}warning{% else %}secondary{% endif %}">
+                                                {{ equipo.get_estado_display }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span class="badge badge-{% if equipo.dias_en_stock > 30 %}warning{% else %}info{% endif %}">
+                                                {{ equipo.dias_en_stock }} días
+                                            </span>
+                                        </td>
+                                        <td>${{ equipo.costo_compra|floatformat:2 }}</td>
+                                        <td>
+                                            <a href="{% url 'ventaMaquinarias:detalle_equipo_stock' equipo.id %}" class="btn btn-sm btn-info">
+                                                <i class="fas fa-eye"></i> Ver
+                                            </a>
+                                            {% if equipo.estado == 'EN_STOCK' %}
+                                                <a href="{% url 'ventaMaquinarias:crear_venta' equipo.id %}" class="btn btn-sm btn-success">
+                                                    <i class="fas fa-shopping-cart"></i> Vender
+                                                </a>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Paginación -->
+                        {% if page_obj.has_other_pages %}
+                        <nav aria-label="Paginación">
+                            <ul class="pagination justify-content-center">
+                                {% if page_obj.has_previous %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page=1{% if filtros.estado %}&estado={{ filtros.estado }}{% endif %}{% if filtros.sucursal %}&sucursal={{ filtros.sucursal }}{% endif %}{% if filtros.tipo_equipo %}&tipo_equipo={{ filtros.tipo_equipo }}{% endif %}{% if filtros.search %}&search={{ filtros.search }}{% endif %}">
+                                            <i class="fas fa-angle-double-left"></i>
+                                        </a>
+                                    </li>
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if filtros.estado %}&estado={{ filtros.estado }}{% endif %}{% if filtros.sucursal %}&sucursal={{ filtros.sucursal }}{% endif %}{% if filtros.tipo_equipo %}&tipo_equipo={{ filtros.tipo_equipo }}{% endif %}{% if filtros.search %}&search={{ filtros.search }}{% endif %}">
+                                            <i class="fas fa-angle-left"></i>
+                                        </a>
+                                    </li>
+                                {% endif %}
+
+                                {% for num in page_obj.paginator.page_range %}
+                                    {% if page_obj.number == num %}
+                                        <li class="page-item active">
+                                            <span class="page-link">{{ num }}</span>
+                                        </li>
+                                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page={{ num }}{% if filtros.estado %}&estado={{ filtros.estado }}{% endif %}{% if filtros.sucursal %}&sucursal={{ filtros.sucursal }}{% endif %}{% if filtros.tipo_equipo %}&tipo_equipo={{ filtros.tipo_equipo }}{% endif %}{% if filtros.search %}&search={{ filtros.search }}{% endif %}">{{ num }}</a>
+                                        </li>
+                                    {% endif %}
+                                {% endfor %}
+
+                                {% if page_obj.has_next %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if filtros.estado %}&estado={{ filtros.estado }}{% endif %}{% if filtros.sucursal %}&sucursal={{ filtros.sucursal }}{% endif %}{% if filtros.tipo_equipo %}&tipo_equipo={{ filtros.tipo_equipo }}{% endif %}{% if filtros.search %}&search={{ filtros.search }}{% endif %}">
+                                            <i class="fas fa-angle-right"></i>
+                                        </a>
+                                    </li>
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if filtros.estado %}&estado={{ filtros.estado }}{% endif %}{% if filtros.sucursal %}&sucursal={{ filtros.sucursal }}{% endif %}{% if filtros.tipo_equipo %}&tipo_equipo={{ filtros.tipo_equipo }}{% endif %}{% if filtros.search %}&search={{ filtros.search }}{% endif %}">
+                                            <i class="fas fa-angle-double-right"></i>
+                                        </a>
+                                    </li>
+                                {% endif %}
+                            </ul>
+                        </nav>
+                        {% endif %}
+
+                        <div class="text-center mt-3">
+                            <p class="text-muted">
+                                Mostrando {{ page_obj.start_index }} a {{ page_obj.end_index }} de {{ page_obj.paginator.count }} equipos
+                            </p>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-box-open fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">No se encontraron equipos</h5>
+                            <p class="text-muted">No hay equipos que coincidan con los filtros aplicados.</p>
+                            <a href="{% url 'ventaMaquinarias:lista_equipos_stock' %}" class="btn btn-primary">
+                                <i class="fas fa-times"></i> Limpiar Filtros
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

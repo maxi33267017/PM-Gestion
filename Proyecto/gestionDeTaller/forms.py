@@ -114,7 +114,7 @@ class ServicioForm(forms.ModelForm):
     class Meta:
         model = Servicio
         fields = [
-            'preorden', 'fecha_servicio', 'horometro_servicio', 'estado', 
+            'preorden', 'fecha_servicio', 'horometro_servicio', 'orden_servicio', 'estado', 
             'trabajo', 'observaciones', 
             'numero_cotizacion', 'archivo_cotizacion', 'prioridad'
         ]
@@ -124,6 +124,13 @@ class ServicioForm(forms.ModelForm):
                     'type': 'date',
                     'class': 'form-control',
                     'placeholder': 'YYYY-MM-DD'
+                }
+            ),
+            'orden_servicio': forms.TextInput(
+                attrs={
+                    'class': 'form-control',
+                    'placeholder': 'Número de hasta 8 dígitos',
+                    'maxlength': '8'
                 }
             ),
             'observaciones': forms.Textarea(attrs={'rows': 4}),
@@ -152,10 +159,17 @@ class ServicioEditarForm(forms.ModelForm):
 
     class Meta:
         model = Servicio
-        fields = ['fecha_servicio', 'horometro_servicio', 'prioridad']
+        fields = ['fecha_servicio', 'horometro_servicio', 'orden_servicio', 'prioridad']
         widgets = {
             'fecha_servicio': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
             'horometro_servicio': forms.NumberInput(attrs={'class': 'form-control'}),
+            'orden_servicio': forms.TextInput(
+                attrs={
+                    'class': 'form-control',
+                    'placeholder': 'Número de hasta 8 dígitos',
+                    'maxlength': '8'
+                }
+            ),
             'prioridad': forms.Select(attrs={'class': 'form-select'}),
         }
 
@@ -325,8 +339,7 @@ class Revision5SForm(forms.ModelForm):
             'herramientas_devueltas', 'box_limpios', 'sala_garantia',
             'piso_limpio', 'instrumentos_limpios', 'paredes_limpias',
             'personal_uniformado', 'epp_usado', 'herramientas_calibradas',
-            'residuos_gestionados', 'documentacion_actualizada', 'procedimientos_seguidos',
-            'evidencias'
+            'residuos_gestionados', 'documentacion_actualizada', 'procedimientos_seguidos'
         ]
         widgets = {
             'fecha_revision': forms.DateInput(attrs={'type': 'date'}),
@@ -339,6 +352,9 @@ class PlanAccion5SForm(forms.ModelForm):
         
         # Asegurar que el campo responsable muestre todos los usuarios sin filtro de rol
         self.fields['responsable'].queryset = Usuario.objects.filter(is_active=True).order_by('apellido', 'nombre')
+        
+        # Personalizar el campo responsable para mostrar solo nombre y apellido
+        self.fields['responsable'].label_from_instance = lambda obj: obj.get_nombre_completo()
         
         # Agregar clases CSS a los campos
         self.fields['item_no_conforme'].widget.attrs.update({'class': 'form-control'})
@@ -362,19 +378,47 @@ class PlanAccion5SForm(forms.ModelForm):
 class RespuestaEncuestaForm(forms.ModelForm):
     class Meta:
         model = RespuestaEncuesta
-        fields = ['calificacion', 'comentarios', 'nombre_respondente', 'cargo_respondente']
+        fields = [
+            'cumplimiento_acuerdo', 'motivo_cumplimiento_bajo',
+            'probabilidad_recomendacion', 'motivo_recomendacion_baja',
+            'problemas_pendientes', 'comentarios_generales',
+            'nombre_respondente', 'cargo_respondente'
+        ]
         widgets = {
-            'calificacion': forms.Select(
-                choices=[(i, f"{i} - {'Promotor' if i >= 9 else 'Pasivo' if i >= 7 else 'Detractor'}") for i in range(11)],
+            'cumplimiento_acuerdo': forms.Select(
+                choices=[(i, f"{i}") for i in range(1, 11)],
                 attrs={'class': 'form-select'}
             ),
-            'comentarios': forms.Textarea(attrs={'rows': 4, 'class': 'form-control', 'placeholder': 'Ingrese sus comentarios sobre el servicio...'}),
-            'nombre_respondente': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Nombre de quien responde'}),
-            'cargo_respondente': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Cargo de quien responde'}),
+            'motivo_cumplimiento_bajo': forms.Textarea(
+                attrs={'rows': 3, 'class': 'form-control', 'placeholder': 'Explique por qué la calificación fue baja...'}
+            ),
+            'probabilidad_recomendacion': forms.Select(
+                choices=[(i, f"{i}") for i in range(1, 11)],
+                attrs={'class': 'form-select'}
+            ),
+            'motivo_recomendacion_baja': forms.Textarea(
+                attrs={'rows': 3, 'class': 'form-control', 'placeholder': 'Explique por qué la probabilidad de recomendación fue baja...'}
+            ),
+            'problemas_pendientes': forms.Textarea(
+                attrs={'rows': 3, 'class': 'form-control', 'placeholder': 'Describa cualquier problema pendiente o no resuelto...'}
+            ),
+            'comentarios_generales': forms.Textarea(
+                attrs={'rows': 4, 'class': 'form-control', 'placeholder': 'Comentarios adicionales sobre el servicio...'}
+            ),
+            'nombre_respondente': forms.TextInput(
+                attrs={'class': 'form-control', 'placeholder': 'Nombre de quien responde'}
+            ),
+            'cargo_respondente': forms.TextInput(
+                attrs={'class': 'form-control', 'placeholder': 'Cargo de quien responde'}
+            ),
         }
         labels = {
-            'calificacion': '¿Qué probabilidad hay de que recomiende nuestro servicio? (0-10)',
-            'comentarios': 'Comentarios adicionales',
+            'cumplimiento_acuerdo': 'Del momento del agendamiento hasta la entrega del Equipo, ¿Lo que fue acordado fue cumplido? (1-10)',
+            'motivo_cumplimiento_bajo': 'Si la respuesta fue menor o igual a 7, ¿podría decirnos por qué?',
+            'probabilidad_recomendacion': 'En una escala de 1 a 10, ¿cuán probable es que recomiende el Servicio del Concesionario a otras personas?',
+            'motivo_recomendacion_baja': 'Si la respuesta fue menor o igual a 7, ¿podría decirnos por qué?',
+            'problemas_pendientes': '¿Algún pendiente o problema no resuelto?',
+            'comentarios_generales': 'Comentarios adicionales',
             'nombre_respondente': 'Nombre del respondente',
             'cargo_respondente': 'Cargo del respondente'
         }

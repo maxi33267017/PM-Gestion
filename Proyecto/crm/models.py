@@ -257,10 +257,13 @@ class EmbudoVentas(models.Model):
         blank=True, 
         verbose_name="Valor Estimado"
     )
-    probabilidad_cierre = models.IntegerField(
-        default=0, 
-        verbose_name="Probabilidad de Cierre (%)"
-    )  # 0-100%
+    valor_cierre = models.DecimalField(
+        max_digits=12, 
+        decimal_places=2, 
+        null=True, 
+        blank=True, 
+        verbose_name="Valor de Cierre"
+    )
     
     # Origen del lead
     origen = models.CharField(
@@ -326,11 +329,17 @@ class EmbudoVentas(models.Model):
         return timezone.now() - self.fecha_ingreso
     
     @property
-    def valor_probabilizado(self):
-        """Calcula el valor probabilizado según la probabilidad de cierre"""
-        if self.valor_estimado and self.probabilidad_cierre:
-            return self.valor_estimado * (self.probabilidad_cierre / 100)
-        return 0
+    def venta_concretada(self):
+        """Indica si la venta fue concretada (tiene valor de cierre)"""
+        return self.valor_cierre is not None and self.valor_cierre > 0
+    
+    @property
+    def diferencia_estimado_cierre(self):
+        """Calcula la diferencia entre valor estimado y valor de cierre"""
+        from decimal import Decimal
+        if self.valor_estimado and self.valor_cierre:
+            return self.valor_cierre - self.valor_estimado
+        return Decimal('0')
 
 
 class ContactoCliente(models.Model):
