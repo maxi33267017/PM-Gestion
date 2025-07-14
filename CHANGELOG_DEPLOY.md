@@ -78,7 +78,7 @@ SECRET_KEY=<generado automáticamente>
 DEBUG=False
 ALLOWED_HOSTS=tu-dominio.onrender.com
 DATABASE_URL=postgresql://patagonia:MyE8vlJgKi4ADY7NRgysAUTynAbQ0DF7@dpg-d1qhtk6r433s73edhccg-a.oregon-postgres.render.com/patagonia_81l3
-DJANGO_SETTINGS_MODULE=Proyecto.PatagoniaMaquinarias.settings_render
+DJANGO_SETTINGS_MODULE=PatagoniaMaquinarias.settings_render
 ```
 
 ## Comandos de Deploy

@@ -6,7 +6,10 @@ set -o errexit
 pip install -r requirements.txt
 
 # Configurar variables de entorno para el build
-export DJANGO_SETTINGS_MODULE=Proyecto.PatagoniaMaquinarias.settings_render
+export DJANGO_SETTINGS_MODULE=PatagoniaMaquinarias.settings_render
+
+# Cambiar al directorio del proyecto
+cd Proyecto
 
 # Recolectar archivos estáticos
-python Proyecto/manage.py collectstatic --noinput 
+python manage.py collectstatic --noinput 

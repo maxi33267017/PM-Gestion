@@ -1,15 +1,16 @@
 #!/usr/bin/env bash
 
 # Configurar variables de entorno con valores por defecto
-export DJANGO_SETTINGS_MODULE=${DJANGO_SETTINGS_MODULE:-Proyecto.PatagoniaMaquinarias.settings_render}
+export DJANGO_SETTINGS_MODULE=${DJANGO_SETTINGS_MODULE:-PatagoniaMaquinarias.settings_render}
 export DEBUG=${DEBUG:-False}
 export PORT=${PORT:-8000}
 
-# Configurar DATABASE_URL si no está definida (usando la URL de Render.com)
-if [ -z "$DATABASE_URL" ]; then
-    export DATABASE_URL="postgresql://patagonia:MyE8vlJgKi4ADY7NRgysAUTynAbQ0DF7@dpg-d1qhtk6r433s73edhccg-a.oregon-postgres.render.com/patagonia_81l3"
-    echo "DATABASE_URL configurada con valor por defecto"
-fi
+# Configurar variables de entorno para la base de datos
+export DB_NAME="patagonia_81l3"
+export DB_USER="patagonia"
+export DB_PASSWORD="MyE8vlJgKi4ADY7NRgysAUTynAbQ0DF7"
+export DB_HOST="dpg-d1qhtk6r433s73edhccg-a.oregon-postgres.render.com"
+export DB_PORT="5432"
 
 # Configurar SECRET_KEY si no está definida
 if [ -z "$SECRET_KEY" ]; then
@@ -22,13 +23,17 @@ echo "=== Configuración de la aplicación ==="
 echo "DJANGO_SETTINGS_MODULE: $DJANGO_SETTINGS_MODULE"
 echo "DEBUG: $DEBUG"
 echo "PORT: $PORT"
-echo "DATABASE_URL: ${DATABASE_URL:0:50}..."  # Mostrar solo los primeros 50 caracteres
+echo "DB_HOST: $DB_HOST"
+echo "DB_NAME: $DB_NAME"
 echo "SECRET_KEY: ${SECRET_KEY:0:20}..."      # Mostrar solo los primeros 20 caracteres
+
+# Cambiar al directorio del proyecto
+cd Proyecto
 
 # Ejecutar migraciones
 echo "=== Ejecutando migraciones ==="
-python Proyecto/manage.py migrate --noinput
+python manage.py migrate --noinput
 
 # Iniciar la aplicación
 echo "=== Iniciando aplicación ==="
-exec gunicorn --bind 0.0.0.0:$PORT Proyecto.PatagoniaMaquinarias.wsgi:application 
+exec gunicorn --bind 0.0.0.0:$PORT PatagoniaMaquinarias.wsgi:application 

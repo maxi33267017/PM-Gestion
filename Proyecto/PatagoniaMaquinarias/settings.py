@@ -93,10 +93,23 @@ WSGI_APPLICATION = 'PatagoniaMaquinarias.wsgi.application'
 # Database configuration
 if os.environ.get('DATABASE_URL'):
     # Production database (PostgreSQL)
-    import dj_database_url
-    DATABASES = {
-        'default': dj_database_url.parse(os.environ.get('DATABASE_URL'))
-    }
+    try:
+        import dj_database_url
+        DATABASES = {
+            'default': dj_database_url.parse(os.environ.get('DATABASE_URL'))
+        }
+    except ImportError:
+        # Fallback to direct PostgreSQL configuration
+        DATABASES = {
+            'default': {
+                'ENGINE': 'django.db.backends.postgresql',
+                'NAME': 'patagonia_81l3',
+                'USER': 'patagonia',
+                'PASSWORD': 'MyE8vlJgKi4ADY7NRgysAUTynAbQ0DF7',
+                'HOST': 'dpg-d1qhtk6r433s73edhccg-a.oregon-postgres.render.com',
+                'PORT': '5432',
+            }
+        }
 else:
     # Development database (MySQL)
     DATABASES = {

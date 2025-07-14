@@ -31,24 +31,16 @@ ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1,0.0.0.0').s
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
 # Database configuration for Render.com
-if os.environ.get('DATABASE_URL'):
-    # Production database (PostgreSQL)
-    import dj_database_url
-    DATABASES = {
-        'default': dj_database_url.parse(os.environ.get('DATABASE_URL'))
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'patagonia_81l3',
+        'USER': 'patagonia',
+        'PASSWORD': 'MyE8vlJgKi4ADY7NRgysAUTynAbQ0DF7',
+        'HOST': 'dpg-d1qhtk6r433s73edhccg-a.oregon-postgres.render.com',
+        'PORT': '5432',
     }
-else:
-    # Fallback to development database
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': os.environ.get('DB_NAME', 'patagonia_81l3'),
-            'USER': os.environ.get('DB_USER', 'patagonia'),
-            'PASSWORD': os.environ.get('DB_PASSWORD', 'MyE8vlJgKi4ADY7NRgysAUTynAbQ0DF7'),
-            'HOST': os.environ.get('DB_HOST', 'dpg-d1qhtk6r433s73edhccg-a.oregon-postgres.render.com'),
-            'PORT': os.environ.get('DB_PORT', '5432'),
-        }
-    }
+}
 
 # Configuración de conexión a la base de datos para producción
 DATABASES['default']['CONN_MAX_AGE'] = 600  # 10 minutos
