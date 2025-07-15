@@ -233,6 +233,19 @@
                     Proveedor que se asignará a todos los repuestos importados
                 </small>
             </div>
+
+            <div class="option-group">
+                <div class="form-check">
+                    <input type="checkbox" name="procesar_muestra" id="procesar_muestra" class="form-check-input" value="true">
+                    <label for="procesar_muestra" class="form-check-label">
+                        <strong>Procesar solo muestra (10,000 líneas)</strong>
+                    </label>
+                </div>
+                <small class="form-text text-muted">
+                    Marca esta opción si el archivo es muy grande y quieres probar primero con una muestra.
+                    Esto evitará timeouts en archivos de más de 100MB.
+                </small>
+            </div>
         </div>
 
         <!-- Barra de progreso -->

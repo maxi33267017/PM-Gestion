@@ -160,31 +160,35 @@ class ParserRepuestosJDV2:
         return None
     
     def parse_archivo(self, archivo_path, max_lineas=None):
-        """Parsea todo el archivo"""
+        """Parsea todo el archivo con optimizaciones"""
         repuestos = []
         errores = []
         
         print(f"🔍 Parsing archivo: {archivo_path}")
         
+        # Leer todo el archivo de una vez para mejor rendimiento
         with open(archivo_path, 'r', encoding='utf-8', errors='ignore') as f:
-            for i, linea in enumerate(f, 1):
-                if max_lineas and i > max_lineas:
-                    break
-                
-                try:
-                    repuesto = self.parse_linea(linea)
-                    if repuesto and repuesto.get('codigo'):
-                        repuestos.append(repuesto)
-                except Exception as e:
-                    errores.append({
-                        'linea': i,
-                        'error': str(e),
-                        'contenido': linea[:100]
-                    })
-                
-                # Mostrar progreso cada 10000 líneas
-                if i % 10000 == 0:
-                    print(f"  Procesadas {i:,} líneas...")
+            lineas = f.readlines()
+        
+        total_lineas = len(lineas)
+        if max_lineas:
+            total_lineas = min(total_lineas, max_lineas)
+        
+        for i, linea in enumerate(lineas[:total_lineas], 1):
+            try:
+                repuesto = self.parse_linea(linea)
+                if repuesto and repuesto.get('codigo'):
+                    repuestos.append(repuesto)
+            except Exception as e:
+                errores.append({
+                    'linea': i,
+                    'error': str(e),
+                    'contenido': linea[:100]
+                })
+            
+            # Mostrar progreso cada 10000 líneas
+            if i % 10000 == 0:
+                print(f"  Procesadas {i:,} líneas...")
         
         print(f"✅ Parsing completado:")
         print(f"  Repuestos válidos: {len(repuestos):,}")

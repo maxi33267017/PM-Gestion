@@ -3388,21 +3388,25 @@ def importar_repuestos_jd(request):
             categoria_default = request.POST.get('categoria_default', '')
             proveedor_default = request.POST.get('proveedor_default', 'John Deere')
             
+            # Opción para procesar solo una muestra (útil para archivos muy grandes)
+            procesar_muestra = request.POST.get('procesar_muestra', False)
+            max_lineas = 10000 if procesar_muestra else None
+            
             # Procesar el archivo
             resultado = procesar_archivo_repuestos_jd(
                 archivo, 
                 modo_importacion, 
                 categoria_default, 
                 proveedor_default,
-                request.user
+                request.user,
+                max_lineas
             )
             
             if resultado['success']:
-                messages.success(
-                    request, 
-                    f"Importación completada: {resultado['creados']} nuevos, "
-                    f"{resultado['actualizados']} actualizados, {resultado['errores']} errores."
-                )
+                mensaje = f"Importación completada: {resultado['creados']} nuevos, {resultado['actualizados']} actualizados, {resultado['errores']} errores."
+                if procesar_muestra:
+                    mensaje += " (Procesado solo muestra de 10,000 líneas)"
+                messages.success(request, mensaje)
             else:
                 messages.error(request, f"Error en la importación: {resultado['error']}")
                 
@@ -3411,11 +3415,12 @@ def importar_repuestos_jd(request):
     
     return render(request, 'gestionDeTaller/importar_repuestos_jd.html')
 
-def procesar_archivo_repuestos_jd(archivo, modo_importacion, categoria_default, proveedor_default, usuario):
-    """Procesa el archivo de repuestos de John Deere"""
+def procesar_archivo_repuestos_jd(archivo, modo_importacion, categoria_default, proveedor_default, usuario, max_lineas=None):
+    """Procesa el archivo de repuestos de John Deere con procesamiento optimizado"""
     
     from .parser_repuestos_jd_v2 import ParserRepuestosJDV2
     from django.db import transaction
+    import time
     
     try:
         # Guardar el archivo temporalmente
@@ -3427,9 +3432,9 @@ def procesar_archivo_repuestos_jd(archivo, modo_importacion, categoria_default, 
                 temp_file.write(chunk)
             temp_file_path = temp_file.name
         
-        # Parsear el archivo
+        # Parsear el archivo en lotes
         parser = ParserRepuestosJDV2()
-        repuestos_parseados, errores_parseo = parser.parse_archivo(temp_file_path)
+        repuestos_parseados, errores_parseo = parser.parse_archivo(temp_file_path, max_lineas)
         
         # Limpiar archivo temporal
         os.unlink(temp_file_path)
@@ -3440,53 +3445,75 @@ def procesar_archivo_repuestos_jd(archivo, modo_importacion, categoria_default, 
                 'error': 'No se pudieron parsear repuestos del archivo'
             }
         
-        # Procesar repuestos en la base de datos
+        # Procesar repuestos en lotes para evitar timeout
         creados = 0
         actualizados = 0
         errores = 0
+        lote_size = 1000  # Procesar 1000 repuestos por lote
+        tiempo_inicio = time.time()
         
-        with transaction.atomic():
-            for repuesto_data in repuestos_parseados:
-                try:
-                    codigo = repuesto_data['codigo']
-                    descripcion = repuesto_data['descripcion']
-                    precio_lista = repuesto_data.get('precio_lista_decimal')
-                    
-                    if not codigo or not descripcion:
-                        errores += 1
-                        continue
-                    
-                    # Buscar si ya existe
-                    repuesto_existente = Repuesto.objects.filter(codigo=codigo).first()
-                    
-                    if repuesto_existente:
-                        if modo_importacion in ['actualizar_existentes', 'crear_y_actualizar']:
-                            # Actualizar repuesto existente
-                            if precio_lista:
-                                repuesto_existente.precio_venta = precio_lista
-                            if categoria_default:
-                                repuesto_existente.categoria = categoria_default
-                            if proveedor_default:
-                                repuesto_existente.proveedor = proveedor_default
-                            repuesto_existente.save()
-                            actualizados += 1
-                    else:
-                        if modo_importacion in ['crear_nuevos', 'crear_y_actualizar']:
-                            # Crear nuevo repuesto
-                            nuevo_repuesto = Repuesto(
-                                codigo=codigo,
-                                descripcion=descripcion,
-                                precio_venta=precio_lista or 0,
-                                categoria=categoria_default,
-                                proveedor=proveedor_default,
-                                creado_por=usuario
-                            )
-                            nuevo_repuesto.save()
-                            creados += 1
+        # Dividir en lotes
+        lotes = [repuestos_parseados[i:i + lote_size] for i in range(0, len(repuestos_parseados), lote_size)]
+        
+        for i, lote in enumerate(lotes):
+            try:
+                with transaction.atomic():
+                    for repuesto_data in lote:
+                        try:
+                            codigo = repuesto_data['codigo']
+                            descripcion = repuesto_data['descripcion']
+                            precio_lista = repuesto_data.get('precio_lista_decimal')
                             
-                except Exception as e:
-                    errores += 1
-                    continue
+                            if not codigo or not descripcion:
+                                errores += 1
+                                continue
+                            
+                            # Buscar si ya existe
+                            repuesto_existente = Repuesto.objects.filter(codigo=codigo).first()
+                            
+                            if repuesto_existente:
+                                if modo_importacion in ['actualizar_existentes', 'crear_y_actualizar']:
+                                    # Actualizar repuesto existente
+                                    if precio_lista:
+                                        repuesto_existente.precio_venta = precio_lista
+                                    if categoria_default:
+                                        repuesto_existente.categoria = categoria_default
+                                    if proveedor_default:
+                                        repuesto_existente.proveedor = proveedor_default
+                                    repuesto_existente.save()
+                                    actualizados += 1
+                            else:
+                                if modo_importacion in ['crear_nuevos', 'crear_y_actualizar']:
+                                    # Crear nuevo repuesto
+                                    nuevo_repuesto = Repuesto(
+                                        codigo=codigo,
+                                        descripcion=descripcion,
+                                        precio_venta=precio_lista or 0,
+                                        categoria=categoria_default,
+                                        proveedor=proveedor_default,
+                                        creado_por=usuario
+                                    )
+                                    nuevo_repuesto.save()
+                                    creados += 1
+                                    
+                        except Exception as e:
+                            errores += 1
+                            continue
+                
+                # Verificar timeout (máximo 5 minutos)
+                tiempo_transcurrido = time.time() - tiempo_inicio
+                if tiempo_transcurrido > 300:  # 5 minutos
+                    return {
+                        'success': False,
+                        'error': f'Timeout: El proceso tomó más de 5 minutos. Procesados {creados + actualizados} repuestos hasta ahora.'
+                    }
+                
+                # Pausa pequeña entre lotes para no sobrecargar la base de datos
+                time.sleep(0.1)
+                
+            except Exception as e:
+                errores += len(lote)
+                continue
         
         return {
             'success': True,
