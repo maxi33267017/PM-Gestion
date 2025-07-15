@@ -167,6 +167,11 @@
     <div class="repuestos-header text-center">
         <h1><i class="fas fa-cogs me-3"></i>Base de Datos de Repuestos</h1>
         <p class="mb-0">Gestiona el catálogo de repuestos con precios y descripciones</p>
+        <div class="mt-3">
+            <a href="{% url 'gestionDeTaller:importar_repuestos_jd' %}" class="btn btn-light btn-lg">
+                <i class="fas fa-upload me-2"></i>Importar desde John Deere
+            </a>
+        </div>
     </div>
 
     <!-- Filtros -->

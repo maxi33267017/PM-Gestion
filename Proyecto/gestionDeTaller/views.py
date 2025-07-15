@@ -3359,3 +3359,145 @@ def add_item(request, tool_id):
     
     # Si no es POST, redirigir al detalle
     return redirect('gestionDeTaller:personal_tool_detail', tool_id=tool.id)
+
+@login_required
+def importar_repuestos_jd(request):
+    """Vista para importar repuestos desde archivo de John Deere"""
+    
+    # Solo gerentes y administrativos pueden importar repuestos
+    if request.user.rol not in ['GERENTE', 'ADMINISTRATIVO']:
+        messages.error(request, 'No tienes permisos para importar repuestos.')
+        return redirect('gestionDeTaller:gestionar_repuestos')
+    
+    if request.method == 'POST':
+        try:
+            # Verificar si se subió un archivo
+            if 'archivo_repuestos' not in request.FILES:
+                messages.error(request, 'Debe seleccionar un archivo para importar.')
+                return redirect('gestionDeTaller:importar_repuestos_jd')
+            
+            archivo = request.FILES['archivo_repuestos']
+            
+            # Verificar el tipo de archivo
+            if not archivo.name.endswith('.txt') and not archivo.name.startswith('AR.DMS.DWNLD.V2'):
+                messages.error(request, 'El archivo debe ser un archivo de texto de John Deere.')
+                return redirect('gestionDeTaller:importar_repuestos_jd')
+            
+            # Opciones de importación
+            modo_importacion = request.POST.get('modo_importacion', 'crear_nuevos')
+            categoria_default = request.POST.get('categoria_default', '')
+            proveedor_default = request.POST.get('proveedor_default', 'John Deere')
+            
+            # Procesar el archivo
+            resultado = procesar_archivo_repuestos_jd(
+                archivo, 
+                modo_importacion, 
+                categoria_default, 
+                proveedor_default,
+                request.user
+            )
+            
+            if resultado['success']:
+                messages.success(
+                    request, 
+                    f"Importación completada: {resultado['creados']} nuevos, "
+                    f"{resultado['actualizados']} actualizados, {resultado['errores']} errores."
+                )
+            else:
+                messages.error(request, f"Error en la importación: {resultado['error']}")
+                
+        except Exception as e:
+            messages.error(request, f'Error al procesar el archivo: {str(e)}')
+    
+    return render(request, 'gestionDeTaller/importar_repuestos_jd.html')
+
+def procesar_archivo_repuestos_jd(archivo, modo_importacion, categoria_default, proveedor_default, usuario):
+    """Procesa el archivo de repuestos de John Deere"""
+    
+    from .parser_repuestos_jd_v2 import ParserRepuestosJDV2
+    from django.db import transaction
+    
+    try:
+        # Guardar el archivo temporalmente
+        import tempfile
+        import os
+        
+        with tempfile.NamedTemporaryFile(delete=False, suffix='.txt') as temp_file:
+            for chunk in archivo.chunks():
+                temp_file.write(chunk)
+            temp_file_path = temp_file.name
+        
+        # Parsear el archivo
+        parser = ParserRepuestosJDV2()
+        repuestos_parseados, errores_parseo = parser.parse_archivo(temp_file_path)
+        
+        # Limpiar archivo temporal
+        os.unlink(temp_file_path)
+        
+        if not repuestos_parseados:
+            return {
+                'success': False,
+                'error': 'No se pudieron parsear repuestos del archivo'
+            }
+        
+        # Procesar repuestos en la base de datos
+        creados = 0
+        actualizados = 0
+        errores = 0
+        
+        with transaction.atomic():
+            for repuesto_data in repuestos_parseados:
+                try:
+                    codigo = repuesto_data['codigo']
+                    descripcion = repuesto_data['descripcion']
+                    precio_lista = repuesto_data.get('precio_lista_decimal')
+                    
+                    if not codigo or not descripcion:
+                        errores += 1
+                        continue
+                    
+                    # Buscar si ya existe
+                    repuesto_existente = Repuesto.objects.filter(codigo=codigo).first()
+                    
+                    if repuesto_existente:
+                        if modo_importacion in ['actualizar_existentes', 'crear_y_actualizar']:
+                            # Actualizar repuesto existente
+                            if precio_lista:
+                                repuesto_existente.precio_venta = precio_lista
+                            if categoria_default:
+                                repuesto_existente.categoria = categoria_default
+                            if proveedor_default:
+                                repuesto_existente.proveedor = proveedor_default
+                            repuesto_existente.save()
+                            actualizados += 1
+                    else:
+                        if modo_importacion in ['crear_nuevos', 'crear_y_actualizar']:
+                            # Crear nuevo repuesto
+                            nuevo_repuesto = Repuesto(
+                                codigo=codigo,
+                                descripcion=descripcion,
+                                precio_venta=precio_lista or 0,
+                                categoria=categoria_default,
+                                proveedor=proveedor_default,
+                                creado_por=usuario
+                            )
+                            nuevo_repuesto.save()
+                            creados += 1
+                            
+                except Exception as e:
+                    errores += 1
+                    continue
+        
+        return {
+            'success': True,
+            'creados': creados,
+            'actualizados': actualizados,
+            'errores': errores,
+            'total_parseados': len(repuestos_parseados)
+        }
+        
+    except Exception as e:
+        return {
+            'success': False,
+            'error': str(e)
+        }

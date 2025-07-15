@@ -1,0 +1,366 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block title %}Importar Repuestos - John Deere{% endblock %}
+
+{% block extra_css %}
+<style>
+    .import-container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+    
+    .file-upload-area {
+        border: 2px dashed #007bff;
+        border-radius: 10px;
+        padding: 40px;
+        text-align: center;
+        background-color: #f8f9fa;
+        transition: all 0.3s ease;
+        margin-bottom: 30px;
+    }
+    
+    .file-upload-area:hover {
+        border-color: #0056b3;
+        background-color: #e9ecef;
+    }
+    
+    .file-upload-area.dragover {
+        border-color: #28a745;
+        background-color: #d4edda;
+    }
+    
+    .upload-icon {
+        font-size: 48px;
+        color: #007bff;
+        margin-bottom: 15px;
+    }
+    
+    .options-section {
+        background-color: #f8f9fa;
+        border-radius: 10px;
+        padding: 25px;
+        margin-bottom: 30px;
+    }
+    
+    .option-group {
+        margin-bottom: 20px;
+    }
+    
+    .option-group label {
+        font-weight: 600;
+        color: #495057;
+        margin-bottom: 8px;
+        display: block;
+    }
+    
+    .form-control, .form-select {
+        border-radius: 8px;
+        border: 1px solid #ced4da;
+        padding: 12px 15px;
+        font-size: 14px;
+    }
+    
+    .form-control:focus, .form-select:focus {
+        border-color: #007bff;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    }
+    
+    .btn-import {
+        background: linear-gradient(135deg, #007bff, #0056b3);
+        border: none;
+        border-radius: 8px;
+        padding: 15px 30px;
+        font-size: 16px;
+        font-weight: 600;
+        color: white;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
+    }
+    
+    .btn-import:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(0, 123, 255, 0.4);
+        background: linear-gradient(135deg, #0056b3, #004085);
+    }
+    
+    .btn-import:disabled {
+        background: #6c757d;
+        transform: none;
+        box-shadow: none;
+    }
+    
+    .info-card {
+        background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+        border-left: 4px solid #2196f3;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 30px;
+    }
+    
+    .info-card h5 {
+        color: #1976d2;
+        margin-bottom: 10px;
+    }
+    
+    .info-card p {
+        color: #424242;
+        margin-bottom: 8px;
+    }
+    
+    .progress-container {
+        display: none;
+        margin-top: 20px;
+    }
+    
+    .progress {
+        height: 25px;
+        border-radius: 12px;
+        background-color: #e9ecef;
+        overflow: hidden;
+    }
+    
+    .progress-bar {
+        background: linear-gradient(90deg, #007bff, #0056b3);
+        transition: width 0.3s ease;
+    }
+    
+    .file-info {
+        margin-top: 15px;
+        padding: 15px;
+        background-color: #e9ecef;
+        border-radius: 8px;
+        display: none;
+    }
+    
+    .file-info.show {
+        display: block;
+    }
+    
+    .file-name {
+        font-weight: 600;
+        color: #495057;
+    }
+    
+    .file-size {
+        color: #6c757d;
+        font-size: 14px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="import-container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fas fa-upload me-2"></i>Importar Repuestos - John Deere</h2>
+        <a href="{% url 'gestionDeTaller:gestionar_repuestos' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Volver
+        </a>
+    </div>
+
+    <!-- Información del proceso -->
+    <div class="info-card">
+        <h5><i class="fas fa-info-circle me-2"></i>Información del Proceso</h5>
+        <p><strong>Formato esperado:</strong> Archivo de texto AR.DMS.DWNLD.V2 de John Deere</p>
+        <p><strong>Tamaño máximo:</strong> 200MB</p>
+        <p><strong>Campos que se importan:</strong> Código, Descripción, Precio de Lista</p>
+        <p><strong>Tiempo estimado:</strong> 2-5 minutos para archivos grandes</p>
+    </div>
+
+    <form method="post" enctype="multipart/form-data" id="importForm">
+        {% csrf_token %}
+        
+        <!-- Área de subida de archivo -->
+        <div class="file-upload-area" id="uploadArea">
+            <div class="upload-icon">
+                <i class="fas fa-cloud-upload-alt"></i>
+            </div>
+            <h4>Seleccionar archivo de repuestos</h4>
+            <p class="text-muted">Arrastra y suelta el archivo aquí o haz clic para seleccionar</p>
+            <input type="file" name="archivo_repuestos" id="archivoInput" class="d-none" accept=".txt">
+            <button type="button" class="btn btn-primary" onclick="document.getElementById('archivoInput').click()">
+                <i class="fas fa-folder-open me-2"></i>Seleccionar Archivo
+            </button>
+        </div>
+
+        <!-- Información del archivo -->
+        <div class="file-info" id="fileInfo">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="file-name" id="fileName"></div>
+                    <div class="file-size" id="fileSize"></div>
+                </div>
+                <button type="button" class="btn btn-sm btn-outline-danger" onclick="clearFile()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Opciones de importación -->
+        <div class="options-section">
+            <h5 class="mb-3"><i class="fas fa-cog me-2"></i>Opciones de Importación</h5>
+            
+            <div class="option-group">
+                <label for="modo_importacion">Modo de Importación:</label>
+                <select name="modo_importacion" id="modo_importacion" class="form-select">
+                    <option value="crear_nuevos">Solo crear nuevos repuestos</option>
+                    <option value="actualizar_existentes">Solo actualizar existentes</option>
+                    <option value="crear_y_actualizar">Crear nuevos y actualizar existentes</option>
+                </select>
+                <small class="form-text text-muted">
+                    <strong>Crear nuevos:</strong> Solo agrega repuestos que no existen<br>
+                    <strong>Actualizar existentes:</strong> Solo actualiza precios de repuestos existentes<br>
+                    <strong>Crear y actualizar:</strong> Hace ambas operaciones
+                </small>
+            </div>
+
+            <div class="option-group">
+                <label for="categoria_default">Categoría por defecto:</label>
+                <input type="text" name="categoria_default" id="categoria_default" class="form-control" 
+                       placeholder="Ej: Filtros, Aceites, Neumáticos, etc.">
+                <small class="form-text text-muted">
+                    Categoría que se asignará a todos los repuestos importados
+                </small>
+            </div>
+
+            <div class="option-group">
+                <label for="proveedor_default">Proveedor por defecto:</label>
+                <input type="text" name="proveedor_default" id="proveedor_default" class="form-control" 
+                       value="John Deere" placeholder="Proveedor de los repuestos">
+                <small class="form-text text-muted">
+                    Proveedor que se asignará a todos los repuestos importados
+                </small>
+            </div>
+        </div>
+
+        <!-- Barra de progreso -->
+        <div class="progress-container" id="progressContainer">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <span>Procesando archivo...</span>
+                <span id="progressText">0%</span>
+            </div>
+            <div class="progress">
+                <div class="progress-bar" id="progressBar" role="progressbar" style="width: 0%"></div>
+            </div>
+        </div>
+
+        <!-- Botón de importación -->
+        <div class="text-center">
+            <button type="submit" class="btn btn-import" id="btnImport" disabled>
+                <i class="fas fa-upload me-2"></i>Iniciar Importación
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const uploadArea = document.getElementById('uploadArea');
+    const archivoInput = document.getElementById('archivoInput');
+    const fileInfo = document.getElementById('fileInfo');
+    const btnImport = document.getElementById('btnImport');
+    const progressContainer = document.getElementById('progressContainer');
+    const progressBar = document.getElementById('progressBar');
+    const progressText = document.getElementById('progressText');
+
+    // Drag and drop functionality
+    uploadArea.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        uploadArea.classList.add('dragover');
+    });
+
+    uploadArea.addEventListener('dragleave', function(e) {
+        e.preventDefault();
+        uploadArea.classList.remove('dragover');
+    });
+
+    uploadArea.addEventListener('drop', function(e) {
+        e.preventDefault();
+        uploadArea.classList.remove('dragover');
+        
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            archivoInput.files = files;
+            handleFileSelect(files[0]);
+        }
+    });
+
+    // File input change
+    archivoInput.addEventListener('change', function(e) {
+        if (e.target.files.length > 0) {
+            handleFileSelect(e.target.files[0]);
+        }
+    });
+
+    function handleFileSelect(file) {
+        // Validar tipo de archivo
+        if (!file.name.endsWith('.txt') && !file.name.startsWith('AR.DMS.DWNLD.V2')) {
+            alert('Por favor selecciona un archivo de texto válido de John Deere.');
+            return;
+        }
+
+        // Validar tamaño (200MB máximo)
+        const maxSize = 200 * 1024 * 1024; // 200MB en bytes
+        if (file.size > maxSize) {
+            alert('El archivo es demasiado grande. El tamaño máximo es 200MB.');
+            return;
+        }
+
+        // Mostrar información del archivo
+        document.getElementById('fileName').textContent = file.name;
+        document.getElementById('fileSize').textContent = formatFileSize(file.size);
+        fileInfo.classList.add('show');
+        
+        // Habilitar botón de importación
+        btnImport.disabled = false;
+    }
+
+    function formatFileSize(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+
+    function clearFile() {
+        archivoInput.value = '';
+        fileInfo.classList.remove('show');
+        btnImport.disabled = true;
+    }
+
+    // Form submission
+    document.getElementById('importForm').addEventListener('submit', function(e) {
+        if (!archivoInput.files.length) {
+            e.preventDefault();
+            alert('Por favor selecciona un archivo para importar.');
+            return;
+        }
+
+        // Mostrar progreso
+        progressContainer.style.display = 'block';
+        btnImport.disabled = true;
+        btnImport.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Importando...';
+
+        // Simular progreso (en una implementación real, esto vendría del servidor)
+        let progress = 0;
+        const interval = setInterval(function() {
+            progress += Math.random() * 10;
+            if (progress > 90) progress = 90;
+            
+            progressBar.style.width = progress + '%';
+            progressText.textContent = Math.round(progress) + '%';
+        }, 500);
+
+        // Limpiar intervalo después de 30 segundos (tiempo máximo estimado)
+        setTimeout(function() {
+            clearInterval(interval);
+        }, 30000);
+    });
+});
+</script>
+{% endblock %} 
