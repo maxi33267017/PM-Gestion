@@ -73,6 +73,8 @@ urlpatterns = [
         path('repuestos/obtener/', views.obtener_repuesto, name='obtener_repuesto'),
         path('repuestos/lista/', views.obtener_lista_repuestos, name='obtener_lista_repuestos'),
         path('repuestos/importar-jd/', views.importar_repuestos_jd, name='importar_repuestos_jd'),
+        path('repuestos/seguimiento/<str:task_id>/', views.seguimiento_importacion, name='seguimiento_importacion'),
+        path('repuestos/api/estado/<str:task_id>/', views.api_estado_importacion, name='api_estado_importacion'),
 
         # URLs para Herramientas Especiales
         path('herramientas-especiales/', views.herramientas_especiales_list, name='herramientas_especiales_list'),

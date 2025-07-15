@@ -3392,9 +3392,19 @@ def importar_repuestos_jd(request):
             procesar_muestra = request.POST.get('procesar_muestra', False)
             max_lineas = 10000 if procesar_muestra else None
             
-            # Procesar el archivo
-            resultado = procesar_archivo_repuestos_jd(
-                archivo, 
+            # Guardar archivo temporalmente
+            import tempfile
+            import os
+            
+            with tempfile.NamedTemporaryFile(delete=False, suffix='.txt') as temp_file:
+                for chunk in archivo.chunks():
+                    temp_file.write(chunk)
+                temp_file_path = temp_file.name
+            
+            # Iniciar tarea en segundo plano
+            from .tasks import iniciar_importacion
+            task_id = iniciar_importacion(
+                temp_file_path, 
                 modo_importacion, 
                 categoria_default, 
                 proveedor_default,
@@ -3402,18 +3412,54 @@ def importar_repuestos_jd(request):
                 max_lineas
             )
             
-            if resultado['success']:
-                mensaje = f"Importación completada: {resultado['creados']} nuevos, {resultado['actualizados']} actualizados, {resultado['errores']} errores."
-                if procesar_muestra:
-                    mensaje += " (Procesado solo muestra de 10,000 líneas)"
-                messages.success(request, mensaje)
-            else:
-                messages.error(request, f"Error en la importación: {resultado['error']}")
+            # Redirigir a la página de seguimiento
+            return redirect('gestionDeTaller:seguimiento_importacion', task_id=task_id)
                 
         except Exception as e:
             messages.error(request, f'Error al procesar el archivo: {str(e)}')
     
     return render(request, 'gestionDeTaller/importar_repuestos_jd.html')
+
+@login_required
+def seguimiento_importacion(request, task_id):
+    """Vista para seguir el progreso de una importación"""
+    
+    # Solo gerentes y administrativos pueden ver el seguimiento
+    if request.user.rol not in ['GERENTE', 'ADMINISTRATIVO']:
+        messages.error(request, 'No tienes permisos para ver el seguimiento de importaciones.')
+        return redirect('gestionDeTaller:gestionar_repuestos')
+    
+    from .tasks import obtener_estado_importacion
+    
+    estado = obtener_estado_importacion(task_id)
+    
+    if not estado:
+        messages.error(request, 'Tarea de importación no encontrada.')
+        return redirect('gestionDeTaller:gestionar_repuestos')
+    
+    context = {
+        'task_id': task_id,
+        'estado': estado
+    }
+    
+    return render(request, 'gestionDeTaller/seguimiento_importacion.html', context)
+
+@login_required
+def api_estado_importacion(request, task_id):
+    """API para obtener el estado de una importación via AJAX"""
+    
+    # Solo gerentes y administrativos pueden acceder a la API
+    if request.user.rol not in ['GERENTE', 'ADMINISTRATIVO']:
+        return JsonResponse({'error': 'No tienes permisos'}, status=403)
+    
+    from .tasks import obtener_estado_importacion
+    
+    estado = obtener_estado_importacion(task_id)
+    
+    if not estado:
+        return JsonResponse({'error': 'Tarea no encontrada'}, status=404)
+    
+    return JsonResponse(estado)
 
 def procesar_archivo_repuestos_jd(archivo, modo_importacion, categoria_default, proveedor_default, usuario, max_lineas=None):
     """Procesa el archivo de repuestos de John Deere con procesamiento optimizado"""
