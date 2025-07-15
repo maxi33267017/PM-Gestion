@@ -1510,7 +1510,7 @@ def registrar_horas(request, tecnico_id):
             
             # Verificar si el usuario quiere continuar registrando
             if request.POST.get('action') == 'save_and_continue':
-                return redirect('gestionDeTaller:registrar_horas', tecnico_id=tecnico.id, fecha=fecha_str)
+                return redirect('gestionDeTaller:registrar_horas', tecnico_id=tecnico.id)
             else:
                 return redirect('gestionDeTaller:detalle_tecnico', tecnico_id=tecnico.id)
     else:
