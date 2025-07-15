@@ -336,6 +336,18 @@
         color: white;
         text-decoration: none;
     }
+    
+    .btn-info {
+        background: var(--info-gradient);
+        color: white;
+    }
+    
+    .btn-info:hover {
+        background: var(--info-gradient);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4);
+        color: white;
+    }
 
     /* Mensaje de no registros */
     .no-records {
@@ -435,6 +447,10 @@
             <i class="bi bi-calendar-date"></i>
             {{ fecha|date:"d M Y" }}
         </h3>
+        <div class="session-counter" style="margin-top: 0.5rem; font-size: 0.9rem; color: #6c757d;">
+            <i class="bi bi-clock-history"></i>
+            <span id="session-count">{{ registros_previos|length }}</span> registros en esta fecha
+        </div>
     </div>
 
     <!-- Resumen de Horas Registradas -->
@@ -498,6 +514,11 @@
                 Registrar Nueva Hora
             </h4>
         </div>
+        <div class="form-info" style="background: #e3f2fd; border-left: 4px solid #2196F3; padding: 1rem; margin: 0; font-size: 0.9rem; color: #1565C0;">
+            <i class="bi bi-info-circle"></i>
+            <strong>Tip:</strong> Usa "Guardar y Continuar" para registrar múltiples horas rápidamente, o "Guardar y Salir" para volver al detalle del técnico.
+            <br><small><strong>Atajos:</strong> Ctrl+Enter = Guardar y Continuar | Ctrl+Shift+Enter = Guardar y Salir</small>
+        </div>
         <div class="form-body">
             <form method="post">
                 {% csrf_token %}
@@ -548,9 +569,13 @@
                 </div>
 
                 <div class="buttons-container">
-                    <button type="submit" class="btn btn-success">
+                    <button type="submit" name="action" value="save_and_continue" class="btn btn-success">
                         <i class="bi bi-check-circle"></i>
-                        Guardar Horas
+                        Guardar y Continuar
+                    </button>
+                    <button type="submit" name="action" value="save_and_exit" class="btn btn-info">
+                        <i class="bi bi-check-circle"></i>
+                        Guardar y Salir
                     </button>
                     <a href="{% url 'gestionDeTaller:detalle_tecnico' tecnico_id=tecnico.id %}" class="btn btn-secondary">
                         <i class="bi bi-arrow-left"></i>
@@ -561,6 +586,64 @@
         </div>
     </div>
 </main>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Función para limpiar el formulario
+    function clearForm() {
+        document.querySelectorAll('input[type="time"], input[type="text"], textarea, select').forEach(function(element) {
+            if (element.type === 'time') {
+                element.value = '';
+            } else if (element.tagName === 'SELECT') {
+                element.selectedIndex = 0;
+            } else if (element.tagName === 'TEXTAREA') {
+                element.value = '';
+            }
+        });
+    }
+    
+    // Agregar evento para el botón "Guardar y Continuar"
+    document.querySelector('button[value="save_and_continue"]').addEventListener('click', function() {
+        // El formulario se enviará normalmente, pero podemos agregar una clase para identificar la acción
+        this.classList.add('saving-continue');
+    });
+    
+    // Si hay un mensaje de éxito y el botón tiene la clase 'saving-continue', limpiar el formulario
+    const successMessage = document.querySelector('.custom-alert.success');
+    const continueButton = document.querySelector('button[value="save_and_continue"]');
+    
+    if (successMessage && continueButton.classList.contains('saving-continue')) {
+        // Limpiar el formulario después de un breve delay
+        setTimeout(function() {
+            clearForm();
+            continueButton.classList.remove('saving-continue');
+        }, 500);
+    }
+    
+    // Actualizar contador de sesión cuando se guarda exitosamente
+    if (successMessage) {
+        const sessionCount = document.getElementById('session-count');
+        if (sessionCount) {
+            const currentCount = parseInt(sessionCount.textContent);
+            sessionCount.textContent = currentCount + 1;
+        }
+    }
+    
+    // Agregar atajos de teclado
+    document.addEventListener('keydown', function(e) {
+        // Ctrl+Enter para "Guardar y Continuar"
+        if (e.ctrlKey && e.key === 'Enter') {
+            e.preventDefault();
+            document.querySelector('button[value="save_and_continue"]').click();
+        }
+        // Ctrl+Shift+Enter para "Guardar y Salir"
+        if (e.ctrlKey && e.shiftKey && e.key === 'Enter') {
+            e.preventDefault();
+            document.querySelector('button[value="save_and_exit"]').click();
+        }
+    });
+});
+</script>
 {% endblock %}
 
 

@@ -1507,7 +1507,12 @@ def registrar_horas(request, tecnico_id):
             
             registro.save()
             messages.success(request, "Horas registradas correctamente.")
-            return redirect('gestionDeTaller:detalle_tecnico', tecnico_id=tecnico.id)
+            
+            # Verificar si el usuario quiere continuar registrando
+            if request.POST.get('action') == 'save_and_continue':
+                return redirect('gestionDeTaller:registrar_horas', tecnico_id=tecnico.id, fecha=fecha_str)
+            else:
+                return redirect('gestionDeTaller:detalle_tecnico', tecnico_id=tecnico.id)
     else:
         form = RegistroHorasTecnicoForm(tecnico=tecnico)  # Pasar el técnico al formulario
 
