@@ -179,7 +179,7 @@
             </div>
             <h4>Seleccionar archivo de repuestos</h4>
             <p class="text-muted">Arrastra y suelta el archivo aquí o haz clic para seleccionar</p>
-            <input type="file" name="archivo_repuestos" id="archivoInput" class="d-none" accept=".txt">
+            <input type="file" name="archivo_repuestos" id="archivoInput" class="d-none" accept=".txt,text/plain,*">
             <button type="button" class="btn btn-primary" onclick="document.getElementById('archivoInput').click()">
                 <i class="fas fa-folder-open me-2"></i>Seleccionar Archivo
             </button>
@@ -297,9 +297,14 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     function handleFileSelect(file) {
-        // Validar tipo de archivo
-        if (!file.name.endsWith('.txt') && !file.name.startsWith('AR.DMS.DWNLD.V2')) {
-            alert('Por favor selecciona un archivo de texto válido de John Deere.');
+        // Validar tipo de archivo - más flexible para archivos sin extensión
+        const isValidFile = file.name.endsWith('.txt') || 
+                           file.name.startsWith('AR.DMS.DWNLD.V2') || 
+                           file.type === 'text/plain' ||
+                           file.type === '';
+        
+        if (!isValidFile) {
+            alert('Por favor selecciona un archivo de texto válido de John Deere (con o sin extensión).');
             return;
         }
 
