@@ -2263,13 +2263,21 @@ def calendario_semanal_tecnicos(request):
                 'servicios_en_proceso': []
             }
     
+    # Crear un conjunto de preórdenes que tienen servicios asociados
+    preordenes_con_servicios = set()
+    for servicio in servicios:
+        preordenes_con_servicios.add(servicio.preorden.id)
+    
     # Asignar preórdenes a los técnicos correspondientes (solo en su fecha estimada)
+    # Solo mostrar preórdenes que NO tienen servicios asociados
     for preorden in preordenes:
-        for tecnico in preorden.tecnicos.all():
-            if tecnico.id in calendario_tecnicos:
-                fecha = preorden.fecha_estimada
-                if fecha in calendario_tecnicos[tecnico.id]['dias']:
-                    calendario_tecnicos[tecnico.id]['dias'][fecha]['preordenes'].append(preorden)
+        # Solo agregar la preorden si no tiene servicios asociados
+        if preorden.id not in preordenes_con_servicios:
+            for tecnico in preorden.tecnicos.all():
+                if tecnico.id in calendario_tecnicos:
+                    fecha = preorden.fecha_estimada
+                    if fecha in calendario_tecnicos[tecnico.id]['dias']:
+                        calendario_tecnicos[tecnico.id]['dias'][fecha]['preordenes'].append(preorden)
     
     # Asignar servicios a los técnicos correspondientes (todos los días hasta completarse)
     for servicio in servicios:

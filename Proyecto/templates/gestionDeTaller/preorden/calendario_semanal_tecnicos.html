@@ -191,6 +191,9 @@
     .day-content {
         padding: 0.3rem;
         min-height: 50px;
+        display: flex;
+        flex-direction: column;
+        gap: 0.2rem;
     }
 
     /* Elementos en las celdas */
@@ -244,9 +247,9 @@
     
     .servicios-indicator {
         color: white;
-        padding: 0.4rem 0.6rem;
+        padding: 0.3rem 0.5rem;
         border-radius: 6px;
-        font-size: 0.75rem;
+        font-size: 0.7rem;
         font-weight: 600;
         cursor: pointer;
         transition: var(--transition);
@@ -255,7 +258,8 @@
         text-decoration: none;
         display: inline-block;
         text-align: center;
-        min-width: 80px;
+        min-width: 60px;
+        margin: 0.1rem 0;
     }
     
     .servicios-indicator.programados {
@@ -281,12 +285,13 @@
         background: white;
         border: 1px solid #e9ecef;
         border-radius: 8px;
-        padding: 1rem;
+        padding: 0.8rem;
         box-shadow: 0 4px 15px rgba(0,0,0,0.2);
         z-index: 1000;
-        font-size: 0.8rem;
+        font-size: 0.75rem;
         display: none;
-        min-width: 250px;
+        min-width: 280px;
+        max-width: 320px;
         transition: all 0.2s ease;
     }
     
@@ -466,11 +471,11 @@
         <div class="legend-items" style="display: flex; gap: 2rem; flex-wrap: wrap;">
             <div class="legend-item" style="display: flex; align-items: center; gap: 0.5rem;">
                 <span style="background: var(--success-gradient); color: white; padding: 0.3rem 0.6rem; border-radius: 4px; font-weight: 700; font-size: 0.8rem;">P</span>
-                <span style="font-size: 0.9rem;">Preorden Taller</span>
+                <span style="font-size: 0.9rem;">Preorden Taller (sin servicios)</span>
             </div>
             <div class="legend-item" style="display: flex; align-items: center; gap: 0.5rem;">
                 <span style="background: var(--danger-gradient); color: white; padding: 0.3rem 0.6rem; border-radius: 4px; font-weight: 700; font-size: 0.8rem;">P</span>
-                <span style="font-size: 0.9rem;">Preorden en Campo</span>
+                <span style="font-size: 0.9rem;">Preorden Campo (sin servicios)</span>
             </div>
             <div class="legend-item" style="display: flex; align-items: center; gap: 0.5rem;">
                 <span style="background: var(--secondary-gradient); color: white; padding: 0.3rem 0.6rem; border-radius: 4px; font-weight: 700; font-size: 0.8rem;">
@@ -520,10 +525,11 @@
                                     </div>
                                     <div class="day-content">
                                         {% with dia_data=datos_tecnico.dias|get_item:fecha %}
-                                            {% comment %} Mostrar preórdenes {% endcomment %}
+                                            {% comment %} Mostrar preórdenes (solo las que no tienen servicios) {% endcomment %}
                                             {% for preorden in dia_data.preordenes %}
                                                 <a href="{% url 'gestionDeTaller:detalle_preorden' preorden.numero %}" 
-                                                   class="calendario-item preorden {% if preorden.tipo_trabajo == 'PRESENCIAL_CAMPO' %}campo{% elif preorden.tipo_trabajo == 'PRESENCIAL_TALLER' %}taller{% else %}remoto{% endif %}">
+                                                   class="calendario-item preorden {% if preorden.tipo_trabajo == 'PRESENCIAL_CAMPO' %}campo{% elif preorden.tipo_trabajo == 'PRESENCIAL_TALLER' %}taller{% else %}remoto{% endif %}"
+                                                   title="Preorden #{{ preorden.numero }} - {{ preorden.cliente.razon_social }}">
                                                     <div class="item-tipo">P</div>
                                                     <div class="item-numero">
                                                         #{{ preorden.numero }}
@@ -537,12 +543,12 @@
                                                 </a>
                                             {% endfor %}
                                             
-                                            {% comment %} Mostrar indicador de servicios programados si hay servicios {% endcomment %}
+                                            {% comment %} Mostrar servicios programados {% endcomment %}
                                             {% if dia_data.servicios_programados|length > 0 %}
                                                 <div class="servicios-container">
-                                                    <div class="servicios-indicator programados">
+                                                    <div class="servicios-indicator programados" title="Servicios programados">
                                                         <i class="bi bi-calendar-check"></i>
-                                                        {{ dia_data.servicios_programados|length }} programados
+                                                        {{ dia_data.servicios_programados|length }} S
                                                     </div>
                                                     <div class="servicios-tooltip">
                                                         <div style="font-weight: 700; margin-bottom: 0.5rem; color: #2c3e50;">
@@ -551,12 +557,16 @@
                                                         </div>
                                                         {% for servicio in dia_data.servicios_programados %}
                                                             <a href="{% url 'gestionDeTaller:detalle_servicio' servicio.id %}" 
-                                                               class="servicio-item-tooltip">
+                                                               class="servicio-item-tooltip"
+                                                               title="Servicio #{{ servicio.id }}">
                                                                 <div style="font-weight: 600;">
                                                                     #{{ servicio.id }} - {{ servicio.preorden.cliente.razon_social|truncatechars:25 }}
                                                                 </div>
                                                                 <div style="font-size: 0.7rem; opacity: 0.9;">
                                                                     {{ servicio.preorden.equipo.numero_serie|truncatechars:20 }}
+                                                                </div>
+                                                                <div style="font-size: 0.65rem; opacity: 0.8; margin-top: 0.2rem;">
+                                                                    Preorden #{{ servicio.preorden.numero }}
                                                                 </div>
                                                             </a>
                                                         {% endfor %}
@@ -564,12 +574,12 @@
                                                 </div>
                                             {% endif %}
                                             
-                                            {% comment %} Mostrar indicador de servicios en proceso si hay servicios {% endcomment %}
+                                            {% comment %} Mostrar servicios en proceso {% endcomment %}
                                             {% if dia_data.servicios_en_proceso|length > 0 %}
                                                 <div class="servicios-container">
-                                                    <div class="servicios-indicator en-proceso">
+                                                    <div class="servicios-indicator en-proceso" title="Servicios en proceso">
                                                         <i class="bi bi-tools"></i>
-                                                        {{ dia_data.servicios_en_proceso|length }} en proceso
+                                                        {{ dia_data.servicios_en_proceso|length }} S
                                                     </div>
                                                     <div class="servicios-tooltip">
                                                         <div style="font-weight: 700; margin-bottom: 0.5rem; color: #2c3e50;">
@@ -578,12 +588,16 @@
                                                         </div>
                                                         {% for servicio in dia_data.servicios_en_proceso %}
                                                             <a href="{% url 'gestionDeTaller:detalle_servicio' servicio.id %}" 
-                                                               class="servicio-item-tooltip">
+                                                               class="servicio-item-tooltip"
+                                                               title="Servicio #{{ servicio.id }}">
                                                                 <div style="font-weight: 600;">
                                                                     #{{ servicio.id }} - {{ servicio.preorden.cliente.razon_social|truncatechars:25 }}
                                                                 </div>
                                                                 <div style="font-size: 0.7rem; opacity: 0.9;">
                                                                     {{ servicio.preorden.equipo.numero_serie|truncatechars:20 }}
+                                                                </div>
+                                                                <div style="font-size: 0.65rem; opacity: 0.8; margin-top: 0.2rem;">
+                                                                    Preorden #{{ servicio.preorden.numero }}
                                                                 </div>
                                                             </a>
                                                         {% endfor %}
