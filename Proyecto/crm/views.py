@@ -912,6 +912,8 @@ def oportunidades_venta(request):
 @login_required
 def panel_admin(request):
     """Vista principal del Panel Admin"""
+    from recursosHumanos.models import AlertaCronometro, SesionCronometro, Usuario
+    
     # Si el usuario es técnico, solo mostrar el buzón de sugerencias
     if request.user.rol == 'TECNICO':
         context = {
@@ -923,11 +925,21 @@ def panel_admin(request):
         return render(request, 'crm/panel_admin_tecnico.html', context)
     
     # Para gerentes y administrativos, mostrar el panel completo
+    # Estadísticas adicionales
+    alertas_activas = AlertaCronometro.objects.filter(
+        estado='ENVIADA',
+        fecha_envio__gte=timezone.now() - timedelta(days=7)
+    ).count()
+    
+    total_usuarios = Usuario.objects.filter(is_active=True).count()
+    
     context = {
         'is_tecnico': False,
         'total_sugerencias': SugerenciaMejora.objects.count(),
         'sugerencias_pendientes': SugerenciaMejora.objects.filter(estado='PENDIENTE').count(),
         'sugerencias_implementadas': SugerenciaMejora.objects.filter(estado='IMPLEMENTADA').count(),
+        'alertas_activas': alertas_activas,
+        'total_usuarios': total_usuarios,
     }
     return render(request, 'crm/panel_admin.html', context)
 

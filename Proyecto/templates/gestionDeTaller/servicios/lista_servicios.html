@@ -739,12 +739,10 @@
                         Preórdenes
                     </div>
                     <div class="toolbar-buttons">
-                        {% if user.rol == 'GERENTE' or user.rol == 'ADMINISTRATIVO' %}
-                            <a href="{% url 'gestionDeTaller:crear_preorden' %}" class="toolbar-btn">
-                                <i class="bi bi-plus-circle"></i>
-                                Nueva Preorden
-                            </a>
-                        {% endif %}
+                        <a href="{% url 'gestionDeTaller:crear_preorden' %}" class="toolbar-btn">
+                            <i class="bi bi-plus-circle"></i>
+                            Nueva Preorden
+                        </a>
                         <a href="{% url 'gestionDeTaller:lista_preordenes' %}" class="toolbar-btn">
                             <i class="bi bi-list-ul"></i>
                             Lista de Preórdenes

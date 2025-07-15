@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .models import Usuario, Provincia, Ciudad, Sucursal, TarifaManoObra, RegistroHorasTecnico, Competencia, CompetenciaTecnico, CertificacionJD, CertificacionTecnico, EvaluacionSistema, RevisionHerramientas, HerramientaEspecial, PrestamoHerramienta
+from .models import Usuario, Provincia, Ciudad, Sucursal, TarifaManoObra, RegistroHorasTecnico, Competencia, CompetenciaTecnico, CertificacionJD, CertificacionTecnico, EvaluacionSistema, RevisionHerramientas, HerramientaEspecial, PrestamoHerramienta, SesionCronometro, AlertaCronometro
 
 
 @admin.register(Usuario)
@@ -10,17 +10,20 @@ class CustomUserAdmin(UserAdmin):
     list_filter = ('rol', 'is_staff', 'is_active')
     fieldsets = (
         (None, {'fields': ('email', 'password')}),
-        ('Información personal', {'fields': ('nombre', 'apellido', 'sucursal', 'rol')}),
+        ('Información personal', {
+            'fields': ('nombre', 'apellido', 'sucursal', 'sucursales_adicionales', 'rol')
+        }),
         ('Permisos', {'fields': ('is_staff', 'is_active', 'is_superuser')}),
     )
     add_fieldsets = (
         (None, {
             'classes': ('wide',),
-            'fields': ('email', 'password1', 'password2', 'nombre', 'apellido', 'sucursal', 'rol', 'is_staff', 'is_active')}
+            'fields': ('email', 'password1', 'password2', 'nombre', 'apellido', 'sucursal', 'sucursales_adicionales', 'rol', 'is_staff', 'is_active')}
         ),
     )
     search_fields = ('email', 'nombre', 'apellido')
     ordering = ('email',)
+    filter_horizontal = ('sucursales_adicionales',)
 
 
 @admin.register(Provincia)
@@ -98,6 +101,40 @@ from recursosHumanos.models import ActividadTrabajo
 class ActividadTrabajoAdmin(admin.ModelAdmin):
     list_display = ('nombre',)  # Muestra el nombre y el tipo de hora
     search_fields = ('nombre',)  # Permite buscar por nombre o categoría
+
+
+@admin.register(SesionCronometro)
+class SesionCronometroAdmin(admin.ModelAdmin):
+    list_display = ('tecnico', 'actividad', 'servicio', 'hora_inicio', 'hora_fin', 'activa', 'get_duracion_display')
+    list_filter = ('activa', 'actividad', 'tecnico', 'hora_inicio')
+    search_fields = ('tecnico__nombre', 'tecnico__apellido', 'actividad__nombre', 'servicio__id')
+    readonly_fields = ('hora_inicio', 'fecha_creacion', 'fecha_modificacion')
+    
+    def get_duracion_display(self, obj):
+        if obj.activa:
+            return "En curso"
+        elif obj.hora_fin:
+            duracion = obj.get_duracion()
+            horas = int(duracion.total_seconds() // 3600)
+            minutos = int((duracion.total_seconds() % 3600) // 60)
+            return f"{horas}h {minutos}m"
+        return "N/A"
+    get_duracion_display.short_description = "Duración"
+
+
+@admin.register(AlertaCronometro)
+class AlertaCronometroAdmin(admin.ModelAdmin):
+    list_display = ('tipo_alerta', 'sesion', 'estado', 'fecha_envio', 'get_destinatarios_count')
+    list_filter = ('tipo_alerta', 'estado', 'fecha_envio')
+    search_fields = ('sesion__tecnico__nombre', 'sesion__tecnico__apellido', 'asunto')
+    readonly_fields = ('fecha_envio', 'fecha_creacion')
+    
+    def get_destinatarios_count(self, obj):
+        return len(obj.destinatarios) if obj.destinatarios else 0
+    get_destinatarios_count.short_description = "Destinatarios"
+    
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related('sesion__tecnico', 'sesion__actividad')
 
 
 

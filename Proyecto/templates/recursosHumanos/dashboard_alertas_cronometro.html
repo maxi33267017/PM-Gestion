@@ -1,0 +1,357 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load auto_reload %}
+
+{% block extra_css %}
+<style>
+    .dashboard-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+    
+    .dashboard-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 30px;
+        border-radius: 15px;
+        margin-bottom: 30px;
+        text-align: center;
+    }
+    
+    .stats-cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+    
+    .stat-card {
+        background: white;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        text-align: center;
+        border-left: 4px solid #667eea;
+    }
+    
+    .stat-number {
+        font-size: 2.5rem;
+        font-weight: bold;
+        color: #667eea;
+        margin-bottom: 10px;
+    }
+    
+    .stat-label {
+        color: #666;
+        font-size: 1.1rem;
+    }
+    
+    .sessions-section {
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        margin-bottom: 30px;
+        overflow: hidden;
+    }
+    
+    .section-header {
+        background: #f8f9fa;
+        padding: 20px;
+        border-bottom: 1px solid #dee2e6;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .session-item {
+        padding: 20px;
+        border-bottom: 1px solid #dee2e6;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .session-item:last-child {
+        border-bottom: none;
+    }
+    
+    .session-info {
+        flex: 1;
+    }
+    
+    .session-tecnico {
+        font-weight: bold;
+        font-size: 1.1rem;
+        color: #333;
+        margin-bottom: 5px;
+    }
+    
+    .session-details {
+        color: #666;
+        font-size: 0.9rem;
+    }
+    
+    .session-duration {
+        text-align: right;
+        font-weight: bold;
+    }
+    
+    .duration-warning {
+        color: #dc3545;
+    }
+    
+    .duration-normal {
+        color: #28a745;
+    }
+    
+    .alerts-section {
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+    }
+    
+    .alert-item {
+        padding: 15px 20px;
+        border-bottom: 1px solid #dee2e6;
+    }
+    
+    .alert-item:last-child {
+        border-bottom: none;
+    }
+    
+    .alert-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+    
+    .alert-type {
+        font-weight: bold;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 0.8rem;
+    }
+    
+    .alert-type-cronometro-activo {
+        background: #d4edda;
+        color: #155724;
+    }
+    
+    .alert-type-cronometro-olvidado {
+        background: #f8d7da;
+        color: #721c24;
+    }
+    
+    .alert-fecha {
+        color: #666;
+        font-size: 0.8rem;
+    }
+    
+    .alert-content {
+        color: #333;
+        font-size: 0.9rem;
+    }
+    
+    .btn-verificar {
+        background: linear-gradient(45deg, #28a745, #20c997);
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-weight: bold;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-verificar:hover {
+        background: linear-gradient(45deg, #20c997, #28a745);
+        transform: translateY(-2px);
+    }
+    
+    .no-sessions {
+        padding: 40px;
+        text-align: center;
+        color: #666;
+        font-style: italic;
+    }
+    
+    .no-alerts {
+        padding: 40px;
+        text-align: center;
+        color: #666;
+        font-style: italic;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <!-- Header del Dashboard -->
+    <div class="dashboard-header">
+        <h1><i class="bi bi-bell"></i> Dashboard de Alertas - Cronómetros</h1>
+        <p>Monitoreo de cronómetros activos y alertas enviadas</p>
+        <small style="opacity: 0.8; margin-top: 10px; display: block;">
+            <i class="bi bi-arrow-clockwise"></i> Esta página se actualiza automáticamente cada 10 minutos
+        </small>
+    </div>
+
+    <!-- Tarjetas de Estadísticas -->
+    <div class="stats-cards">
+        <div class="stat-card">
+            <div class="stat-number">{{ total_sesiones_activas }}</div>
+            <div class="stat-label">Cronómetros Activos</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ alertas_recientes.count }}</div>
+            <div class="stat-label">Alertas Enviadas (7 días)</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number" id="sesiones-largas">0</div>
+            <div class="stat-label">Sesiones > 4 horas</div>
+        </div>
+    </div>
+
+    <!-- Sección de Sesiones Activas -->
+    <div class="sessions-section">
+        <div class="section-header">
+            <h3><i class="bi bi-stopwatch"></i> Cronómetros Activos</h3>
+            <button class="btn-verificar" onclick="verificarAlertas()">
+                <i class="bi bi-arrow-clockwise"></i> Verificar Alertas
+            </button>
+        </div>
+        
+        {% if sesiones_activas %}
+            {% for sesion in sesiones_activas %}
+            <div class="session-item">
+                <div class="session-info">
+                    <div class="session-tecnico">{{ sesion.tecnico.get_nombre_completo }}</div>
+                    <div class="session-details">
+                        <strong>Actividad:</strong> {{ sesion.actividad.nombre }}
+                        {% if sesion.servicio %}
+                        | <strong>Servicio:</strong> {{ sesion.servicio }}
+                        {% endif %}
+                        | <strong>Inicio:</strong> {{ sesion.hora_inicio|time:"H:i" }}
+                        | <strong>Sucursal:</strong> {{ sesion.tecnico.sucursal.nombre }}
+                    </div>
+                </div>
+                <div class="session-duration {% if sesion.horas_activas >= 4 %}duration-warning{% else %}duration-normal{% endif %}">
+                    {{ sesion.horas_activas|floatformat:1 }}h
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="no-sessions">
+                <i class="bi bi-check-circle" style="font-size: 3rem; color: #28a745;"></i>
+                <h4>No hay cronómetros activos</h4>
+                <p>Todos los técnicos han detenido sus cronómetros</p>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Sección de Alertas Recientes -->
+    <div class="alerts-section">
+        <div class="section-header">
+            <h3><i class="bi bi-bell"></i> Alertas Recientes (Últimos 7 días)</h3>
+        </div>
+        
+        {% if alertas_recientes %}
+            {% for alerta in alertas_recientes %}
+            <div class="alert-item">
+                <div class="alert-header">
+                    <span class="alert-type alert-type-{{ alerta.tipo_alerta|lower|cut:'_' }}">{{ alerta.get_tipo_alerta_display }}</span>
+                    <span class="alert-fecha">{{ alerta.fecha_envio|date:"d/m/Y H:i" }}</span>
+                </div>
+                <div class="alert-content">
+                    <strong>{{ alerta.sesion.tecnico.get_nombre_completo }}</strong> - {{ alerta.asunto }}
+                </div>
+                <div class="alert-content" style="font-size: 0.8rem; color: #666; margin-top: 5px;">
+                    Destinatarios: {{ alerta.destinatarios|length }} | Estado: {{ alerta.get_estado_display }}
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="no-alerts">
+                <i class="bi bi-bell-slash" style="font-size: 3rem; color: #6c757d;"></i>
+                <h4>No hay alertas recientes</h4>
+                <p>No se han enviado alertas en los últimos 7 días</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+// Función para verificar alertas
+async function verificarAlertas() {
+    const button = event.target;
+    const originalText = button.innerHTML;
+    
+    // Mostrar loading
+    button.innerHTML = '<i class="bi bi-arrow-clockwise spin"></i> Verificando...';
+    button.disabled = true;
+    
+    try {
+        const response = await fetch('{% url "recursosHumanos:verificar_alertas_cronometro" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            alert('Verificación completada. Se han enviado las alertas correspondientes.');
+            // Recargar la página para mostrar las nuevas alertas
+            window.location.reload();
+        } else {
+            alert('Error: ' + data.message);
+        }
+    } catch (error) {
+        alert('Error al verificar alertas: ' + error.message);
+    } finally {
+        // Restaurar botón
+        button.innerHTML = originalText;
+        button.disabled = false;
+    }
+}
+
+// Función para obtener cookie CSRF
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+// Actualizar contador de sesiones largas
+document.addEventListener('DOMContentLoaded', function() {
+    const sesionesLargas = document.querySelectorAll('.duration-warning').length;
+    document.getElementById('sesiones-largas').textContent = sesionesLargas;
+});
+
+// Agregar clase para animación de spin
+const style = document.createElement('style');
+style.textContent = `
+    .spin {
+        animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+`;
+document.head.appendChild(style);
+</script>
+{% endblock %} 

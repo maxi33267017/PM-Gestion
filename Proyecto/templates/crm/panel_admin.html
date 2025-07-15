@@ -1,206 +1,585 @@
 {% extends 'base.html' %}
+{% load auto_reload %}
 
 {% block content %}
-<div class="container-fluid mt-4">
-    <!-- Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h2>
-                <i class="bi bi-gear-fill me-2"></i>Panel Admin
-            </h2>
-            <p class="text-muted">Centro de administración y reportes del sistema</p>
+<style>
+    :root {
+        --primary-gradient: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        --success-gradient: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+        --warning-gradient: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+        --danger-gradient: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+        --info-gradient: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+        --purple-gradient: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);
+        --dark-gradient: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        --card-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        --hover-shadow: 0 15px 40px rgba(0,0,0,0.15);
+        --border-radius: 20px;
+        --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .admin-header {
+        background: var(--dark-gradient);
+        color: white;
+        padding: 3rem 2rem;
+        border-radius: var(--border-radius);
+        margin-bottom: 2.5rem;
+        box-shadow: var(--card-shadow);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .admin-header::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="dots" width="20" height="20" patternUnits="userSpaceOnUse"><circle cx="10" cy="10" r="1" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23dots)"/></svg>');
+        pointer-events: none;
+    }
+    
+    .admin-header h1 {
+        margin: 0;
+        font-weight: 800;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        font-size: 3rem;
+        position: relative;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+    
+    .admin-subtitle {
+        position: relative;
+        z-index: 1;
+        font-size: 1.2rem;
+        opacity: 0.9;
+        margin-top: 0.5rem;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+    
+    .stat-card {
+        background: white;
+        border-radius: 15px;
+        box-shadow: var(--card-shadow);
+        padding: 1.5rem;
+        border: 1px solid #e9ecef;
+        transition: var(--transition);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-3px);
+        box-shadow: var(--hover-shadow);
+    }
+    
+    .stat-card.primary {
+        background: var(--primary-gradient);
+        color: white;
+    }
+    
+    .stat-card.success {
+        background: var(--success-gradient);
+        color: white;
+    }
+    
+    .stat-card.warning {
+        background: var(--warning-gradient);
+        color: white;
+    }
+    
+    .stat-card.info {
+        background: var(--info-gradient);
+        color: white;
+    }
+    
+    .stat-card.purple {
+        background: var(--purple-gradient);
+        color: white;
+    }
+    
+    .stat-icon {
+        font-size: 1.8rem;
+        margin-bottom: 0.8rem;
+        opacity: 0.8;
+    }
+    
+    .stat-number {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0.3rem;
+    }
+    
+    .stat-label {
+        font-size: 0.9rem;
+        opacity: 0.9;
+    }
+
+    .modules-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+        gap: 2rem;
+        margin-bottom: 2.5rem;
+    }
+    
+    .module-card {
+        background: white;
+        border-radius: var(--border-radius);
+        box-shadow: var(--card-shadow);
+        overflow: hidden;
+        border: 1px solid #e9ecef;
+        transition: var(--transition);
+        height: 100%;
+    }
+    
+    .module-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--hover-shadow);
+    }
+    
+    .module-header {
+        padding: 2rem;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .module-card.sugerencias .module-header {
+        background: var(--info-gradient);
+        color: white;
+    }
+    
+    .module-card.repuestos .module-header {
+        background: var(--success-gradient);
+        color: white;
+    }
+    
+    .module-card.alertas .module-header {
+        background: var(--warning-gradient);
+        color: white;
+    }
+    
+    .module-card.reportes .module-header {
+        background: var(--danger-gradient);
+        color: white;
+    }
+    
+    .module-card.usuarios .module-header {
+        background: var(--purple-gradient);
+        color: white;
+    }
+    
+    .module-card.configuracion .module-header {
+        background: var(--dark-gradient);
+        color: white;
+    }
+    
+    .module-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        opacity: 0.8;
+    }
+    
+    .module-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+    
+    .module-description {
+        font-size: 1rem;
+        opacity: 0.9;
+        line-height: 1.5;
+    }
+    
+    .module-body {
+        padding: 2rem;
+        background: white;
+    }
+    
+    .module-btn {
+        width: 100%;
+        border-radius: 15px;
+        padding: 1rem 1.5rem;
+        font-weight: 600;
+        transition: var(--transition);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-size: 0.9rem;
+        border: none;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        text-decoration: none;
+        color: white;
+        margin-bottom: 0.5rem;
+    }
+    
+    .module-card.sugerencias .module-btn {
+        background: var(--info-gradient);
+    }
+    
+    .module-card.sugerencias .module-btn:hover {
+        background: var(--info-gradient);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4);
+        color: white;
+        text-decoration: none;
+    }
+    
+    .module-card.repuestos .module-btn {
+        background: var(--success-gradient);
+    }
+    
+    .module-card.repuestos .module-btn:hover {
+        background: var(--success-gradient);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(39, 174, 96, 0.4);
+        color: white;
+        text-decoration: none;
+    }
+    
+    .module-card.alertas .module-btn {
+        background: var(--warning-gradient);
+    }
+    
+    .module-card.alertas .module-btn:hover {
+        background: var(--warning-gradient);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(243, 156, 18, 0.4);
+        color: white;
+        text-decoration: none;
+    }
+    
+    .module-card.reportes .module-btn {
+        background: var(--danger-gradient);
+    }
+    
+    .module-card.reportes .module-btn:hover {
+        background: var(--danger-gradient);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(231, 76, 60, 0.4);
+        color: white;
+        text-decoration: none;
+    }
+    
+    .module-card.usuarios .module-btn {
+        background: var(--purple-gradient);
+    }
+    
+    .module-card.usuarios .module-btn:hover {
+        background: var(--purple-gradient);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(155, 89, 182, 0.4);
+        color: white;
+        text-decoration: none;
+    }
+    
+    .module-card.configuracion .module-btn {
+        background: var(--dark-gradient);
+    }
+    
+    .module-card.configuracion .module-btn:hover {
+        background: var(--dark-gradient);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(44, 62, 80, 0.4);
+        color: white;
+        text-decoration: none;
+    }
+
+    .btn-secondary-module {
+        width: 100%;
+        border-radius: 15px;
+        padding: 0.8rem 1.5rem;
+        font-weight: 600;
+        transition: var(--transition);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-size: 0.85rem;
+        border: 2px solid #e9ecef;
+        background: white;
+        color: #6c757d;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        text-decoration: none;
+    }
+    
+    .btn-secondary-module:hover {
+        background: #f8f9fa;
+        color: #495057;
+        text-decoration: none;
+        border-color: #dee2e6;
+    }
+
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .admin-header, .stat-card, .module-card {
+        animation: fadeInUp 0.6s ease-out;
+    }
+    
+    .stat-card:nth-child(1) { animation-delay: 0.1s; }
+    .stat-card:nth-child(2) { animation-delay: 0.2s; }
+    .stat-card:nth-child(3) { animation-delay: 0.3s; }
+    .stat-card:nth-child(4) { animation-delay: 0.4s; }
+    .stat-card:nth-child(5) { animation-delay: 0.5s; }
+    .module-card:nth-child(1) { animation-delay: 0.6s; }
+    .module-card:nth-child(2) { animation-delay: 0.7s; }
+    .module-card:nth-child(3) { animation-delay: 0.8s; }
+    .module-card:nth-child(4) { animation-delay: 0.9s; }
+    .module-card:nth-child(5) { animation-delay: 1.0s; }
+    .module-card:nth-child(6) { animation-delay: 1.1s; }
+    
+    @media (max-width: 768px) {
+        .admin-header {
+            padding: 2rem 1.5rem;
+            text-align: center;
+        }
+        
+        .admin-header h1 {
+            font-size: 2rem;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .stats-grid {
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+        
+        .modules-grid {
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+        
+        .module-header {
+            padding: 1.5rem;
+        }
+        
+        .module-body {
+            padding: 1.5rem;
+        }
+    }
+</style>
+
+<main class="container-fluid mt-4">
+    <!-- Header mejorado -->
+    <div class="admin-header">
+        <h1>
+            <i class="bi bi-gear-fill"></i>
+            Panel de Administración
+        </h1>
+        <div class="admin-subtitle">
+            Centro de control y gestión integral del sistema
         </div>
-        <a href="{% url 'crm:crm' %}" class="btn btn-outline-secondary">
-            <i class="fas fa-arrow-left me-2"></i>Volver al CRM
-        </a>
     </div>
 
     <!-- Estadísticas Rápidas -->
-    <div class="row mb-4">
-        <div class="col-md-3">
-            <div class="card bg-primary text-white">
-                <div class="card-body">
-                    <h6 class="card-title">Total Sugerencias</h6>
-                    <h3 class="mb-0">{{ total_sugerencias }}</h3>
-                    <small>En el sistema</small>
-                </div>
+    <div class="stats-grid">
+        <div class="stat-card primary">
+            <div class="stat-icon">
+                <i class="bi bi-chat-dots"></i>
             </div>
+            <div class="stat-number">{{ total_sugerencias }}</div>
+            <div class="stat-label">Total Sugerencias</div>
+                </div>
+        
+        <div class="stat-card warning">
+            <div class="stat-icon">
+                <i class="bi bi-clock"></i>
+            </div>
+            <div class="stat-number">{{ sugerencias_pendientes }}</div>
+            <div class="stat-label">Pendientes</div>
         </div>
-        <div class="col-md-3">
-            <div class="card bg-warning text-dark">
-                <div class="card-body">
-                    <h6 class="card-title">Pendientes</h6>
-                    <h3 class="mb-0">{{ sugerencias_pendientes }}</h3>
-                    <small>Por revisar</small>
-                </div>
+        
+        <div class="stat-card success">
+            <div class="stat-icon">
+                <i class="bi bi-check-circle"></i>
             </div>
+            <div class="stat-number">{{ sugerencias_implementadas }}</div>
+            <div class="stat-label">Implementadas</div>
         </div>
-        <div class="col-md-3">
-            <div class="card bg-success text-white">
-                <div class="card-body">
-                    <h6 class="card-title">Implementadas</h6>
-                    <h3 class="mb-0">{{ sugerencias_implementadas }}</h3>
-                    <small>Mejoras aplicadas</small>
-                </div>
+        
+        <div class="stat-card info">
+            <div class="stat-icon">
+                <i class="bi bi-bell"></i>
             </div>
+            <div class="stat-number">{{ alertas_activas|default:"0" }}</div>
+            <div class="stat-label">Alertas Activas</div>
         </div>
-        <div class="col-md-3">
-            <div class="card bg-info text-white">
-                <div class="card-body">
-                    <h6 class="card-title">Reportes</h6>
-                    <h3 class="mb-0">Próximamente</h3>
-                    <small>En desarrollo</small>
-                </div>
+        
+        <div class="stat-card purple">
+            <div class="stat-icon">
+                <i class="bi bi-people"></i>
             </div>
+            <div class="stat-number">{{ total_usuarios|default:"0" }}</div>
+            <div class="stat-label">Usuarios Activos</div>
         </div>
     </div>
 
-    <!-- Módulos del Panel Admin -->
-    <div class="row">
+    <!-- Módulos Principales -->
+    <div class="modules-grid">
         <!-- Buzón de Sugerencias -->
-        <div class="col-md-6 mb-4">
-            <div class="card shadow-sm h-100">
-                <div class="card-header">
-                    <h5 class="mb-0">
-                        <i class="bi bi-chat-dots me-2"></i>Buzón de Sugerencias
-                    </h5>
+        <div class="module-card sugerencias">
+            <div class="module-header">
+                <div class="module-icon">
+                    <i class="bi bi-chat-dots"></i>
                 </div>
-                <div class="card-body">
-                    <p class="text-muted">
+                <div class="module-title">Buzón de Sugerencias</div>
+                <div class="module-description">
                         Sistema anónimo para que todos los usuarios puedan sugerir mejoras para el taller.
-                    </p>
-                    <div class="d-grid gap-2">
-                        <a href="{% url 'crm:buzon_sugerencias' %}" class="btn btn-primary">
-                            <i class="fas fa-inbox me-2"></i>Buzón de Sugerencias
+                </div>
+            </div>
+            <div class="module-body">
+                <a href="{% url 'crm:buzon_sugerencias' %}" class="module-btn">
+                    <i class="bi bi-inbox"></i>
+                    Buzón de Sugerencias
                         </a>
                         {% if user.is_staff or user.rol in 'GERENTE,ADMINISTRADOR' %}
-                        <a href="{% url 'crm:gestionar_sugerencias' %}" class="btn btn-outline-secondary">
-                            <i class="fas fa-cog me-2"></i>Gestionar Sugerencias
+                <a href="{% url 'crm:gestionar_sugerencias' %}" class="btn-secondary-module">
+                    <i class="bi bi-list-check"></i>
+                    Gestionar Sugerencias
                         </a>
                         {% endif %}
                     </div>
+        </div>
+
+        <!-- Base de Repuestos -->
+        <div class="module-card repuestos">
+            <div class="module-header">
+                <div class="module-icon">
+                    <i class="bi bi-gear"></i>
                 </div>
+                <div class="module-title">Base de Repuestos</div>
+                <div class="module-description">
+                    Gestión completa de la base de datos de repuestos, catálogos y referencias técnicas.
+                </div>
+            </div>
+            <div class="module-body">
+                <a href="{% url 'gestionDeTaller:gestionar_repuestos' %}" class="module-btn">
+                    <i class="bi bi-database"></i>
+                    Gestionar Repuestos
+                </a>
+                <a href="{% url 'gestionDeTaller:obtener_lista_repuestos' %}" class="btn-secondary-module">
+                    <i class="bi bi-list"></i>
+                    Ver Catálogo
+                </a>
+            </div>
+        </div>
+
+        <!-- Alertas Cronómetro -->
+        <div class="module-card alertas">
+            <div class="module-header">
+                <div class="module-icon">
+                    <i class="bi bi-bell"></i>
+                </div>
+                <div class="module-title">Alertas Cronómetro</div>
+                <div class="module-description">
+                    Monitoreo y gestión de alertas de cronómetros activos por largos períodos.
+                </div>
+            </div>
+            <div class="module-body">
+                <a href="{% url 'recursosHumanos:dashboard_alertas_cronometro' %}" class="module-btn">
+                    <i class="bi bi-shield-exclamation"></i>
+                    Ver Alertas
+                </a>
+                <a href="{% url 'recursosHumanos:verificar_alertas_cronometro' %}" class="btn-secondary-module">
+                    <i class="bi bi-play-circle"></i>
+                    Verificar Manualmente
+                </a>
             </div>
         </div>
 
         <!-- Reportes de Facturación -->
-        <div class="col-md-6 mb-4">
-            <div class="card shadow-sm h-100">
-                <div class="card-header">
-                    <h5 class="mb-0">
-                        <i class="bi bi-graph-up me-2"></i>Reportes de Facturación
-                    </h5>
+        <div class="module-card reportes">
+            <div class="module-header">
+                <div class="module-icon">
+                    <i class="bi bi-graph-up"></i>
                 </div>
-                <div class="card-body">
-                    <p class="text-muted">
-                        Reportes mensuales de facturación total y discriminada por sucursal, mano de obra, repuestos, etc.
-                    </p>
-                    <div class="d-grid gap-2">
-                        <button class="btn btn-primary" disabled>
-                            <i class="bi bi-file-earmark-text me-2"></i>Reporte Mensual
-                        </button>
-                        <button class="btn btn-outline-secondary" disabled>
-                            <i class="bi bi-pie-chart me-2"></i>Análisis por Sucursal
-                        </button>
-                    </div>
-                    <small class="text-muted">Próximamente disponible</small>
+                <div class="module-title">Reportes de Facturación</div>
+                <div class="module-description">
+                    Reportes mensuales de facturación total y discriminada por sucursal, mano de obra, repuestos.
                 </div>
+            </div>
+            <div class="module-body">
+                <a href="{% url 'crm:reporte_facturacion' %}" class="module-btn">
+                    <i class="bi bi-file-earmark-text"></i>
+                    Reporte Mensual
+                </a>
+                <a href="{% url 'crm:reporte_facturacion' %}?tipo=detallado" class="btn-secondary-module">
+                    <i class="bi bi-pie-chart"></i>
+                    Análisis Detallado
+                </a>
             </div>
         </div>
 
         <!-- Gestión de Usuarios -->
-        <div class="col-md-6 mb-4">
-            <div class="card shadow-sm h-100">
-                <div class="card-header">
-                    <h5 class="mb-0">
-                        <i class="bi bi-people me-2"></i>Gestión de Usuarios
-                    </h5>
+        <div class="module-card usuarios">
+            <div class="module-header">
+                <div class="module-icon">
+                    <i class="bi bi-people"></i>
                 </div>
-                <div class="card-body">
-                    <p class="text-muted">
-                        Administración de usuarios, roles y permisos del sistema.
-                    </p>
-                    <div class="d-grid gap-2">
-                        <button class="btn btn-primary" disabled>
-                            <i class="bi bi-person-plus me-2"></i>Gestionar Usuarios
-                        </button>
-                        <button class="btn btn-outline-secondary" disabled>
-                            <i class="bi bi-shield-check me-2"></i>Roles y Permisos
-                        </button>
-                    </div>
-                    <small class="text-muted">Próximamente disponible</small>
+                <div class="module-title">Gestión de Usuarios</div>
+                <div class="module-description">
+                    Administración de usuarios, roles, permisos y accesos al sistema.
                 </div>
+            </div>
+            <div class="module-body">
+                <a href="{% url 'admin:recursosHumanos_usuario_changelist' %}" class="module-btn">
+                    <i class="bi bi-person-plus"></i>
+                    Gestionar Usuarios
+                </a>
+                <a href="{% url 'admin:auth_group_changelist' %}" class="btn-secondary-module">
+                    <i class="bi bi-shield-check"></i>
+                    Roles y Permisos
+                </a>
             </div>
         </div>
 
         <!-- Configuración del Sistema -->
-        <div class="col-md-6 mb-4">
-            <div class="card shadow-sm h-100">
-                <div class="card-header">
-                    <h5 class="mb-0">
-                        <i class="bi bi-sliders me-2"></i>Configuración del Sistema
-                    </h5>
+        <div class="module-card configuracion">
+            <div class="module-header">
+                <div class="module-icon">
+                    <i class="bi bi-sliders"></i>
                 </div>
-                <div class="card-body">
-                    <p class="text-muted">
+                <div class="module-title">Configuración del Sistema</div>
+                <div class="module-description">
                         Configuraciones generales, parámetros del sistema y mantenimiento.
-                    </p>
-                    <div class="d-grid gap-2">
-                        <button class="btn btn-primary" disabled>
-                            <i class="bi bi-gear me-2"></i>Configuración General
-                        </button>
-                        <button class="btn btn-outline-secondary" disabled>
-                            <i class="bi bi-tools me-2"></i>Mantenimiento
-                        </button>
-                    </div>
-                    <small class="text-muted">Próximamente disponible</small>
                 </div>
+            </div>
+            <div class="module-body">
+                <a href="{% url 'admin:index' %}" class="module-btn">
+                    <i class="bi bi-gear"></i>
+                    Panel Django Admin
+                </a>
+                <a href="{% url 'admin:index' %}" class="btn-secondary-module">
+                    <i class="bi bi-tools"></i>
+                    Configuración General
+                </a>
             </div>
         </div>
     </div>
+</main>
+{% endblock %}
 
-    <!-- Acceso Rápido para Administradores -->
-    {% if user.is_staff or user.rol in 'GERENTE,ADMINISTRADOR' %}
-    <div class="row mt-4">
-        <div class="col-12">
-            <div class="card shadow-sm">
-                <div class="card-header">
-                    <h5 class="mb-0">
-                        <i class="bi bi-speedometer2 me-2"></i>Acceso Rápido - Administradores
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-3">
-                            <a href="{% url 'crm:gestionar_sugerencias' %}" class="btn btn-outline-primary w-100 mb-2">
-                                <i class="bi bi-list-check me-2"></i>Gestionar Sugerencias
-                            </a>
-                        </div>
-                        <div class="col-md-3">
-                            <button class="btn btn-outline-secondary w-100 mb-2" disabled>
-                                <i class="bi bi-database me-2"></i>Backup del Sistema
-                            </button>
-                        </div>
-                        <div class="col-md-3">
-                            <button class="btn btn-outline-secondary w-100 mb-2" disabled>
-                                <i class="bi bi-graph-up me-2"></i>Métricas del Sistema
-                            </button>
-                        </div>
-                        <div class="col-md-3">
-                            <a href="{% url 'gestionDeTaller:gestionar_repuestos' %}" class="btn btn-outline-success w-100 mb-2">
-                                <i class="fas fa-cogs me-2"></i>Base de Repuestos
-                            </a>
-                        </div>
-                        <div class="col-md-3">
-                            <button class="btn btn-outline-secondary w-100 mb-2" disabled>
-                                <i class="bi bi-shield-exclamation me-2"></i>Logs del Sistema
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    {% endif %}
-</div>
+{% block extra_js %}
+    <!-- Deshabilitar auto-reload en el panel de administración -->
+    {% disable_auto_reload %}
 {% endblock %} 

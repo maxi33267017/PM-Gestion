@@ -45,6 +45,9 @@ DATABASES = {
 # Configuración de conexión a la base de datos para producción
 DATABASES['default']['CONN_MAX_AGE'] = 600  # 10 minutos
 
+LANGUAGE_CODE = os.environ.get('LANGUAGE_CODE', 'es-ar')
+
+TIME_ZONE = os.environ.get('TIME_ZONE', 'America/Argentina/Buenos_Aires')
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 

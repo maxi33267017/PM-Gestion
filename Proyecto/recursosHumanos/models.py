@@ -104,6 +104,14 @@ class Usuario(AbstractUser):
     nombre = models.CharField(max_length=100, verbose_name="Nombre")
     apellido = models.CharField(max_length=100, verbose_name="Apellido")
     sucursal = models.ForeignKey(Sucursal, on_delete=models.CASCADE, verbose_name="Sucursal")
+    # Campo para múltiples sucursales (solo para gerentes)
+    sucursales_adicionales = models.ManyToManyField(
+        Sucursal, 
+        blank=True, 
+        verbose_name="Sucursales Adicionales",
+        related_name='usuarios_adicionales',
+        help_text="Sucursales adicionales para gerentes (opcional)"
+    )
     rol = models.CharField(max_length=15, choices=ROLES, verbose_name="Rol")
     fecha_creacion = models.DateTimeField(auto_now_add=True, verbose_name="Fecha de Creación")
     fecha_modificacion = models.DateTimeField(auto_now=True, verbose_name="Última Modificación")
@@ -137,6 +145,34 @@ class Usuario(AbstractUser):
 
     def get_short_name(self):
         return self.nombre
+
+    def get_sucursales_disponibles(self):
+        """
+        Retorna todas las sucursales disponibles para el usuario.
+        Para gerentes: sucursal principal + sucursales adicionales
+        Para otros: solo la sucursal principal
+        """
+        if self.rol == 'GERENTE':
+            sucursales = [self.sucursal]
+            sucursales.extend(self.sucursales_adicionales.all())
+            return list(set(sucursales))  # Eliminar duplicados
+        else:
+            return [self.sucursal]
+
+    def puede_acceder_sucursal(self, sucursal):
+        """
+        Verifica si el usuario puede acceder a una sucursal específica
+        """
+        return sucursal in self.get_sucursales_disponibles()
+
+    def get_sucursales_para_formulario(self):
+        """
+        Retorna las sucursales que deben aparecer en formularios
+        """
+        if self.rol == 'GERENTE':
+            return Sucursal.objects.filter(activo=True)
+        else:
+            return Sucursal.objects.filter(id=self.sucursal.id, activo=True)
 
 
 
@@ -495,6 +531,305 @@ class PrestamoHerramienta(models.Model):
     @classmethod
     def get_prestamos_usuario(cls, usuario):
         return cls.objects.filter(usuario=usuario)
+
+
+
+
+class SesionCronometro(models.Model):
+    """Modelo para manejar sesiones activas del cronómetro de técnicos"""
+    tecnico = models.ForeignKey(Usuario, on_delete=models.CASCADE, limit_choices_to={'rol': 'TECNICO'})
+    actividad = models.ForeignKey(ActividadTrabajo, on_delete=models.CASCADE, verbose_name="Actividad")
+    servicio = models.ForeignKey(Servicio, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Servicio")
+    hora_inicio = models.DateTimeField(auto_now_add=True, verbose_name="Hora de Inicio")
+    hora_fin = models.DateTimeField(null=True, blank=True, verbose_name="Hora de Fin")
+    activa = models.BooleanField(default=True, verbose_name="¿Activa?")
+    descripcion = models.TextField(blank=True, verbose_name="Descripción")
+    fecha_creacion = models.DateTimeField(auto_now_add=True, verbose_name="Fecha de Creación")
+    fecha_modificacion = models.DateTimeField(auto_now=True, verbose_name="Última Modificación")
+
+    class Meta:
+        verbose_name = "Sesión de Cronómetro"
+        verbose_name_plural = "Sesiones de Cronómetro"
+        ordering = ['-fecha_creacion']
+
+    def __str__(self):
+        estado = "Activa" if self.activa else "Finalizada"
+        servicio_info = f" - {self.servicio}" if self.servicio else ""
+        return f"{self.tecnico} - {self.actividad}{servicio_info} ({estado})"
+
+    def get_duracion(self):
+        """Calcula la duración de la sesión"""
+        if self.hora_fin:
+            return self.hora_fin - self.hora_inicio
+        else:
+            from django.utils import timezone
+            return timezone.now() - self.hora_inicio
+
+    def get_duracion_horas(self):
+        """Retorna la duración en horas decimales"""
+        duracion = self.get_duracion()
+        return duracion.total_seconds() / 3600
+
+    def finalizar_sesion(self, hora_fin=None):
+        """Finaliza la sesión y crea el registro de horas"""
+        from django.utils import timezone
+        from datetime import datetime
+        
+        if not self.activa:
+            return False, "La sesión ya está finalizada"
+        
+        # Establecer hora de fin
+        if hora_fin is None:
+            hora_fin = timezone.now()
+        
+        self.hora_fin = hora_fin
+        self.activa = False
+        self.save()
+        
+        # Crear registro de horas
+        try:
+            registro = RegistroHorasTecnico.objects.create(
+                tecnico=self.tecnico,
+                fecha=self.hora_inicio.date(),
+                hora_inicio=self.hora_inicio.time(),
+                hora_fin=self.hora_fin.time(),
+                tipo_hora=self.actividad,
+                servicio=self.servicio,
+                descripcion=self.descripcion
+            )
+            return True, f"Sesión finalizada y registro creado: {registro}"
+        except Exception as e:
+            # Si hay error al crear el registro, reactivar la sesión
+            self.hora_fin = None
+            self.activa = True
+            self.save()
+            return False, f"Error al crear registro: {str(e)}"
+
+    @classmethod
+    def get_sesion_activa_tecnico(cls, tecnico):
+        """Obtiene la sesión activa de un técnico"""
+        return cls.objects.filter(tecnico=tecnico, activa=True).first()
+
+    @classmethod
+    def finalizar_sesiones_automaticas(cls):
+        """Finaliza automáticamente las sesiones activas a las 19:00"""
+        from django.utils import timezone
+        from datetime import datetime, time
+        
+        ahora = timezone.now()
+        hora_limite = time(19, 0)  # 19:00 hora local Argentina
+        
+        # Si es después de las 19:00, finalizar sesiones activas
+        if ahora.time() >= hora_limite:
+            sesiones_activas = cls.objects.filter(activa=True)
+            for sesion in sesiones_activas:
+                # Establecer hora de fin a las 19:00 del día actual
+                hora_fin = datetime.combine(ahora.date(), hora_limite)
+                hora_fin = timezone.make_aware(hora_fin)
+                sesion.finalizar_sesion(hora_fin)
+
+
+
+
+class AlertaCronometro(models.Model):
+    """Modelo para rastrear alertas enviadas por cronómetros activos"""
+    TIPO_ALERTA_CHOICES = [
+        ('CRONOMETRO_ACTIVO', 'Cronómetro Activo'),
+        ('CRONOMETRO_OLVIDADO', 'Cronómetro Olvidado'),
+        ('FINALIZACION_AUTOMATICA', 'Finalización Automática'),
+    ]
+    
+    ESTADO_CHOICES = [
+        ('PENDIENTE', 'Pendiente'),
+        ('ENVIADA', 'Enviada'),
+        ('FALLIDA', 'Fallida'),
+    ]
+    
+    sesion = models.ForeignKey(SesionCronometro, on_delete=models.CASCADE, verbose_name="Sesión de Cronómetro")
+    tipo_alerta = models.CharField(max_length=25, choices=TIPO_ALERTA_CHOICES, verbose_name="Tipo de Alerta")
+    destinatarios = models.JSONField(verbose_name="Destinatarios", help_text="Lista de emails a los que se envió la alerta")
+    asunto = models.CharField(max_length=200, verbose_name="Asunto del Email")
+    mensaje = models.TextField(verbose_name="Mensaje Enviado")
+    estado = models.CharField(max_length=10, choices=ESTADO_CHOICES, default='PENDIENTE', verbose_name="Estado")
+    fecha_envio = models.DateTimeField(auto_now_add=True, verbose_name="Fecha de Envío")
+    fecha_creacion = models.DateTimeField(auto_now_add=True, verbose_name="Fecha de Creación")
+    
+    class Meta:
+        verbose_name = "Alerta de Cronómetro"
+        verbose_name_plural = "Alertas de Cronómetros"
+        ordering = ['-fecha_creacion']
+    
+    def __str__(self):
+        return f"Alerta {self.get_tipo_alerta_display()} - {self.sesion.tecnico} ({self.get_estado_display()})"
+    
+    @classmethod
+    def crear_alerta_cronometro_activo(cls, sesion):
+        """Crea una alerta para cronómetro activo"""
+        from django.utils import timezone
+        from datetime import timedelta
+        
+        # Verificar si ya se envió una alerta reciente (últimas 2 horas)
+        alerta_reciente = cls.objects.filter(
+            sesion=sesion,
+            tipo_alerta='CRONOMETRO_ACTIVO',
+            estado='ENVIADA',
+            fecha_envio__gte=timezone.now() - timedelta(hours=2)
+        ).first()
+        
+        if alerta_reciente:
+            return None  # No enviar alerta si ya se envió una recientemente
+        
+        # Obtener destinatarios
+        destinatarios = cls._obtener_destinatarios_alerta(sesion)
+        
+        # Crear mensaje
+        duracion = sesion.get_duracion()
+        horas = int(duracion.total_seconds() // 3600)
+        minutos = int((duracion.total_seconds() % 3600) // 60)
+        
+        asunto = f"⏰ Cronómetro Activo - {sesion.tecnico.get_nombre_completo()}"
+        mensaje = f"""
+        <h2>⏰ Cronómetro Activo</h2>
+        <p><strong>Técnico:</strong> {sesion.tecnico.get_nombre_completo()}</p>
+        <p><strong>Actividad:</strong> {sesion.actividad.nombre}</p>
+        <p><strong>Duración actual:</strong> {horas}h {minutos}m</p>
+        <p><strong>Inicio:</strong> {sesion.hora_inicio.strftime('%d/%m/%Y %H:%M')}</p>
+        """
+        
+        if sesion.servicio:
+            mensaje += f"<p><strong>Servicio:</strong> {sesion.servicio}</p>"
+        
+        if sesion.descripcion:
+            mensaje += f"<p><strong>Descripción:</strong> {sesion.descripcion}</p>"
+        
+        mensaje += f"""
+        <p><strong>Sucursal:</strong> {sesion.tecnico.sucursal.nombre}</p>
+        <p><em>Este cronómetro se detendrá automáticamente a las 19:00 si no se detiene manualmente.</em></p>
+        """
+        
+        return cls.objects.create(
+            sesion=sesion,
+            tipo_alerta='CRONOMETRO_ACTIVO',
+            destinatarios=destinatarios,
+            asunto=asunto,
+            mensaje=mensaje
+        )
+    
+    @classmethod
+    def crear_alerta_cronometro_olvidado(cls, sesion):
+        """Crea una alerta para cronómetro olvidado (más de 4 horas activo)"""
+        from django.utils import timezone
+        from datetime import timedelta
+        
+        # Verificar si ya se envió una alerta reciente (últimas 2 horas)
+        alerta_reciente = cls.objects.filter(
+            sesion=sesion,
+            tipo_alerta='CRONOMETRO_OLVIDADO',
+            estado='ENVIADA',
+            fecha_envio__gte=timezone.now() - timedelta(hours=2)
+        ).first()
+        
+        if alerta_reciente:
+            return None
+        
+        # Obtener destinatarios
+        destinatarios = cls._obtener_destinatarios_alerta(sesion)
+        
+        # Crear mensaje
+        duracion = sesion.get_duracion()
+        horas = int(duracion.total_seconds() // 3600)
+        minutos = int((duracion.total_seconds() % 3600) // 60)
+        
+        asunto = f"⚠️ Cronómetro Olvidado - {sesion.tecnico.get_nombre_completo()}"
+        mensaje = f"""
+        <h2>⚠️ Cronómetro Olvidado</h2>
+        <p><strong>ATENCIÓN:</strong> El técnico {sesion.tecnico.get_nombre_completo()} tiene un cronómetro activo por más de 4 horas.</p>
+        <p><strong>Actividad:</strong> {sesion.actividad.nombre}</p>
+        <p><strong>Duración actual:</strong> {horas}h {minutos}m</p>
+        <p><strong>Inicio:</strong> {sesion.hora_inicio.strftime('%d/%m/%Y %H:%M')}</p>
+        """
+        
+        if sesion.servicio:
+            mensaje += f"<p><strong>Servicio:</strong> {sesion.servicio}</p>"
+        
+        mensaje += f"""
+        <p><strong>Sucursal:</strong> {sesion.tecnico.sucursal.nombre}</p>
+        <p><em>Por favor, verificar si el técnico olvidó detener el cronómetro.</em></p>
+        """
+        
+        return cls.objects.create(
+            sesion=sesion,
+            tipo_alerta='CRONOMETRO_OLVIDADO',
+            destinatarios=destinatarios,
+            asunto=asunto,
+            mensaje=mensaje
+        )
+    
+    @classmethod
+    def _obtener_destinatarios_alerta(cls, sesion):
+        """Obtiene la lista de destinatarios para las alertas"""
+        from django.conf import settings
+        
+        destinatarios = []
+        
+        # 1. Email del técnico
+        if sesion.tecnico.email:
+            destinatarios.append(sesion.tecnico.email)
+        
+        # 2. Emails específicos de la empresa (siempre incluidos)
+        emails_empresa = [
+            'maxi.caamano@patagoniamaquinarias.com',
+            'repuestosrga@patagoniamaquinarias.com'
+        ]
+        
+        for email in emails_empresa:
+            if email not in destinatarios:
+                destinatarios.append(email)
+        
+        # 3. Emails adicionales de configuración (si existen)
+        if hasattr(settings, 'CC_EMAILS'):
+            for email in settings.CC_EMAILS:
+                if email not in destinatarios:
+                    destinatarios.append(email)
+        
+        # 4. Filtrar emails excluidos
+        emails_excluidos = [
+            'carolina.fiocchi@patagoniamaquinarias.com',
+            'santiago.fiocchi@patagoniamaquinarias.com',
+            'hector.gonzalez@patagoniamaquinarias.com',
+            'administracion@patagoniamaquinarias.com'
+        ]
+        
+        # Remover emails excluidos
+        destinatarios = [email for email in destinatarios if email not in emails_excluidos]
+        
+        return destinatarios
+    
+    def enviar_email(self):
+        """Envía el email de alerta"""
+        from django.conf import settings
+        from django.core.mail import EmailMultiAlternatives
+        from django.utils.html import strip_tags
+        
+        try:
+            email = EmailMultiAlternatives(
+                self.asunto,
+                strip_tags(self.mensaje),
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                to=self.destinatarios
+            )
+            email.attach_alternative(self.mensaje, "text/html")
+            email.send()
+            
+            self.estado = 'ENVIADA'
+            self.save()
+            
+            return True, "Email enviado correctamente"
+            
+        except Exception as e:
+            self.estado = 'FALLIDA'
+            self.save()
+            return False, f"Error al enviar email: {str(e)}"
 
 
 

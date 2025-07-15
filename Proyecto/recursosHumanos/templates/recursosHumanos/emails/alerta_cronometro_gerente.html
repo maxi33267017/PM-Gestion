@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alerta de Cronómetro Activo - Gerente</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background-color: #dc3545;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-radius: 5px 5px 0 0;
+        }
+        .content {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border: 1px solid #dee2e6;
+        }
+        .alert-box {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+        .info-row {
+            margin: 10px 0;
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .label {
+            font-weight: bold;
+            color: #495057;
+        }
+        .value {
+            color: #6c757d;
+        }
+        .button {
+            display: inline-block;
+            background-color: #007bff;
+            color: white;
+            padding: 12px 24px;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+        .footer {
+            background-color: #6c757d;
+            color: white;
+            padding: 15px;
+            text-align: center;
+            border-radius: 0 0 5px 5px;
+            font-size: 12px;
+        }
+        .technician-info {
+            background-color: #e9ecef;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>⚠️ Alerta de Cronómetro Activo</h1>
+        <p>Notificación para Gerentes</p>
+    </div>
+    
+    <div class="content">
+        <p>Hola <strong>{{ gerente.nombre }} {{ gerente.apellido }}</strong>,</p>
+        
+        <div class="alert-box">
+            <p><strong>Un cronómetro ha estado activo por más de 2 horas.</strong></p>
+            <p>Se recomienda verificar el estado de la actividad y contactar al técnico si es necesario.</p>
+            <p><em>Esta alerta ha sido enviada al técnico y al equipo de gestión central.</em></p>
+        </div>
+        
+        <div class="technician-info">
+            <h3>Información del Técnico:</h3>
+            <div class="info-row">
+                <span class="label">Técnico:</span>
+                <span class="value">{{ tecnico.nombre }} {{ tecnico.apellido }}</span>
+            </div>
+            <div class="info-row">
+                <span class="label">Email:</span>
+                <span class="value">{{ tecnico.email }}</span>
+            </div>
+            <div class="info-row">
+                <span class="label">Teléfono:</span>
+                <span class="value">{{ tecnico.telefono|default:"No disponible" }}</span>
+            </div>
+        </div>
+        
+        <h3>Detalles de la Actividad:</h3>
+        
+        <div class="info-row">
+            <span class="label">Actividad:</span>
+            <span class="value">{{ actividad.nombre }}</span>
+        </div>
+        
+        <div class="info-row">
+            <span class="label">Cliente:</span>
+            <span class="value">{{ actividad.cliente.nombre }}</span>
+        </div>
+        
+        <div class="info-row">
+            <span class="label">Servicio:</span>
+            <span class="value">{{ actividad.servicio.nombre }}</span>
+        </div>
+        
+        <div class="info-row">
+            <span class="label">Inicio:</span>
+            <span class="value">{{ hora_tecnica.fecha_inicio|date:"d/m/Y H:i" }}</span>
+        </div>
+        
+        <div class="info-row">
+            <span class="label">Tiempo Transcurrido:</span>
+            <span class="value">{{ tiempo_transcurrido }}</span>
+        </div>
+        
+        <div class="info-row">
+            <span class="label">Estado:</span>
+            <span class="value" style="color: #dc3545; font-weight: bold;">ACTIVO</span>
+        </div>
+        
+        <p style="margin-top: 20px;">
+            <a href="{{ url_base }}{% url 'recursosHumanos:dashboard_alertas' %}" class="button">
+                Ver Dashboard de Alertas
+            </a>
+        </p>
+        
+        <p style="margin-top: 20px; font-size: 14px; color: #6c757d;">
+            Puedes acceder al dashboard de alertas para ver todas las alertas activas y gestionarlas.
+        </p>
+    </div>
+    
+    <div class="footer">
+        <p>Este es un mensaje automático del sistema de cronómetros técnicos.</p>
+        <p>No respondas a este email.</p>
+    </div>
+</body>
+</html> 

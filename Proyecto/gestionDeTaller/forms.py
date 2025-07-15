@@ -21,9 +21,9 @@ class PreordenForm(forms.ModelForm):
         self.user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
 
-        # Si el usuario tiene una sucursal, limitar las opciones a su sucursal
-        if self.user and self.user.sucursal:
-            self.fields['sucursal'].queryset = Sucursal.objects.filter(id=self.user.sucursal.id)
+        # Usar el nuevo método del modelo Usuario para obtener sucursales disponibles
+        if self.user:
+            self.fields['sucursal'].queryset = self.user.get_sucursales_para_formulario()
         else:
             self.fields['sucursal'].queryset = Sucursal.objects.filter(activo=True)
 
@@ -67,10 +67,11 @@ class ServicioForm(forms.ModelForm):
         self.user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
         
-        # Filtrar el queryset de preorden si el usuario tiene sucursal
-        if self.user and hasattr(self.user, 'sucursal'):
+        # Filtrar el queryset de preorden usando las sucursales disponibles del usuario
+        if self.user:
+            sucursales_disponibles = self.user.get_sucursales_disponibles()
             self.fields['preorden'].queryset = PreOrden.objects.filter(
-                sucursal=self.user.sucursal,
+                sucursal__in=sucursales_disponibles,
                 servicio__isnull=True
             )
         else:
@@ -331,6 +332,16 @@ class FiltroExportacionServiciosForm(forms.Form):
     )
 
 class Revision5SForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        self.user = kwargs.pop('user', None)
+        super().__init__(*args, **kwargs)
+        
+        # Usar el nuevo método del modelo Usuario para obtener sucursales disponibles
+        if self.user:
+            self.fields['sucursal'].queryset = self.user.get_sucursales_para_formulario()
+        else:
+            self.fields['sucursal'].queryset = Sucursal.objects.filter(activo=True)
+    
     class Meta:
         model = Revision5S
         fields = [

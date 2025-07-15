@@ -1573,7 +1573,7 @@ def lista_revisiones_5s(request):
 @login_required
 def crear_revision_5s(request):
     if request.method == 'POST':
-        form = Revision5SForm(request.POST, request.FILES)
+        form = Revision5SForm(request.POST, request.FILES, user=request.user)
         if form.is_valid():
             revision = form.save(commit=False)
             revision.evaluador = request.user
@@ -1591,7 +1591,7 @@ def crear_revision_5s(request):
             messages.success(request, 'Revisión 5S creada exitosamente.')
             return redirect('gestionDeTaller:detalle_revision_5s', revision_id=revision.id)
     else:
-        form = Revision5SForm()
+        form = Revision5SForm(user=request.user)
     return render(request, 'gestionDeTaller/5s/crear_revision.html', {'form': form})
 
 @login_required

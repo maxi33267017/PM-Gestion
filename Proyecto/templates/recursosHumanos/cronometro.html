@@ -1,0 +1,982 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<style>
+    .cronometro-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+    
+    .cronometro-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 30px;
+        border-radius: 15px;
+        margin-bottom: 30px;
+        text-align: center;
+    }
+    
+    .cronometro-display {
+        font-size: 4rem;
+        font-weight: bold;
+        font-family: 'Courier New', monospace;
+        margin: 20px 0;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    }
+    
+    .cronometro-controls {
+        display: flex;
+        gap: 15px;
+        justify-content: center;
+        margin: 20px 0;
+    }
+    
+    .btn-cronometro {
+        padding: 12px 30px;
+        border: none;
+        border-radius: 25px;
+        font-size: 1.1rem;
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    
+    .btn-iniciar {
+        background: linear-gradient(45deg, #4CAF50, #45a049);
+        color: white;
+    }
+    
+    .btn-iniciar:hover {
+        background: linear-gradient(45deg, #45a049, #4CAF50);
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(76, 175, 80, 0.4);
+    }
+    
+    .btn-detener {
+        background: linear-gradient(45deg, #f44336, #d32f2f);
+        color: white;
+    }
+    
+    .btn-detener:hover {
+        background: linear-gradient(45deg, #d32f2f, #f44336);
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(244, 67, 54, 0.4);
+    }
+    
+    .btn-secundario {
+        background: linear-gradient(45deg, #2196F3, #1976D2);
+        color: white;
+    }
+    
+    .btn-secundario:hover {
+        background: linear-gradient(45deg, #1976D2, #2196F3);
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(33, 150, 243, 0.4);
+    }
+    
+    .sesion-activa {
+        background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+        color: white;
+        padding: 20px;
+        border-radius: 15px;
+        margin-bottom: 30px;
+    }
+    
+    .sesion-info {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 20px;
+        margin: 20px 0;
+    }
+    
+    .info-card {
+        background: rgba(255, 255, 255, 0.1);
+        padding: 15px;
+        border-radius: 10px;
+        backdrop-filter: blur(10px);
+    }
+    
+    .seleccion-container {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 30px;
+        margin-bottom: 30px;
+    }
+    
+    .seleccion-card {
+        background: white;
+        border-radius: 15px;
+        padding: 25px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        border: 2px solid #e0e0e0;
+        transition: all 0.3s ease;
+    }
+    
+    .seleccion-card:hover {
+        border-color: #667eea;
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    }
+    
+    .seleccion-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 2px solid #f0f0f0;
+    }
+    
+    .seleccion-icon {
+        font-size: 2rem;
+        margin-right: 15px;
+        color: #667eea;
+    }
+    
+    .seleccion-title {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #333;
+    }
+    
+    .form-group {
+        margin-bottom: 20px;
+    }
+    
+    .form-label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: bold;
+        color: #555;
+    }
+    
+    .form-control {
+        width: 100%;
+        padding: 12px;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        font-size: 1rem;
+        transition: border-color 0.3s ease;
+    }
+    
+    .form-control:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+    
+    .estado-badge {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: bold;
+        text-transform: uppercase;
+    }
+    
+    .estado-programado {
+        background: #fff3cd;
+        color: #856404;
+        border: 1px solid #ffeaa7;
+    }
+    
+    .estado-espera {
+        background: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+    }
+    
+    .estado-proceso {
+        background: #d1ecf1;
+        color: #0c5460;
+        border: 1px solid #bee5eb;
+    }
+    
+    .servicio-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px;
+        margin: 8px 0;
+        background: #f8f9fa;
+        border-radius: 8px;
+        border-left: 4px solid #667eea;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .servicio-item:hover {
+        background: #e9ecef;
+        transform: translateX(5px);
+    }
+    
+    .servicio-item.selected {
+        background: #667eea;
+        color: white;
+    }
+    
+    .servicio-info {
+        flex: 1;
+    }
+    
+    .servicio-cliente {
+        font-weight: bold;
+        margin-bottom: 4px;
+    }
+    
+    .servicio-equipo {
+        font-size: 0.9rem;
+        color: #666;
+    }
+    
+    .servicio-item.selected .servicio-equipo {
+        color: #e0e0e0;
+    }
+    
+    .actividad-item {
+        padding: 12px;
+        margin: 8px 0;
+        background: #f8f9fa;
+        border-radius: 8px;
+        border-left: 4px solid #28a745;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .actividad-item:hover {
+        background: #e9ecef;
+        transform: translateX(5px);
+    }
+    
+    .actividad-item.selected {
+        background: #28a745;
+        color: white;
+    }
+    
+    .actividad-nombre {
+        font-weight: bold;
+        margin-bottom: 4px;
+    }
+    
+    .actividad-tipo {
+        font-size: 0.8rem;
+        color: #666;
+    }
+    
+    .actividad-item.selected .actividad-tipo {
+        color: #e0e0e0;
+    }
+    
+    .alert {
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        border-left: 4px solid;
+    }
+    
+    .alert-success {
+        background: #d4edda;
+        color: #155724;
+        border-color: #28a745;
+    }
+    
+    .alert-danger {
+        background: #f8d7da;
+        color: #721c24;
+        border-color: #dc3545;
+    }
+    
+    .alert-warning {
+        background: #fff3cd;
+        color: #856404;
+        border-color: #ffc107;
+    }
+    
+    .loading {
+        display: none;
+        text-align: center;
+        padding: 20px;
+    }
+    
+    .spinner {
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #667eea;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        animation: spin 1s linear infinite;
+        margin: 0 auto 10px;
+    }
+    
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    
+    /* Mejoras específicas para móviles */
+    @media (max-width: 768px) {
+        .cronometro-container {
+            padding: 10px;
+            margin: 0;
+        }
+        
+        .cronometro-header {
+            padding: 20px 15px;
+            margin-bottom: 20px;
+        }
+        
+        .cronometro-header h1 {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+        }
+        
+        .cronometro-header p {
+            font-size: 1rem;
+            margin: 0;
+        }
+        
+        .cronometro-display {
+            font-size: 3rem;
+            margin: 15px 0;
+            text-align: center;
+        }
+        
+        .cronometro-controls {
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            margin: 15px 0;
+        }
+        
+        .btn-cronometro {
+            width: 100%;
+            max-width: 280px;
+            padding: 15px 20px;
+            font-size: 1rem;
+            border-radius: 15px;
+            min-height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .seleccion-container {
+            grid-template-columns: 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .seleccion-card {
+            padding: 20px 15px;
+            border-radius: 12px;
+        }
+        
+        .seleccion-header {
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+        }
+        
+        .seleccion-icon {
+            font-size: 1.5rem;
+            margin-right: 10px;
+        }
+        
+        .seleccion-title {
+            font-size: 1.3rem;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-label {
+            font-size: 0.95rem;
+            margin-bottom: 8px;
+        }
+        
+        .form-control {
+            padding: 12px;
+            font-size: 1rem;
+            border-radius: 8px;
+        }
+        
+        .actividad-item,
+        .servicio-item {
+            padding: 15px 12px;
+            margin: 6px 0;
+            border-radius: 10px;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .actividad-nombre,
+        .servicio-cliente {
+            font-size: 1rem;
+            line-height: 1.3;
+        }
+        
+        .servicio-equipo {
+            font-size: 0.85rem;
+        }
+        
+        .estado-badge {
+            padding: 6px 10px;
+            font-size: 0.75rem;
+            white-space: nowrap;
+        }
+        
+        .sesion-activa {
+            padding: 20px 15px;
+            margin-bottom: 20px;
+        }
+        
+        .sesion-info {
+            grid-template-columns: 1fr;
+            gap: 10px;
+            margin: 15px 0;
+        }
+        
+        .info-card {
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 0.95rem;
+        }
+        
+        .alert {
+            padding: 12px;
+            margin-bottom: 15px;
+            font-size: 0.95rem;
+        }
+        
+        /* Mejoras de usabilidad para touch */
+        .actividad-item:active,
+        .servicio-item:active {
+            transform: scale(0.98);
+            transition: transform 0.1s ease;
+        }
+        
+        .btn-cronometro:active {
+            transform: scale(0.95);
+            transition: transform 0.1s ease;
+        }
+        
+        /* Mejor espaciado para elementos táctiles */
+        .actividad-item,
+        .servicio-item {
+            margin: 8px 0;
+            min-height: 65px;
+        }
+        
+        /* Ajustes para pantallas muy pequeñas */
+        @media (max-width: 480px) {
+            .cronometro-display {
+                font-size: 2.5rem;
+            }
+            
+            .btn-cronometro {
+                padding: 18px 15px;
+                font-size: 0.95rem;
+            }
+            
+            .seleccion-card {
+                padding: 15px 12px;
+            }
+            
+            .actividad-item,
+            .servicio-item {
+                padding: 12px 10px;
+                min-height: 55px;
+            }
+        }
+        
+        /* Orientación landscape en móviles */
+        @media (max-width: 768px) and (orientation: landscape) {
+            .cronometro-header {
+                padding: 15px;
+            }
+            
+            .cronometro-display {
+                font-size: 2.2rem;
+                margin: 10px 0;
+            }
+            
+            .seleccion-container {
+                grid-template-columns: 1fr 1fr;
+                gap: 10px;
+            }
+            
+            .btn-cronometro {
+                max-width: 200px;
+                padding: 12px 15px;
+            }
+        }
+    }
+    
+    /* Mejoras para tablets */
+    @media (min-width: 769px) and (max-width: 1024px) {
+        .cronometro-container {
+            max-width: 900px;
+            padding: 15px;
+        }
+        
+        .cronometro-display {
+            font-size: 3.5rem;
+        }
+        
+        .btn-cronometro {
+            padding: 15px 25px;
+            font-size: 1.1rem;
+        }
+        
+        .seleccion-container {
+            gap: 20px;
+        }
+    }
+    
+    /* Botón flotante para móviles */
+    .floating-action-button {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        z-index: 1000;
+    }
+    
+    .fab-btn {
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        background: linear-gradient(45deg, #667eea, #764ba2);
+        border: none;
+        color: white;
+        font-size: 1.5rem;
+        cursor: pointer;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .fab-btn:hover {
+        transform: scale(1.1);
+        box-shadow: 0 6px 16px rgba(0,0,0,0.4);
+    }
+    
+    .fab-menu {
+        position: absolute;
+        bottom: 70px;
+        right: 0;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        padding: 8px;
+        display: none;
+        flex-direction: column;
+        gap: 4px;
+        min-width: 120px;
+    }
+    
+    .fab-menu.show {
+        display: flex;
+    }
+    
+    .fab-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 12px;
+        border: none;
+        background: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 0.9rem;
+        color: #333;
+        transition: background-color 0.2s ease;
+    }
+    
+    .fab-item:hover {
+        background-color: #f0f0f0;
+    }
+    
+    .fab-item i {
+        font-size: 1rem;
+    }
+    
+    /* Mostrar FAB solo en móviles */
+    @media (min-width: 769px) {
+        .floating-action-button {
+            display: none !important;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="cronometro-container">
+    <!-- Header del Cronómetro -->
+    <div class="cronometro-header">
+        <h1><i class="bi bi-stopwatch"></i> Cronómetro de Trabajo</h1>
+        <p>{{ tecnico.get_nombre_completo }} - {{ tecnico.sucursal.nombre }}</p>
+    </div>
+
+    <!-- Mensajes de alerta -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <!-- Sesión Activa -->
+    {% if sesion_activa %}
+    <div class="sesion-activa">
+        <h3><i class="bi bi-play-circle"></i> Sesión Activa</h3>
+        <div class="cronometro-display" id="cronometro-display">00:00:00</div>
+        <div class="sesion-info">
+            <div class="info-card">
+                <strong>Actividad:</strong> {{ sesion_activa.actividad.nombre }}
+            </div>
+            {% if sesion_activa.servicio %}
+            <div class="info-card">
+                <strong>Servicio:</strong> {{ sesion_activa.servicio }}
+            </div>
+            {% endif %}
+            <div class="info-card">
+                <strong>Inicio:</strong> {{ sesion_activa.hora_inicio|time:"H:i" }}
+            </div>
+        </div>
+        <div class="cronometro-controls">
+            <button class="btn-cronometro btn-detener" onclick="detenerCronometro()">
+                <i class="bi bi-stop-circle"></i> Detener Cronómetro
+            </button>
+        </div>
+    </div>
+    {% else %}
+    <!-- Contenedor de Selección -->
+    <div class="seleccion-container">
+        <!-- Selección de Actividades -->
+        <div class="seleccion-card">
+            <div class="seleccion-header">
+                <i class="bi bi-activity seleccion-icon"></i>
+                <div class="seleccion-title">Actividades</div>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Selecciona una actividad:</label>
+                <div id="actividades-list">
+                    {% for actividad in actividades %}
+                    <div class="actividad-item" data-id="{{ actividad.id }}" onclick="seleccionarActividad(this, {{ actividad.id }})">
+                        <div class="actividad-nombre">{{ actividad.nombre }}</div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Selección de Servicios -->
+        <div class="seleccion-card">
+            <div class="seleccion-header">
+                <i class="bi bi-tools seleccion-icon"></i>
+                <div class="seleccion-title">Servicios</div>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Selecciona un servicio (opcional):</label>
+                <div id="servicios-list">
+                    {% for servicio in servicios %}
+                    <div class="servicio-item" data-id="{{ servicio.id }}" onclick="seleccionarServicio(this, {{ servicio.id }})">
+                        <div class="servicio-info">
+                            <div class="servicio-cliente">Orden {{ servicio.id }} - {{ servicio.preorden.cliente.razon_social }}</div>
+                            <div class="servicio-equipo">{{ servicio.preorden.equipo.numero_serie }}</div>
+                        </div>
+                        <span class="estado-badge estado-{{ servicio.estado|lower }}">
+                            {{ servicio.get_estado_display }}
+                        </span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Descripción -->
+    <div class="seleccion-card">
+        <div class="seleccion-header">
+            <i class="bi bi-text-paragraph seleccion-icon"></i>
+            <div class="seleccion-title">Descripción (opcional)</div>
+        </div>
+        <div class="form-group">
+            <textarea id="descripcion" class="form-control" rows="3" placeholder="Describe brevemente la actividad que vas a realizar..."></textarea>
+        </div>
+    </div>
+
+    <!-- Controles del Cronómetro -->
+    <div class="cronometro-controls">
+        <button class="btn-cronometro btn-iniciar" onclick="iniciarCronometro()" id="btn-iniciar">
+            <i class="bi bi-play-circle"></i> Iniciar Cronómetro
+        </button>
+    </div>
+    {% endif %}
+
+    <!-- Loading -->
+    <div class="loading" id="loading">
+        <div class="spinner"></div>
+        <p>Procesando...</p>
+    </div>
+    
+    <!-- Botón flotante para móviles -->
+    <div class="floating-action-button" id="fab" style="display: none;">
+        <button class="fab-btn" onclick="toggleFabMenu()">
+            <i class="bi bi-three-dots-vertical"></i>
+        </button>
+        <div class="fab-menu" id="fab-menu">
+            <button class="fab-item" onclick="scrollToTop()">
+                <i class="bi bi-arrow-up"></i>
+                <span>Arriba</span>
+            </button>
+            <button class="fab-item" onclick="refreshPage()">
+                <i class="bi bi-arrow-clockwise"></i>
+                <span>Actualizar</span>
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let actividadSeleccionada = null;
+let servicioSeleccionado = null;
+let intervaloCronometro = null;
+
+// Seleccionar actividad
+function seleccionarActividad(elemento, id) {
+    // Remover selección anterior
+    document.querySelectorAll('.actividad-item').forEach(item => {
+        item.classList.remove('selected');
+    });
+    
+    // Seleccionar nueva actividad
+    elemento.classList.add('selected');
+    actividadSeleccionada = id;
+    
+    // Habilitar botón de iniciar si hay actividad seleccionada
+    document.getElementById('btn-iniciar').disabled = false;
+}
+
+// Seleccionar servicio
+function seleccionarServicio(elemento, id) {
+    // Remover selección anterior
+    document.querySelectorAll('.servicio-item').forEach(item => {
+        item.classList.remove('selected');
+    });
+    
+    // Seleccionar nuevo servicio
+    elemento.classList.add('selected');
+    servicioSeleccionado = id;
+}
+
+// Iniciar cronómetro
+async function iniciarCronometro() {
+    if (!actividadSeleccionada) {
+        alert('Debes seleccionar una actividad para iniciar el cronómetro.');
+        return;
+    }
+    
+    mostrarLoading(true);
+    
+    try {
+        const response = await fetch('{% url "recursosHumanos:iniciar_cronometro" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify({
+                actividad_id: actividadSeleccionada,
+                servicio_id: servicioSeleccionado,
+                descripcion: document.getElementById('descripcion').value
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            // Recargar la página para mostrar la sesión activa
+            window.location.reload();
+        } else {
+            alert('Error: ' + data.message);
+        }
+    } catch (error) {
+        alert('Error al iniciar el cronómetro: ' + error.message);
+    } finally {
+        mostrarLoading(false);
+    }
+}
+
+// Detener cronómetro
+async function detenerCronometro() {
+    if (!confirm('¿Estás seguro de que quieres detener el cronómetro?')) {
+        return;
+    }
+    
+    mostrarLoading(true);
+    
+    try {
+        const response = await fetch('{% url "recursosHumanos:detener_cronometro" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            alert('Cronómetro detenido. Se han registrado ' + data.duracion_horas.toFixed(2) + ' horas.');
+            window.location.reload();
+        } else {
+            alert('Error: ' + data.message);
+        }
+    } catch (error) {
+        alert('Error al detener el cronómetro: ' + error.message);
+    } finally {
+        mostrarLoading(false);
+    }
+}
+
+// Actualizar cronómetro en tiempo real
+function actualizarCronometro() {
+    const display = document.getElementById('cronometro-display');
+    if (!display) return;
+    
+    fetch('{% url "recursosHumanos:estado_cronometro" %}')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success && data.activa) {
+                const duracion = data.duracion_segundos;
+                const horas = Math.floor(duracion / 3600);
+                const minutos = Math.floor((duracion % 3600) / 60);
+                const segundos = Math.floor(duracion % 60);
+                
+                display.textContent = 
+                    String(horas).padStart(2, '0') + ':' +
+                    String(minutos).padStart(2, '0') + ':' +
+                    String(segundos).padStart(2, '0');
+            }
+        })
+        .catch(error => console.error('Error al actualizar cronómetro:', error));
+}
+
+// Mostrar/ocultar loading
+function mostrarLoading(mostrar) {
+    const loading = document.getElementById('loading');
+    if (mostrar) {
+        loading.style.display = 'block';
+    } else {
+        loading.style.display = 'none';
+    }
+}
+
+// Obtener cookie CSRF
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+// Inicializar
+document.addEventListener('DOMContentLoaded', function() {
+    // Deshabilitar botón de iniciar inicialmente
+    const btnIniciar = document.getElementById('btn-iniciar');
+    if (btnIniciar) {
+        btnIniciar.disabled = true;
+    }
+    
+    // Iniciar actualización del cronómetro si hay sesión activa
+    {% if sesion_activa %}
+    actualizarCronometro();
+    intervaloCronometro = setInterval(actualizarCronometro, 1000);
+    {% endif %}
+});
+
+// Limpiar intervalo al salir de la página
+window.addEventListener('beforeunload', function() {
+    if (intervaloCronometro) {
+        clearInterval(intervaloCronometro);
+    }
+});
+
+// Funciones para el botón flotante
+function toggleFabMenu() {
+    const menu = document.getElementById('fab-menu');
+    menu.classList.toggle('show');
+}
+
+function scrollToTop() {
+    window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+    });
+    toggleFabMenu();
+}
+
+function refreshPage() {
+    window.location.reload();
+}
+
+// Mostrar FAB en móviles después de scroll
+window.addEventListener('scroll', function() {
+    const fab = document.getElementById('fab');
+    if (window.innerWidth <= 768) {
+        if (window.scrollY > 200) {
+            fab.style.display = 'block';
+        } else {
+            fab.style.display = 'none';
+        }
+    }
+});
+
+// Cerrar menú FAB al hacer clic fuera
+document.addEventListener('click', function(event) {
+    const fab = document.getElementById('fab');
+    const fabMenu = document.getElementById('fab-menu');
+    
+    if (!fab.contains(event.target) && fabMenu.classList.contains('show')) {
+        fabMenu.classList.remove('show');
+    }
+});
+
+// Mejorar experiencia táctil en móviles
+if ('ontouchstart' in window) {
+    // Agregar delay para evitar doble tap en elementos táctiles
+    document.querySelectorAll('.actividad-item, .servicio-item, .btn-cronometro').forEach(element => {
+        element.addEventListener('touchstart', function() {
+            this.style.transform = 'scale(0.98)';
+        });
+        
+        element.addEventListener('touchend', function() {
+            setTimeout(() => {
+                this.style.transform = '';
+            }, 150);
+        });
+    });
+}
+</script>
+{% endblock %} 

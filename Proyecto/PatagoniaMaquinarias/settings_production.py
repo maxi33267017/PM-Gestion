@@ -16,7 +16,9 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-rr%o!9z(2r-o&l-#ca0fd
 DEBUG = os.environ.get('DEBUG', 'False').lower() == 'true'
 
 ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1,0.0.0.0').split(',')
+LANGUAGE_CODE = os.environ.get('LANGUAGE_CODE', 'es-ar')
 
+TIME_ZONE = os.environ.get('TIME_ZONE', 'America/Argentina/Buenos_Aires')
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
