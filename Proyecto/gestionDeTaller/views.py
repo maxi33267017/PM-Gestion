@@ -375,7 +375,7 @@ def crear_preorden(request):
 
                 # Procesar la firma en formato base64
                 firma_data = request.POST.get("firma_cliente")
-                if firma_data:
+                if firma_data and firma_data.strip() and ';base64,' in firma_data:
                     try:
                         format, imgstr = firma_data.split(';base64,')
                         ext = format.split('/')[-1]
