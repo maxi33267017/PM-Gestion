@@ -25,7 +25,7 @@ class RegistroHorasTecnicoForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
 
         # Filtrar servicios por estado y sucursal del técnico
-        servicios_query = Servicio.objects.filter(estado="EN_PROCESO")
+        servicios_query = Servicio.objects.filter(estado__in=["EN_PROCESO", "PROGRAMADO"])
         if self.tecnico and self.tecnico.sucursal:
             servicios_query = servicios_query.filter(preorden__sucursal=self.tecnico.sucursal)
         self.fields['servicio'].queryset = servicios_query
@@ -64,9 +64,9 @@ class RegistroHorasTecnicoForm(forms.ModelForm):
         if tipo_hora and tipo_hora.disponibilidad == "DISPONIBLE" and tipo_hora.genera_ingreso == "INGRESO":
             if not servicio:
                 if numero_informe:
-                    servicio = Servicio.objects.filter(numero_orden=numero_informe, estado='EN_PROCESO').first()
+                    servicio = Servicio.objects.filter(numero_orden=numero_informe, estado__in=['EN_PROCESO', 'PROGRAMADO']).first()
                     if not servicio:
-                        self.add_error("numero_informe", "No se encontró un servicio con ese número de informe en estado EN PROCESO.")
+                        self.add_error("numero_informe", "No se encontró un servicio con ese número de informe en estado EN PROCESO o PROGRAMADO.")
                     else:
                         cleaned_data["servicio"] = servicio
                 else:
@@ -75,8 +75,8 @@ class RegistroHorasTecnicoForm(forms.ModelForm):
         if tipo_hora and (tipo_hora.disponibilidad != "DISPONIBLE" or tipo_hora.genera_ingreso != "INGRESO"):
             cleaned_data["servicio"] = None  # No permitir servicio para horas no productivas
 
-        if servicio and servicio.estado and servicio.estado not in ['EN_PROCESO']:
-            self.add_error("servicio", "Solo se pueden registrar horas en servicios en proceso.")
+        if servicio and servicio.estado and servicio.estado not in ['EN_PROCESO', 'PROGRAMADO']:
+            self.add_error("servicio", "Solo se pueden registrar horas en servicios en proceso o programados.")
 
         return cleaned_data
 
