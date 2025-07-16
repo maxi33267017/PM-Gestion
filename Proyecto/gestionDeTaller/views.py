@@ -894,9 +894,8 @@ def editar_preorden(request, preorden_id):
     
     if request.method == 'POST':
         form = PreordenForm(request.POST, request.FILES, instance=preorden, user=request.user)
-        evidencia_forms = [EvidenciaForm(request.POST, request.FILES, prefix=str(i)) for i in range(len(request.FILES.getlist('imagen')))]
         
-        if form.is_valid() and all([ef.is_valid() for ef in evidencia_forms]):
+        if form.is_valid():
             try:
                 # Guardar la instancia de preorden
                 preorden = form.save(commit=False)
@@ -909,7 +908,6 @@ def editar_preorden(request, preorden_id):
                         messages.error(request, 'Debe seleccionar una sucursal.')
                         return render(request, 'gestionDeTaller/editar_preorden.html', {
                             'form': form,
-                            'evidencia_forms': evidencia_forms,
                             'preorden': preorden
                         })
                 
@@ -927,10 +925,11 @@ def editar_preorden(request, preorden_id):
                 preorden.save()
                 form.save_m2m()  # Guardar relaciones ManyToMany
                 
-                # Guardar cada imagen de evidencia
-                for evidencia_form in evidencia_forms:
-                    if evidencia_form.is_valid() and evidencia_form.cleaned_data.get('imagen'):
-                        Evidencia.objects.create(preorden=preorden, imagen=evidencia_form.cleaned_data['imagen'])
+                # Guardar imágenes de evidencia
+                evidencia_files = request.FILES.getlist('imagen')  # Recoger todas las evidencias subidas
+                for evidencia_file in evidencia_files:
+                    if evidencia_file:  # Verificar que el archivo no esté vacío
+                        Evidencia.objects.create(preorden=preorden, imagen=evidencia_file)
                 
                 messages.success(request, 'Preorden actualizada correctamente.')
                 return redirect('gestionDeTaller:lista_preordenes')
@@ -943,11 +942,9 @@ def editar_preorden(request, preorden_id):
             messages.error(request, 'Por favor, corrija los errores en el formulario.')
     else:
         form = PreordenForm(instance=preorden, user=request.user)
-        evidencia_forms = [EvidenciaForm(prefix=str(i)) for i in range(3)]  # 3 formularios de evidencia por defecto
     
     return render(request, 'gestionDeTaller/editar_preorden.html', {
         'form': form,
-        'evidencia_forms': evidencia_forms,
         'preorden': preorden
     })
 

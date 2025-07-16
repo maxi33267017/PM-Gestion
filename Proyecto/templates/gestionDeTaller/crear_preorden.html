@@ -841,13 +841,13 @@
 
         const newFormDiv = document.createElement('div');
         newFormDiv.classList.add('mb-3');
-        newFormIndex = `evidencia-form-${newFormIndex}`;
+        newFormDiv.id = `evidencia-form-${newFormIndex}`;
 
         const newFormHTML = `
             <label for="id_imagen_${newFormIndex}" class="form-label">
                 <i class="bi bi-camera"></i>Evidencia ${newFormIndex + 1}
             </label>
-            <input type="file" name="imagen_${newFormIndex}" class="form-control" id="id_imagen_${newFormIndex}">
+            <input type="file" name="imagen" class="form-control" id="id_imagen_${newFormIndex}">
         `;
 
         newFormDiv.innerHTML = newFormHTML;

@@ -640,14 +640,12 @@
                     {% endif %}
                     
                     <div id="evidencia-forms">
-                        {% for evidencia_form in evidencia_forms %}
-                            <div class="mb-3">
-                                <label for="{{ evidencia_form.imagen.id_for_label }}" class="form-label">
-                                    <i class="bi bi-camera"></i>Nueva Evidencia {{ forloop.counter }}
-                                </label>
-                                {{ evidencia_form.imagen }}
-                            </div>
-                        {% endfor %}
+                        <div class="mb-3">
+                            <label for="id_imagen_0" class="form-label">
+                                <i class="bi bi-camera"></i>Nueva Evidencia 1
+                            </label>
+                            <input type="file" name="imagen" class="form-control" id="id_imagen_0">
+                        </div>
                     </div>
                     <button type="button" class="btn btn-secondary" onclick="addEvidenciaForm()">
                         <i class="bi bi-plus-circle"></i>Agregar otra imagen
