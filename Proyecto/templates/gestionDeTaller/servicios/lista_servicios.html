@@ -1092,8 +1092,8 @@
             dropdownParent: $('#modalAgregarServicio')
         });
     
-        // Manejar clic en filas de la tabla
-        $('tr[data-url]').on('click', function () {
+        // Manejar clic en filas de la tabla usando delegación de eventos
+        $('#miTabla tbody').on('click', 'tr[data-url]', function () {
             window.location.href = $(this).data('url');
         });
     
