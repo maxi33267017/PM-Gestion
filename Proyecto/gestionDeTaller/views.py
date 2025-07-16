@@ -3582,3 +3582,90 @@ def procesar_archivo_repuestos_jd(archivo, modo_importacion, categoria_default, 
             'success': False,
             'error': str(e)
         }
+
+@login_required
+def dashboard_tecnico(request):
+    """Dashboard específico para técnicos con acceso rápido a sus herramientas"""
+    if request.user.rol != 'TECNICO':
+        messages.error(request, "Solo los técnicos pueden acceder al dashboard de técnicos.")
+        return redirect('gestionDeTaller:gestion_de_taller')
+    
+    # Obtener datos específicos del técnico
+    tecnico = request.user
+    
+    # Servicios asignados al técnico (pendientes y en progreso)
+    servicios_asignados = Servicio.objects.filter(
+        preorden__tecnicos=tecnico,
+        estado__in=['PROGRAMADO', 'EN_PROCESO', 'ESPERA_REPUESTOS']
+    ).order_by('estado', '-fecha_servicio')[:5]
+    
+    # Preórdenes sin servicio asignado al técnico
+    preordenes_sin_servicio = PreOrden.objects.filter(
+        tecnicos=tecnico,
+        servicio__isnull=True,
+        activo=True
+    ).order_by('-fecha_creacion')[:5]
+    
+    # Alertas CSC asignadas al técnico
+    from centroSoluciones.models import AlertaEquipo
+    alertas_csc = AlertaEquipo.objects.filter(
+        tecnico_asignado=tecnico,
+        estado__in=['ASIGNADA', 'EN_PROCESO']
+    ).order_by('-fecha')[:5]
+    
+    # Cronómetros activos del técnico
+    from recursosHumanos.models import SesionCronometro
+    cronometros_activos = SesionCronometro.objects.filter(
+        tecnico=tecnico,
+        activa=True
+    ).order_by('-hora_inicio')
+    
+    # Horas registradas hoy
+    from recursosHumanos.models import RegistroHorasTecnico
+    from datetime import date
+    from django.db.models import ExpressionWrapper, DurationField, F
+    horas_hoy = RegistroHorasTecnico.objects.filter(
+        tecnico=tecnico,
+        fecha=date.today()
+    ).aggregate(
+        total_horas=Sum(
+            ExpressionWrapper(
+                F('hora_fin') - F('hora_inicio'),
+                output_field=DurationField()
+            )
+        )
+    )['total_horas']
+    
+    # Convertir a horas decimales
+    if horas_hoy:
+        horas_hoy = horas_hoy.total_seconds() / 3600
+    else:
+        horas_hoy = 0
+    
+    # Servicios completados esta semana
+    from datetime import timedelta
+    inicio_semana = date.today() - timedelta(days=7)
+    servicios_completados_semana = Servicio.objects.filter(
+        preorden__tecnicos=tecnico,
+        estado='COMPLETADO',
+        fecha_servicio__gte=inicio_semana
+    ).count()
+    
+    # Sugerencias recientes (las sugerencias son anónimas, mostramos las más recientes)
+    from crm.models import SugerenciaMejora
+    sugerencias_recientes = SugerenciaMejora.objects.filter(
+        estado__in=['PENDIENTE', 'EN_ANALISIS']
+    ).order_by('-fecha_sugerencia')[:3]
+    
+    context = {
+        'tecnico': tecnico,
+        'servicios_asignados': servicios_asignados,
+        'preordenes_sin_servicio': preordenes_sin_servicio,
+        'alertas_csc': alertas_csc,
+        'cronometros_activos': cronometros_activos,
+        'horas_hoy': horas_hoy,
+        'servicios_completados_semana': servicios_completados_semana,
+        'sugerencias_recientes': sugerencias_recientes,
+    }
+    
+    return render(request, 'gestionDeTaller/dashboard_tecnico.html', context)

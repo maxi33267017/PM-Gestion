@@ -6,11 +6,15 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 def home_redirect(request):
     """
     Vista para redirigir desde la URL raíz
-    - Si el usuario está logueado: redirigir a /gestion_de_taller/
+    - Si el usuario está logueado: redirigir según su rol
     - Si no está logueado: redirigir a /login/
     """
     if request.user.is_authenticated:
-        return redirect('gestionDeTaller:gestion_de_taller')
+        # Redirigir técnicos al dashboard de técnicos
+        if request.user.rol == 'TECNICO':
+            return redirect('gestionDeTaller:dashboard_tecnico')
+        else:
+            return redirect('gestionDeTaller:gestion_de_taller')
     else:
         return redirect('login')
 

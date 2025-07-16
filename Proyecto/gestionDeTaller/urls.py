@@ -10,6 +10,7 @@ app_name = 'gestionDeTaller'
 
 urlpatterns = [
         path('', views.gestion_de_taller, name='gestion_de_taller'),
+        path('dashboard-tecnico/', views.dashboard_tecnico, name='dashboard_tecnico'),
         path('servicios/', views.lista_servicios, name='lista_servicios'),
         path('calendario_preordenes/', views.calendario_preordenes, name='calendario_preordenes'),
         path('calendario_semanal_tecnicos/', views.calendario_semanal_tecnicos, name='calendario_semanal_tecnicos'),

@@ -32,6 +32,11 @@
                     </li>
                     {% if user.rol == 'TECNICO' %}
                     <li class="nav-item">
+                        <a class="nav-link {% if 'dashboard-tecnico' in request.path %}active{% endif %}" href="{% url 'gestionDeTaller:dashboard_tecnico' %}">
+                            <i class="bi bi-speedometer2 me-1"></i>Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
                         <a class="nav-link {% if 'recursosHumanos/cronometro' in request.path %}active{% endif %}" href="{% url 'recursosHumanos:cronometro' %}">
                             <i class="bi bi-stopwatch me-1"></i>Cronómetro
                         </a>

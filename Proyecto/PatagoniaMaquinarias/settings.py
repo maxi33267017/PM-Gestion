@@ -206,7 +206,7 @@ SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 SESSION_SAVE_EVERY_REQUEST = True
 
 LOGIN_URL = 'login'
-LOGIN_REDIRECT_URL = 'gestionDeTaller:gestion_de_taller'
+LOGIN_REDIRECT_URL = 'home'  # Redirigir a la vista home_redirect que maneja los roles
 LOGOUT_REDIRECT_URL = 'login'
 
 

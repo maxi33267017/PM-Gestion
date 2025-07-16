@@ -1,0 +1,503 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Dashboard Técnico - {{ tecnico.get_full_name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --primary-color: #2c3e50;
+        --secondary-color: #34495e;
+        --success-color: #27ae60;
+        --warning-color: #f39c12;
+        --danger-color: #e74c3c;
+        --info-color: #3498db;
+        --light-color: #ecf0f1;
+        --dark-color: #2c3e50;
+        --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        --hover-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+        --border-radius: 12px;
+        --transition: all 0.3s ease;
+    }
+
+    .dashboard-header {
+        background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: var(--border-radius);
+        margin-bottom: 2rem;
+        box-shadow: var(--card-shadow);
+    }
+
+    .welcome-text {
+        font-size: 1.5rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: var(--border-radius);
+        padding: 1.5rem;
+        box-shadow: var(--card-shadow);
+        transition: var(--transition);
+        border-left: 4px solid var(--primary-color);
+    }
+
+    .stat-card:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--hover-shadow);
+    }
+
+    .stat-card.success {
+        border-left-color: var(--success-color);
+    }
+
+    .stat-card.warning {
+        border-left-color: var(--warning-color);
+    }
+
+    .stat-card.danger {
+        border-left-color: var(--danger-color);
+    }
+
+    .stat-card.info {
+        border-left-color: var(--info-color);
+    }
+
+    .stat-number {
+        font-size: 2rem;
+        font-weight: bold;
+        color: var(--primary-color);
+        margin-bottom: 0.5rem;
+    }
+
+    .stat-label {
+        color: #666;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .content-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .content-card {
+        background: white;
+        border-radius: var(--border-radius);
+        box-shadow: var(--card-shadow);
+        overflow: hidden;
+        transition: var(--transition);
+    }
+
+    .content-card:hover {
+        box-shadow: var(--hover-shadow);
+    }
+
+    .card-header {
+        background: var(--primary-color);
+        color: white;
+        padding: 1rem 1.5rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .card-header i {
+        font-size: 1.2rem;
+    }
+
+    .card-body {
+        padding: 1.5rem;
+    }
+
+    .quick-action {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.75rem 1.5rem;
+        background: var(--primary-color);
+        color: white;
+        text-decoration: none;
+        border-radius: 25px;
+        margin: 0.5rem 0.5rem 0.5rem 0;
+        transition: var(--transition);
+        font-size: 0.9rem;
+    }
+
+    .quick-action:hover {
+        background: var(--secondary-color);
+        color: white;
+        transform: translateY(-1px);
+        text-decoration: none;
+    }
+
+    .quick-action i {
+        margin-right: 0.5rem;
+    }
+
+    .item-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .item-list li {
+        padding: 0.75rem 0;
+        border-bottom: 1px solid #eee;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .item-list li:last-child {
+        border-bottom: none;
+    }
+
+    .item-title {
+        font-weight: 500;
+        color: var(--primary-color);
+    }
+
+    .item-status {
+        padding: 0.25rem 0.75rem;
+        border-radius: 15px;
+        font-size: 0.8rem;
+        font-weight: 500;
+    }
+
+    .status-pendiente {
+        background: #fff3cd;
+        color: #856404;
+    }
+
+    .status-en-proceso {
+        background: #d1ecf1;
+        color: #0c5460;
+    }
+
+    .status-espera {
+        background: #f8d7da;
+        color: #721c24;
+    }
+
+    .status-asignada {
+        background: #d4edda;
+        color: #155724;
+    }
+
+    .cronometro-activo {
+        background: linear-gradient(135deg, var(--success-color) 0%, #2ecc71 100%);
+        color: white;
+        padding: 1rem;
+        border-radius: var(--border-radius);
+        margin-bottom: 1rem;
+    }
+
+    .cronometro-tiempo {
+        font-size: 1.5rem;
+        font-weight: bold;
+        margin-bottom: 0.5rem;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 2rem;
+        color: #666;
+    }
+
+    .empty-state i {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        opacity: 0.3;
+    }
+
+    .clickable-item {
+        cursor: pointer;
+        transition: var(--transition);
+    }
+
+    .clickable-item:hover {
+        background-color: rgba(52, 152, 219, 0.1);
+        transform: translateX(5px);
+    }
+
+    .clickable-item:active {
+        transform: translateX(2px);
+    }
+
+    @media (max-width: 768px) {
+        .stats-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .content-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .dashboard-header {
+            padding: 1.5rem;
+        }
+        
+        .welcome-text {
+            font-size: 1.2rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header del Dashboard -->
+    <div class="dashboard-header">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="welcome-text">
+                    <i class="bi bi-person-badge"></i>
+                    Bienvenido, {{ tecnico.get_full_name }}
+                </h1>
+                <p class="mb-0">Dashboard técnico - Acceso rápido a tus herramientas</p>
+            </div>
+            <div class="col-md-4 text-md-end">
+                <div class="d-flex flex-column">
+                    <small>Sucursal: {{ tecnico.sucursal.nombre }}</small>
+                    <small>Fecha: {% now "d/m/Y" %}</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Estadísticas Rápidas -->
+    <div class="stats-grid">
+        <div class="stat-card success">
+            <div class="stat-number">{{ horas_hoy|floatformat:1 }}</div>
+            <div class="stat-label">Horas Registradas Hoy</div>
+        </div>
+        
+        <div class="stat-card info">
+            <div class="stat-number">{{ servicios_asignados.count }}</div>
+            <div class="stat-label">Servicios Asignados</div>
+        </div>
+        
+        <div class="stat-card warning">
+            <div class="stat-number">{{ servicios_completados_semana }}</div>
+            <div class="stat-label">Servicios Completados (7 días)</div>
+        </div>
+        
+        <div class="stat-card danger">
+            <div class="stat-number">{{ alertas_csc.count }}</div>
+            <div class="stat-label">Alertas CSC Pendientes</div>
+        </div>
+    </div>
+
+    <!-- Acciones Rápidas -->
+    <div class="content-card mb-4">
+        <div class="card-header">
+            <span><i class="bi bi-lightning"></i> Acciones Rápidas</span>
+        </div>
+        <div class="card-body">
+            <a href="{% url 'gestionDeTaller:calendario_semanal_tecnicos' %}" class="quick-action">
+                <i class="bi bi-calendar-week"></i> Calendario Técnicos
+            </a>
+            <a href="{% url 'gestionDeTaller:registrar_horas' tecnico_id=tecnico.id %}" class="quick-action">
+                <i class="bi bi-clock"></i> Registro de Horas
+            </a>
+            <a href="{% url 'recursosHumanos:cronometro' %}" class="quick-action">
+                <i class="bi bi-stopwatch"></i> Cronómetro
+            </a>
+            <a href="{% url 'centroSoluciones:centro_soluciones_dashboard' %}" class="quick-action">
+                <i class="bi bi-broadcast"></i> Centro Soluciones
+            </a>
+            <a href="{% url 'crm:buzon_sugerencias' %}" class="quick-action">
+                <i class="bi bi-chat-dots"></i> Buzón Sugerencias
+            </a>
+        </div>
+    </div>
+
+    <!-- Contenido Principal -->
+    <div class="content-grid">
+        <!-- Servicios Asignados -->
+        <div class="content-card">
+            <div class="card-header">
+                <span><i class="bi bi-tools"></i> Servicios Asignados</span>
+                <a href="{% url 'gestionDeTaller:lista_servicios' %}" class="text-white">
+                    <i class="bi bi-arrow-right"></i>
+                </a>
+            </div>
+            <div class="card-body">
+                {% if servicios_asignados %}
+                    <ul class="item-list">
+                        {% for servicio in servicios_asignados %}
+                        <li class="clickable-item" onclick="window.location.href='{% url 'gestionDeTaller:detalle_servicio' servicio.id %}'">
+                            <div>
+                                <div class="item-title">{{ servicio.preorden.cliente.nombre }} - {{ servicio.preorden.equipo.modelo }}</div>
+                                <small class="text-muted">{{ servicio.fecha_servicio|date:"d/m/Y" }}</small>
+                            </div>
+                            <span class="item-status status-{{ servicio.estado|lower|cut:"_" }}">
+                                {{ servicio.get_estado_display }}
+                            </span>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <div class="empty-state">
+                        <i class="bi bi-check-circle"></i>
+                        <p>No tienes servicios asignados pendientes</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Preórdenes Sin Servicio -->
+        <div class="content-card">
+            <div class="card-header">
+                <span><i class="bi bi-file-earmark-text"></i> Preórdenes Sin Servicio</span>
+                <a href="{% url 'gestionDeTaller:lista_servicios' %}" class="text-white">
+                    <i class="bi bi-arrow-right"></i>
+                </a>
+            </div>
+            <div class="card-body">
+                {% if preordenes_sin_servicio %}
+                    <ul class="item-list">
+                        {% for preorden in preordenes_sin_servicio %}
+                        <li class="clickable-item" onclick="window.location.href='{% url 'gestionDeTaller:detalle_preorden' preorden.numero %}'">
+                            <div>
+                                <div class="item-title">{{ preorden.cliente.nombre }} - {{ preorden.equipo.modelo }}</div>
+                                <small class="text-muted">{{ preorden.fecha_creacion|date:"d/m/Y" }}</small>
+                            </div>
+                            <span class="item-status status-pendiente">Sin Servicio</span>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <div class="empty-state">
+                        <i class="bi bi-check-circle"></i>
+                        <p>No hay preórdenes sin servicio asignado</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Alertas CSC -->
+        <div class="content-card">
+            <div class="card-header">
+                <span><i class="bi bi-exclamation-triangle"></i> Alertas CSC</span>
+                <a href="{% url 'centroSoluciones:centro_soluciones_dashboard' %}" class="text-white">
+                    <i class="bi bi-arrow-right"></i>
+                </a>
+            </div>
+            <div class="card-body">
+                {% if alertas_csc %}
+                    <ul class="item-list">
+                        {% for alerta in alertas_csc %}
+                        <li class="clickable-item" onclick="window.location.href='{% url 'centroSoluciones:alerta_detail' alerta.id %}'">
+                            <div>
+                                <div class="item-title">{{ alerta.cliente.nombre }} - {{ alerta.codigo }}</div>
+                                <small class="text-muted">{{ alerta.fecha|date:"d/m/Y H:i" }}</small>
+                            </div>
+                            <span class="item-status status-{{ alerta.estado|lower|cut:"_" }}">
+                                {{ alerta.get_estado_display }}
+                            </span>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <div class="empty-state">
+                        <i class="bi bi-check-circle"></i>
+                        <p>No tienes alertas CSC asignadas</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Cronómetros Activos -->
+        <div class="content-card">
+            <div class="card-header">
+                <span><i class="bi bi-stopwatch"></i> Cronómetros Activos</span>
+                <a href="{% url 'recursosHumanos:cronometro' %}" class="text-white">
+                    <i class="bi bi-arrow-right"></i>
+                </a>
+            </div>
+            <div class="card-body">
+                {% if cronometros_activos %}
+                    {% for cronometro in cronometros_activos %}
+                    <div class="cronometro-activo">
+                        <div class="cronometro-tiempo" id="cronometro-{{ cronometro.id }}">
+                            <i class="bi bi-play-circle"></i> En ejecución
+                        </div>
+                        <div>
+                            <strong>{{ cronometro.actividad.nombre }}</strong><br>
+                            <small>Iniciado: {{ cronometro.fecha_inicio|date:"H:i" }}</small>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="empty-state">
+                        <i class="bi bi-stopwatch"></i>
+                        <p>No tienes cronómetros activos</p>
+                        <a href="{% url 'recursosHumanos:cronometro' %}" class="btn btn-primary btn-sm">
+                            Iniciar Cronómetro
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Sugerencias Recientes -->
+    {% if sugerencias_tecnico %}
+    <div class="content-card">
+        <div class="card-header">
+            <span><i class="bi bi-chat-dots"></i> Mis Sugerencias Recientes</span>
+            <a href="{% url 'crm:buzon_sugerencias' %}" class="text-white">
+                <i class="bi bi-arrow-right"></i>
+            </a>
+        </div>
+        <div class="card-body">
+            <ul class="item-list">
+                {% for sugerencia in sugerencias_tecnico %}
+                <li>
+                    <div>
+                        <div class="item-title">{{ sugerencia.titulo }}</div>
+                        <small class="text-muted">{{ sugerencia.fecha_creacion|date:"d/m/Y" }}</small>
+                    </div>
+                    <span class="item-status status-{{ sugerencia.estado|lower }}">
+                        {{ sugerencia.get_estado_display }}
+                    </span>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Actualizar cronómetros en tiempo real
+    function actualizarCronometros() {
+        const cronometros = document.querySelectorAll('[id^="cronometro-"]');
+        cronometros.forEach(cronometro => {
+            // Aquí se podría implementar la lógica para actualizar el tiempo
+            // Por ahora solo mostramos que está activo
+        });
+    }
+
+    // Actualizar cada 30 segundos
+    setInterval(actualizarCronometros, 30000);
+
+    // Actualizar al cargar la página
+    document.addEventListener('DOMContentLoaded', actualizarCronometros);
+</script>
+{% endblock %} 
