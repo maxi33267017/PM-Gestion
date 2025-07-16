@@ -325,6 +325,8 @@
         transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
         position: relative;
         overflow: hidden;
+        min-width: 2px; /* Asegurar visibilidad mínima */
+        box-shadow: 0 1px 3px rgba(0,0,0,0.2); /* Sombra para mejor visibilidad */
     }
     
     .progress-bar::after {
@@ -345,14 +347,20 @@
     
     .progress-bar.productividad {
         background: var(--success-gradient);
+        background-color: #27ae60; /* Fallback sólido */
+        min-width: 2px; /* Asegurar visibilidad mínima */
     }
     
     .progress-bar.eficiencia {
         background: var(--info-gradient);
+        background-color: #3498db; /* Fallback sólido */
+        min-width: 2px; /* Asegurar visibilidad mínima */
     }
     
     .progress-bar.desempeno {
         background: var(--warning-gradient);
+        background-color: #f39c12; /* Fallback sólido */
+        min-width: 2px; /* Asegurar visibilidad mínima */
     }
 
     /* Botones de acciones */
