@@ -746,11 +746,14 @@ def editar_informe(request, servicio_id):
             
             # Procesar la firma si está presente en el formulario
             firma_data = request.POST.get('firma')
-            if firma_data:
-                format, imgstr = firma_data.split(';base64,')
-                ext = format.split('/')[-1]
-                data = ContentFile(base64.b64decode(imgstr), name=f"firma_{servicio.id}.{ext}")
-                servicio.firma_cliente = data
+            if firma_data and firma_data.strip() and ';base64,' in firma_data:
+                try:
+                    format, imgstr = firma_data.split(';base64,')
+                    ext = format.split('/')[-1]
+                    data = ContentFile(base64.b64decode(imgstr), name=f"firma_{servicio.id}.{ext}")
+                    servicio.firma_cliente = data
+                except Exception as e:
+                    print("Error al procesar la firma:", e)
             
             # Guardar el formulario
             form.save()
@@ -913,7 +916,7 @@ def editar_preorden(request, preorden_id):
                 
                 # Procesar la firma en formato base64
                 firma_data = request.POST.get("firma_cliente")
-                if firma_data and firma_data.startswith('data:image'):
+                if firma_data and firma_data.strip() and ';base64,' in firma_data:
                     try:
                         format, imgstr = firma_data.split(';base64,')
                         ext = format.split('/')[-1]
