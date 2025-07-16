@@ -1803,8 +1803,8 @@ def editar_plan_accion_5s(request, plan_id):
 # Vistas para encuestas
 @login_required
 def lista_encuestas(request):
-    # Verificar que el usuario sea Gerente o Administrativo
-    if request.user.rol not in ['GERENTE', 'ADMINISTRATIVO']:
+    # Permitir acceso a técnicos para ver resultados, pero no para gestionar
+    if request.user.rol not in ['GERENTE', 'ADMINISTRATIVO', 'TECNICO']:
         messages.error(request, 'No tienes permiso para acceder a esta página.')
         return redirect('gestionDeTaller:gestion_de_taller')
     
@@ -2017,6 +2017,11 @@ def cargar_respuesta_encuesta(request, encuesta_id):
 
 @login_required
 def ver_respuesta_encuesta(request, encuesta_id):
+    # Permitir acceso a técnicos para ver respuestas
+    if request.user.rol not in ['GERENTE', 'ADMINISTRATIVO', 'TECNICO']:
+        messages.error(request, 'No tienes permiso para acceder a esta página.')
+        return redirect('gestionDeTaller:gestion_de_taller')
+    
     encuesta = get_object_or_404(EncuestaServicio, id=encuesta_id)
     respuesta = encuesta.respuestas.first()  # Obtener la primera respuesta
     

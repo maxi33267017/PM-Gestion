@@ -484,12 +484,16 @@
                             </td>
                             <td>{{ servicio.fecha_servicio|date:"d/m/Y" }}</td>
                             <td>
-                                <form method="post" action="{% url 'gestionDeTaller:enviar_encuesta' servicio.id %}" style="display: inline;">
-                                    {% csrf_token %}
-                                    <button type="submit" class="action-btn primary">
-                                        <i class="bi bi-envelope"></i> Enviar Encuesta
-                                    </button>
-                                </form>
+                                {% if user.rol == 'GERENTE' or user.rol == 'ADMINISTRATIVO' %}
+                                    <form method="post" action="{% url 'gestionDeTaller:enviar_encuesta' servicio.id %}" style="display: inline;">
+                                        {% csrf_token %}
+                                        <button type="submit" class="action-btn primary">
+                                            <i class="bi bi-envelope"></i> Enviar Encuesta
+                                        </button>
+                                    </form>
+                                {% else %}
+                                    <span class="text-muted">No autorizado</span>
+                                {% endif %}
                             </td>
                         </tr>
                         {% endfor %}
@@ -569,35 +573,39 @@
                             </td>
                             <td>
                                 <div class="d-flex flex-wrap gap-1">
-                                    {% if encuesta.estado == 'ENVIADA' %}
-                                        <a href="{% url 'gestionDeTaller:cargar_respuesta_encuesta' encuesta.id %}" class="action-btn primary">
-                                            <i class="bi bi-pencil"></i> Cargar
-                                        </a>
+                                    {% if user.rol == 'GERENTE' or user.rol == 'ADMINISTRATIVO' %}
+                                        {% if encuesta.estado == 'ENVIADA' %}
+                                            <a href="{% url 'gestionDeTaller:cargar_respuesta_encuesta' encuesta.id %}" class="action-btn primary">
+                                                <i class="bi bi-pencil"></i> Cargar
+                                            </a>
+                                        {% endif %}
+                                        {% if encuesta.respuestas.exists %}
+                                            {% with respuesta=encuesta.respuestas.first %}
+                                                {% if respuesta.probabilidad_recomendacion < 7 %}
+                                                    {% if not encuesta.insatisfacciones.exists %}
+                                                        <a href="{% url 'gestionDeTaller:registrar_insatisfaccion' encuesta.id %}" class="action-btn warning">
+                                                            <i class="bi bi-exclamation-triangle"></i> Insatisfacción
+                                                        </a>
+                                                    {% else %}
+                                                        <a href="{% url 'gestionDeTaller:ver_insatisfaccion' encuesta.insatisfacciones.first.id %}" class="action-btn info">
+                                                            <i class="bi bi-eye"></i> Ver
+                                                        </a>
+                                                    {% endif %}
+                                                {% endif %}
+                                            {% endwith %}
+                                        {% endif %}
+                                        <form method="post" action="{% url 'gestionDeTaller:reenviar_encuesta' encuesta.id %}" style="display: inline;">
+                                            {% csrf_token %}
+                                            <button type="submit" class="action-btn secondary" onclick="return confirm('¿Está seguro de que desea reenviar la encuesta?')">
+                                                <i class="bi bi-arrow-repeat"></i> Reenviar
+                                            </button>
+                                        </form>
                                     {% endif %}
                                     {% if encuesta.respuestas.exists %}
-                                        {% with respuesta=encuesta.respuestas.first %}
-                                            {% if respuesta.probabilidad_recomendacion < 7 %}
-                                                {% if not encuesta.insatisfacciones.exists %}
-                                                    <a href="{% url 'gestionDeTaller:registrar_insatisfaccion' encuesta.id %}" class="action-btn warning">
-                                                        <i class="bi bi-exclamation-triangle"></i> Insatisfacción
-                                                    </a>
-                                                {% else %}
-                                                    <a href="{% url 'gestionDeTaller:ver_insatisfaccion' encuesta.insatisfacciones.first.id %}" class="action-btn info">
-                                                        <i class="bi bi-eye"></i> Ver
-                                                    </a>
-                                                {% endif %}
-                                            {% endif %}
-                                        {% endwith %}
                                         <a href="{% url 'gestionDeTaller:ver_respuesta_encuesta' encuesta.id %}" class="action-btn info">
                                             <i class="bi bi-eye"></i> Respuesta
                                         </a>
                                     {% endif %}
-                                    <form method="post" action="{% url 'gestionDeTaller:reenviar_encuesta' encuesta.id %}" style="display: inline;">
-                                        {% csrf_token %}
-                                        <button type="submit" class="action-btn secondary" onclick="return confirm('¿Está seguro de que desea reenviar la encuesta?')">
-                                            <i class="bi bi-arrow-repeat"></i> Reenviar
-                                        </button>
-                                    </form>
                                 </div>
                             </td>
                         </tr>
