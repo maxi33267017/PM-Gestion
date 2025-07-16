@@ -23,9 +23,9 @@ def cronometro(request):
     # Obtener actividades disponibles
     actividades = ActividadTrabajo.objects.all().order_by('disponibilidad', 'genera_ingreso', 'nombre')
     
-    # Obtener servicios disponibles (PROGRAMADO, EN_ESPERA_REPUESTOS, EN_PROCESO)
+    # Obtener servicios disponibles (PROGRAMADO, EN_ESPERA_REPUESTOS, EN_PROCESO, A_FACTURAR)
     servicios = Servicio.objects.filter(
-        estado__in=['PROGRAMADO', 'ESPERA_REPUESTOS', 'EN_PROCESO']
+        estado__in=['PROGRAMADO', 'ESPERA_REPUESTOS', 'EN_PROCESO', 'A_FACTURAR']
     ).order_by('estado', '-fecha_servicio')
     
     # Filtrar por sucursal del técnico si no es superuser

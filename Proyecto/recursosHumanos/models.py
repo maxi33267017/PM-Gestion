@@ -267,8 +267,8 @@ class RegistroHorasTecnico(models.Model):
             if self.servicio:
                 raise ValueError("Las horas no productivas no pueden estar asociadas a un servicio.")
 
-        if self.servicio and self.servicio.estado not in ['EN_PROCESO']:
-            raise ValueError("Solo se pueden registrar horas en servicios en proceso.")
+        if self.servicio and self.servicio.estado not in ['EN_PROCESO', 'PROGRAMADO', 'A_FACTURAR']:
+            raise ValueError("Solo se pueden registrar horas en servicios en proceso, programados o finalizados a facturar.")
 
         super().save(*args, **kwargs)
 
