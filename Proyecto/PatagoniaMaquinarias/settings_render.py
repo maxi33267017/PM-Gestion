@@ -79,9 +79,8 @@ if USE_S3:
     DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
     MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/{AWS_LOCATION}/'
     
-    # Configurar storage para archivos estáticos (opcional)
-    STATICFILES_STORAGE = 'storages.backends.s3boto3.S3StaticStorage'
-    STATIC_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/static/'
+    # Los archivos estáticos seguirán usando WhiteNoise (no S3)
+    # STATICFILES_STORAGE se mantiene como WhiteNoise más abajo
     
     # Agregar django-storages a INSTALLED_APPS
     INSTALLED_APPS += ['storages']
