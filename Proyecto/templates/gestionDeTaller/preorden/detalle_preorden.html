@@ -99,11 +99,136 @@
     .breadcrumb-custom .breadcrumb-item.active {
         color: #6c757d;
     }
+    
+    /* Estilos para impresión */
+    @media print {
+        /* Ocultar elementos que no queremos imprimir */
+        .btn, button, nav, .breadcrumb {
+            display: none !important;
+        }
+        
+        /* Asegurar que el contenido se imprima correctamente */
+        body {
+            font-size: 12pt;
+            line-height: 1.4;
+            color: #000;
+            background: white;
+        }
+        
+        .container-fluid {
+            width: 100% !important;
+            max-width: none !important;
+            padding: 0 !important;
+            margin: 0 !important;
+        }
+        
+        .card {
+            border: 1px solid #000 !important;
+            box-shadow: none !important;
+            page-break-inside: avoid;
+        }
+        
+        .card-header {
+            background: #f8f9fa !important;
+            color: #000 !important;
+            border-bottom: 2px solid #000 !important;
+        }
+        
+        .info-card {
+            border: 1px solid #000 !important;
+            box-shadow: none !important;
+            page-break-inside: avoid;
+        }
+        
+        .info-card-header {
+            background: #f8f9fa !important;
+            color: #000 !important;
+            border-bottom: 1px solid #000 !important;
+        }
+        
+        .badge {
+            border: 1px solid #000 !important;
+            color: #000 !important;
+            background: #f8f9fa !important;
+        }
+        
+        /* Asegurar que las imágenes se impriman */
+        img {
+            max-width: 100% !important;
+            height: auto !important;
+        }
+        
+        /* Evitar saltos de página en elementos importantes */
+        .info-item {
+            page-break-inside: avoid;
+        }
+        
+        /* Header de la página */
+        h1, h2, h3, h4, h5, h6 {
+            color: #000 !important;
+            page-break-after: avoid;
+        }
+        
+        /* Footer con información de la página */
+        @page {
+            margin: 1cm;
+        }
+        
+        /* Información del documento */
+        .print-header {
+            text-align: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #000;
+            padding-bottom: 10px;
+        }
+        
+        .print-header h1 {
+            margin: 0;
+            font-size: 18pt;
+        }
+        
+        .print-header p {
+            margin: 5px 0;
+            font-size: 10pt;
+        }
+        
+        /* Footer de impresión */
+        .print-footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            padding: 10px;
+            border-top: 1px solid #000;
+            font-size: 8pt;
+        }
+        
+        .print-footer hr {
+            margin: 5px 0;
+        }
+        
+        .print-footer p {
+            margin: 2px 0;
+        }
+        
+        /* Ajustar el contenido principal para el footer */
+        main {
+            margin-bottom: 80px;
+        }
+    }
 </style>
 {% endblock %}
 
 {% block content %}
 <main class="container-fluid mt-4">
+    <!-- Header de impresión (solo visible al imprimir) -->
+    <div class="print-header d-none d-print-block">
+        <h1>Preorden #{{ preorden.numero }}</h1>
+        <p><strong>Cliente:</strong> {{ preorden.cliente.razon_social }} | <strong>Equipo:</strong> {{ preorden.equipo.numero_serie }}</p>
+        <p><strong>Fecha de Creación:</strong> {{ preorden.fecha_creacion|date:"d/m/Y H:i" }} | <strong>Estado:</strong> {% if preorden.servicio %}Servicio Creado{% else %}Pendiente{% endif %}</p>
+    </div>
+    
     <!-- Header con navegación -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
@@ -128,6 +253,9 @@
                     <i class="bi bi-tools me-1"></i>Ver Servicio #{{ preorden.servicio.id }}
                 </a>
             {% endif %}
+            <button onclick="window.print()" class="btn btn-success me-2">
+                <i class="bi bi-printer me-1"></i>Imprimir
+            </button>
             <a href="{% url 'gestionDeTaller:editar_preorden' preorden.numero %}" class="btn btn-outline-secondary me-2">
                 <i class="bi bi-pencil me-1"></i>Editar
             </a>
@@ -457,5 +585,40 @@
             </div>
         </div>
     </div>
+    
+    <!-- Footer de impresión (solo visible al imprimir) -->
+    <div class="print-footer d-none d-print-block mt-4">
+        <hr style="border-top: 2px solid #000;">
+        <div class="row">
+            <div class="col-6">
+                <p><strong>Documento generado el:</strong> {% now "d/m/Y H:i" %}</p>
+                <p><strong>Usuario:</strong> {{ request.user.get_nombre_completo }}</p>
+            </div>
+            <div class="col-6 text-end">
+                <p><strong>Sucursal:</strong> {{ preorden.sucursal.nombre }}</p>
+                <p><strong>Página:</strong> <span class="page-number"></span></p>
+            </div>
+        </div>
+    </div>
 </main>
+
+<script>
+    // Función para numerar páginas al imprimir
+    function numerarPaginas() {
+        const pageNumbers = document.querySelectorAll('.page-number');
+        pageNumbers.forEach((element, index) => {
+            element.textContent = (index + 1);
+        });
+    }
+    
+    // Ejecutar cuando se carga la página
+    document.addEventListener('DOMContentLoaded', function() {
+        numerarPaginas();
+    });
+    
+    // Ejecutar antes de imprimir
+    window.addEventListener('beforeprint', function() {
+        numerarPaginas();
+    });
+</script>
 {% endblock %}
