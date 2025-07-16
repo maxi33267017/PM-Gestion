@@ -109,10 +109,12 @@
         
         /* Asegurar que el contenido se imprima correctamente */
         body {
-            font-size: 12pt;
-            line-height: 1.4;
+            font-size: 10pt;
+            line-height: 1.2;
             color: #000;
             background: white;
+            margin: 0;
+            padding: 0;
         }
         
         .container-fluid {
@@ -122,74 +124,150 @@
             margin: 0 !important;
         }
         
+        /* Reducir márgenes de página */
+        @page {
+            margin: 0.5cm;
+            size: A4;
+        }
+        
+        /* Optimizar cards */
         .card {
             border: 1px solid #000 !important;
             box-shadow: none !important;
             page-break-inside: avoid;
+            margin-bottom: 10px !important;
         }
         
         .card-header {
             background: #f8f9fa !important;
             color: #000 !important;
-            border-bottom: 2px solid #000 !important;
+            border-bottom: 1px solid #000 !important;
+            padding: 5px 10px !important;
         }
         
+        .card-header h3 {
+            font-size: 12pt !important;
+            margin: 0 !important;
+        }
+        
+        .card-body {
+            padding: 10px !important;
+        }
+        
+        /* Optimizar info-cards */
         .info-card {
             border: 1px solid #000 !important;
             box-shadow: none !important;
             page-break-inside: avoid;
+            margin-bottom: 8px !important;
         }
         
         .info-card-header {
             background: #f8f9fa !important;
             color: #000 !important;
             border-bottom: 1px solid #000 !important;
+            padding: 3px 8px !important;
         }
         
+        .info-card-header h5 {
+            font-size: 10pt !important;
+            margin: 0 !important;
+        }
+        
+        .info-body {
+            padding: 8px !important;
+        }
+        
+        /* Optimizar info-items */
+        .info-item {
+            page-break-inside: avoid;
+            padding: 2px 0 !important;
+            margin: 0 !important;
+        }
+        
+        .info-label {
+            font-size: 9pt !important;
+            min-width: 120px !important;
+        }
+        
+        .info-value {
+            font-size: 9pt !important;
+        }
+        
+        /* Optimizar badges */
         .badge {
             border: 1px solid #000 !important;
             color: #000 !important;
             background: #f8f9fa !important;
+            font-size: 8pt !important;
+            padding: 2px 6px !important;
         }
         
-        /* Asegurar que las imágenes se impriman */
+        /* Optimizar imágenes */
         img {
             max-width: 100% !important;
             height: auto !important;
+            max-height: 150px !important;
         }
         
-        /* Evitar saltos de página en elementos importantes */
-        .info-item {
+        /* Optimizar evidencias */
+        .col-md-4, .col-lg-3 {
+            width: 50% !important;
+            float: left !important;
+        }
+        
+        .col-md-6 {
+            width: 50% !important;
+            float: left !important;
+        }
+        
+        /* Optimizar sidebar */
+        .sidebar-card {
+            border: 1px solid #000 !important;
+            box-shadow: none !important;
             page-break-inside: avoid;
+            margin-bottom: 8px !important;
+        }
+        
+        .sidebar-card-header {
+            background: #f8f9fa !important;
+            color: #000 !important;
+            border-bottom: 1px solid #000 !important;
+            padding: 3px 8px !important;
+        }
+        
+        .sidebar-card-header h5 {
+            font-size: 10pt !important;
+            margin: 0 !important;
+        }
+        
+        .sidebar-card-body {
+            padding: 8px !important;
         }
         
         /* Header de la página */
         h1, h2, h3, h4, h5, h6 {
             color: #000 !important;
             page-break-after: avoid;
-        }
-        
-        /* Footer con información de la página */
-        @page {
-            margin: 1cm;
+            margin: 5px 0 !important;
         }
         
         /* Información del documento */
         .print-header {
             text-align: center;
-            margin-bottom: 20px;
-            border-bottom: 2px solid #000;
-            padding-bottom: 10px;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #000;
+            padding-bottom: 5px;
         }
         
         .print-header h1 {
             margin: 0;
-            font-size: 18pt;
+            font-size: 14pt;
         }
         
         .print-header p {
-            margin: 5px 0;
-            font-size: 10pt;
+            margin: 2px 0;
+            font-size: 8pt;
         }
         
         /* Footer de impresión */
@@ -199,22 +277,100 @@
             left: 0;
             right: 0;
             background: white;
-            padding: 10px;
+            padding: 5px;
             border-top: 1px solid #000;
-            font-size: 8pt;
+            font-size: 7pt;
         }
         
         .print-footer hr {
-            margin: 5px 0;
+            margin: 2px 0;
         }
         
         .print-footer p {
-            margin: 2px 0;
+            margin: 1px 0;
         }
         
         /* Ajustar el contenido principal para el footer */
         main {
-            margin-bottom: 80px;
+            margin-bottom: 40px;
+        }
+        
+        /* Optimizar espaciados generales */
+        .mb-4 {
+            margin-bottom: 8px !important;
+        }
+        
+        .mb-3 {
+            margin-bottom: 6px !important;
+        }
+        
+        .py-4 {
+            padding-top: 8px !important;
+            padding-bottom: 8px !important;
+        }
+        
+        .py-3 {
+            padding-top: 6px !important;
+            padding-bottom: 6px !important;
+        }
+        
+        /* Ocultar elementos decorativos */
+        .bi {
+            display: none !important;
+        }
+        
+        /* Optimizar layout de columnas */
+        .row {
+            margin: 0 !important;
+        }
+        
+        .col-lg-8, .col-lg-4 {
+            width: 100% !important;
+            float: none !important;
+        }
+        
+        /* Layout compacto para impresión */
+        .print-layout {
+            display: flex !important;
+            flex-direction: column !important;
+        }
+        
+        .print-main-content {
+            order: 1 !important;
+        }
+        
+        .print-sidebar {
+            order: 2 !important;
+        }
+        
+        /* Hacer que sidebar se muestre en línea */
+        .print-sidebar .sidebar-card {
+            display: inline-block !important;
+            width: 48% !important;
+            margin-right: 2% !important;
+            vertical-align: top !important;
+        }
+        
+        /* Reducir tamaño de texto en evidencias */
+        .card-text {
+            font-size: 7pt !important;
+        }
+        
+        /* Ocultar botones en evidencias */
+        .btn-sm {
+            display: none !important;
+        }
+        
+        /* Optimizar grid de evidencias */
+        .evidencias-grid {
+            display: grid !important;
+            grid-template-columns: repeat(3, 1fr) !important;
+            gap: 5px !important;
+        }
+        
+        .evidencias-grid .col-md-4 {
+            width: 100% !important;
+            float: none !important;
         }
     }
 </style>
@@ -265,8 +421,8 @@
         </div>
     </div>
 
-    <div class="row">
-        <div class="col-lg-8">
+    <div class="row print-layout">
+        <div class="col-lg-8 print-main-content">
             <div class="card shadow-sm">
                 <div class="card-header bg-primary text-white">
                     <h3 class="mb-0">
@@ -458,7 +614,7 @@
                         </div>
                         <div class="info-body">
                             {% if evidencias %}
-                                <div class="row">
+                                <div class="row evidencias-grid">
                                     {% for evidencia in evidencias %}
                                         <div class="col-md-4 col-lg-3 mb-3">
                                             <div class="card h-100">
@@ -529,7 +685,7 @@
         </div>
 
         <!-- Sidebar -->
-        <div class="col-lg-4">
+        <div class="col-lg-4 print-sidebar">
             <!-- Estado y Fechas -->
             <div class="sidebar-card">
                 <div class="sidebar-card-header">
