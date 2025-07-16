@@ -3,7 +3,7 @@
 set -o errexit
 
 # Instalar dependencias
-pip install -r Proyecto/requirements.txt
+pip install -r requirements.txt
 
 # Configurar variables de entorno para el build
 export DJANGO_SETTINGS_MODULE=PatagoniaMaquinarias.settings_render
