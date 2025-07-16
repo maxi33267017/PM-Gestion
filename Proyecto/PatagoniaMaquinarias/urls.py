@@ -20,6 +20,7 @@ urlpatterns = [
     path('operations-center/', include('operationsCenter.urls')),
     path('venta-maquinarias/', include('ventaMaquinarias.urls')),
     path('select2/', include('django_select2.urls')),
+    path('reportes/', include('reportes.urls')),
     path('admin/', admin.site.urls),
     path('login/', auth_views.LoginView.as_view(
         template_name='registration/login.html',

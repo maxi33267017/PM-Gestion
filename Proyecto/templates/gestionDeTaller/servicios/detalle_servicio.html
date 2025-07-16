@@ -653,6 +653,11 @@
                         </button>
                     {% endif %}
                     
+                    <a href="{% url 'gestionDeTaller:detalle_preorden' servicio.preorden.numero %}" class="sidebar-btn">
+                        <i class="bi bi-file-earmark-text"></i>
+                        Ver Preorden #{{ servicio.preorden.numero }}
+                    </a>
+                    
                     <a href="{% url 'gestionDeTaller:lista_servicios' %}" class="sidebar-btn">
                         <i class="fas fa-arrow-left"></i>
                         Volver a Lista

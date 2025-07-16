@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Reportes de Embudos{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item">
+                        <a href="{% url 'reportes:dashboard_reportes' %}">
+                            <i class="bi bi-graph-up me-1"></i>Reportes
+                        </a>
+                    </li>
+                    <li class="breadcrumb-item active">Embudos</li>
+                </ol>
+            </nav>
+            <h1 class="h2 mb-0">
+                <i class="bi bi-funnel me-2"></i>Reportes de Embudos
+            </h1>
+            <p class="text-muted">Reportes de embudos de ventas y estadísticas</p>
+        </div>
+        <div>
+            <a href="{% url 'reportes:dashboard_reportes' %}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-1"></i>Volver
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body text-center">
+                    <i class="bi bi-funnel" style="font-size: 4rem; color: #6c757d;"></i>
+                    <h5 class="mt-3">Reportes de Embudos</h5>
+                    <p class="text-muted">Esta sección estará disponible próximamente</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

@@ -1,0 +1,310 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Reportes de Facturación{% endblock %}
+
+{% block extra_css %}
+<style>
+    .report-card {
+        border-radius: 15px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        transition: transform 0.2s ease-in-out;
+        border: none;
+        overflow: hidden;
+    }
+    
+    .report-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
+    }
+    
+    .report-card .card-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        padding: 1.5rem;
+    }
+    
+    .report-card .card-body {
+        padding: 2rem;
+    }
+    
+    .report-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        opacity: 0.9;
+    }
+    
+    .report-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+    
+    .report-description {
+        font-size: 0.95rem;
+        opacity: 0.9;
+        line-height: 1.5;
+    }
+    
+    .stats-summary {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        color: white;
+        border-radius: 15px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+    }
+    
+    .stat-item {
+        text-align: center;
+        padding: 1rem;
+    }
+    
+    .stat-number {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+    
+    .stat-label {
+        font-size: 0.9rem;
+        opacity: 0.9;
+    }
+    
+    .breadcrumb-custom {
+        background: transparent;
+        padding: 0;
+        margin-bottom: 2rem;
+    }
+    
+    .breadcrumb-custom .breadcrumb-item a {
+        color: #667eea;
+        text-decoration: none;
+    }
+    
+    .breadcrumb-custom .breadcrumb-item.active {
+        color: #6c757d;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb breadcrumb-custom">
+                    <li class="breadcrumb-item">
+                        <a href="{% url 'reportes:dashboard_reportes' %}">
+                            <i class="bi bi-graph-up me-1"></i>Reportes
+                        </a>
+                    </li>
+                    <li class="breadcrumb-item active">Facturación</li>
+                </ol>
+            </nav>
+            <h1 class="h2 mb-0">
+                <i class="bi bi-cash-stack me-2"></i>Reportes de Facturación
+            </h1>
+            <p class="text-muted">Análisis detallado de facturación por técnico, sucursal y períodos</p>
+        </div>
+        <div>
+            <a href="{% url 'reportes:dashboard_reportes' %}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-1"></i>Volver
+            </a>
+        </div>
+    </div>
+
+    <!-- Resumen Estadístico -->
+    <div class="stats-summary">
+        <div class="row">
+            <div class="col-md-3 stat-item">
+                <div class="stat-number">$0</div>
+                <div class="stat-label">Facturación Total</div>
+            </div>
+            <div class="col-md-3 stat-item">
+                <div class="stat-number">0</div>
+                <div class="stat-label">Servicios Facturados</div>
+            </div>
+            <div class="col-md-3 stat-item">
+                <div class="stat-number">0</div>
+                <div class="stat-label">Técnicos Activos</div>
+            </div>
+            <div class="col-md-3 stat-item">
+                <div class="stat-number">0</div>
+                <div class="stat-label">Sucursales</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Grid de Reportes -->
+    <div class="row">
+        <!-- Reporte por Técnico -->
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="card report-card h-100">
+                <div class="card-header text-center">
+                    <i class="bi bi-person-badge report-icon"></i>
+                    <div class="report-title">Por Técnico</div>
+                    <div class="report-description">
+                        Análisis de facturación individual por técnico con métricas de productividad
+                    </div>
+                </div>
+                <div class="card-body text-center">
+                    <p class="text-muted mb-3">
+                        Visualiza el rendimiento de facturación de cada técnico, incluyendo horas trabajadas, 
+                        servicios completados y eficiencia operativa.
+                    </p>
+                    <a href="{% url 'reportes:facturacion_tecnico' %}" class="btn btn-primary">
+                        <i class="bi bi-arrow-right me-1"></i>Ver Reporte
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Reporte por Sucursal -->
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="card report-card h-100">
+                <div class="card-header text-center">
+                    <i class="bi bi-building report-icon"></i>
+                    <div class="report-title">Por Sucursal</div>
+                    <div class="report-description">
+                        Comparación de facturación entre sucursales y análisis de rendimiento regional
+                    </div>
+                </div>
+                <div class="card-body text-center">
+                    <p class="text-muted mb-3">
+                        Compara el rendimiento financiero entre sucursales, identifica tendencias regionales 
+                        y optimiza la distribución de recursos.
+                    </p>
+                    <a href="{% url 'reportes:facturacion_sucursal' %}" class="btn btn-primary">
+                        <i class="bi bi-arrow-right me-1"></i>Ver Reporte
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Reporte Mensual -->
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="card report-card h-100">
+                <div class="card-header text-center">
+                    <i class="bi bi-calendar-month report-icon"></i>
+                    <div class="report-title">Mensual</div>
+                    <div class="report-description">
+                        Análisis de facturación mensual con tendencias y proyecciones
+                    </div>
+                </div>
+                <div class="card-body text-center">
+                    <p class="text-muted mb-3">
+                        Revisa la facturación mensual, identifica patrones estacionales y proyecta 
+                        tendencias futuras para la planificación estratégica.
+                    </p>
+                    <a href="{% url 'reportes:facturacion_mensual' %}" class="btn btn-primary">
+                        <i class="bi bi-arrow-right me-1"></i>Ver Reporte
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Reporte Trimestral -->
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="card report-card h-100">
+                <div class="card-header text-center">
+                    <i class="bi bi-calendar-quarter report-icon"></i>
+                    <div class="report-title">Trimestral</div>
+                    <div class="report-description">
+                        Evaluación trimestral de resultados y cumplimiento de objetivos
+                    </div>
+                </div>
+                <div class="card-body text-center">
+                    <p class="text-muted mb-3">
+                        Analiza el rendimiento trimestral, evalúa el cumplimiento de metas y 
+                        prepara reportes ejecutivos para la dirección.
+                    </p>
+                    <a href="{% url 'reportes:facturacion_trimestral' %}" class="btn btn-primary">
+                        <i class="bi bi-arrow-right me-1"></i>Ver Reporte
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Reporte Semestral -->
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="card report-card h-100">
+                <div class="card-header text-center">
+                    <i class="bi bi-calendar-range report-icon"></i>
+                    <div class="report-title">Semestral</div>
+                    <div class="report-description">
+                        Análisis semestral con evaluación de estrategias y ajustes
+                    </div>
+                </div>
+                <div class="card-body text-center">
+                    <p class="text-muted mb-3">
+                        Revisa el rendimiento semestral, evalúa la efectividad de estrategias 
+                        implementadas y planifica ajustes para el siguiente período.
+                    </p>
+                    <a href="{% url 'reportes:facturacion_semestral' %}" class="btn btn-primary">
+                        <i class="bi bi-arrow-right me-1"></i>Ver Reporte
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Reporte Anual -->
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="card report-card h-100">
+                <div class="card-header text-center">
+                    <i class="bi bi-calendar-year report-icon"></i>
+                    <div class="report-title">Anual</div>
+                    <div class="report-description">
+                        Reporte anual completo con análisis estratégico y planificación
+                    </div>
+                </div>
+                <div class="card-body text-center">
+                    <p class="text-muted mb-3">
+                        Reporte anual integral con análisis estratégico, evaluación de objetivos 
+                        y planificación para el próximo año fiscal.
+                    </p>
+                    <a href="{% url 'reportes:facturacion_anual' %}" class="btn btn-primary">
+                        <i class="bi bi-arrow-right me-1"></i>Ver Reporte
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Información Adicional -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-info-circle me-2"></i>Información sobre Reportes de Facturación
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Características de los Reportes:</h6>
+                            <ul>
+                                <li>Datos actualizados en tiempo real</li>
+                                <li>Filtros personalizables por fecha y criterios</li>
+                                <li>Exportación a Excel y PDF</li>
+                                <li>Gráficos interactivos y visualizaciones</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Métricas Incluidas:</h6>
+                            <ul>
+                                <li>Facturación total y por período</li>
+                                <li>Horas trabajadas y productividad</li>
+                                <li>Servicios completados</li>
+                                <li>Análisis de tendencias</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

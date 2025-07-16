@@ -1,109 +1,459 @@
 {% extends 'base.html' %}
 {% load static %}
+
+{% block extra_css %}
+<style>
+    .info-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        border: 1px solid #e9ecef;
+        overflow: hidden;
+        transition: transform 0.2s ease-in-out;
+    }
+    
+    .info-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    
+    .info-card-header {
+        background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+        color: white;
+        padding: 1rem 1.5rem;
+        border-bottom: none;
+    }
+    
+    .info-card-header h5 {
+        margin: 0;
+        font-weight: 600;
+        font-size: 1.1rem;
+    }
+    
+    .info-body {
+        padding: 1.5rem;
+    }
+    
+    .info-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid #f8f9fa;
+    }
+    
+    .info-item:last-child {
+        border-bottom: none;
+    }
+    
+    .info-label {
+        font-weight: 600;
+        color: #495057;
+        min-width: 150px;
+        margin-right: 1rem;
+    }
+    
+    .info-value {
+        color: #212529;
+        text-align: right;
+        flex: 1;
+    }
+    
+    .sidebar-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        border: 1px solid #e9ecef;
+        margin-bottom: 1.5rem;
+    }
+    
+    .sidebar-card-header {
+        background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+        color: white;
+        padding: 1rem 1.5rem;
+        border-radius: 12px 12px 0 0;
+    }
+    
+    .sidebar-card-body {
+        padding: 1.5rem;
+    }
+    
+    .status-badge {
+        padding: 0.5rem 1rem;
+        border-radius: 25px;
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+    
+    .breadcrumb-custom {
+        background: transparent;
+        padding: 0;
+        margin-bottom: 1rem;
+    }
+    
+    .breadcrumb-custom .breadcrumb-item a {
+        color: #007bff;
+        text-decoration: none;
+    }
+    
+    .breadcrumb-custom .breadcrumb-item.active {
+        color: #6c757d;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<main class="container mt-5">
-    <div class="card">
-        <div class="card-header bg-dark text-white">
-            <h3>Detalle de la Preorden #{{ preorden.numero }}</h3>
+<main class="container-fluid mt-4">
+    <!-- Header con navegación -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb breadcrumb-custom">
+                    <li class="breadcrumb-item">
+                        <a href="{% url 'gestionDeTaller:lista_preordenes' %}">
+                            <i class="bi bi-list-ul me-1"></i>Preórdenes
+                        </a>
+                    </li>
+                    <li class="breadcrumb-item active">Preorden #{{ preorden.numero }}</li>
+                </ol>
+            </nav>
+            <h1 class="h2 mb-0">
+                <i class="bi bi-file-earmark-text me-2"></i>Preorden #{{ preorden.numero }}
+            </h1>
+            <p class="text-muted">{{ preorden.cliente.razon_social }} - {{ preorden.equipo.numero_serie }}</p>
         </div>
-        <div class="card-body">
+        <div>
+            {% if preorden.servicio %}
+                <a href="{% url 'gestionDeTaller:detalle_servicio' preorden.servicio.id %}" class="btn btn-primary me-2">
+                    <i class="bi bi-tools me-1"></i>Ver Servicio #{{ preorden.servicio.id }}
+                </a>
+            {% endif %}
+            <a href="{% url 'gestionDeTaller:editar_preorden' preorden.numero %}" class="btn btn-outline-secondary me-2">
+                <i class="bi bi-pencil me-1"></i>Editar
+            </a>
+            <a href="{% url 'gestionDeTaller:lista_preordenes' %}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-1"></i>Volver
+            </a>
+        </div>
+    </div>
 
-            <!-- Datos de Cliente y Equipo -->
-            <div class="card mb-4">
-                <div class="card-header bg-secondary text-white">
-                    <h5>Datos del Cliente y Equipo</h5>
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">
+                        <i class="bi bi-info-circle me-2"></i>Información de la Preorden
+                    </h3>
                 </div>
                 <div class="card-body">
-                    <p><strong>Cliente:</strong> {{ preorden.cliente.razon_social }}</p>
-                    <p><strong>Equipo:</strong> {{ preorden.equipo.numero_serie }}</p>
-                    <p><strong>Horómetro Actual:</strong> {{ preorden.horometro }}</p>
+                    <!-- Datos de Cliente y Equipo -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="info-card">
+                                <div class="info-card-header">
+                                    <h5><i class="bi bi-building me-2"></i>Cliente</h5>
+                                </div>
+                                <div class="info-body">
+                                    <div class="info-item">
+                                        <span class="info-label">Razón Social:</span>
+                                        <span class="info-value">{{ preorden.cliente.razon_social }}</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <span class="info-label">Email:</span>
+                                        <span class="info-value">{{ preorden.cliente.email|default:"No disponible" }}</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <span class="info-label">Teléfono:</span>
+                                        <span class="info-value">{{ preorden.cliente.telefono|default:"No disponible" }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="info-card">
+                                <div class="info-card-header">
+                                    <h5><i class="bi bi-truck me-2"></i>Equipo</h5>
+                                </div>
+                                <div class="info-body">
+                                    <div class="info-item">
+                                        <span class="info-label">Número de Serie:</span>
+                                        <span class="info-value">{{ preorden.equipo.numero_serie }}</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <span class="info-label">Modelo:</span>
+                                        <span class="info-value">{{ preorden.equipo.modelo.nombre }}</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <span class="info-label">Horómetro Actual:</span>
+                                        <span class="info-value">{{ preorden.horometro|default:"No disponible" }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Detalles de Trabajo -->
+                    <div class="info-card mb-4">
+                        <div class="info-card-header">
+                            <h5><i class="bi bi-tools me-2"></i>Detalles de Trabajo</h5>
+                        </div>
+                        <div class="info-body">
+                            <div class="info-item">
+                                <span class="info-label">Solicitud del Cliente:</span>
+                                <span class="info-value">{{ preorden.solicitud_cliente }}</span>
+                            </div>
+                            {% if preorden.solicitud_trabajo %}
+                            <div class="info-item">
+                                <span class="info-label">Solicitud de Trabajo:</span>
+                                <span class="info-value">{{ preorden.solicitud_trabajo }}</span>
+                            </div>
+                            {% endif %}
+                            {% if preorden.detalles_adicionales %}
+                            <div class="info-item">
+                                <span class="info-label">Detalles Adicionales:</span>
+                                <span class="info-value">{{ preorden.detalles_adicionales }}</span>
+                            </div>
+                            {% endif %}
+                            <div class="info-item">
+                                <span class="info-label">Tipo de Trabajo:</span>
+                                <span class="info-value">
+                                    <span class="badge {% if preorden.tipo_trabajo == 'PRESENCIAL_CAMPO' %}bg-success{% elif preorden.tipo_trabajo == 'PRESENCIAL_TALLER' %}bg-primary{% else %}bg-info{% endif %}">
+                                        {{ preorden.get_tipo_trabajo_display }}
+                                    </span>
+                                </span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Técnicos Asignados:</span>
+                                <span class="info-value">
+                                    {% if preorden.tecnicos.all %}
+                                        {% for tecnico in preorden.tecnicos.all %}
+                                            <span class="badge bg-secondary me-1">{{ tecnico.get_nombre_completo }}</span>
+                                        {% endfor %}
+                                    {% else %}
+                                        <span class="text-muted">Sin técnicos asignados</span>
+                                    {% endif %}
+                                </span>
+                            </div>
+                            {% if preorden.codigos_error %}
+                            <div class="info-item">
+                                <span class="info-label">Códigos de Error:</span>
+                                <span class="info-value">{{ preorden.codigos_error }}</span>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Programación de Servicio -->
+                    <div class="info-card mb-4">
+                        <div class="info-card-header">
+                            <h5><i class="bi bi-calendar-event me-2"></i>Programación de Servicio</h5>
+                        </div>
+                        <div class="info-body">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="info-item">
+                                        <span class="info-label">Fecha Estimada:</span>
+                                        <span class="info-value">{{ preorden.fecha_estimada|date:"d/m/Y" }}</span>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="info-item">
+                                        <span class="info-label">Hora Inicio:</span>
+                                        <span class="info-value">{{ preorden.hora_inicio_estimada|time:"H:i"|default:"No definida" }}</span>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="info-item">
+                                        <span class="info-label">Hora Fin:</span>
+                                        <span class="info-value">{{ preorden.hora_fin_estimada|time:"H:i"|default:"No definida" }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Estado del Equipo al Ingreso -->
+                    <div class="info-card mb-4">
+                        <div class="info-card-header">
+                            <h5><i class="bi bi-clipboard-check me-2"></i>Estado del Equipo al Ingreso</h5>
+                        </div>
+                        <div class="info-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="info-item">
+                                        <span class="info-label">¿Trae Llave?:</span>
+                                        <span class="info-value">
+                                            <span class="badge {% if preorden.trae_llave %}bg-success{% else %}bg-danger{% endif %}">
+                                                {{ preorden.trae_llave|yesno:"Sí,No" }}
+                                            </span>
+                                        </span>
+                                    </div>
+                                    <div class="info-item">
+                                        <span class="info-label">Estado de la Cabina:</span>
+                                        <span class="info-value">{{ preorden.estado_cabina|default:"No especificado" }}</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <span class="info-label">Estado de Neumáticos/Tren:</span>
+                                        <span class="info-value">{{ preorden.estado_neumaticos_tren|default:"No especificado" }}</span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="info-item">
+                                        <span class="info-label">Estado de los Vidrios:</span>
+                                        <span class="info-value">{{ preorden.estado_vidrios|default:"No especificado" }}</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <span class="info-label">Combustible al Ingreso:</span>
+                                        <span class="info-value">
+                                            {% if preorden.combustible_ingreso %}
+                                                {{ preorden.combustible_ingreso }}%
+                                            {% else %}
+                                                No especificado
+                                            {% endif %}
+                                        </span>
+                                    </div>
+                                    {% if preorden.observaciones_estado_equipo %}
+                                    <div class="info-item">
+                                        <span class="info-label">Observaciones:</span>
+                                        <span class="info-value">{{ preorden.observaciones_estado_equipo }}</span>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Imágenes de Evidencia -->
+                    <div class="info-card mb-4">
+                        <div class="info-card-header">
+                            <h5><i class="bi bi-images me-2"></i>Imágenes de Evidencia</h5>
+                        </div>
+                        <div class="info-body">
+                            {% if evidencias %}
+                                <div class="row">
+                                    {% for evidencia in evidencias %}
+                                        <div class="col-md-4 col-lg-3 mb-3">
+                                            <div class="card h-100">
+                                                <img src="{{ evidencia.imagen.url }}" 
+                                                     class="card-img-top" 
+                                                     alt="Evidencia {{ forloop.counter }}"
+                                                     style="height: 200px; object-fit: cover; cursor: pointer;"
+                                                     onclick="window.open('{{ evidencia.imagen.url }}', '_blank')"
+                                                     title="Hacer clic para ver imagen completa">
+                                                <div class="card-body">
+                                                    <p class="card-text text-center">
+                                                        <small class="text-muted">
+                                                            <i class="bi bi-calendar me-1"></i>
+                                                            {{ evidencia.fecha_subida|date:"d/m/Y H:i" }}
+                                                        </small>
+                                                    </p>
+                                                    <div class="text-center">
+                                                        <a href="{{ evidencia.imagen.url }}" 
+                                                           target="_blank" 
+                                                           class="btn btn-sm btn-outline-primary">
+                                                            <i class="bi bi-eye me-1"></i>Ver Completa
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                <div class="text-center py-4">
+                                    <i class="bi bi-images text-muted" style="font-size: 3rem;"></i>
+                                    <h6 class="mt-2 text-muted">No hay imágenes de evidencia guardadas</h6>
+                                    <p class="text-muted">No se han subido imágenes como evidencia para esta preorden.</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Firma del Cliente -->
+                    <div class="info-card mb-4">
+                        <div class="info-card-header">
+                            <h5><i class="bi bi-pen me-2"></i>Firma del Cliente</h5>
+                        </div>
+                        <div class="info-body">
+                            {% if preorden.nombre_cliente %}
+                            <div class="info-item">
+                                <span class="info-label">Aclaración:</span>
+                                <span class="info-value">{{ preorden.nombre_cliente }}</span>
+                            </div>
+                            {% endif %}
+                            {% if preorden.firma_cliente %}
+                                <div class="text-center">
+                                    <img src="{{ preorden.firma_cliente.url }}" 
+                                         alt="Firma del Cliente" 
+                                         style="border: 2px solid #e9ecef; border-radius: 12px; max-width: 100%; height: auto; max-height: 300px;">
+                                </div>
+                            {% else %}
+                                <div class="text-center py-4">
+                                    <i class="bi bi-pen text-muted" style="font-size: 3rem;"></i>
+                                    <h6 class="mt-2 text-muted">No se ha registrado la firma del cliente</h6>
+                                    <p class="text-muted">La firma del cliente no ha sido capturada aún.</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
                 </div>
             </div>
+        </div>
 
-            <!-- Detalles de Trabajo -->
-            <div class="card mb-4">
-                <div class="card-header bg-secondary text-white">
-                    <h5>Detalles de Trabajo</h5>
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Estado y Fechas -->
+            <div class="sidebar-card">
+                <div class="sidebar-card-header">
+                    <h5 class="mb-0"><i class="bi bi-info-circle me-2"></i>Estado y Fechas</h5>
                 </div>
-                <div class="card-body">
-                    <p><strong>Solicitud del Cliente:</strong> {{ preorden.solicitud_cliente }}</p>
-                    <p><strong>Solicitud de Trabajo:</strong> {{ preorden.solicitud_trabajo }}</p>
-                    <p><strong>Detalles Adicionales:</strong> {{ preorden.detalles_adicionales }}</p>
-                    <p><strong>Tipo de Trabajo:</strong> {{ preorden.tipo_trabajo }}</p>
-                    <p><strong>Técnicos:</strong> 
-                        {% for tecnico in preorden.tecnicos.all %}
-                            {{ tecnico.get_nombre_completo }}{% if not forloop.last %}, {% endif %}
-                        {% endfor %}
-                    </p>
-                    <p><strong>Códigos de Error:</strong>
-                        {% if preorden.codigos_error.all %}
-                            {{ preorden.codigos_error.all|join:", " }}
-                        {% else %}
-                            Sin Códigos
-                        {% endif %}
-                    </p>
-                </div>
-            </div>
-
-            <!-- Programación de Servicio -->
-            <div class="card mb-4">
-                <div class="card-header bg-secondary text-white">
-                    <h5>Programación de Servicio</h5>
-                </div>
-                <div class="card-body">
-                    <p><strong>Fecha Estimada de Atención:</strong> {{ preorden.fecha_estimada }}</p>
-                    <p><strong>Hora de Inicio Estimada:</strong> {{ preorden.hora_inicio_estimada }}</p>
-                    <p><strong>Hora de Fin Estimada:</strong> {{ preorden.hora_fin_estimada }}</p>
-                </div>
-            </div>
-
-            <!-- Estado del Equipo al Ingreso -->
-            <div class="card mb-4">
-                <div class="card-header bg-secondary text-white">
-                    <h5>Estado del Equipo al Ingreso</h5>
-                </div>
-                <div class="card-body">
-                    <p><strong>¿Trae Llave?:</strong> {{ preorden.trae_llave|yesno:"Sí,No" }}</p>
-                    <p><strong>Estado de la Cabina:</strong> {{ preorden.estado_cabina }}</p>
-                    <p><strong>Estado de Neumáticos/Tren Rodante:</strong> {{ preorden.estado_neumaticos_tren }}</p>
-                    <p><strong>Estado de los Vidrios:</strong> {{ preorden.estado_vidrios }}</p>
-                    <p><strong>Combustible al Ingreso (%):</strong> {{ preorden.combustible_ingreso }}</p>
-                </div>
-            </div>
-
-            <!-- Imágenes de Evidencia -->
-            <div class="mt-4">
-                <h5>Imágenes de Evidencia</h5>
-                {% if preorden.evidencias.exists %}
-                    <ul>
-                        {% for evidencia in preorden.evidencias.all %}
-                            <li><a href="{{ evidencia.imagen.url }}" target="_blank">Imagen {{ forloop.counter }}</a></li>
-                        {% endfor %}
-                    </ul>
-                {% else %}
-                    <p>No hay imágenes de evidencia guardadas.</p>
-                {% endif %}
-            </div>
-
-
-            <!-- Firma del Cliente -->
-            <div class="card mb-4">
-                <div class="card-header bg-secondary text-white">
-                    <h5>Firma del Cliente</h5>
-                </div>
-                <div class="card-body">
-                    <p><strong>Aclaración:</strong> {{ preorden.nombre_cliente }}</p>
-                    {% if preorden.firma_cliente %}
-                        <img src="{{ preorden.firma_cliente.url }}" alt="Firma del Cliente" style="border:1px solid #000; width:300px;">
-                    {% else %}
-                        <p>No se ha registrado la firma del cliente.</p>
+                <div class="sidebar-card-body">
+                    <div class="info-item">
+                        <span class="info-label">Estado:</span>
+                        <span class="info-value">
+                            {% if preorden.servicio %}
+                                <span class="status-badge bg-success">Servicio Creado</span>
+                            {% else %}
+                                <span class="status-badge bg-warning">Pendiente</span>
+                            {% endif %}
+                        </span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Fecha Creación:</span>
+                        <span class="info-value">{{ preorden.fecha_creacion|date:"d/m/Y H:i" }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Creado por:</span>
+                        <span class="info-value">{{ preorden.creado_por.get_nombre_completo }}</span>
+                    </div>
+                    {% if preorden.servicio %}
+                    <div class="info-item">
+                        <span class="info-label">Servicio ID:</span>
+                        <span class="info-value">
+                            <a href="{% url 'gestionDeTaller:detalle_servicio' preorden.servicio.id %}" class="text-decoration-none">
+                                #{{ preorden.servicio.id }}
+                            </a>
+                        </span>
+                    </div>
                     {% endif %}
                 </div>
             </div>
 
-            <!-- Botón de Regreso -->
-            <div class="text-end mt-3">
-                <a href="{% url 'gestionDeTaller:lista_preordenes' %}" class="btn btn-secondary">Volver a la Lista de Preórdenes</a>
+            <!-- Sucursal -->
+            <div class="sidebar-card">
+                <div class="sidebar-card-header">
+                    <h5 class="mb-0"><i class="bi bi-building me-2"></i>Sucursal</h5>
+                </div>
+                <div class="sidebar-card-body">
+                    <div class="info-item">
+                        <span class="info-label">Nombre:</span>
+                        <span class="info-value">{{ preorden.sucursal.nombre }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Dirección:</span>
+                        <span class="info-value">{{ preorden.sucursal.direccion|default:"No disponible" }}</span>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

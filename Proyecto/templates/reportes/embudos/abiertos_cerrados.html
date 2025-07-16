@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Embudos Abiertos y Cerrados{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item">
+                        <a href="{% url 'reportes:dashboard_reportes' %}">
+                            <i class="bi bi-graph-up me-1"></i>Reportes
+                        </a>
+                    </li>
+                    <li class="breadcrumb-item">
+                        <a href="{% url 'reportes:embudos' %}">Embudos</a>
+                    </li>
+                    <li class="breadcrumb-item active">Abiertos y Cerrados</li>
+                </ol>
+            </nav>
+            <h1 class="h2 mb-0">
+                <i class="bi bi-door-open me-2"></i>Embudos Abiertos y Cerrados
+            </h1>
+            <p class="text-muted">Embudos abiertos y cerrados</p>
+        </div>
+        <div>
+            <a href="{% url 'reportes:embudos' %}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-1"></i>Volver
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body text-center">
+                    <i class="bi bi-door-open" style="font-size: 4rem; color: #6c757d;"></i>
+                    <h5 class="mt-3">Embudos Abiertos y Cerrados</h5>
+                    <p class="text-muted">Esta funcionalidad estará disponible próximamente</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

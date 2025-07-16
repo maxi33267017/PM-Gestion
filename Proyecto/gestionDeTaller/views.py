@@ -338,11 +338,11 @@ def preordenes_json(request):
 @login_required           
 def detalle_preorden(request, preorden_id):
     preorden = get_object_or_404(PreOrden, pk=preorden_id)
-    evidencia = Evidencia.objects.filter(preorden=preorden)
+    evidencias = Evidencia.objects.filter(preorden=preorden)
 
     context = {
         'preorden': preorden,
-        'evidencia': evidencia,
+        'evidencias': evidencias,
     }
     return render(request, 'gestionDeTaller/preorden/detalle_preorden.html', context )
 
