@@ -23,7 +23,7 @@
             <h1 class="h2 mb-0">
                 <i class="bi bi-building me-2"></i>Servicios por Sucursal
             </h1>
-            <p class="text-muted">Servicios por sucursal</p>
+            <p class="text-muted">Servicios agrupados por sucursal</p>
         </div>
         <div>
             <a href="{% url 'reportes:servicios' %}" class="btn btn-outline-secondary">
@@ -32,15 +32,134 @@
         </div>
     </div>
 
-    <div class="row">
-        <div class="col-12">
-            <div class="card">
+    <!-- Estadísticas -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white border-0 shadow">
                 <div class="card-body text-center">
-                    <i class="bi bi-building" style="font-size: 4rem; color: #6c757d;"></i>
-                    <h5 class="mt-3">Servicios por Sucursal</h5>
-                    <p class="text-muted">Esta funcionalidad estará disponible próximamente</p>
+                    <h4>{{ total_servicios }}</h4>
+                    <p class="mb-0">Total Servicios</p>
                 </div>
             </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white border-0 shadow">
+                <div class="card-body text-center">
+                    <h4>${{ total_mano_obra|floatformat:0 }}</h4>
+                    <p class="mb-0">Mano de Obra</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white border-0 shadow">
+                <div class="card-body text-center">
+                    <h4>${{ total_gastos|floatformat:0 }}</h4>
+                    <p class="mb-0">Gastos</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white border-0 shadow">
+                <div class="card-body text-center">
+                    <h4>${{ valor_total|floatformat:0 }}</h4>
+                    <p class="mb-0">Valor Total</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="card border-0 shadow mb-4">
+        <div class="card-header">
+            <h5 class="mb-0"><i class="bi bi-funnel me-2"></i>Filtros</h5>
+        </div>
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-4">
+                    <label for="fecha_inicio" class="form-label">Fecha Inicio</label>
+                    <input type="date" class="form-control" id="fecha_inicio" name="fecha_inicio" value="{{ fecha_inicio }}">
+                </div>
+                <div class="col-md-4">
+                    <label for="fecha_fin" class="form-label">Fecha Fin</label>
+                    <input type="date" class="form-control" id="fecha_fin" name="fecha_fin" value="{{ fecha_fin }}">
+                </div>
+                <div class="col-md-4 d-flex align-items-end">
+                    <div class="d-grid gap-2 w-100">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-search me-1"></i>Filtrar
+                        </button>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <a href="{% url 'reportes:servicios_por_sucursal' %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-clockwise me-1"></i>Limpiar
+                    </a>
+                    <button type="submit" name="exportar" value="excel" class="btn btn-success">
+                        <i class="bi bi-file-earmark-excel me-1"></i>Exportar Excel
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Tabla de Datos -->
+    <div class="card border-0 shadow">
+        <div class="card-header">
+            <h5 class="mb-0"><i class="bi bi-table me-2"></i>Servicios por Sucursal</h5>
+        </div>
+        <div class="card-body">
+            {% if servicios_por_sucursal %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Sucursal</th>
+                                <th>Total</th>
+                                <th>Programados</th>
+                                <th>En Proceso</th>
+                                <th>Completados</th>
+                                <th>Mano de Obra</th>
+                                <th>Gastos</th>
+                                <th>Repuestos</th>
+                                <th>Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in servicios_por_sucursal %}
+                                {% with total_item=item.total_mano_obra|default:0|add:item.total_gastos|default:0|add:item.total_repuestos|default:0 %}
+                                <tr>
+                                    <td><strong>{{ item.preorden__sucursal__nombre }}</strong></td>
+                                    <td>
+                                        <span class="badge bg-primary">{{ item.total_servicios }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-success">{{ item.programados }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-warning">{{ item.en_proceso }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-info">{{ item.completados }}</span>
+                                    </td>
+                                    <td>${{ item.total_mano_obra|default:0|floatformat:0 }}</td>
+                                    <td>${{ item.total_gastos|default:0|floatformat:0 }}</td>
+                                    <td>${{ item.total_repuestos|default:0|floatformat:0 }}</td>
+                                    <td>
+                                        <strong>${{ total_item|floatformat:0 }}</strong>
+                                    </td>
+                                </tr>
+                                {% endwith %}
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="bi bi-building" style="font-size: 4rem; color: #6c757d;"></i>
+                    <h5 class="mt-3">No hay datos disponibles</h5>
+                    <p class="text-muted">No se encontraron servicios que cumplan con los filtros aplicados.</p>
+                </div>
+            {% endif %}
         </div>
     </div>
 </div>

@@ -953,37 +953,676 @@ def reportes_servicios(request):
 @login_required
 def preordenes_estadisticas(request):
     """Estadísticas de preórdenes"""
-    return render(request, 'reportes/servicios/preordenes.html')
+    from gestionDeTaller.models import PreOrden
+    from django.db.models import Count, Q
+    from datetime import datetime, timedelta
+    
+    # Obtener parámetros de filtro
+    fecha_inicio = request.GET.get('fecha_inicio')
+    fecha_fin = request.GET.get('fecha_fin')
+    sucursal = request.GET.get('sucursal')
+    exportar = request.GET.get('exportar') == 'excel'
+    
+    # Filtrar preórdenes
+    preordenes = PreOrden.objects.all()
+    
+    # Aplicar filtros
+    if fecha_inicio:
+        preordenes = preordenes.filter(fecha_creacion__gte=fecha_inicio)
+    if fecha_fin:
+        preordenes = preordenes.filter(fecha_creacion__lte=fecha_fin)
+    if sucursal:
+        preordenes = preordenes.filter(sucursal_id=sucursal)
+    
+    # Calcular estadísticas generales
+    total_preordenes = preordenes.count()
+    preordenes_activas = preordenes.filter(activo=True).count()
+    preordenes_inactivas = preordenes.filter(activo=False).count()
+    
+    # Estadísticas por estado de servicio
+    preordenes_con_servicio = preordenes.filter(servicio__isnull=False).count()
+    preordenes_sin_servicio = preordenes.filter(servicio__isnull=True).count()
+    
+    # Estadísticas por tipo de trabajo
+    tipos_trabajo = preordenes.values('tipo_trabajo').annotate(
+        cantidad=Count('id')
+    ).order_by('-cantidad')
+    
+    # Estadísticas por clasificación
+    clasificaciones = preordenes.values('clasificacion').annotate(
+        cantidad=Count('id')
+    ).order_by('-cantidad')
+    
+    # Estadísticas por sucursal
+    sucursales = preordenes.values('sucursal__nombre').annotate(
+        cantidad=Count('id')
+    ).order_by('-cantidad')
+    
+    # Estadísticas por mes (últimos 12 meses)
+    meses = []
+    for i in range(12):
+        fecha = datetime.now() - timedelta(days=30*i)
+        mes = fecha.strftime('%Y-%m')
+        cantidad = preordenes.filter(
+            fecha_creacion__year=fecha.year,
+            fecha_creacion__month=fecha.month
+        ).count()
+        meses.append({'mes': mes, 'cantidad': cantidad})
+    
+    # Exportar a Excel si se solicita
+    if exportar:
+        import pandas as pd
+        from django.http import HttpResponse
+        
+        # Crear datos para Excel
+        datos = []
+        for preorden in preordenes.select_related('cliente', 'equipo', 'sucursal', 'creado_por'):
+            datos.append({
+                'ID': preorden.numero,
+                'Fecha Creación': preorden.fecha_creacion.strftime('%d/%m/%Y'),
+                'Cliente': preorden.cliente.razon_social,
+                'Equipo': f"{preorden.equipo.modelo} - {preorden.equipo.numero_serie}",
+                'Sucursal': preorden.sucursal.nombre,
+                'Tipo Trabajo': preorden.get_tipo_trabajo_display(),
+                'Clasificación': preorden.get_clasificacion_display(),
+                'Fecha Estimada': preorden.fecha_estimada.strftime('%d/%m/%Y'),
+                'Creado por': f"{preorden.creado_por.apellido}, {preorden.creado_por.nombre}",
+                'Activo': 'Sí' if preorden.activo else 'No',
+                'Tiene Servicio': 'Sí' if hasattr(preorden, 'servicio') else 'No'
+            })
+        
+        df = pd.DataFrame(datos)
+        response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        response['Content-Disposition'] = 'attachment; filename=estadisticas_preordenes.xlsx'
+        df.to_excel(response, index=False)
+        return response
+    
+    # Obtener lista de sucursales para el filtro
+    from recursosHumanos.models import Sucursal
+    sucursales_filtro = Sucursal.objects.filter(activo=True)
+    
+    context = {
+        'total_preordenes': total_preordenes,
+        'preordenes_activas': preordenes_activas,
+        'preordenes_inactivas': preordenes_inactivas,
+        'preordenes_con_servicio': preordenes_con_servicio,
+        'preordenes_sin_servicio': preordenes_sin_servicio,
+        'tipos_trabajo': tipos_trabajo,
+        'clasificaciones': clasificaciones,
+        'sucursales': sucursales,
+        'meses': meses,
+        'fecha_inicio': fecha_inicio,
+        'fecha_fin': fecha_fin,
+        'sucursal_filtro': sucursal,
+        'sucursales_filtro': sucursales_filtro,
+    }
+    
+    return render(request, 'reportes/servicios/preordenes.html', context)
 
 @login_required
 def servicios_programados(request):
     """Reporte de servicios programados"""
-    return render(request, 'reportes/servicios/programados.html')
+    from gestionDeTaller.models import Servicio
+    from django.core.paginator import Paginator
+    from django.db.models import Q
+    
+    # Obtener parámetros de filtro
+    fecha_inicio = request.GET.get('fecha_inicio')
+    fecha_fin = request.GET.get('fecha_fin')
+    sucursal = request.GET.get('sucursal')
+    exportar = request.GET.get('exportar') == 'excel'
+    
+    # Filtrar servicios programados
+    servicios = Servicio.objects.filter(
+        estado='PROGRAMADO'
+    ).select_related(
+        'preorden__cliente',
+        'preorden__equipo',
+        'preorden__sucursal'
+    ).prefetch_related('preorden__tecnicos')
+    
+    # Aplicar filtros
+    if fecha_inicio:
+        servicios = servicios.filter(fecha_servicio__gte=fecha_inicio)
+    if fecha_fin:
+        servicios = servicios.filter(fecha_servicio__lte=fecha_fin)
+    if sucursal:
+        servicios = servicios.filter(preorden__sucursal_id=sucursal)
+    
+    # Ordenar por fecha de servicio
+    servicios = servicios.order_by('fecha_servicio')
+    
+    # Exportar a Excel si se solicita
+    if exportar:
+        import pandas as pd
+        from django.http import HttpResponse
+        
+        datos = []
+        for servicio in servicios:
+            tecnicos = ', '.join([f"{t.apellido}, {t.nombre}" for t in servicio.preorden.tecnicos.all()])
+            datos.append({
+                'ID': servicio.id,
+                'Fecha Servicio': servicio.fecha_servicio.strftime('%d/%m/%Y'),
+                'Cliente': servicio.preorden.cliente.razon_social,
+                'Equipo': f"{servicio.preorden.equipo.modelo} - {servicio.preorden.equipo.numero_serie}",
+                'Sucursal': servicio.preorden.sucursal.nombre,
+                'Técnicos': tecnicos,
+                'Tipo Trabajo': servicio.get_trabajo_display(),
+                'Orden Servicio': servicio.orden_servicio or '',
+                'Prioridad': servicio.get_prioridad_display(),
+                'Observaciones': servicio.observaciones or ''
+            })
+        
+        df = pd.DataFrame(datos)
+        response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        response['Content-Disposition'] = 'attachment; filename=servicios_programados.xlsx'
+        df.to_excel(response, index=False)
+        return response
+    
+    # Paginación
+    paginator = Paginator(servicios, 20)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    # Calcular estadísticas
+    total_servicios = servicios.count()
+    servicios_hoy = servicios.filter(fecha_servicio=datetime.now().date()).count()
+    servicios_semana = servicios.filter(
+        fecha_servicio__gte=datetime.now().date(),
+        fecha_servicio__lte=datetime.now().date() + timedelta(days=7)
+    ).count()
+    
+    # Obtener lista de sucursales para el filtro
+    from recursosHumanos.models import Sucursal
+    sucursales_filtro = Sucursal.objects.filter(activo=True)
+    
+    context = {
+        'page_obj': page_obj,
+        'total_servicios': total_servicios,
+        'servicios_hoy': servicios_hoy,
+        'servicios_semana': servicios_semana,
+        'fecha_inicio': fecha_inicio,
+        'fecha_fin': fecha_fin,
+        'sucursal_filtro': sucursal,
+        'sucursales_filtro': sucursales_filtro,
+    }
+    
+    return render(request, 'reportes/servicios/programados.html', context)
 
 @login_required
 def servicios_en_proceso(request):
     """Reporte de servicios en proceso"""
-    return render(request, 'reportes/servicios/en_proceso.html')
+    from gestionDeTaller.models import Servicio
+    from django.core.paginator import Paginator
+    from django.db.models import Q
+    
+    # Obtener parámetros de filtro
+    fecha_inicio = request.GET.get('fecha_inicio')
+    fecha_fin = request.GET.get('fecha_fin')
+    sucursal = request.GET.get('sucursal')
+    exportar = request.GET.get('exportar') == 'excel'
+    
+    # Filtrar servicios en proceso
+    servicios = Servicio.objects.filter(
+        estado='EN_PROCESO'
+    ).select_related(
+        'preorden__cliente',
+        'preorden__equipo',
+        'preorden__sucursal'
+    ).prefetch_related('preorden__tecnicos')
+    
+    # Aplicar filtros
+    if fecha_inicio:
+        servicios = servicios.filter(fecha_servicio__gte=fecha_inicio)
+    if fecha_fin:
+        servicios = servicios.filter(fecha_servicio__lte=fecha_fin)
+    if sucursal:
+        servicios = servicios.filter(preorden__sucursal_id=sucursal)
+    
+    # Ordenar por fecha de servicio
+    servicios = servicios.order_by('fecha_servicio')
+    
+    # Exportar a Excel si se solicita
+    if exportar:
+        import pandas as pd
+        from django.http import HttpResponse
+        
+        datos = []
+        for servicio in servicios:
+            tecnicos = ', '.join([f"{t.apellido}, {t.nombre}" for t in servicio.preorden.tecnicos.all()])
+            datos.append({
+                'ID': servicio.id,
+                'Fecha Servicio': servicio.fecha_servicio.strftime('%d/%m/%Y'),
+                'Cliente': servicio.preorden.cliente.razon_social,
+                'Equipo': f"{servicio.preorden.equipo.modelo} - {servicio.preorden.equipo.numero_serie}",
+                'Sucursal': servicio.preorden.sucursal.nombre,
+                'Técnicos': tecnicos,
+                'Tipo Trabajo': servicio.get_trabajo_display(),
+                'Orden Servicio': servicio.orden_servicio or '',
+                'Observaciones': servicio.observaciones or ''
+            })
+        
+        df = pd.DataFrame(datos)
+        response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        response['Content-Disposition'] = 'attachment; filename=servicios_en_proceso.xlsx'
+        df.to_excel(response, index=False)
+        return response
+    
+    # Paginación
+    paginator = Paginator(servicios, 20)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    # Calcular estadísticas
+    total_servicios = servicios.count()
+    
+    # Obtener lista de sucursales para el filtro
+    from recursosHumanos.models import Sucursal
+    sucursales_filtro = Sucursal.objects.filter(activo=True)
+    
+    context = {
+        'page_obj': page_obj,
+        'total_servicios': total_servicios,
+        'fecha_inicio': fecha_inicio,
+        'fecha_fin': fecha_fin,
+        'sucursal_filtro': sucursal,
+        'sucursales_filtro': sucursales_filtro,
+    }
+    
+    return render(request, 'reportes/servicios/en_proceso.html', context)
 
 @login_required
 def servicios_completados(request):
     """Reporte de servicios completados"""
-    return render(request, 'reportes/servicios/completados.html')
+    from gestionDeTaller.models import Servicio
+    from django.core.paginator import Paginator
+    from django.db.models import Q, Sum, F
+    from decimal import Decimal
+    
+    # Obtener parámetros de filtro
+    fecha_inicio = request.GET.get('fecha_inicio')
+    fecha_fin = request.GET.get('fecha_fin')
+    sucursal = request.GET.get('sucursal')
+    exportar = request.GET.get('exportar') == 'excel'
+    
+    # Filtrar servicios completados
+    servicios = Servicio.objects.filter(
+        estado='COMPLETADO'
+    ).select_related(
+        'preorden__cliente',
+        'preorden__equipo',
+        'preorden__sucursal'
+    ).prefetch_related('preorden__tecnicos', 'gastos', 'repuestos')
+    
+    # Aplicar filtros
+    if fecha_inicio:
+        servicios = servicios.filter(fecha_servicio__gte=fecha_inicio)
+    if fecha_fin:
+        servicios = servicios.filter(fecha_servicio__lte=fecha_fin)
+    if sucursal:
+        servicios = servicios.filter(preorden__sucursal_id=sucursal)
+    
+    # Ordenar por fecha de servicio
+    servicios = servicios.order_by('-fecha_servicio')
+    
+    # Exportar a Excel si se solicita
+    if exportar:
+        import pandas as pd
+        from django.http import HttpResponse
+        
+        datos = []
+        for servicio in servicios:
+            tecnicos = ', '.join([f"{t.apellido}, {t.nombre}" for t in servicio.preorden.tecnicos.all()])
+            total_gastos = servicio.gastos.aggregate(total=Sum('monto'))['total'] or Decimal('0.00')
+            total_repuestos = servicio.repuestos.aggregate(total=Sum(F('precio_unitario') * F('cantidad')))['total'] or Decimal('0.00')
+            valor_total = (servicio.valor_mano_obra or Decimal('0.00')) + total_gastos + total_repuestos
+            
+            datos.append({
+                'ID': servicio.id,
+                'Fecha Servicio': servicio.fecha_servicio.strftime('%d/%m/%Y'),
+                'Cliente': servicio.preorden.cliente.razon_social,
+                'Equipo': f"{servicio.preorden.equipo.modelo} - {servicio.preorden.equipo.numero_serie}",
+                'Sucursal': servicio.preorden.sucursal.nombre,
+                'Técnicos': tecnicos,
+                'Tipo Trabajo': servicio.get_trabajo_display(),
+                'Mano de Obra': float(servicio.valor_mano_obra or 0),
+                'Gastos': float(total_gastos),
+                'Repuestos': float(total_repuestos),
+                'Total': float(valor_total)
+            })
+        
+        df = pd.DataFrame(datos)
+        response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        response['Content-Disposition'] = 'attachment; filename=servicios_completados.xlsx'
+        df.to_excel(response, index=False)
+        return response
+    
+    # Paginación
+    paginator = Paginator(servicios, 20)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    # Calcular estadísticas
+    total_servicios = servicios.count()
+    total_mano_obra = servicios.aggregate(total=Sum('valor_mano_obra'))['total'] or Decimal('0.00')
+    total_gastos = servicios.aggregate(total=Sum('gastos__monto'))['total'] or Decimal('0.00')
+    total_repuestos = servicios.aggregate(total=Sum(F('repuestos__precio_unitario') * F('repuestos__cantidad')))['total'] or Decimal('0.00')
+    valor_total = total_mano_obra + total_gastos + total_repuestos
+    
+    # Obtener lista de sucursales para el filtro
+    from recursosHumanos.models import Sucursal
+    sucursales_filtro = Sucursal.objects.filter(activo=True)
+    
+    context = {
+        'page_obj': page_obj,
+        'total_servicios': total_servicios,
+        'total_mano_obra': total_mano_obra,
+        'total_gastos': total_gastos,
+        'total_repuestos': total_repuestos,
+        'valor_total': valor_total,
+        'fecha_inicio': fecha_inicio,
+        'fecha_fin': fecha_fin,
+        'sucursal_filtro': sucursal,
+        'sucursales_filtro': sucursales_filtro,
+    }
+    
+    return render(request, 'reportes/servicios/completados.html', context)
 
 @login_required
 def tiempo_promedio_servicios(request):
     """Reporte de tiempo promedio de servicios"""
-    return render(request, 'reportes/servicios/tiempo_promedio.html')
+    from gestionDeTaller.models import Servicio
+    from django.db.models import Avg, Count, F
+    from datetime import datetime, timedelta
+    
+    # Obtener parámetros de filtro
+    fecha_inicio = request.GET.get('fecha_inicio')
+    fecha_fin = request.GET.get('fecha_fin')
+    sucursal = request.GET.get('sucursal')
+    exportar = request.GET.get('exportar') == 'excel'
+    
+    # Filtrar servicios completados
+    servicios = Servicio.objects.filter(
+        estado='COMPLETADO'
+    ).select_related(
+        'preorden__sucursal'
+    ).prefetch_related('preorden__tecnicos')
+    
+    # Aplicar filtros
+    if fecha_inicio:
+        servicios = servicios.filter(fecha_servicio__gte=fecha_inicio)
+    if fecha_fin:
+        servicios = servicios.filter(fecha_servicio__lte=fecha_fin)
+    if sucursal:
+        servicios = servicios.filter(preorden__sucursal_id=sucursal)
+    
+    # Calcular estadísticas generales
+    total_servicios = servicios.count()
+    
+    # Tiempo promedio por tipo de trabajo
+    tiempo_por_trabajo = servicios.values('trabajo').annotate(
+        cantidad=Count('id'),
+        tiempo_promedio=Avg('duracion_estimada')
+    ).order_by('-cantidad')
+    
+    # Tiempo promedio por sucursal
+    tiempo_por_sucursal = servicios.values('preorden__sucursal__nombre').annotate(
+        cantidad=Count('id'),
+        tiempo_promedio=Avg('duracion_estimada')
+    ).order_by('-cantidad')
+    
+    # Tiempo promedio por técnico
+    tiempo_por_tecnico = []
+    tecnicos_unicos = set()
+    
+    for servicio in servicios.prefetch_related('preorden__tecnicos'):
+        for tecnico in servicio.preorden.tecnicos.all():
+            tecnicos_unicos.add(tecnico.id)
+    
+    for tecnico_id in tecnicos_unicos:
+        tecnico_servicios = servicios.filter(preorden__tecnicos__id=tecnico_id)
+        tecnico = tecnico_servicios.first().preorden.tecnicos.get(id=tecnico_id)
+        
+        cantidad = tecnico_servicios.count()
+        tiempo_promedio = tecnico_servicios.aggregate(
+            promedio=Avg('duracion_estimada')
+        )['promedio'] or 0
+        
+        tiempo_por_tecnico.append({
+            'tecnico': tecnico,
+            'cantidad': cantidad,
+            'tiempo_promedio': tiempo_promedio
+        })
+    
+    # Ordenar por cantidad de servicios
+    tiempo_por_tecnico.sort(key=lambda x: x['cantidad'], reverse=True)
+    
+    # Tiempo promedio general
+    tiempo_promedio_general = servicios.aggregate(
+        promedio=Avg('duracion_estimada')
+    )['promedio'] or 0
+    
+    # Exportar a Excel si se solicita
+    if exportar:
+        import pandas as pd
+        from django.http import HttpResponse
+        
+        datos = []
+        for servicio in servicios:
+            tecnicos = ', '.join([f"{t.apellido}, {t.nombre}" for t in servicio.preorden.tecnicos.all()])
+            datos.append({
+                'ID': servicio.id,
+                'Fecha': servicio.fecha_servicio.strftime('%d/%m/%Y'),
+                'Sucursal': servicio.preorden.sucursal.nombre,
+                'Técnicos': tecnicos,
+                'Tipo Trabajo': servicio.get_trabajo_display(),
+                'Duración Estimada': servicio.duracion_estimada or 0,
+                'Orden Servicio': servicio.orden_servicio or ''
+            })
+        
+        df = pd.DataFrame(datos)
+        response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        response['Content-Disposition'] = 'attachment; filename=tiempo_promedio_servicios.xlsx'
+        df.to_excel(response, index=False)
+        return response
+    
+    # Obtener lista de sucursales para el filtro
+    from recursosHumanos.models import Sucursal
+    sucursales_filtro = Sucursal.objects.filter(activo=True)
+    
+    context = {
+        'total_servicios': total_servicios,
+        'tiempo_promedio_general': tiempo_promedio_general,
+        'tiempo_por_trabajo': tiempo_por_trabajo,
+        'tiempo_por_sucursal': tiempo_por_sucursal,
+        'tiempo_por_tecnico': tiempo_por_tecnico,
+        'fecha_inicio': fecha_inicio,
+        'fecha_fin': fecha_fin,
+        'sucursal_filtro': sucursal,
+        'sucursales_filtro': sucursales_filtro,
+    }
+    
+    return render(request, 'reportes/servicios/tiempo_promedio.html', context)
 
 @login_required
 def servicios_por_sucursal(request):
     """Reporte de servicios por sucursal"""
-    return render(request, 'reportes/servicios/por_sucursal.html')
+    from gestionDeTaller.models import Servicio
+    from django.db.models import Count, Sum, F
+    from decimal import Decimal
+    
+    # Obtener parámetros de filtro
+    fecha_inicio = request.GET.get('fecha_inicio')
+    fecha_fin = request.GET.get('fecha_fin')
+    exportar = request.GET.get('exportar') == 'excel'
+    
+    # Filtrar servicios
+    servicios = Servicio.objects.all()
+    
+    # Aplicar filtros
+    if fecha_inicio:
+        servicios = servicios.filter(fecha_servicio__gte=fecha_inicio)
+    if fecha_fin:
+        servicios = servicios.filter(fecha_servicio__lte=fecha_fin)
+    
+    # Agrupar por sucursal
+    servicios_por_sucursal = servicios.values('preorden__sucursal__nombre').annotate(
+        total_servicios=Count('id'),
+        programados=Count('id', filter=Q(estado='PROGRAMADO')),
+        en_proceso=Count('id', filter=Q(estado='EN_PROCESO')),
+        completados=Count('id', filter=Q(estado='COMPLETADO')),
+        total_mano_obra=Sum('valor_mano_obra'),
+        total_gastos=Sum('gastos__monto'),
+        total_repuestos=Sum(F('repuestos__precio_unitario') * F('repuestos__cantidad'))
+    ).order_by('-total_servicios')
+    
+    # Calcular totales
+    total_servicios = servicios.count()
+    total_mano_obra = servicios.aggregate(total=Sum('valor_mano_obra'))['total'] or Decimal('0.00')
+    total_gastos = servicios.aggregate(total=Sum('gastos__monto'))['total'] or Decimal('0.00')
+    total_repuestos = servicios.aggregate(total=Sum(F('repuestos__precio_unitario') * F('repuestos__cantidad')))['total'] or Decimal('0.00')
+    valor_total = total_mano_obra + total_gastos + total_repuestos
+    
+    # Exportar a Excel si se solicita
+    if exportar:
+        import pandas as pd
+        from django.http import HttpResponse
+        
+        datos = []
+        for item in servicios_por_sucursal:
+            total_item = (item['total_mano_obra'] or Decimal('0.00')) + (item['total_gastos'] or Decimal('0.00')) + (item['total_repuestos'] or Decimal('0.00'))
+            datos.append({
+                'Sucursal': item['preorden__sucursal__nombre'],
+                'Total Servicios': item['total_servicios'],
+                'Programados': item['programados'],
+                'En Proceso': item['en_proceso'],
+                'Completados': item['completados'],
+                'Mano de Obra': float(item['total_mano_obra'] or 0),
+                'Gastos': float(item['total_gastos'] or 0),
+                'Repuestos': float(item['total_repuestos'] or 0),
+                'Total': float(total_item)
+            })
+        
+        df = pd.DataFrame(datos)
+        response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        response['Content-Disposition'] = 'attachment; filename=servicios_por_sucursal.xlsx'
+        df.to_excel(response, index=False)
+        return response
+    
+    context = {
+        'servicios_por_sucursal': servicios_por_sucursal,
+        'total_servicios': total_servicios,
+        'total_mano_obra': total_mano_obra,
+        'total_gastos': total_gastos,
+        'total_repuestos': total_repuestos,
+        'valor_total': valor_total,
+        'fecha_inicio': fecha_inicio,
+        'fecha_fin': fecha_fin,
+    }
+    
+    return render(request, 'reportes/servicios/por_sucursal.html', context)
 
 @login_required
 def servicios_por_tecnico(request):
     """Reporte de servicios por técnico"""
-    return render(request, 'reportes/servicios/por_tecnico.html')
+    from gestionDeTaller.models import Servicio
+    from django.db.models import Count, Sum, F
+    from decimal import Decimal
+    
+    # Obtener parámetros de filtro
+    fecha_inicio = request.GET.get('fecha_inicio')
+    fecha_fin = request.GET.get('fecha_fin')
+    exportar = request.GET.get('exportar') == 'excel'
+    
+    # Filtrar servicios
+    servicios = Servicio.objects.all()
+    
+    # Aplicar filtros
+    if fecha_inicio:
+        servicios = servicios.filter(fecha_servicio__gte=fecha_inicio)
+    if fecha_fin:
+        servicios = servicios.filter(fecha_servicio__lte=fecha_fin)
+    
+    # Agrupar por técnico (usando ManyToMany)
+    servicios_por_tecnico = []
+    tecnicos_unicos = set()
+    
+    for servicio in servicios.prefetch_related('preorden__tecnicos'):
+        for tecnico in servicio.preorden.tecnicos.all():
+            tecnicos_unicos.add(tecnico.id)
+    
+    for tecnico_id in tecnicos_unicos:
+        tecnico_servicios = servicios.filter(preorden__tecnicos__id=tecnico_id)
+        tecnico = tecnico_servicios.first().preorden.tecnicos.get(id=tecnico_id)
+        
+        total_servicios = tecnico_servicios.count()
+        programados = tecnico_servicios.filter(estado='PROGRAMADO').count()
+        en_proceso = tecnico_servicios.filter(estado='EN_PROCESO').count()
+        completados = tecnico_servicios.filter(estado='COMPLETADO').count()
+        
+        total_mano_obra = tecnico_servicios.aggregate(total=Sum('valor_mano_obra'))['total'] or Decimal('0.00')
+        total_gastos = tecnico_servicios.aggregate(total=Sum('gastos__monto'))['total'] or Decimal('0.00')
+        total_repuestos = tecnico_servicios.aggregate(total=Sum(F('repuestos__precio_unitario') * F('repuestos__cantidad')))['total'] or Decimal('0.00')
+        
+        servicios_por_tecnico.append({
+            'tecnico': tecnico,
+            'total_servicios': total_servicios,
+            'programados': programados,
+            'en_proceso': en_proceso,
+            'completados': completados,
+            'total_mano_obra': total_mano_obra,
+            'total_gastos': total_gastos,
+            'total_repuestos': total_repuestos,
+        })
+    
+    # Ordenar por total de servicios
+    servicios_por_tecnico.sort(key=lambda x: x['total_servicios'], reverse=True)
+    
+    # Calcular totales
+    total_servicios = servicios.count()
+    total_mano_obra = servicios.aggregate(total=Sum('valor_mano_obra'))['total'] or Decimal('0.00')
+    total_gastos = servicios.aggregate(total=Sum('gastos__monto'))['total'] or Decimal('0.00')
+    total_repuestos = servicios.aggregate(total=Sum(F('repuestos__precio_unitario') * F('repuestos__cantidad')))['total'] or Decimal('0.00')
+    valor_total = total_mano_obra + total_gastos + total_repuestos
+    
+    # Exportar a Excel si se solicita
+    if exportar:
+        import pandas as pd
+        from django.http import HttpResponse
+        
+        datos = []
+        for item in servicios_por_tecnico:
+            total_item = item['total_mano_obra'] + item['total_gastos'] + item['total_repuestos']
+            datos.append({
+                'Técnico': f"{item['tecnico'].apellido}, {item['tecnico'].nombre}",
+                'Total Servicios': item['total_servicios'],
+                'Programados': item['programados'],
+                'En Proceso': item['en_proceso'],
+                'Completados': item['completados'],
+                'Mano de Obra': float(item['total_mano_obra']),
+                'Gastos': float(item['total_gastos']),
+                'Repuestos': float(item['total_repuestos']),
+                'Total': float(total_item)
+            })
+        
+        df = pd.DataFrame(datos)
+        response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        response['Content-Disposition'] = 'attachment; filename=servicios_por_tecnico.xlsx'
+        df.to_excel(response, index=False)
+        return response
+    
+    context = {
+        'servicios_por_tecnico': servicios_por_tecnico,
+        'total_servicios': total_servicios,
+        'total_mano_obra': total_mano_obra,
+        'total_gastos': total_gastos,
+        'total_repuestos': total_repuestos,
+        'valor_total': valor_total,
+        'fecha_inicio': fecha_inicio,
+        'fecha_fin': fecha_fin,
+    }
+    
+    return render(request, 'reportes/servicios/por_tecnico.html', context)
 
 @login_required
 def servicios_sin_ingresos(request):

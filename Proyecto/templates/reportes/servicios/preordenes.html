@@ -23,7 +23,7 @@
             <h1 class="h2 mb-0">
                 <i class="bi bi-clipboard-check me-2"></i>Estadísticas de Preórdenes
             </h1>
-            <p class="text-muted">Estadísticas de preórdenes</p>
+            <p class="text-muted">Análisis de preórdenes por estado y período</p>
         </div>
         <div>
             <a href="{% url 'reportes:servicios' %}" class="btn btn-outline-secondary">
@@ -32,13 +32,241 @@
         </div>
     </div>
 
-    <div class="row">
-        <div class="col-12">
-            <div class="card">
+    <!-- Estadísticas -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white border-0 shadow">
                 <div class="card-body text-center">
-                    <i class="bi bi-clipboard-check" style="font-size: 4rem; color: #6c757d;"></i>
-                    <h5 class="mt-3">Estadísticas de Preórdenes</h5>
-                    <p class="text-muted">Esta funcionalidad estará disponible próximamente</p>
+                    <h4>{{ total_preordenes }}</h4>
+                    <p class="mb-0">Total Preórdenes</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white border-0 shadow">
+                <div class="card-body text-center">
+                    <h4>{{ preordenes_activas }}</h4>
+                    <p class="mb-0">Activas</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white border-0 shadow">
+                <div class="card-body text-center">
+                    <h4>{{ preordenes_con_servicio }}</h4>
+                    <p class="mb-0">Con Servicio</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white border-0 shadow">
+                <div class="card-body text-center">
+                    <h4>{{ preordenes_sin_servicio }}</h4>
+                    <p class="mb-0">Sin Servicio</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="card border-0 shadow mb-4">
+        <div class="card-header">
+            <h5 class="mb-0"><i class="bi bi-funnel me-2"></i>Filtros</h5>
+        </div>
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-3">
+                    <label for="fecha_inicio" class="form-label">Fecha Inicio</label>
+                    <input type="date" class="form-control" id="fecha_inicio" name="fecha_inicio" value="{{ fecha_inicio }}">
+                </div>
+                <div class="col-md-3">
+                    <label for="fecha_fin" class="form-label">Fecha Fin</label>
+                    <input type="date" class="form-control" id="fecha_fin" name="fecha_fin" value="{{ fecha_fin }}">
+                </div>
+                <div class="col-md-3">
+                    <label for="sucursal" class="form-label">Sucursal</label>
+                    <select class="form-select" id="sucursal" name="sucursal">
+                        <option value="">Todas las sucursales</option>
+                        {% for sucursal in sucursales_filtro %}
+                            <option value="{{ sucursal.id }}" {% if sucursal_filtro == sucursal.id|stringformat:"s" %}selected{% endif %}>
+                                {{ sucursal.nombre }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3 d-flex align-items-end">
+                    <div class="d-grid gap-2 w-100">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-search me-1"></i>Filtrar
+                        </button>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <a href="{% url 'reportes:preordenes_estadisticas' %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-clockwise me-1"></i>Limpiar
+                    </a>
+                    <button type="submit" name="exportar" value="excel" class="btn btn-success">
+                        <i class="bi bi-file-earmark-excel me-1"></i>Exportar Excel
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Gráficos y Estadísticas -->
+    <div class="row">
+        <!-- Por Tipo de Trabajo -->
+        <div class="col-md-6 mb-4">
+            <div class="card border-0 shadow">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-pie-chart me-2"></i>Por Tipo de Trabajo</h5>
+                </div>
+                <div class="card-body">
+                    {% if tipos_trabajo %}
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Tipo</th>
+                                        <th>Cantidad</th>
+                                        <th>Porcentaje</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for tipo in tipos_trabajo %}
+                                        <tr>
+                                            <td>
+                                                {% if tipo.tipo_trabajo == 'PRESENCIAL_TALLER' %}
+                                                    <i class="bi bi-building me-1"></i>Presencial en Taller
+                                                {% elif tipo.tipo_trabajo == 'PRESENCIAL_CAMPO' %}
+                                                    <i class="bi bi-geo-alt me-1"></i>Presencial en Campo
+                                                {% elif tipo.tipo_trabajo == 'REMOTO' %}
+                                                    <i class="bi bi-laptop me-1"></i>Asistencia Remota
+                                                {% endif %}
+                                            </td>
+                                            <td>{{ tipo.cantidad }}</td>
+                                            <td>{{ tipo.cantidad|floatformat:1 }}%</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <p class="text-muted text-center">No hay datos disponibles</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Por Clasificación -->
+        <div class="col-md-6 mb-4">
+            <div class="card border-0 shadow">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-tags me-2"></i>Por Clasificación</h5>
+                </div>
+                <div class="card-body">
+                    {% if clasificaciones %}
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Clasificación</th>
+                                        <th>Cantidad</th>
+                                        <th>Porcentaje</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for clasif in clasificaciones %}
+                                        <tr>
+                                            <td>
+                                                {% if clasif.clasificacion == 'SPOT' %}
+                                                    <span class="badge bg-danger">Spot</span>
+                                                {% elif clasif.clasificacion == 'PROGRAMADO' %}
+                                                    <span class="badge bg-primary">Programado</span>
+                                                {% elif clasif.clasificacion == 'CAMPAÑA' %}
+                                                    <span class="badge bg-success">Campaña</span>
+                                                {% elif clasif.clasificacion == 'ADICIONAL' %}
+                                                    <span class="badge bg-warning">Adicional</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>{{ clasif.cantidad }}</td>
+                                            <td>{{ clasif.cantidad|floatformat:1 }}%</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <p class="text-muted text-center">No hay datos disponibles</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Por Sucursal -->
+        <div class="col-md-6 mb-4">
+            <div class="card border-0 shadow">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-building me-2"></i>Por Sucursal</h5>
+                </div>
+                <div class="card-body">
+                    {% if sucursales %}
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Sucursal</th>
+                                        <th>Cantidad</th>
+                                        <th>Porcentaje</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for sucursal in sucursales %}
+                                        <tr>
+                                            <td>{{ sucursal.sucursal__nombre }}</td>
+                                            <td>{{ sucursal.cantidad }}</td>
+                                            <td>{{ sucursal.cantidad|floatformat:1 }}%</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <p class="text-muted text-center">No hay datos disponibles</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Evolución Mensual -->
+        <div class="col-md-6 mb-4">
+            <div class="card border-0 shadow">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-graph-up me-2"></i>Evolución Mensual</h5>
+                </div>
+                <div class="card-body">
+                    {% if meses %}
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Mes</th>
+                                        <th>Cantidad</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for mes in meses %}
+                                        <tr>
+                                            <td>{{ mes.mes }}</td>
+                                            <td>{{ mes.cantidad }}</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <p class="text-muted text-center">No hay datos disponibles</p>
+                    {% endif %}
                 </div>
             </div>
         </div>
