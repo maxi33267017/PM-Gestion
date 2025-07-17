@@ -378,10 +378,11 @@ def crear_preorden(request):
                 if firma_data and firma_data.strip() and ';base64,' in firma_data:
                     try:
                         format, imgstr = firma_data.split(';base64,')
-                        ext = format.split('/')[-1]
-                        data = ContentFile(base64.b64decode(imgstr), name=f"firma_{preorden.numero}.{ext}")
-                        preorden.firma_cliente = data
-                        preorden.save()  # Guardar nuevamente con la firma
+                        if format and imgstr:  # Verificar que ambas partes existan
+                            ext = format.split('/')[-1]
+                            data = ContentFile(base64.b64decode(imgstr), name=f"firma_{preorden.numero}.{ext}")
+                            preorden.firma_cliente = data
+                            preorden.save()  # Guardar nuevamente con la firma
                     except Exception as e:
                         print("Error al procesar la firma:", e)
 
@@ -757,9 +758,10 @@ def editar_informe(request, servicio_id):
             if firma_data and firma_data.strip() and ';base64,' in firma_data:
                 try:
                     format, imgstr = firma_data.split(';base64,')
-                    ext = format.split('/')[-1]
-                    data = ContentFile(base64.b64decode(imgstr), name=f"firma_{servicio.id}.{ext}")
-                    servicio.firma_cliente = data
+                    if format and imgstr:  # Verificar que ambas partes existan
+                        ext = format.split('/')[-1]
+                        data = ContentFile(base64.b64decode(imgstr), name=f"firma_{servicio.id}.{ext}")
+                        servicio.firma_cliente = data
                 except Exception as e:
                     print("Error al procesar la firma:", e)
             
@@ -927,9 +929,10 @@ def editar_preorden(request, preorden_id):
                 if firma_data and firma_data.strip() and ';base64,' in firma_data:
                     try:
                         format, imgstr = firma_data.split(';base64,')
-                        ext = format.split('/')[-1]
-                        data = ContentFile(base64.b64decode(imgstr), name=f"firma_{preorden.numero}.{ext}")
-                        preorden.firma_cliente = data
+                        if format and imgstr:  # Verificar que ambas partes existan
+                            ext = format.split('/')[-1]
+                            data = ContentFile(base64.b64decode(imgstr), name=f"firma_{preorden.numero}.{ext}")
+                            preorden.firma_cliente = data
                     except Exception as e:
                         print("Error al procesar la firma:", e)
                 
