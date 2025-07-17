@@ -18,8 +18,59 @@ from clientes.models import Cliente
 @login_required
 def dashboard_reportes(request):
     """Dashboard principal de reportes"""
+    
+    # Calcular estadísticas
+    from datetime import datetime, timedelta
+    from django.utils import timezone
+    
+    # Fecha actual y mes actual
+    ahora = timezone.now()
+    inicio_mes = ahora.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    
+    # Servicios activos (en proceso, programados, espera repuestos)
+    servicios_count = Servicio.objects.filter(
+        estado__in=['EN_PROCESO', 'PROGRAMADO', 'ESPERA_REPUESTOS']
+    ).count()
+    
+    # Técnicos activos
+    tecnicos_count = Usuario.objects.filter(
+        rol='TECNICO',
+        is_active=True
+    ).count()
+    
+    # Clientes activos
+    clientes_count = Cliente.objects.filter(activo=True).count()
+    
+    # Facturación mensual
+    facturacion_mensual = Servicio.objects.filter(
+        estado='COMPLETADO',
+        fecha_servicio__gte=inicio_mes
+    ).aggregate(
+        total=Sum('valor_mano_obra')
+    )['total'] or 0
+    
+    # Agregar gastos y repuestos a la facturación
+    servicios_mes = Servicio.objects.filter(
+        estado='COMPLETADO',
+        fecha_servicio__gte=inicio_mes
+    )
+    
+    total_gastos = servicios_mes.aggregate(
+        total=Sum('gastos__monto')
+    )['total'] or 0
+    
+    total_repuestos = servicios_mes.aggregate(
+        total=Sum(F('repuestos__precio_unitario') * F('repuestos__cantidad'))
+    )['total'] or 0
+    
+    facturacion_mensual += total_gastos + total_repuestos
+    
     context = {
         'titulo': 'Dashboard de Reportes',
+        'servicios_count': servicios_count,
+        'tecnicos_count': tecnicos_count,
+        'clientes_count': clientes_count,
+        'facturacion_mensual': f"${facturacion_mensual:,.0f}",
         'secciones': [
             {
                 'titulo': 'Facturación',
