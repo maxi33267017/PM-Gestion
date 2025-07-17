@@ -20,7 +20,7 @@
             <h1 class="h2 mb-0">
                 <i class="bi bi-clipboard-data me-2"></i>Reportes de Encuestas
             </h1>
-            <p class="text-muted">Reportes de encuestas de satisfacción</p>
+            <p class="text-muted">Análisis de satisfacción del cliente y métricas NPS</p>
         </div>
         <div>
             <a href="{% url 'reportes:dashboard_reportes' %}" class="btn btn-outline-secondary">
@@ -29,13 +29,192 @@
         </div>
     </div>
 
-    <div class="row">
+    <!-- NPS Score Principal -->
+    <div class="row mb-4">
         <div class="col-12">
-            <div class="card">
+            <div class="card border-0 shadow">
                 <div class="card-body text-center">
-                    <i class="bi bi-clipboard-data" style="font-size: 4rem; color: #6c757d;"></i>
-                    <h5 class="mt-3">Reportes de Encuestas</h5>
-                    <p class="text-muted">Esta sección estará disponible próximamente</p>
+                    <h3 class="mb-3">Net Promoter Score (NPS)</h3>
+                    <div class="display-1 fw-bold {% if nps_score >= 50 %}text-success{% elif nps_score >= 0 %}text-warning{% else %}text-danger{% endif %}">
+                        {{ nps_score }}
+                    </div>
+                    <p class="text-muted mb-0">
+                        {% if nps_score >= 50 %}
+                            <i class="bi bi-arrow-up-circle text-success me-1"></i>Excelente
+                        {% elif nps_score >= 0 %}
+                            <i class="bi bi-dash-circle text-warning me-1"></i>Promedio
+                        {% else %}
+                            <i class="bi bi-arrow-down-circle text-danger me-1"></i>Necesita Mejora
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Métricas Principales -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white border-0 shadow">
+                <div class="card-body text-center">
+                    <h4>{{ total_encuestas }}</h4>
+                    <p class="mb-0">Total Encuestas</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white border-0 shadow">
+                <div class="card-body text-center">
+                    <h4>{{ encuestas_respondidas }}</h4>
+                    <p class="mb-0">Respondidas</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white border-0 shadow">
+                <div class="card-body text-center">
+                    <h4>{{ encuestas_enviadas }}</h4>
+                    <p class="mb-0">Enviadas</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white border-0 shadow">
+                <div class="card-body text-center">
+                    <h4>{{ tasa_respuesta|floatformat:1 }}%</h4>
+                    <p class="mb-0">Tasa de Respuesta</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Desglose NPS -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card border-0 shadow">
+                <div class="card-header bg-success text-white text-center">
+                    <h5 class="mb-0"><i class="bi bi-arrow-up-circle me-2"></i>Promotores</h5>
+                </div>
+                <div class="card-body text-center">
+                    <h3 class="text-success">{{ nps_promotores|floatformat:1 }}%</h3>
+                    <div class="progress" style="height: 25px;">
+                        <div class="progress-bar bg-success" style="width: {{ nps_promotores }}%"></div>
+                    </div>
+                    <small class="text-muted">Clientes que recomendarían (9-10)</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow">
+                <div class="card-header bg-warning text-white text-center">
+                    <h5 class="mb-0"><i class="bi bi-dash-circle me-2"></i>Pasivos</h5>
+                </div>
+                <div class="card-body text-center">
+                    <h3 class="text-warning">{{ nps_pasivos|floatformat:1 }}%</h3>
+                    <div class="progress" style="height: 25px;">
+                        <div class="progress-bar bg-warning" style="width: {{ nps_pasivos }}%"></div>
+                    </div>
+                    <small class="text-muted">Clientes neutrales (7-8)</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow">
+                <div class="card-header bg-danger text-white text-center">
+                    <h5 class="mb-0"><i class="bi bi-arrow-down-circle me-2"></i>Detractores</h5>
+                </div>
+                <div class="card-body text-center">
+                    <h3 class="text-danger">{{ nps_detractores|floatformat:1 }}%</h3>
+                    <div class="progress" style="height: 25px;">
+                        <div class="progress-bar bg-danger" style="width: {{ nps_detractores }}%"></div>
+                    </div>
+                    <small class="text-muted">Clientes insatisfechos (1-6)</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Promedios -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card border-0 shadow">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-check-circle me-2"></i>Cumplimiento del Acuerdo</h5>
+                </div>
+                <div class="card-body text-center">
+                    <h2 class="text-primary">{{ promedio_cumplimiento|floatformat:1 }}/10</h2>
+                    <div class="progress" style="height: 25px;">
+                        <div class="progress-bar bg-primary" style="width: {{ promedio_cumplimiento|mul:10 }}%"></div>
+                    </div>
+                    <small class="text-muted">Promedio de cumplimiento de acuerdos</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card border-0 shadow">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-star me-2"></i>Probabilidad de Recomendación</h5>
+                </div>
+                <div class="card-body text-center">
+                    <h2 class="text-success">{{ promedio_recomendacion|floatformat:1 }}/10</h2>
+                    <div class="progress" style="height: 25px;">
+                        <div class="progress-bar bg-success" style="width: {{ promedio_recomendacion|mul:10 }}%"></div>
+                    </div>
+                    <small class="text-muted">Promedio de probabilidad de recomendación</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Grid de Reportes -->
+    <div class="row">
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="card border-0 shadow h-100">
+                <div class="card-header text-center bg-primary text-white">
+                    <i class="bi bi-reply" style="font-size: 2rem;"></i>
+                    <h5 class="mt-2 mb-0">Encuestas con Respuesta</h5>
+                </div>
+                <div class="card-body text-center">
+                    <p class="text-muted">
+                        Análisis detallado de las encuestas que han sido respondidas por los clientes.
+                    </p>
+                    <a href="{% url 'reportes:encuestas_respuestas' %}" class="btn btn-primary">
+                        <i class="bi bi-arrow-right me-1"></i>Ver Reporte
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="card border-0 shadow h-100">
+                <div class="card-header text-center bg-success text-white">
+                    <i class="bi bi-send" style="font-size: 2rem;"></i>
+                    <h5 class="mt-2 mb-0">Encuestas Enviadas</h5>
+                </div>
+                <div class="card-body text-center">
+                    <p class="text-muted">
+                        Seguimiento de encuestas enviadas y su estado de respuesta.
+                    </p>
+                    <a href="{% url 'reportes:encuestas_enviadas' %}" class="btn btn-success">
+                        <i class="bi bi-arrow-right me-1"></i>Ver Reporte
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="card border-0 shadow h-100">
+                <div class="card-header text-center bg-info text-white">
+                    <i class="bi bi-percent" style="font-size: 2rem;"></i>
+                    <h5 class="mt-2 mb-0">Porcentajes y Tendencias</h5>
+                </div>
+                <div class="card-body text-center">
+                    <p class="text-muted">
+                        Análisis de porcentajes, tendencias y evolución del NPS a lo largo del tiempo.
+                    </p>
+                    <a href="{% url 'reportes:encuestas_porcentajes' %}" class="btn btn-info">
+                        <i class="bi bi-arrow-right me-1"></i>Ver Reporte
+                    </a>
                 </div>
             </div>
         </div>

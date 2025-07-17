@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Porcentajes de Encuestas{% endblock %}
+{% block title %}Porcentajes y Tendencias{% endblock %}
 
 {% block content %}
 <div class="container-fluid">
@@ -21,9 +21,9 @@
                 </ol>
             </nav>
             <h1 class="h2 mb-0">
-                <i class="bi bi-percent me-2"></i>Porcentajes de Encuestas
+                <i class="bi bi-percent me-2"></i>Porcentajes y Tendencias
             </h1>
-            <p class="text-muted">Porcentajes de encuestas</p>
+            <p class="text-muted">Análisis de porcentajes, tendencias y evolución del NPS a lo largo del tiempo</p>
         </div>
         <div>
             <a href="{% url 'reportes:encuestas' %}" class="btn btn-outline-secondary">
@@ -32,15 +32,285 @@
         </div>
     </div>
 
-    <div class="row">
-        <div class="col-12">
-            <div class="card">
+    <!-- Filtros -->
+    <div class="card border-0 shadow mb-4">
+        <div class="card-header">
+            <h5 class="mb-0"><i class="bi bi-funnel me-2"></i>Filtros</h5>
+        </div>
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-3">
+                    <label for="periodo" class="form-label">Período</label>
+                    <select class="form-select" id="periodo" name="periodo">
+                        <option value="mes" {% if periodo == 'mes' %}selected{% endif %}>Mensual</option>
+                        <option value="semana" {% if periodo == 'semana' %}selected{% endif %}>Semanal</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="fecha_inicio" class="form-label">Fecha Inicio</label>
+                    <input type="date" class="form-control" id="fecha_inicio" name="fecha_inicio" value="{{ fecha_inicio }}">
+                </div>
+                <div class="col-md-3">
+                    <label for="fecha_fin" class="form-label">Fecha Fin</label>
+                    <input type="date" class="form-control" id="fecha_fin" name="fecha_fin" value="{{ fecha_fin }}">
+                </div>
+                <div class="col-md-3 d-flex align-items-end">
+                    <div class="d-grid gap-2 w-100">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-search me-1"></i>Filtrar
+                        </button>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <a href="{% url 'reportes:encuestas_porcentajes' %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-clockwise me-1"></i>Limpiar
+                    </a>
+                    <button type="submit" name="exportar" value="excel" class="btn btn-success">
+                        <i class="bi bi-file-earmark-excel me-1"></i>Exportar Excel
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Estadísticas Principales -->
+    <div class="row mb-4">
+        <div class="col-md-2">
+            <div class="card bg-primary text-white border-0 shadow">
                 <div class="card-body text-center">
-                    <i class="bi bi-percent" style="font-size: 4rem; color: #6c757d;"></i>
-                    <h5 class="mt-3">Porcentajes de Encuestas</h5>
-                    <p class="text-muted">Esta funcionalidad estará disponible próximamente</p>
+                    <h4>{{ total_encuestas }}</h4>
+                    <p class="mb-0">Total</p>
                 </div>
             </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card bg-success text-white border-0 shadow">
+                <div class="card-body text-center">
+                    <h4>{{ encuestas_respondidas }}</h4>
+                    <p class="mb-0">Respondidas</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card bg-info text-white border-0 shadow">
+                <div class="card-body text-center">
+                    <h4>{{ tasa_respuesta|floatformat:1 }}%</h4>
+                    <p class="mb-0">Tasa Respuesta</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card bg-warning text-white border-0 shadow">
+                <div class="card-body text-center">
+                    <h4>{{ nps_score|floatformat:1 }}</h4>
+                    <p class="mb-0">NPS Score</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card bg-secondary text-white border-0 shadow">
+                <div class="card-body text-center">
+                    <h4>{{ promedio_cumplimiento|floatformat:1 }}/10</h4>
+                    <p class="mb-0">Cumplimiento</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card bg-dark text-white border-0 shadow">
+                <div class="card-body text-center">
+                    <h4>{{ promedio_recomendacion|floatformat:1 }}/10</h4>
+                    <p class="mb-0">Recomendación</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Distribución NPS -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card border-0 shadow">
+                <div class="card-header bg-success text-white text-center">
+                    <h5 class="mb-0"><i class="bi bi-arrow-up-circle me-2"></i>Promotores</h5>
+                </div>
+                <div class="card-body text-center">
+                    <h3 class="text-success">{{ porcentaje_promotores|floatformat:1 }}%</h3>
+                    <div class="progress" style="height: 25px;">
+                        <div class="progress-bar bg-success" style="width: {{ porcentaje_promotores }}%"></div>
+                    </div>
+                    <small class="text-muted">Clientes que recomendarían (9-10)</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow">
+                <div class="card-header bg-warning text-white text-center">
+                    <h5 class="mb-0"><i class="bi bi-dash-circle me-2"></i>Pasivos</h5>
+                </div>
+                <div class="card-body text-center">
+                    <h3 class="text-warning">{{ porcentaje_pasivos|floatformat:1 }}%</h3>
+                    <div class="progress" style="height: 25px;">
+                        <div class="progress-bar bg-warning" style="width: {{ porcentaje_pasivos }}%"></div>
+                    </div>
+                    <small class="text-muted">Clientes neutrales (7-8)</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow">
+                <div class="card-header bg-danger text-white text-center">
+                    <h5 class="mb-0"><i class="bi bi-arrow-down-circle me-2"></i>Detractores</h5>
+                </div>
+                <div class="card-body text-center">
+                    <h3 class="text-danger">{{ porcentaje_detractores|floatformat:1 }}%</h3>
+                    <div class="progress" style="height: 25px;">
+                        <div class="progress-bar bg-danger" style="width: {{ porcentaje_detractores }}%"></div>
+                    </div>
+                    <small class="text-muted">Clientes insatisfechos (1-6)</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Distribuciones por Calificación -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card border-0 shadow">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-check-circle me-2"></i>Distribución Cumplimiento del Acuerdo</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Calificación</th>
+                                    <th>Cantidad</th>
+                                    <th>Porcentaje</th>
+                                    <th>Barra</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for calificacion, cantidad in distribucion_cumplimiento.items %}
+                                    <tr>
+                                        <td>{{ calificacion }}/10</td>
+                                        <td>{{ cantidad }}</td>
+                                        <td>
+                                            {% if encuestas_respondidas > 0 %}
+                                                {{ cantidad|mul:100|div:encuestas_respondidas|floatformat:1 }}%
+                                            {% else %}
+                                                0%
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div class="progress" style="height: 20px;">
+                                                <div class="progress-bar {% if calificacion >= 9 %}bg-success{% elif calificacion >= 7 %}bg-warning{% else %}bg-danger{% endif %}" 
+                                                     style="width: {% if encuestas_respondidas > 0 %}{{ cantidad|mul:100|div:encuestas_respondidas }}{% else %}0{% endif %}%">
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card border-0 shadow">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-star me-2"></i>Distribución Probabilidad de Recomendación</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Calificación</th>
+                                    <th>Cantidad</th>
+                                    <th>Porcentaje</th>
+                                    <th>Barra</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for calificacion, cantidad in distribucion_recomendacion.items %}
+                                    <tr>
+                                        <td>{{ calificacion }}/10</td>
+                                        <td>{{ cantidad }}</td>
+                                        <td>
+                                            {% if encuestas_respondidas > 0 %}
+                                                {{ cantidad|mul:100|div:encuestas_respondidas|floatformat:1 }}%
+                                            {% else %}
+                                                0%
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div class="progress" style="height: 20px;">
+                                                <div class="progress-bar {% if calificacion >= 9 %}bg-success{% elif calificacion >= 7 %}bg-warning{% else %}bg-danger{% endif %}" 
+                                                     style="width: {% if encuestas_respondidas > 0 %}{{ cantidad|mul:100|div:encuestas_respondidas }}{% else %}0{% endif %}%">
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tendencias -->
+    <div class="card border-0 shadow">
+        <div class="card-header">
+            <h5 class="mb-0"><i class="bi bi-graph-up me-2"></i>Tendencias {{ periodo|title }}</h5>
+        </div>
+        <div class="card-body">
+            {% if tendencias %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Período</th>
+                                <th>NPS</th>
+                                <th>Total Respuestas</th>
+                                <th>Promedio Cumplimiento</th>
+                                <th>Promedio Recomendación</th>
+                                <th>Tendencia NPS</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for tendencia in tendencias %}
+                                <tr>
+                                    <td>{{ tendencia.periodo }}</td>
+                                    <td>
+                                        <span class="badge {% if tendencia.nps >= 50 %}bg-success{% elif tendencia.nps >= 0 %}bg-warning{% else %}bg-danger{% endif %}">
+                                            {{ tendencia.nps }}
+                                        </span>
+                                    </td>
+                                    <td>{{ tendencia.total_respuestas }}</td>
+                                    <td>{{ tendencia.promedio_cumplimiento }}/10</td>
+                                    <td>{{ tendencia.promedio_recomendacion }}/10</td>
+                                    <td>
+                                        <div class="progress" style="height: 20px;">
+                                            <div class="progress-bar {% if tendencia.nps >= 50 %}bg-success{% elif tendencia.nps >= 0 %}bg-warning{% else %}bg-danger{% endif %}" 
+                                                 style="width: {% if tendencia.nps >= 0 %}{{ tendencia.nps|add:100|div:2 }}{% else %}0{% endif %}%">
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="bi bi-graph-up" style="font-size: 4rem; color: #6c757d;"></i>
+                    <h5 class="mt-3">No hay datos de tendencias</h5>
+                    <p class="text-muted">No se encontraron datos para generar las tendencias en el período seleccionado.</p>
+                </div>
+            {% endif %}
         </div>
     </div>
 </div>

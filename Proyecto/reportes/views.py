@@ -7,6 +7,8 @@ from datetime import datetime, timedelta
 import json
 import pandas as pd
 from decimal import Decimal
+from django.core.paginator import Paginator
+import io
 
 # Importar modelos necesarios
 from gestionDeTaller.models import Servicio, PreOrden
@@ -1099,22 +1101,364 @@ def csc_por_sucursal(request):
 @login_required
 def reportes_encuestas(request):
     """Dashboard de reportes de encuestas"""
-    return render(request, 'reportes/encuestas/dashboard.html')
+    
+    # Importar modelos de encuestas
+    from gestionDeTaller.models import EncuestaServicio, RespuestaEncuesta
+    
+    # Calcular estadísticas de encuestas
+    total_encuestas = EncuestaServicio.objects.count()
+    encuestas_enviadas = EncuestaServicio.objects.filter(estado='ENVIADA').count()
+    encuestas_respondidas = EncuestaServicio.objects.filter(estado='RESPONDIDA').count()
+    encuestas_no_respondidas = EncuestaServicio.objects.filter(estado='NO_RESPONDIDA').count()
+    
+    # Calcular NPS (Net Promoter Score)
+    respuestas = RespuestaEncuesta.objects.all()
+    if respuestas.exists():
+        promotores = respuestas.filter(probabilidad_recomendacion__gte=9).count()
+        pasivos = respuestas.filter(probabilidad_recomendacion__in=[7, 8]).count()
+        detractores = respuestas.filter(probabilidad_recomendacion__lte=6).count()
+        total_respuestas = respuestas.count()
+        
+        nps_score = ((promotores - detractores) / total_respuestas * 100) if total_respuestas > 0 else 0
+        nps_promotores = (promotores / total_respuestas * 100) if total_respuestas > 0 else 0
+        nps_pasivos = (pasivos / total_respuestas * 100) if total_respuestas > 0 else 0
+        nps_detractores = (detractores / total_respuestas * 100) if total_respuestas > 0 else 0
+    else:
+        nps_score = 0
+        nps_promotores = 0
+        nps_pasivos = 0
+        nps_detractores = 0
+    
+    # Calcular promedio de cumplimiento del acuerdo
+    promedio_cumplimiento = respuestas.aggregate(
+        promedio=Avg('cumplimiento_acuerdo')
+    )['promedio'] or 0
+    
+    # Calcular promedio de probabilidad de recomendación
+    promedio_recomendacion = respuestas.aggregate(
+        promedio=Avg('probabilidad_recomendacion')
+    )['promedio'] or 0
+    
+    # Calcular tasa de respuesta
+    tasa_respuesta = (encuestas_respondidas / total_encuestas * 100) if total_encuestas > 0 else 0
+    
+    context = {
+        'total_encuestas': total_encuestas,
+        'encuestas_enviadas': encuestas_enviadas,
+        'encuestas_respondidas': encuestas_respondidas,
+        'encuestas_no_respondidas': encuestas_no_respondidas,
+        'nps_score': round(nps_score, 1),
+        'nps_promotores': round(nps_promotores, 1),
+        'nps_pasivos': round(nps_pasivos, 1),
+        'nps_detractores': round(nps_detractores, 1),
+        'promedio_cumplimiento': round(promedio_cumplimiento, 1),
+        'promedio_recomendacion': round(promedio_recomendacion, 1),
+        'tasa_respuesta': round(tasa_respuesta, 1)
+    }
+    
+    return render(request, 'reportes/encuestas/dashboard.html', context)
 
 @login_required
 def encuestas_enviadas(request):
     """Reporte de encuestas enviadas"""
-    return render(request, 'reportes/encuestas/enviadas.html')
+    
+    # Importar modelos de encuestas
+    from gestionDeTaller.models import EncuestaServicio, RespuestaEncuesta
+    
+    # Obtener parámetros de filtro
+    fecha_inicio = request.GET.get('fecha_inicio')
+    fecha_fin = request.GET.get('fecha_fin')
+    estado = request.GET.get('estado')
+    exportar = request.GET.get('exportar') == 'excel'
+    
+    # Filtrar encuestas enviadas
+    encuestas = EncuestaServicio.objects.select_related(
+        'servicio__preorden__cliente',
+        'servicio__tecnico',
+        'servicio__sucursal'
+    ).prefetch_related('respuestas')
+    
+    # Aplicar filtros
+    if fecha_inicio:
+        encuestas = encuestas.filter(fecha_envio__gte=fecha_inicio)
+    if fecha_fin:
+        encuestas = encuestas.filter(fecha_envio__lte=fecha_fin)
+    if estado:
+        encuestas = encuestas.filter(estado=estado)
+    
+    # Ordenar por fecha de envío
+    encuestas = encuestas.order_by('-fecha_envio')
+    
+    # Exportar a Excel si se solicita
+    if exportar:
+        return exportar_encuestas_enviadas_excel(encuestas)
+    
+    # Paginación
+    paginator = Paginator(encuestas, 20)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    # Calcular estadísticas
+    total_encuestas = encuestas.count()
+    encuestas_enviadas = encuestas.filter(estado='ENVIADA').count()
+    encuestas_respondidas = encuestas.filter(estado='RESPONDIDA').count()
+    encuestas_no_respondidas = encuestas.filter(estado='NO_RESPONDIDA').count()
+    
+    # Calcular tasa de respuesta
+    tasa_respuesta = (encuestas_respondidas / total_encuestas * 100) if total_encuestas > 0 else 0
+    
+    # Calcular tiempo promedio de respuesta
+    encuestas_con_respuesta = encuestas.filter(estado='RESPONDIDA', fecha_respuesta__isnull=False)
+    tiempo_promedio_respuesta = None
+    if encuestas_con_respuesta.exists():
+        from django.db.models import Avg, F
+        tiempo_promedio_respuesta = encuestas_con_respuesta.aggregate(
+            tiempo_promedio=Avg(F('fecha_respuesta') - F('fecha_envio'))
+        )['tiempo_promedio']
+    
+    context = {
+        'page_obj': page_obj,
+        'total_encuestas': total_encuestas,
+        'encuestas_enviadas': encuestas_enviadas,
+        'encuestas_respondidas': encuestas_respondidas,
+        'encuestas_no_respondidas': encuestas_no_respondidas,
+        'tasa_respuesta': round(tasa_respuesta, 1),
+        'tiempo_promedio_respuesta': tiempo_promedio_respuesta,
+        'fecha_inicio': fecha_inicio,
+        'fecha_fin': fecha_fin,
+        'estado': estado,
+    }
+    
+    return render(request, 'reportes/encuestas/enviadas.html', context)
 
 @login_required
 def encuestas_respuestas(request):
     """Reporte de encuestas con respuesta"""
-    return render(request, 'reportes/encuestas/respuestas.html')
+    
+    # Importar modelos de encuestas
+    from gestionDeTaller.models import EncuestaServicio, RespuestaEncuesta
+    from django.db.models import Q
+    
+    # Obtener parámetros de filtro
+    fecha_inicio = request.GET.get('fecha_inicio')
+    fecha_fin = request.GET.get('fecha_fin')
+    nps_min = request.GET.get('nps_min')
+    nps_max = request.GET.get('nps_max')
+    cumplimiento_min = request.GET.get('cumplimiento_min')
+    cumplimiento_max = request.GET.get('cumplimiento_max')
+    exportar = request.GET.get('exportar') == 'excel'
+    
+    # Filtrar encuestas respondidas
+    encuestas = EncuestaServicio.objects.filter(
+        estado='RESPONDIDA'
+    ).select_related(
+        'servicio__preorden__cliente',
+        'servicio__tecnico',
+        'servicio__sucursal'
+    ).prefetch_related('respuestas')
+    
+    # Aplicar filtros
+    if fecha_inicio:
+        encuestas = encuestas.filter(fecha_respuesta__gte=fecha_inicio)
+    if fecha_fin:
+        encuestas = encuestas.filter(fecha_respuesta__lte=fecha_fin)
+    
+    # Filtrar por NPS
+    if nps_min or nps_max:
+        respuestas_filtradas = RespuestaEncuesta.objects.all()
+        if nps_min:
+            respuestas_filtradas = respuestas_filtradas.filter(probabilidad_recomendacion__gte=nps_min)
+        if nps_max:
+            respuestas_filtradas = respuestas_filtradas.filter(probabilidad_recomendacion__lte=nps_max)
+        encuestas = encuestas.filter(respuestas__in=respuestas_filtradas)
+    
+    # Filtrar por cumplimiento
+    if cumplimiento_min or cumplimiento_max:
+        respuestas_filtradas = RespuestaEncuesta.objects.all()
+        if cumplimiento_min:
+            respuestas_filtradas = respuestas_filtradas.filter(cumplimiento_acuerdo__gte=cumplimiento_min)
+        if cumplimiento_max:
+            respuestas_filtradas = respuestas_filtradas.filter(cumplimiento_acuerdo__lte=cumplimiento_max)
+        encuestas = encuestas.filter(respuestas__in=respuestas_filtradas)
+    
+    # Ordenar por fecha de respuesta
+    encuestas = encuestas.order_by('-fecha_respuesta')
+    
+    # Exportar a Excel si se solicita
+    if exportar:
+        return exportar_encuestas_respuestas_excel(encuestas)
+    
+    # Paginación
+    paginator = Paginator(encuestas, 20)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    # Calcular estadísticas
+    total_encuestas = encuestas.count()
+    if total_encuestas > 0:
+        respuestas = RespuestaEncuesta.objects.filter(encuesta__in=encuestas)
+        promedio_nps = respuestas.aggregate(avg=Avg('probabilidad_recomendacion'))['avg'] or 0
+        promedio_cumplimiento = respuestas.aggregate(avg=Avg('cumplimiento_acuerdo'))['avg'] or 0
+        
+        # Calcular NPS
+        promotores = respuestas.filter(probabilidad_recomendacion__gte=9).count()
+        detractores = respuestas.filter(probabilidad_recomendacion__lte=6).count()
+        nps_score = ((promotores - detractores) / total_encuestas * 100) if total_encuestas > 0 else 0
+    else:
+        promedio_nps = 0
+        promedio_cumplimiento = 0
+        nps_score = 0
+    
+    context = {
+        'page_obj': page_obj,
+        'total_encuestas': total_encuestas,
+        'promedio_nps': round(promedio_nps, 1),
+        'promedio_cumplimiento': round(promedio_cumplimiento, 1),
+        'nps_score': round(nps_score, 1),
+        'fecha_inicio': fecha_inicio,
+        'fecha_fin': fecha_fin,
+        'nps_min': nps_min,
+        'nps_max': nps_max,
+        'cumplimiento_min': cumplimiento_min,
+        'cumplimiento_max': cumplimiento_max,
+    }
+    
+    return render(request, 'reportes/encuestas/respuestas.html', context)
 
 @login_required
 def encuestas_porcentajes(request):
-    """Reporte de porcentajes de encuestas"""
-    return render(request, 'reportes/encuestas/porcentajes.html')
+    """Reporte de porcentajes y tendencias de encuestas"""
+    
+    # Importar modelos de encuestas
+    from gestionDeTaller.models import EncuestaServicio, RespuestaEncuesta
+    from django.db.models import Count, Avg
+    from datetime import datetime, timedelta
+    
+    # Obtener parámetros de filtro
+    periodo = request.GET.get('periodo', 'mes')
+    fecha_inicio = request.GET.get('fecha_inicio')
+    fecha_fin = request.GET.get('fecha_fin')
+    exportar = request.GET.get('exportar') == 'excel'
+    
+    # Filtrar encuestas
+    encuestas = EncuestaServicio.objects.all()
+    respuestas = RespuestaEncuesta.objects.all()
+    
+    # Aplicar filtros de fecha
+    if fecha_inicio:
+        encuestas = encuestas.filter(fecha_envio__gte=fecha_inicio)
+        respuestas = respuestas.filter(fecha_respuesta__gte=fecha_inicio)
+    if fecha_fin:
+        encuestas = encuestas.filter(fecha_envio__lte=fecha_fin)
+        respuestas = respuestas.filter(fecha_respuesta__lte=fecha_fin)
+    
+    # Calcular estadísticas generales
+    total_encuestas = encuestas.count()
+    encuestas_respondidas = encuestas.filter(estado='RESPONDIDA').count()
+    tasa_respuesta = (encuestas_respondidas / total_encuestas * 100) if total_encuestas > 0 else 0
+    
+    # Calcular NPS general
+    if respuestas.exists():
+        promotores = respuestas.filter(probabilidad_recomendacion__gte=9).count()
+        pasivos = respuestas.filter(probabilidad_recomendacion__in=[7, 8]).count()
+        detractores = respuestas.filter(probabilidad_recomendacion__lte=6).count()
+        total_respuestas = respuestas.count()
+        
+        nps_score = ((promotores - detractores) / total_respuestas * 100) if total_respuestas > 0 else 0
+        porcentaje_promotores = (promotores / total_respuestas * 100) if total_respuestas > 0 else 0
+        porcentaje_pasivos = (pasivos / total_respuestas * 100) if total_respuestas > 0 else 0
+        porcentaje_detractores = (detractores / total_respuestas * 100) if total_respuestas > 0 else 0
+    else:
+        nps_score = 0
+        porcentaje_promotores = 0
+        porcentaje_pasivos = 0
+        porcentaje_detractores = 0
+    
+    # Calcular promedios
+    promedio_cumplimiento = respuestas.aggregate(avg=Avg('cumplimiento_acuerdo'))['avg'] or 0
+    promedio_recomendacion = respuestas.aggregate(avg=Avg('probabilidad_recomendacion'))['avg'] or 0
+    
+    # Calcular distribución por calificaciones
+    distribucion_cumplimiento = {}
+    distribucion_recomendacion = {}
+    
+    for i in range(1, 11):
+        distribucion_cumplimiento[i] = respuestas.filter(cumplimiento_acuerdo=i).count()
+        distribucion_recomendacion[i] = respuestas.filter(probabilidad_recomendacion=i).count()
+    
+    # Calcular tendencias por período
+    if periodo == 'mes':
+        # Últimos 12 meses
+        tendencias = []
+        for i in range(12):
+            fecha = datetime.now() - timedelta(days=30*i)
+            mes_inicio = fecha.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+            if i == 0:
+                mes_fin = datetime.now()
+            else:
+                mes_fin = (fecha + timedelta(days=30)).replace(day=1, hour=0, minute=0, second=0, microsecond=0) - timedelta(seconds=1)
+            
+            respuestas_mes = respuestas.filter(fecha_respuesta__range=[mes_inicio, mes_fin])
+            if respuestas_mes.exists():
+                promotores_mes = respuestas_mes.filter(probabilidad_recomendacion__gte=9).count()
+                detractores_mes = respuestas_mes.filter(probabilidad_recomendacion__lte=6).count()
+                total_mes = respuestas_mes.count()
+                nps_mes = ((promotores_mes - detractores_mes) / total_mes * 100) if total_mes > 0 else 0
+                
+                tendencias.append({
+                    'periodo': mes_inicio.strftime('%B %Y'),
+                    'nps': round(nps_mes, 1),
+                    'total_respuestas': total_mes,
+                    'promedio_cumplimiento': round(respuestas_mes.aggregate(avg=Avg('cumplimiento_acuerdo'))['avg'] or 0, 1),
+                    'promedio_recomendacion': round(respuestas_mes.aggregate(avg=Avg('probabilidad_recomendacion'))['avg'] or 0, 1),
+                })
+    else:
+        # Últimas 12 semanas
+        tendencias = []
+        for i in range(12):
+            fecha = datetime.now() - timedelta(weeks=i)
+            semana_inicio = fecha - timedelta(days=fecha.weekday())
+            semana_inicio = semana_inicio.replace(hour=0, minute=0, second=0, microsecond=0)
+            semana_fin = semana_inicio + timedelta(days=6, hours=23, minutes=59, seconds=59)
+            
+            respuestas_semana = respuestas.filter(fecha_respuesta__range=[semana_inicio, semana_fin])
+            if respuestas_semana.exists():
+                promotores_semana = respuestas_semana.filter(probabilidad_recomendacion__gte=9).count()
+                detractores_semana = respuestas_semana.filter(probabilidad_recomendacion__lte=6).count()
+                total_semana = respuestas_semana.count()
+                nps_semana = ((promotores_semana - detractores_semana) / total_semana * 100) if total_semana > 0 else 0
+                
+                tendencias.append({
+                    'periodo': f"Semana {semana_inicio.strftime('%d/%m')} - {semana_fin.strftime('%d/%m')}",
+                    'nps': round(nps_semana, 1),
+                    'total_respuestas': total_semana,
+                    'promedio_cumplimiento': round(respuestas_semana.aggregate(avg=Avg('cumplimiento_acuerdo'))['avg'] or 0, 1),
+                    'promedio_recomendacion': round(respuestas_semana.aggregate(avg=Avg('probabilidad_recomendacion'))['avg'] or 0, 1),
+                })
+    
+    # Exportar a Excel si se solicita
+    if exportar:
+        return exportar_encuestas_porcentajes_excel(tendencias, distribucion_cumplimiento, distribucion_recomendacion)
+    
+    context = {
+        'total_encuestas': total_encuestas,
+        'encuestas_respondidas': encuestas_respondidas,
+        'tasa_respuesta': round(tasa_respuesta, 1),
+        'nps_score': round(nps_score, 1),
+        'porcentaje_promotores': round(porcentaje_promotores, 1),
+        'porcentaje_pasivos': round(porcentaje_pasivos, 1),
+        'porcentaje_detractores': round(porcentaje_detractores, 1),
+        'promedio_cumplimiento': round(promedio_cumplimiento, 1),
+        'promedio_recomendacion': round(promedio_recomendacion, 1),
+        'distribucion_cumplimiento': distribucion_cumplimiento,
+        'distribucion_recomendacion': distribucion_recomendacion,
+        'tendencias': tendencias,
+        'periodo': periodo,
+        'fecha_inicio': fecha_inicio,
+        'fecha_fin': fecha_fin,
+    }
+    
+    return render(request, 'reportes/encuestas/porcentajes.html', context)
 
 # ===== EXPORTACIÓN DE REPORTES =====
 
@@ -1156,3 +1500,216 @@ def api_productividad_tecnicos(request):
         })
     
     return JsonResponse({'datos': datos})
+
+def exportar_encuestas_respuestas_excel(encuestas):
+    """Exportar encuestas con respuesta a Excel"""
+    from gestionDeTaller.models import RespuestaEncuesta
+    
+    # Crear DataFrame
+    data = []
+    for encuesta in encuestas:
+        respuesta = encuesta.respuestas.first()
+        if respuesta:
+            data.append({
+                'ID Servicio': encuesta.servicio.id,
+                'Cliente': encuesta.servicio.preorden.cliente.razon_social,
+                'Técnico': encuesta.servicio.tecnico.get_full_name() if encuesta.servicio.tecnico else 'N/A',
+                'Sucursal': encuesta.servicio.sucursal.nombre if encuesta.servicio.sucursal else 'N/A',
+                'Fecha Respuesta': respuesta.fecha_respuesta.strftime('%d/%m/%Y %H:%M'),
+                'Cumplimiento Acuerdo': respuesta.cumplimiento_acuerdo or 'N/A',
+                'Probabilidad Recomendación': respuesta.probabilidad_recomendacion or 'N/A',
+                'Categoría NPS': respuesta.get_nps_category(),
+                'Categoría Cumplimiento': respuesta.get_cumplimiento_category(),
+                'Motivo Cumplimiento Bajo': respuesta.motivo_cumplimiento_bajo or 'N/A',
+                'Motivo Recomendación Baja': respuesta.motivo_recomendacion_baja or 'N/A',
+                'Problemas Pendientes': respuesta.problemas_pendientes or 'N/A',
+                'Comentarios Generales': respuesta.comentarios_generales or 'N/A',
+                'Nombre Respondente': respuesta.nombre_respondente or 'N/A',
+                'Cargo Respondente': respuesta.cargo_respondente or 'N/A',
+            })
+    
+    df = pd.DataFrame(data)
+    
+    # Crear archivo Excel
+    output = io.BytesIO()
+    with pd.ExcelWriter(output, engine='openpyxl') as writer:
+        df.to_excel(writer, sheet_name='Encuestas Respondidas', index=False)
+        
+        # Ajustar ancho de columnas
+        worksheet = writer.sheets['Encuestas Respondidas']
+        for column in worksheet.columns:
+            max_length = 0
+            column_letter = column[0].column_letter
+            for cell in column:
+                try:
+                    if len(str(cell.value)) > max_length:
+                        max_length = len(str(cell.value))
+                except:
+                    pass
+            adjusted_width = min(max_length + 2, 50)
+            worksheet.column_dimensions[column_letter].width = adjusted_width
+    
+    output.seek(0)
+    
+    # Crear respuesta HTTP
+    response = HttpResponse(
+        output.read(),
+        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    )
+    response['Content-Disposition'] = 'attachment; filename="encuestas_respondidas.xlsx"'
+    
+    return response
+
+def exportar_encuestas_enviadas_excel(encuestas):
+    """Exportar encuestas enviadas a Excel"""
+    from gestionDeTaller.models import RespuestaEncuesta
+    
+    # Crear DataFrame
+    data = []
+    for encuesta in encuestas:
+        respuesta = encuesta.respuestas.first()
+        data.append({
+            'ID': encuesta.id,
+            'Fecha de Envío': encuesta.fecha_envio.strftime('%d/%m/%Y %H:%M'),
+            'Estado': encuesta.get_estado_display(),
+            'Servicio Asociado': encuesta.servicio.id,
+            'Cliente': encuesta.servicio.preorden.cliente.razon_social,
+            'Técnico Asignado': encuesta.servicio.tecnico.get_full_name() if encuesta.servicio.tecnico else 'N/A',
+            'Sucursal': encuesta.servicio.sucursal.nombre if encuesta.servicio.sucursal else 'N/A',
+            'Fecha de Respuesta': encuesta.fecha_respuesta.strftime('%d/%m/%Y %H:%M') if encuesta.fecha_respuesta else 'N/A',
+            'Cumplimiento Acuerdo': respuesta.cumplimiento_acuerdo if respuesta else 'N/A',
+            'Probabilidad Recomendación': respuesta.probabilidad_recomendacion if respuesta else 'N/A',
+            'Categoría NPS': respuesta.get_nps_category() if respuesta else 'N/A',
+            'Categoría Cumplimiento': respuesta.get_cumplimiento_category() if respuesta else 'N/A',
+            'Motivo Cumplimiento Bajo': respuesta.motivo_cumplimiento_bajo if respuesta else 'N/A',
+            'Motivo Recomendación Baja': respuesta.motivo_recomendacion_baja if respuesta else 'N/A',
+            'Problemas Pendientes': respuesta.problemas_pendientes if respuesta else 'N/A',
+            'Comentarios Generales': respuesta.comentarios_generales if respuesta else 'N/A',
+            'Nombre Respondente': respuesta.nombre_respondente if respuesta else 'N/A',
+            'Cargo Respondente': respuesta.cargo_respondente if respuesta else 'N/A',
+        })
+    
+    df = pd.DataFrame(data)
+    
+    # Crear archivo Excel
+    output = io.BytesIO()
+    with pd.ExcelWriter(output, engine='openpyxl') as writer:
+        df.to_excel(writer, sheet_name='Encuestas Enviadas', index=False)
+        
+        # Ajustar ancho de columnas
+        worksheet = writer.sheets['Encuestas Enviadas']
+        for column in worksheet.columns:
+            max_length = 0
+            column_letter = column[0].column_letter
+            for cell in column:
+                try:
+                    if len(str(cell.value)) > max_length:
+                        max_length = len(str(cell.value))
+                except:
+                    pass
+            adjusted_width = min(max_length + 2, 50)
+            worksheet.column_dimensions[column_letter].width = adjusted_width
+    
+    output.seek(0)
+    
+    # Crear respuesta HTTP
+    response = HttpResponse(
+        output.read(),
+        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    )
+    response['Content-Disposition'] = 'attachment; filename="encuestas_enviadas.xlsx"'
+    
+    return response
+
+def exportar_encuestas_porcentajes_excel(tendencias, distribucion_cumplimiento, distribucion_recomendacion):
+    """Exportar reporte de porcentajes de encuestas a Excel"""
+    
+    # Crear DataFrame para Tendencias
+    tendencias_data = []
+    for item in tendencias:
+        tendencias_data.append({
+            'Periodo': item['periodo'],
+            'NPS': item['nps'],
+            'Total Respuestas': item['total_respuestas'],
+            'Promedio Cumplimiento': item['promedio_cumplimiento'],
+            'Promedio Recomendación': item['promedio_recomendacion'],
+        })
+    
+    tendencias_df = pd.DataFrame(tendencias_data)
+    
+    # Crear DataFrame para Distribuciones
+    distribucion_cumplimiento_data = []
+    for calificacion, count in distribucion_cumplimiento.items():
+        distribucion_cumplimiento_data.append({
+            'Calificación': calificacion,
+            'Cantidad': count,
+        })
+    
+    distribucion_cumplimiento_df = pd.DataFrame(distribucion_cumplimiento_data)
+    
+    distribucion_recomendacion_data = []
+    for calificacion, count in distribucion_recomendacion.items():
+        distribucion_recomendacion_data.append({
+            'Calificación': calificacion,
+            'Cantidad': count,
+        })
+    
+    distribucion_recomendacion_df = pd.DataFrame(distribucion_recomendacion_data)
+    
+    # Crear archivo Excel
+    output = io.BytesIO()
+    with pd.ExcelWriter(output, engine='openpyxl') as writer:
+        tendencias_df.to_excel(writer, sheet_name='Tendencias', index=False)
+        distribucion_cumplimiento_df.to_excel(writer, sheet_name='Distribucion Cumplimiento', index=False)
+        distribucion_recomendacion_df.to_excel(writer, sheet_name='Distribucion Recomendacion', index=False)
+        
+        # Ajustar ancho de columnas
+        worksheet = writer.sheets['Tendencias']
+        for column in worksheet.columns:
+            max_length = 0
+            column_letter = column[0].column_letter
+            for cell in column:
+                try:
+                    if len(str(cell.value)) > max_length:
+                        max_length = len(str(cell.value))
+                except:
+                    pass
+            adjusted_width = min(max_length + 2, 50)
+            worksheet.column_dimensions[column_letter].width = adjusted_width
+        
+        worksheet = writer.sheets['Distribucion Cumplimiento']
+        for column in worksheet.columns:
+            max_length = 0
+            column_letter = column[0].column_letter
+            for cell in column:
+                try:
+                    if len(str(cell.value)) > max_length:
+                        max_length = len(str(cell.value))
+                except:
+                    pass
+            adjusted_width = min(max_length + 2, 50)
+            worksheet.column_dimensions[column_letter].width = adjusted_width
+        
+        worksheet = writer.sheets['Distribucion Recomendacion']
+        for column in worksheet.columns:
+            max_length = 0
+            column_letter = column[0].column_letter
+            for cell in column:
+                try:
+                    if len(str(cell.value)) > max_length:
+                        max_length = len(str(cell.value))
+                except:
+                    pass
+            adjusted_width = min(max_length + 2, 50)
+            worksheet.column_dimensions[column_letter].width = adjusted_width
+    
+    output.seek(0)
+    
+    # Crear respuesta HTTP
+    response = HttpResponse(
+        output.read(),
+        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    )
+    response['Content-Disposition'] = 'attachment; filename="encuestas_porcentajes.xlsx"'
+    
+    return response

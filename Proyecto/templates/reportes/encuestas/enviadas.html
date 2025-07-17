@@ -23,7 +23,7 @@
             <h1 class="h2 mb-0">
                 <i class="bi bi-send me-2"></i>Encuestas Enviadas
             </h1>
-            <p class="text-muted">Encuestas enviadas</p>
+            <p class="text-muted">Seguimiento de encuestas enviadas y su estado de respuesta</p>
         </div>
         <div>
             <a href="{% url 'reportes:encuestas' %}" class="btn btn-outline-secondary">
@@ -32,15 +32,212 @@
         </div>
     </div>
 
-    <div class="row">
-        <div class="col-12">
-            <div class="card">
+    <!-- Estadísticas -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white border-0 shadow">
                 <div class="card-body text-center">
-                    <i class="bi bi-send" style="font-size: 4rem; color: #6c757d;"></i>
-                    <h5 class="mt-3">Encuestas Enviadas</h5>
-                    <p class="text-muted">Esta funcionalidad estará disponible próximamente</p>
+                    <h4>{{ total_encuestas }}</h4>
+                    <p class="mb-0">Total Encuestas</p>
                 </div>
             </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white border-0 shadow">
+                <div class="card-body text-center">
+                    <h4>{{ encuestas_respondidas }}</h4>
+                    <p class="mb-0">Respondidas</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white border-0 shadow">
+                <div class="card-body text-center">
+                    <h4>{{ encuestas_enviadas }}</h4>
+                    <p class="mb-0">Enviadas</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white border-0 shadow">
+                <div class="card-body text-center">
+                    <h4>{{ tasa_respuesta|floatformat:1 }}%</h4>
+                    <p class="mb-0">Tasa de Respuesta</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="card border-0 shadow mb-4">
+        <div class="card-header">
+            <h5 class="mb-0"><i class="bi bi-funnel me-2"></i>Filtros</h5>
+        </div>
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-3">
+                    <label for="fecha_inicio" class="form-label">Fecha Inicio</label>
+                    <input type="date" class="form-control" id="fecha_inicio" name="fecha_inicio" value="{{ fecha_inicio }}">
+                </div>
+                <div class="col-md-3">
+                    <label for="fecha_fin" class="form-label">Fecha Fin</label>
+                    <input type="date" class="form-control" id="fecha_fin" name="fecha_fin" value="{{ fecha_fin }}">
+                </div>
+                <div class="col-md-3">
+                    <label for="estado" class="form-label">Estado</label>
+                    <select class="form-select" id="estado" name="estado">
+                        <option value="">Todos los estados</option>
+                        <option value="ENVIADA" {% if estado == 'ENVIADA' %}selected{% endif %}>Enviada</option>
+                        <option value="RESPONDIDA" {% if estado == 'RESPONDIDA' %}selected{% endif %}>Respondida</option>
+                        <option value="NO_RESPONDIDA" {% if estado == 'NO_RESPONDIDA' %}selected{% endif %}>No Respondida</option>
+                    </select>
+                </div>
+                <div class="col-md-3 d-flex align-items-end">
+                    <div class="d-grid gap-2 w-100">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-search me-1"></i>Filtrar
+                        </button>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <a href="{% url 'reportes:encuestas_enviadas' %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-clockwise me-1"></i>Limpiar
+                    </a>
+                    <button type="submit" name="exportar" value="excel" class="btn btn-success">
+                        <i class="bi bi-file-earmark-excel me-1"></i>Exportar Excel
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Tabla de Datos -->
+    <div class="card border-0 shadow">
+        <div class="card-header">
+            <h5 class="mb-0"><i class="bi bi-table me-2"></i>Encuestas Enviadas</h5>
+        </div>
+        <div class="card-body">
+            {% if page_obj %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>ID</th>
+                                <th>Servicio</th>
+                                <th>Cliente</th>
+                                <th>Técnico</th>
+                                <th>Sucursal</th>
+                                <th>Fecha Envío</th>
+                                <th>Estado</th>
+                                <th>Fecha Respuesta</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for encuesta in page_obj %}
+                                <tr>
+                                    <td>{{ encuesta.id }}</td>
+                                    <td>
+                                        <strong>#{{ encuesta.servicio.id }}</strong>
+                                    </td>
+                                    <td>{{ encuesta.servicio.preorden.cliente.razon_social }}</td>
+                                    <td>
+                                        {% if encuesta.servicio.tecnico %}
+                                            {{ encuesta.servicio.tecnico.get_full_name }}
+                                        {% else %}
+                                            <span class="text-muted">N/A</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if encuesta.servicio.sucursal %}
+                                            {{ encuesta.servicio.sucursal.nombre }}
+                                        {% else %}
+                                            <span class="text-muted">N/A</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ encuesta.fecha_envio|date:"d/m/Y H:i" }}</td>
+                                    <td>
+                                        <span class="badge {% if encuesta.estado == 'RESPONDIDA' %}bg-success{% elif encuesta.estado == 'ENVIADA' %}bg-warning{% else %}bg-danger{% endif %}">
+                                            {{ encuesta.get_estado_display }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% if encuesta.fecha_respuesta %}
+                                            {{ encuesta.fecha_respuesta|date:"d/m/Y H:i" }}
+                                        {% else %}
+                                            <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            {% if encuesta.estado == 'RESPONDIDA' %}
+                                                <a href="{% url 'gestionDeTaller:ver_respuesta_encuesta' encuesta.id %}" class="btn btn-sm btn-outline-primary">
+                                                    <i class="bi bi-eye"></i> Ver
+                                                </a>
+                                            {% elif encuesta.estado == 'ENVIADA' %}
+                                                <a href="{% url 'gestionDeTaller:cargar_respuesta_encuesta' encuesta.id %}" class="btn btn-sm btn-outline-success">
+                                                    <i class="bi bi-pencil"></i> Cargar
+                                                </a>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Paginación -->
+                {% if page_obj.has_other_pages %}
+                    <nav aria-label="Paginación">
+                        <ul class="pagination justify-content-center">
+                            {% if page_obj.has_previous %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page=1{% if fecha_inicio %}&fecha_inicio={{ fecha_inicio }}{% endif %}{% if fecha_fin %}&fecha_fin={{ fecha_fin }}{% endif %}{% if estado %}&estado={{ estado }}{% endif %}">
+                                        <i class="bi bi-chevron-double-left"></i>
+                                    </a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if fecha_inicio %}&fecha_inicio={{ fecha_inicio }}{% endif %}{% if fecha_fin %}&fecha_fin={{ fecha_fin }}{% endif %}{% if estado %}&estado={{ estado }}{% endif %}">
+                                        <i class="bi bi-chevron-left"></i>
+                                    </a>
+                                </li>
+                            {% endif %}
+
+                            {% for num in page_obj.paginator.page_range %}
+                                {% if page_obj.number == num %}
+                                    <li class="page-item active">
+                                        <span class="page-link">{{ num }}</span>
+                                    </li>
+                                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ num }}{% if fecha_inicio %}&fecha_inicio={{ fecha_inicio }}{% endif %}{% if fecha_fin %}&fecha_fin={{ fecha_fin }}{% endif %}{% if estado %}&estado={{ estado }}{% endif %}">{{ num }}</a>
+                                    </li>
+                                {% endif %}
+                            {% endfor %}
+
+                            {% if page_obj.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if fecha_inicio %}&fecha_inicio={{ fecha_inicio }}{% endif %}{% if fecha_fin %}&fecha_fin={{ fecha_fin }}{% endif %}{% if estado %}&estado={{ estado }}{% endif %}">
+                                        <i class="bi bi-chevron-right"></i>
+                                    </a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if fecha_inicio %}&fecha_inicio={{ fecha_inicio }}{% endif %}{% if fecha_fin %}&fecha_fin={{ fecha_fin }}{% endif %}{% if estado %}&estado={{ estado }}{% endif %}">
+                                        <i class="bi bi-chevron-double-right"></i>
+                                    </a>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                {% endif %}
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="bi bi-inbox" style="font-size: 4rem; color: #6c757d;"></i>
+                    <h5 class="mt-3">No hay encuestas enviadas</h5>
+                    <p class="text-muted">No se encontraron encuestas que cumplan con los filtros aplicados.</p>
+                </div>
+            {% endif %}
         </div>
     </div>
 </div>

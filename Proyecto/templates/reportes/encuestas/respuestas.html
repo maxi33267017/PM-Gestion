@@ -23,7 +23,7 @@
             <h1 class="h2 mb-0">
                 <i class="bi bi-reply me-2"></i>Encuestas con Respuesta
             </h1>
-            <p class="text-muted">Encuestas con respuesta</p>
+            <p class="text-muted">Análisis detallado de encuestas respondidas por los clientes</p>
         </div>
         <div>
             <a href="{% url 'reportes:encuestas' %}" class="btn btn-outline-secondary">
@@ -32,15 +32,219 @@
         </div>
     </div>
 
-    <div class="row">
-        <div class="col-12">
-            <div class="card">
+    <!-- Estadísticas -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white border-0 shadow">
                 <div class="card-body text-center">
-                    <i class="bi bi-reply" style="font-size: 4rem; color: #6c757d;"></i>
-                    <h5 class="mt-3">Encuestas con Respuesta</h5>
-                    <p class="text-muted">Esta funcionalidad estará disponible próximamente</p>
+                    <h4>{{ total_encuestas }}</h4>
+                    <p class="mb-0">Total Encuestas</p>
                 </div>
             </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white border-0 shadow">
+                <div class="card-body text-center">
+                    <h4>{{ promedio_nps|floatformat:1 }}/10</h4>
+                    <p class="mb-0">Promedio NPS</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white border-0 shadow">
+                <div class="card-body text-center">
+                    <h4>{{ promedio_cumplimiento|floatformat:1 }}/10</h4>
+                    <p class="mb-0">Promedio Cumplimiento</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white border-0 shadow">
+                <div class="card-body text-center">
+                    <h4>{{ nps_score|floatformat:1 }}</h4>
+                    <p class="mb-0">NPS Score</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="card border-0 shadow mb-4">
+        <div class="card-header">
+            <h5 class="mb-0"><i class="bi bi-funnel me-2"></i>Filtros</h5>
+        </div>
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-2">
+                    <label for="fecha_inicio" class="form-label">Fecha Inicio</label>
+                    <input type="date" class="form-control" id="fecha_inicio" name="fecha_inicio" value="{{ fecha_inicio }}">
+                </div>
+                <div class="col-md-2">
+                    <label for="fecha_fin" class="form-label">Fecha Fin</label>
+                    <input type="date" class="form-control" id="fecha_fin" name="fecha_fin" value="{{ fecha_fin }}">
+                </div>
+                <div class="col-md-2">
+                    <label for="nps_min" class="form-label">NPS Mínimo</label>
+                    <input type="number" class="form-control" id="nps_min" name="nps_min" min="1" max="10" value="{{ nps_min }}">
+                </div>
+                <div class="col-md-2">
+                    <label for="nps_max" class="form-label">NPS Máximo</label>
+                    <input type="number" class="form-control" id="nps_max" name="nps_max" min="1" max="10" value="{{ nps_max }}">
+                </div>
+                <div class="col-md-2">
+                    <label for="cumplimiento_min" class="form-label">Cumplimiento Mínimo</label>
+                    <input type="number" class="form-control" id="cumplimiento_min" name="cumplimiento_min" min="1" max="10" value="{{ cumplimiento_min }}">
+                </div>
+                <div class="col-md-2">
+                    <label for="cumplimiento_max" class="form-label">Cumplimiento Máximo</label>
+                    <input type="number" class="form-control" id="cumplimiento_max" name="cumplimiento_max" min="1" max="10" value="{{ cumplimiento_max }}">
+                </div>
+                <div class="col-12">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-search me-1"></i>Filtrar
+                    </button>
+                    <a href="{% url 'reportes:encuestas_respuestas' %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-clockwise me-1"></i>Limpiar
+                    </a>
+                    <button type="submit" name="exportar" value="excel" class="btn btn-success">
+                        <i class="bi bi-file-earmark-excel me-1"></i>Exportar Excel
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Tabla de Datos -->
+    <div class="card border-0 shadow">
+        <div class="card-header">
+            <h5 class="mb-0"><i class="bi bi-table me-2"></i>Encuestas Respondidas</h5>
+        </div>
+        <div class="card-body">
+            {% if page_obj %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Servicio</th>
+                                <th>Cliente</th>
+                                <th>Técnico</th>
+                                <th>Sucursal</th>
+                                <th>Fecha Respuesta</th>
+                                <th>Cumplimiento</th>
+                                <th>NPS</th>
+                                <th>Categoría NPS</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for encuesta in page_obj %}
+                                {% with respuesta=encuesta.respuestas.first %}
+                                    <tr>
+                                        <td>
+                                            <strong>#{{ encuesta.servicio.id }}</strong>
+                                        </td>
+                                        <td>{{ encuesta.servicio.preorden.cliente.razon_social }}</td>
+                                        <td>
+                                            {% if encuesta.servicio.tecnico %}
+                                                {{ encuesta.servicio.tecnico.get_full_name }}
+                                            {% else %}
+                                                <span class="text-muted">N/A</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if encuesta.servicio.sucursal %}
+                                                {{ encuesta.servicio.sucursal.nombre }}
+                                            {% else %}
+                                                <span class="text-muted">N/A</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ respuesta.fecha_respuesta|date:"d/m/Y H:i" }}</td>
+                                        <td>
+                                            {% if respuesta.cumplimiento_acuerdo %}
+                                                <span class="badge {% if respuesta.cumplimiento_acuerdo >= 9 %}bg-success{% elif respuesta.cumplimiento_acuerdo >= 7 %}bg-warning{% else %}bg-danger{% endif %}">
+                                                    {{ respuesta.cumplimiento_acuerdo }}/10
+                                                </span>
+                                            {% else %}
+                                                <span class="text-muted">N/A</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if respuesta.probabilidad_recomendacion %}
+                                                <span class="badge {% if respuesta.probabilidad_recomendacion >= 9 %}bg-success{% elif respuesta.probabilidad_recomendacion >= 7 %}bg-warning{% else %}bg-danger{% endif %}">
+                                                    {{ respuesta.probabilidad_recomendacion }}/10
+                                                </span>
+                                            {% else %}
+                                                <span class="text-muted">N/A</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <span class="badge {% if respuesta.get_nps_category == 'Promotor' %}bg-success{% elif respuesta.get_nps_category == 'Pasivo' %}bg-warning{% else %}bg-danger{% endif %}">
+                                                {{ respuesta.get_nps_category }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <a href="{% url 'gestionDeTaller:ver_respuesta_encuesta' encuesta.id %}" class="btn btn-sm btn-outline-primary">
+                                                <i class="bi bi-eye"></i> Ver
+                                            </a>
+                                        </td>
+                                    </tr>
+                                {% endwith %}
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Paginación -->
+                {% if page_obj.has_other_pages %}
+                    <nav aria-label="Paginación">
+                        <ul class="pagination justify-content-center">
+                            {% if page_obj.has_previous %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page=1{% if fecha_inicio %}&fecha_inicio={{ fecha_inicio }}{% endif %}{% if fecha_fin %}&fecha_fin={{ fecha_fin }}{% endif %}{% if nps_min %}&nps_min={{ nps_min }}{% endif %}{% if nps_max %}&nps_max={{ nps_max }}{% endif %}{% if cumplimiento_min %}&cumplimiento_min={{ cumplimiento_min }}{% endif %}{% if cumplimiento_max %}&cumplimiento_max={{ cumplimiento_max }}{% endif %}">
+                                        <i class="bi bi-chevron-double-left"></i>
+                                    </a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if fecha_inicio %}&fecha_inicio={{ fecha_inicio }}{% endif %}{% if fecha_fin %}&fecha_fin={{ fecha_fin }}{% endif %}{% if nps_min %}&nps_min={{ nps_min }}{% endif %}{% if nps_max %}&nps_max={{ nps_max }}{% endif %}{% if cumplimiento_min %}&cumplimiento_min={{ cumplimiento_min }}{% endif %}{% if cumplimiento_max %}&cumplimiento_max={{ cumplimiento_max }}{% endif %}">
+                                        <i class="bi bi-chevron-left"></i>
+                                    </a>
+                                </li>
+                            {% endif %}
+
+                            {% for num in page_obj.paginator.page_range %}
+                                {% if page_obj.number == num %}
+                                    <li class="page-item active">
+                                        <span class="page-link">{{ num }}</span>
+                                    </li>
+                                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ num }}{% if fecha_inicio %}&fecha_inicio={{ fecha_inicio }}{% endif %}{% if fecha_fin %}&fecha_fin={{ fecha_fin }}{% endif %}{% if nps_min %}&nps_min={{ nps_min }}{% endif %}{% if nps_max %}&nps_max={{ nps_max }}{% endif %}{% if cumplimiento_min %}&cumplimiento_min={{ cumplimiento_min }}{% endif %}{% if cumplimiento_max %}&cumplimiento_max={{ cumplimiento_max }}{% endif %}">{{ num }}</a>
+                                    </li>
+                                {% endif %}
+                            {% endfor %}
+
+                            {% if page_obj.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if fecha_inicio %}&fecha_inicio={{ fecha_inicio }}{% endif %}{% if fecha_fin %}&fecha_fin={{ fecha_fin }}{% endif %}{% if nps_min %}&nps_min={{ nps_min }}{% endif %}{% if nps_max %}&nps_max={{ nps_max }}{% endif %}{% if cumplimiento_min %}&cumplimiento_min={{ cumplimiento_min }}{% endif %}{% if cumplimiento_max %}&cumplimiento_max={{ cumplimiento_max }}{% endif %}">
+                                        <i class="bi bi-chevron-right"></i>
+                                    </a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if fecha_inicio %}&fecha_inicio={{ fecha_inicio }}{% endif %}{% if fecha_fin %}&fecha_fin={{ fecha_fin }}{% endif %}{% if nps_min %}&nps_min={{ nps_min }}{% endif %}{% if nps_max %}&nps_max={{ nps_max }}{% endif %}{% if cumplimiento_min %}&cumplimiento_min={{ cumplimiento_min }}{% endif %}{% if cumplimiento_max %}&cumplimiento_max={{ cumplimiento_max }}{% endif %}">
+                                        <i class="bi bi-chevron-double-right"></i>
+                                    </a>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                {% endif %}
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="bi bi-inbox" style="font-size: 4rem; color: #6c757d;"></i>
+                    <h5 class="mt-3">No hay encuestas respondidas</h5>
+                    <p class="text-muted">No se encontraron encuestas que cumplan con los filtros aplicados.</p>
+                </div>
+            {% endif %}
         </div>
     </div>
 </div>
