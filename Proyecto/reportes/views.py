@@ -921,32 +921,1265 @@ def facturacion_anual(request):
 @login_required
 def reportes_horas(request):
     """Dashboard de reportes de horas"""
-    return render(request, 'reportes/horas/dashboard.html')
+    from recursosHumanos.models import RegistroHorasTecnico, Usuario
+    from django.db.models import Sum, Count, Avg, F, ExpressionWrapper, fields, Q
+    from datetime import datetime, timedelta
+    
+    # Obtener parámetros de filtro
+    fecha_inicio = request.GET.get('fecha_inicio')
+    fecha_fin = request.GET.get('fecha_fin')
+    
+    # Filtrar registros de horas
+    registros = RegistroHorasTecnico.objects.all()
+    
+    # Aplicar filtros de fecha
+    if fecha_inicio:
+        registros = registros.filter(fecha__gte=fecha_inicio)
+    if fecha_fin:
+        registros = registros.filter(fecha__lte=fecha_fin)
+    
+    # Calcular estadísticas generales
+    total_registros = registros.count()
+    total_tecnicos = registros.values('tecnico').distinct().count()
+    
+    # Calcular horas totales
+    total_horas = registros.aggregate(
+        total=Sum(
+            ExpressionWrapper(
+                F('hora_fin') - F('hora_inicio'),
+                output_field=fields.DurationField()
+            )
+        )
+    )['total'] or timedelta(0)
+    
+    # Calcular horas por tipo
+    horas_disponibles = registros.filter(
+        tipo_hora__disponibilidad='DISPONIBLE'
+    ).aggregate(
+        total=Sum(
+            ExpressionWrapper(
+                F('hora_fin') - F('hora_inicio'),
+                output_field=fields.DurationField()
+            )
+        )
+    )['total'] or timedelta(0)
+    
+    horas_no_disponibles = registros.filter(
+        tipo_hora__disponibilidad='NO_DISPONIBLE'
+    ).aggregate(
+        total=Sum(
+            ExpressionWrapper(
+                F('hora_fin') - F('hora_inicio'),
+                output_field=fields.DurationField()
+            )
+        )
+    )['total'] or timedelta(0)
+    
+    # Calcular horas que generan ingreso
+    horas_generan_ingreso = registros.filter(
+        tipo_hora__disponibilidad='DISPONIBLE',
+        tipo_hora__genera_ingreso='INGRESO'
+    ).aggregate(
+        total=Sum(
+            ExpressionWrapper(
+                F('hora_fin') - F('hora_inicio'),
+                output_field=fields.DurationField()
+            )
+        )
+    )['total'] or timedelta(0)
+    
+    # Calcular horas aprobadas
+    horas_aprobadas = registros.filter(aprobado=True).aggregate(
+        total=Sum(
+            ExpressionWrapper(
+                F('hora_fin') - F('hora_inicio'),
+                output_field=fields.DurationField()
+            )
+        )
+    )['total'] or timedelta(0)
+    
+    # Calcular promedio de horas por técnico
+    promedio_horas_tecnico = registros.values('tecnico').annotate(
+        horas_tecnico=Sum(
+            ExpressionWrapper(
+                F('hora_fin') - F('hora_inicio'),
+                output_field=fields.DurationField()
+            )
+        )
+    ).aggregate(
+        promedio=Avg('horas_tecnico')
+    )['promedio'] or timedelta(0)
+    
+    # Calcular eficiencia (horas que generan ingreso / horas disponibles)
+    eficiencia = 0
+    if horas_disponibles.total_seconds() > 0:
+        eficiencia = (horas_generan_ingreso.total_seconds() / horas_disponibles.total_seconds()) * 100
+    
+    # Calcular productividad (horas aprobadas / horas totales)
+    productividad = 0
+    if total_horas.total_seconds() > 0:
+        productividad = (horas_aprobadas.total_seconds() / total_horas.total_seconds()) * 100
+    
+    context = {
+        'titulo': 'Dashboard de Reportes de Horas',
+        'total_registros': total_registros,
+        'total_tecnicos': total_tecnicos,
+        'total_horas': total_horas,
+        'horas_disponibles': horas_disponibles,
+        'horas_no_disponibles': horas_no_disponibles,
+        'horas_generan_ingreso': horas_generan_ingreso,
+        'horas_aprobadas': horas_aprobadas,
+        'promedio_horas_tecnico': promedio_horas_tecnico,
+        'eficiencia': eficiencia,
+        'productividad': productividad,
+        'fecha_inicio': fecha_inicio,
+        'fecha_fin': fecha_fin,
+        'secciones': [
+            {
+                'titulo': 'Por Sucursal',
+                'icono': 'bi-building',
+                'url': 'reportes:horas_sucursal',
+                'descripcion': 'Análisis de horas trabajadas por sucursal'
+            },
+            {
+                'titulo': 'Por Técnico',
+                'icono': 'bi-person-workspace',
+                'url': 'reportes:horas_tecnico',
+                'descripcion': 'Análisis detallado de horas por técnico'
+            },
+            {
+                'titulo': 'Productividad',
+                'icono': 'bi-graph-up-arrow',
+                'url': 'reportes:productividad',
+                'descripcion': 'Métricas de productividad de técnicos'
+            },
+            {
+                'titulo': 'Eficiencia',
+                'icono': 'bi-speedometer2',
+                'url': 'reportes:eficiencia',
+                'descripcion': 'Análisis de eficiencia en el uso del tiempo'
+            },
+            {
+                'titulo': 'Desempeño',
+                'icono': 'bi-trophy',
+                'url': 'reportes:desempeno',
+                'descripcion': 'Evaluación del desempeño de técnicos'
+            }
+        ]
+    }
+    
+    return render(request, 'reportes/horas/dashboard.html', context)
 
 @login_required
 def horas_por_sucursal(request):
     """Reporte de horas por sucursal"""
-    return render(request, 'reportes/horas/por_sucursal.html')
+    from recursosHumanos.models import RegistroHorasTecnico, Sucursal
+    from django.db.models import Sum, Count, F, ExpressionWrapper, fields, Q
+    from datetime import datetime, timedelta
+    
+    # Obtener parámetros de filtro
+    fecha_inicio = request.GET.get('fecha_inicio')
+    fecha_fin = request.GET.get('fecha_fin')
+    exportar = request.GET.get('exportar') == 'excel'
+    
+    # Filtrar registros de horas
+    registros = RegistroHorasTecnico.objects.all()
+    
+    # Aplicar filtros de fecha
+    if fecha_inicio:
+        registros = registros.filter(fecha__gte=fecha_inicio)
+    if fecha_fin:
+        registros = registros.filter(fecha__lte=fecha_fin)
+    
+    # Obtener todas las sucursales
+    sucursales = Sucursal.objects.filter(activo=True).order_by('nombre')
+    
+    # Calcular estadísticas por sucursal
+    horas_por_sucursal = []
+    for sucursal in sucursales:
+        # Filtrar registros de la sucursal
+        registros_sucursal = registros.filter(tecnico__sucursal=sucursal)
+        
+        # Calcular totales
+        total_horas = registros_sucursal.aggregate(
+            total=Sum(
+                ExpressionWrapper(
+                    F('hora_fin') - F('hora_inicio'),
+                    output_field=fields.DurationField()
+                )
+            )
+        )['total'] or timedelta(0)
+        
+        horas_disponibles = registros_sucursal.filter(
+            tipo_hora__disponibilidad='DISPONIBLE'
+        ).aggregate(
+            total=Sum(
+                ExpressionWrapper(
+                    F('hora_fin') - F('hora_inicio'),
+                    output_field=fields.DurationField()
+                )
+            )
+        )['total'] or timedelta(0)
+        
+        horas_no_disponibles = registros_sucursal.filter(
+            tipo_hora__disponibilidad='NO_DISPONIBLE'
+        ).aggregate(
+            total=Sum(
+                ExpressionWrapper(
+                    F('hora_fin') - F('hora_inicio'),
+                    output_field=fields.DurationField()
+                )
+            )
+        )['total'] or timedelta(0)
+        
+        horas_generan_ingreso = registros_sucursal.filter(
+            tipo_hora__disponibilidad='DISPONIBLE',
+            tipo_hora__genera_ingreso='INGRESO'
+        ).aggregate(
+            total=Sum(
+                ExpressionWrapper(
+                    F('hora_fin') - F('hora_inicio'),
+                    output_field=fields.DurationField()
+                )
+            )
+        )['total'] or timedelta(0)
+        
+        horas_aprobadas = registros_sucursal.filter(aprobado=True).aggregate(
+            total=Sum(
+                ExpressionWrapper(
+                    F('hora_fin') - F('hora_inicio'),
+                    output_field=fields.DurationField()
+                )
+            )
+        )['total'] or timedelta(0)
+        
+        # Calcular métricas
+        total_tecnicos = registros_sucursal.values('tecnico').distinct().count()
+        total_registros = registros_sucursal.count()
+        
+        # Calcular eficiencia
+        eficiencia = 0
+        if horas_disponibles.total_seconds() > 0:
+            eficiencia = (horas_generan_ingreso.total_seconds() / horas_disponibles.total_seconds()) * 100
+        
+        # Calcular productividad
+        productividad = 0
+        if total_horas.total_seconds() > 0:
+            productividad = (horas_aprobadas.total_seconds() / total_horas.total_seconds()) * 100
+        
+        # Calcular promedio por técnico
+        promedio_por_tecnico = timedelta(0)
+        if total_tecnicos > 0:
+            promedio_por_tecnico = timedelta(seconds=total_horas.total_seconds() / total_tecnicos)
+        
+        horas_por_sucursal.append({
+            'sucursal': sucursal,
+            'total_horas': total_horas,
+            'horas_disponibles': horas_disponibles,
+            'horas_no_disponibles': horas_no_disponibles,
+            'horas_generan_ingreso': horas_generan_ingreso,
+            'horas_aprobadas': horas_aprobadas,
+            'total_tecnicos': total_tecnicos,
+            'total_registros': total_registros,
+            'eficiencia': eficiencia,
+            'productividad': productividad,
+            'promedio_por_tecnico': promedio_por_tecnico
+        })
+    
+    # Ordenar por total de horas
+    horas_por_sucursal.sort(key=lambda x: x['total_horas'], reverse=True)
+    
+    # Calcular totales generales
+    total_general_horas = sum(item['total_horas'] for item in horas_por_sucursal)
+    total_general_tecnicos = sum(item['total_tecnicos'] for item in horas_por_sucursal)
+    total_general_registros = sum(item['total_registros'] for item in horas_por_sucursal)
+    
+    # Exportar a Excel si se solicita
+    if exportar:
+        import pandas as pd
+        from django.http import HttpResponse
+        
+        datos = []
+        for item in horas_por_sucursal:
+            datos.append({
+                'Sucursal': item['sucursal'].nombre,
+                'Total Horas': round(item['total_horas'].total_seconds() / 3600, 2),
+                'Horas Disponibles': round(item['horas_disponibles'].total_seconds() / 3600, 2),
+                'Horas No Disponibles': round(item['horas_no_disponibles'].total_seconds() / 3600, 2),
+                'Horas Generan Ingreso': round(item['horas_generan_ingreso'].total_seconds() / 3600, 2),
+                'Horas Aprobadas': round(item['horas_aprobadas'].total_seconds() / 3600, 2),
+                'Total Técnicos': item['total_tecnicos'],
+                'Total Registros': item['total_registros'],
+                'Eficiencia (%)': round(item['eficiencia'], 2),
+                'Productividad (%)': round(item['productividad'], 2),
+                'Promedio por Técnico (h)': round(item['promedio_por_tecnico'].total_seconds() / 3600, 2)
+            })
+        
+        df = pd.DataFrame(datos)
+        response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        response['Content-Disposition'] = 'attachment; filename=horas_por_sucursal.xlsx'
+        df.to_excel(response, index=False)
+        return response
+    
+    context = {
+        'titulo': 'Horas por Sucursal',
+        'horas_por_sucursal': horas_por_sucursal,
+        'total_general_horas': total_general_horas,
+        'total_general_tecnicos': total_general_tecnicos,
+        'total_general_registros': total_general_registros,
+        'fecha_inicio': fecha_inicio,
+        'fecha_fin': fecha_fin,
+    }
+    
+    return render(request, 'reportes/horas/por_sucursal.html', context)
 
 @login_required
 def horas_por_tecnico(request):
     """Reporte de horas por técnico"""
-    return render(request, 'reportes/horas/por_tecnico.html')
+    from recursosHumanos.models import RegistroHorasTecnico, Usuario
+    from django.db.models import Sum, Count, F, ExpressionWrapper, fields, Q
+    from datetime import datetime, timedelta
+    
+    # Obtener parámetros de filtro
+    fecha_inicio = request.GET.get('fecha_inicio')
+    fecha_fin = request.GET.get('fecha_fin')
+    sucursal = request.GET.get('sucursal')
+    exportar = request.GET.get('exportar') == 'excel'
+    
+    # Filtrar registros de horas
+    registros = RegistroHorasTecnico.objects.all()
+    
+    # Aplicar filtros
+    if fecha_inicio:
+        registros = registros.filter(fecha__gte=fecha_inicio)
+    if fecha_fin:
+        registros = registros.filter(fecha__lte=fecha_fin)
+    if sucursal:
+        registros = registros.filter(tecnico__sucursal_id=sucursal)
+    
+    # Obtener técnicos que tienen registros
+    tecnicos_con_registros = registros.values('tecnico').distinct()
+    tecnicos = Usuario.objects.filter(
+        id__in=tecnicos_con_registros,
+        rol='TECNICO'
+    ).select_related('sucursal').order_by('sucursal__nombre', 'apellido', 'nombre')
+    
+    # Calcular estadísticas por técnico
+    horas_por_tecnico = []
+    for tecnico in tecnicos:
+        # Filtrar registros del técnico
+        registros_tecnico = registros.filter(tecnico=tecnico)
+        
+        # Calcular totales
+        total_horas = registros_tecnico.aggregate(
+            total=Sum(
+                ExpressionWrapper(
+                    F('hora_fin') - F('hora_inicio'),
+                    output_field=fields.DurationField()
+                )
+            )
+        )['total'] or timedelta(0)
+        
+        horas_disponibles = registros_tecnico.filter(
+            tipo_hora__disponibilidad='DISPONIBLE'
+        ).aggregate(
+            total=Sum(
+                ExpressionWrapper(
+                    F('hora_fin') - F('hora_inicio'),
+                    output_field=fields.DurationField()
+                )
+            )
+        )['total'] or timedelta(0)
+        
+        horas_no_disponibles = registros_tecnico.filter(
+            tipo_hora__disponibilidad='NO_DISPONIBLE'
+        ).aggregate(
+            total=Sum(
+                ExpressionWrapper(
+                    F('hora_fin') - F('hora_inicio'),
+                    output_field=fields.DurationField()
+                )
+            )
+        )['total'] or timedelta(0)
+        
+        horas_generan_ingreso = registros_tecnico.filter(
+            tipo_hora__disponibilidad='DISPONIBLE',
+            tipo_hora__genera_ingreso='INGRESO'
+        ).aggregate(
+            total=Sum(
+                ExpressionWrapper(
+                    F('hora_fin') - F('hora_inicio'),
+                    output_field=fields.DurationField()
+                )
+            )
+        )['total'] or timedelta(0)
+        
+        horas_aprobadas = registros_tecnico.filter(aprobado=True).aggregate(
+            total=Sum(
+                ExpressionWrapper(
+                    F('hora_fin') - F('hora_inicio'),
+                    output_field=fields.DurationField()
+                )
+            )
+        )['total'] or timedelta(0)
+        
+        # Calcular métricas
+        total_registros = registros_tecnico.count()
+        dias_trabajados = registros_tecnico.values('fecha').distinct().count()
+        
+        # Calcular eficiencia
+        eficiencia = 0
+        if horas_disponibles.total_seconds() > 0:
+            eficiencia = (horas_generan_ingreso.total_seconds() / horas_disponibles.total_seconds()) * 100
+        
+        # Calcular productividad
+        productividad = 0
+        if total_horas.total_seconds() > 0:
+            productividad = (horas_aprobadas.total_seconds() / total_horas.total_seconds()) * 100
+        
+        # Calcular promedio por día
+        promedio_por_dia = timedelta(0)
+        if dias_trabajados > 0:
+            promedio_por_dia = timedelta(seconds=total_horas.total_seconds() / dias_trabajados)
+        
+        # Calcular horas pendientes de aprobación
+        horas_pendientes = total_horas - horas_aprobadas
+        
+        horas_por_tecnico.append({
+            'tecnico': tecnico,
+            'total_horas': total_horas,
+            'horas_disponibles': horas_disponibles,
+            'horas_no_disponibles': horas_no_disponibles,
+            'horas_generan_ingreso': horas_generan_ingreso,
+            'horas_aprobadas': horas_aprobadas,
+            'horas_pendientes': horas_pendientes,
+            'total_registros': total_registros,
+            'dias_trabajados': dias_trabajados,
+            'eficiencia': eficiencia,
+            'productividad': productividad,
+            'promedio_por_dia': promedio_por_dia
+        })
+    
+    # Ordenar por total de horas
+    horas_por_tecnico.sort(key=lambda x: x['total_horas'], reverse=True)
+    
+    # Calcular totales generales
+    total_general_horas = sum(item['total_horas'] for item in horas_por_tecnico)
+    total_general_tecnicos = len(horas_por_tecnico)
+    total_general_registros = sum(item['total_registros'] for item in horas_por_tecnico)
+    
+    # Exportar a Excel si se solicita
+    if exportar:
+        import pandas as pd
+        from django.http import HttpResponse
+        
+        datos = []
+        for item in horas_por_tecnico:
+            datos.append({
+                'Técnico': f"{item['tecnico'].apellido}, {item['tecnico'].nombre}",
+                'Email': item['tecnico'].email,
+                'Sucursal': item['tecnico'].sucursal.nombre if item['tecnico'].sucursal else 'Sin sucursal',
+                'Total Horas': round(item['total_horas'].total_seconds() / 3600, 2),
+                'Horas Disponibles': round(item['horas_disponibles'].total_seconds() / 3600, 2),
+                'Horas No Disponibles': round(item['horas_no_disponibles'].total_seconds() / 3600, 2),
+                'Horas Generan Ingreso': round(item['horas_generan_ingreso'].total_seconds() / 3600, 2),
+                'Horas Aprobadas': round(item['horas_aprobadas'].total_seconds() / 3600, 2),
+                'Horas Pendientes': round(item['horas_pendientes'].total_seconds() / 3600, 2),
+                'Total Registros': item['total_registros'],
+                'Días Trabajados': item['dias_trabajados'],
+                'Eficiencia (%)': round(item['eficiencia'], 2),
+                'Productividad (%)': round(item['productividad'], 2),
+                'Promedio por Día (h)': round(item['promedio_por_dia'].total_seconds() / 3600, 2)
+            })
+        
+        df = pd.DataFrame(datos)
+        response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        response['Content-Disposition'] = 'attachment; filename=horas_por_tecnico.xlsx'
+        df.to_excel(response, index=False)
+        return response
+    
+    # Obtener lista de sucursales para el filtro
+    from recursosHumanos.models import Sucursal
+    sucursales_filtro = Sucursal.objects.filter(activo=True)
+    
+    context = {
+        'titulo': 'Horas por Técnico',
+        'horas_por_tecnico': horas_por_tecnico,
+        'total_general_horas': total_general_horas,
+        'total_general_tecnicos': total_general_tecnicos,
+        'total_general_registros': total_general_registros,
+        'fecha_inicio': fecha_inicio,
+        'fecha_fin': fecha_fin,
+        'sucursal_filtro': sucursal,
+        'sucursales_filtro': sucursales_filtro,
+    }
+    
+    return render(request, 'reportes/horas/por_tecnico.html', context)
 
 @login_required
 def productividad_tecnicos(request):
     """Reporte de productividad de técnicos"""
-    return render(request, 'reportes/horas/productividad.html')
+    from recursosHumanos.models import RegistroHorasTecnico, Usuario
+    from django.db.models import Sum, Count, F, ExpressionWrapper, fields, Q, Avg
+    from datetime import datetime, timedelta
+    
+    # Obtener parámetros de filtro
+    fecha_inicio = request.GET.get('fecha_inicio')
+    fecha_fin = request.GET.get('fecha_fin')
+    sucursal = request.GET.get('sucursal')
+    exportar = request.GET.get('exportar') == 'excel'
+    
+    # Filtrar registros de horas
+    registros = RegistroHorasTecnico.objects.all()
+    
+    # Aplicar filtros
+    if fecha_inicio:
+        registros = registros.filter(fecha__gte=fecha_inicio)
+    if fecha_fin:
+        registros = registros.filter(fecha__lte=fecha_fin)
+    if sucursal:
+        registros = registros.filter(tecnico__sucursal_id=sucursal)
+    
+    # Obtener técnicos que tienen registros
+    tecnicos_con_registros = registros.values('tecnico').distinct()
+    tecnicos = Usuario.objects.filter(
+        id__in=tecnicos_con_registros,
+        rol='TECNICO'
+    ).select_related('sucursal').order_by('sucursal__nombre', 'apellido', 'nombre')
+    
+    # Calcular métricas de productividad por técnico
+    productividad_tecnicos = []
+    for tecnico in tecnicos:
+        # Filtrar registros del técnico
+        registros_tecnico = registros.filter(tecnico=tecnico)
+        
+        # Calcular horas por tipo de actividad
+        horas_por_actividad = registros_tecnico.values('tipo_hora__nombre').annotate(
+            total_horas=Sum(
+                ExpressionWrapper(
+                    F('hora_fin') - F('hora_inicio'),
+                    output_field=fields.DurationField()
+                )
+            ),
+            cantidad_registros=Count('id')
+        ).order_by('-total_horas')
+        
+        # Calcular métricas generales
+        total_horas = registros_tecnico.aggregate(
+            total=Sum(
+                ExpressionWrapper(
+                    F('hora_fin') - F('hora_inicio'),
+                    output_field=fields.DurationField()
+                )
+            )
+        )['total'] or timedelta(0)
+        
+        horas_disponibles = registros_tecnico.filter(
+            tipo_hora__disponibilidad='DISPONIBLE'
+        ).aggregate(
+            total=Sum(
+                ExpressionWrapper(
+                    F('hora_fin') - F('hora_inicio'),
+                    output_field=fields.DurationField()
+                )
+            )
+        )['total'] or timedelta(0)
+        
+        horas_generan_ingreso = registros_tecnico.filter(
+            tipo_hora__disponibilidad='DISPONIBLE',
+            tipo_hora__genera_ingreso='INGRESO'
+        ).aggregate(
+            total=Sum(
+                ExpressionWrapper(
+                    F('hora_fin') - F('hora_inicio'),
+                    output_field=fields.DurationField()
+                )
+            )
+        )['total'] or timedelta(0)
+        
+        horas_aprobadas = registros_tecnico.filter(aprobado=True).aggregate(
+            total=Sum(
+                ExpressionWrapper(
+                    F('hora_fin') - F('hora_inicio'),
+                    output_field=fields.DurationField()
+                )
+            )
+        )['total'] or timedelta(0)
+        
+        # Calcular métricas de productividad
+        total_registros = registros_tecnico.count()
+        dias_trabajados = registros_tecnico.values('fecha').distinct().count()
+        
+        # Productividad = (horas que generan ingreso / horas disponibles) * 100
+        productividad = 0
+        if horas_disponibles.total_seconds() > 0:
+            productividad = (horas_generan_ingreso.total_seconds() / horas_disponibles.total_seconds()) * 100
+        
+        # Eficiencia = (horas aprobadas / horas totales) * 100
+        eficiencia = 0
+        if total_horas.total_seconds() > 0:
+            eficiencia = (horas_aprobadas.total_seconds() / total_horas.total_seconds()) * 100
+        
+        # Utilización = (horas disponibles / horas totales) * 100
+        utilizacion = 0
+        if total_horas.total_seconds() > 0:
+            utilizacion = (horas_disponibles.total_seconds() / total_horas.total_seconds()) * 100
+        
+        # Promedio de horas por día
+        promedio_por_dia = timedelta(0)
+        if dias_trabajados > 0:
+            promedio_por_dia = timedelta(seconds=total_horas.total_seconds() / dias_trabajados)
+        
+        # Promedio de horas productivas por día
+        promedio_productivo_por_dia = timedelta(0)
+        if dias_trabajados > 0:
+            promedio_productivo_por_dia = timedelta(seconds=horas_generan_ingreso.total_seconds() / dias_trabajados)
+        
+        # Calcular tendencia (comparar con período anterior si hay datos)
+        tendencia = 0
+        if fecha_inicio and fecha_fin:
+            # Calcular período anterior de igual duración
+            fecha_inicio_dt = datetime.strptime(fecha_inicio, '%Y-%m-%d').date()
+            fecha_fin_dt = datetime.strptime(fecha_fin, '%Y-%m-%d').date()
+            duracion_periodo = (fecha_fin_dt - fecha_inicio_dt).days
+            
+            fecha_inicio_anterior = fecha_inicio_dt - timedelta(days=duracion_periodo)
+            fecha_fin_anterior = fecha_inicio_dt - timedelta(days=1)
+            
+            registros_anterior = RegistroHorasTecnico.objects.filter(
+                tecnico=tecnico,
+                fecha__range=[fecha_inicio_anterior, fecha_fin_anterior]
+            )
+            
+            horas_anterior = registros_anterior.aggregate(
+                total=Sum(
+                    ExpressionWrapper(
+                        F('hora_fin') - F('hora_inicio'),
+                        output_field=fields.DurationField()
+                    )
+                )
+            )['total'] or timedelta(0)
+            
+            if horas_anterior.total_seconds() > 0:
+                tendencia = ((total_horas.total_seconds() - horas_anterior.total_seconds()) / horas_anterior.total_seconds()) * 100
+        
+        productividad_tecnicos.append({
+            'tecnico': tecnico,
+            'total_horas': total_horas,
+            'horas_disponibles': horas_disponibles,
+            'horas_generan_ingreso': horas_generan_ingreso,
+            'horas_aprobadas': horas_aprobadas,
+            'total_registros': total_registros,
+            'dias_trabajados': dias_trabajados,
+            'productividad': productividad,
+            'eficiencia': eficiencia,
+            'utilizacion': utilizacion,
+            'promedio_por_dia': promedio_por_dia,
+            'promedio_productivo_por_dia': promedio_productivo_por_dia,
+            'tendencia': tendencia,
+            'horas_por_actividad': horas_por_actividad
+        })
+    
+    # Ordenar por productividad
+    productividad_tecnicos.sort(key=lambda x: x['productividad'], reverse=True)
+    
+    # Calcular promedios generales
+    if productividad_tecnicos:
+        promedio_productividad = sum(item['productividad'] for item in productividad_tecnicos) / len(productividad_tecnicos)
+        promedio_eficiencia = sum(item['eficiencia'] for item in productividad_tecnicos) / len(productividad_tecnicos)
+        promedio_utilizacion = sum(item['utilizacion'] for item in productividad_tecnicos) / len(productividad_tecnicos)
+    else:
+        promedio_productividad = promedio_eficiencia = promedio_utilizacion = 0
+    
+    # Exportar a Excel si se solicita
+    if exportar:
+        import pandas as pd
+        from django.http import HttpResponse
+        
+        datos = []
+        for item in productividad_tecnicos:
+            datos.append({
+                'Técnico': f"{item['tecnico'].apellido}, {item['tecnico'].nombre}",
+                'Email': item['tecnico'].email,
+                'Sucursal': item['tecnico'].sucursal.nombre if item['tecnico'].sucursal else 'Sin sucursal',
+                'Total Horas': round(item['total_horas'].total_seconds() / 3600, 2),
+                'Horas Disponibles': round(item['horas_disponibles'].total_seconds() / 3600, 2),
+                'Horas Generan Ingreso': round(item['horas_generan_ingreso'].total_seconds() / 3600, 2),
+                'Horas Aprobadas': round(item['horas_aprobadas'].total_seconds() / 3600, 2),
+                'Total Registros': item['total_registros'],
+                'Días Trabajados': item['dias_trabajados'],
+                'Productividad (%)': round(item['productividad'], 2),
+                'Eficiencia (%)': round(item['eficiencia'], 2),
+                'Utilización (%)': round(item['utilizacion'], 2),
+                'Promedio por Día (h)': round(item['promedio_por_dia'].total_seconds() / 3600, 2),
+                'Promedio Productivo por Día (h)': round(item['promedio_productivo_por_dia'].total_seconds() / 3600, 2),
+                'Tendencia (%)': round(item['tendencia'], 2)
+            })
+        
+        df = pd.DataFrame(datos)
+        response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        response['Content-Disposition'] = 'attachment; filename=productividad_tecnicos.xlsx'
+        df.to_excel(response, index=False)
+        return response
+    
+    # Obtener lista de sucursales para el filtro
+    from recursosHumanos.models import Sucursal
+    sucursales_filtro = Sucursal.objects.filter(activo=True)
+    
+    context = {
+        'titulo': 'Productividad de Técnicos',
+        'productividad_tecnicos': productividad_tecnicos,
+        'promedio_productividad': promedio_productividad,
+        'promedio_eficiencia': promedio_eficiencia,
+        'promedio_utilizacion': promedio_utilizacion,
+        'fecha_inicio': fecha_inicio,
+        'fecha_fin': fecha_fin,
+        'sucursal_filtro': sucursal,
+        'sucursales_filtro': sucursales_filtro,
+    }
+    
+    return render(request, 'reportes/horas/productividad.html', context)
 
 @login_required
 def eficiencia_tecnicos(request):
     """Reporte de eficiencia de técnicos"""
-    return render(request, 'reportes/horas/eficiencia.html')
+    from recursosHumanos.models import RegistroHorasTecnico, Usuario
+    from django.db.models import Sum, Count, F, ExpressionWrapper, fields, Q, Avg
+    from datetime import datetime, timedelta
+    
+    # Obtener parámetros de filtro
+    fecha_inicio = request.GET.get('fecha_inicio')
+    fecha_fin = request.GET.get('fecha_fin')
+    sucursal = request.GET.get('sucursal')
+    exportar = request.GET.get('exportar') == 'excel'
+    
+    # Filtrar registros de horas
+    registros = RegistroHorasTecnico.objects.all()
+    
+    # Aplicar filtros
+    if fecha_inicio:
+        registros = registros.filter(fecha__gte=fecha_inicio)
+    if fecha_fin:
+        registros = registros.filter(fecha__lte=fecha_fin)
+    if sucursal:
+        registros = registros.filter(tecnico__sucursal_id=sucursal)
+    
+    # Obtener técnicos que tienen registros
+    tecnicos_con_registros = registros.values('tecnico').distinct()
+    tecnicos = Usuario.objects.filter(
+        id__in=tecnicos_con_registros,
+        rol='TECNICO'
+    ).select_related('sucursal').order_by('sucursal__nombre', 'apellido', 'nombre')
+    
+    # Calcular métricas de eficiencia por técnico
+    eficiencia_tecnicos = []
+    for tecnico in tecnicos:
+        # Filtrar registros del técnico
+        registros_tecnico = registros.filter(tecnico=tecnico)
+        
+        # Calcular horas por categoría de facturación
+        horas_facturables = registros_tecnico.filter(
+            tipo_hora__categoria_facturacion='FACTURABLE'
+        ).aggregate(
+            total=Sum(
+                ExpressionWrapper(
+                    F('hora_fin') - F('hora_inicio'),
+                    output_field=fields.DurationField()
+                )
+            )
+        )['total'] or timedelta(0)
+        
+        horas_no_facturables = registros_tecnico.filter(
+            tipo_hora__categoria_facturacion='NO_FACTURABLE'
+        ).aggregate(
+            total=Sum(
+                ExpressionWrapper(
+                    F('hora_fin') - F('hora_inicio'),
+                    output_field=fields.DurationField()
+                )
+            )
+        )['total'] or timedelta(0)
+        
+        # Calcular horas por disponibilidad
+        horas_disponibles = registros_tecnico.filter(
+            tipo_hora__disponibilidad='DISPONIBLE'
+        ).aggregate(
+            total=Sum(
+                ExpressionWrapper(
+                    F('hora_fin') - F('hora_inicio'),
+                    output_field=fields.DurationField()
+                )
+            )
+        )['total'] or timedelta(0)
+        
+        horas_no_disponibles = registros_tecnico.filter(
+            tipo_hora__disponibilidad='NO_DISPONIBLE'
+        ).aggregate(
+            total=Sum(
+                ExpressionWrapper(
+                    F('hora_fin') - F('hora_inicio'),
+                    output_field=fields.DurationField()
+                )
+            )
+        )['total'] or timedelta(0)
+        
+        # Calcular horas por generación de ingreso
+        horas_generan_ingreso = registros_tecnico.filter(
+            tipo_hora__genera_ingreso='INGRESO'
+        ).aggregate(
+            total=Sum(
+                ExpressionWrapper(
+                    F('hora_fin') - F('hora_inicio'),
+                    output_field=fields.DurationField()
+                )
+            )
+        )['total'] or timedelta(0)
+        
+        horas_no_generan_ingreso = registros_tecnico.filter(
+            tipo_hora__genera_ingreso='NO_INGRESO'
+        ).aggregate(
+            total=Sum(
+                ExpressionWrapper(
+                    F('hora_fin') - F('hora_inicio'),
+                    output_field=fields.DurationField()
+                )
+            )
+        )['total'] or timedelta(0)
+        
+        # Calcular horas aprobadas vs pendientes
+        horas_aprobadas = registros_tecnico.filter(aprobado=True).aggregate(
+            total=Sum(
+                ExpressionWrapper(
+                    F('hora_fin') - F('hora_inicio'),
+                    output_field=fields.DurationField()
+                )
+            )
+        )['total'] or timedelta(0)
+        
+        horas_pendientes = registros_tecnico.filter(aprobado=False).aggregate(
+            total=Sum(
+                ExpressionWrapper(
+                    F('hora_fin') - F('hora_inicio'),
+                    output_field=fields.DurationField()
+                )
+            )
+        )['total'] or timedelta(0)
+        
+        # Calcular totales
+        total_horas = registros_tecnico.aggregate(
+            total=Sum(
+                ExpressionWrapper(
+                    F('hora_fin') - F('hora_inicio'),
+                    output_field=fields.DurationField()
+                )
+            )
+        )['total'] or timedelta(0)
+        
+        # Calcular métricas de eficiencia
+        total_registros = registros_tecnico.count()
+        dias_trabajados = registros_tecnico.values('fecha').distinct().count()
+        
+        # Eficiencia operacional = (horas facturables / horas totales) * 100
+        eficiencia_operacional = 0
+        if total_horas.total_seconds() > 0:
+            eficiencia_operacional = (horas_facturables.total_seconds() / total_horas.total_seconds()) * 100
+        
+        # Eficiencia de aprobación = (horas aprobadas / horas totales) * 100
+        eficiencia_aprobacion = 0
+        if total_horas.total_seconds() > 0:
+            eficiencia_aprobacion = (horas_aprobadas.total_seconds() / total_horas.total_seconds()) * 100
+        
+        # Eficiencia de disponibilidad = (horas disponibles / horas totales) * 100
+        eficiencia_disponibilidad = 0
+        if total_horas.total_seconds() > 0:
+            eficiencia_disponibilidad = (horas_disponibles.total_seconds() / total_horas.total_seconds()) * 100
+        
+        # Eficiencia de generación de ingreso = (horas que generan ingreso / horas disponibles) * 100
+        eficiencia_generacion_ingreso = 0
+        if horas_disponibles.total_seconds() > 0:
+            eficiencia_generacion_ingreso = (horas_generan_ingreso.total_seconds() / horas_disponibles.total_seconds()) * 100
+        
+        # Calcular horas por actividad específica
+        horas_por_actividad = registros_tecnico.values('tipo_hora__nombre', 'tipo_hora__categoria_facturacion').annotate(
+            total_horas=Sum(
+                ExpressionWrapper(
+                    F('hora_fin') - F('hora_inicio'),
+                    output_field=fields.DurationField()
+                )
+            ),
+            cantidad_registros=Count('id')
+        ).order_by('-total_horas')
+        
+        # Calcular promedio de horas por día
+        promedio_por_dia = timedelta(0)
+        if dias_trabajados > 0:
+            promedio_por_dia = timedelta(seconds=total_horas.total_seconds() / dias_trabajados)
+        
+        eficiencia_tecnicos.append({
+            'tecnico': tecnico,
+            'total_horas': total_horas,
+            'horas_facturables': horas_facturables,
+            'horas_no_facturables': horas_no_facturables,
+            'horas_disponibles': horas_disponibles,
+            'horas_no_disponibles': horas_no_disponibles,
+            'horas_generan_ingreso': horas_generan_ingreso,
+            'horas_no_generan_ingreso': horas_no_generan_ingreso,
+            'horas_aprobadas': horas_aprobadas,
+            'horas_pendientes': horas_pendientes,
+            'total_registros': total_registros,
+            'dias_trabajados': dias_trabajados,
+            'eficiencia_operacional': eficiencia_operacional,
+            'eficiencia_aprobacion': eficiencia_aprobacion,
+            'eficiencia_disponibilidad': eficiencia_disponibilidad,
+            'eficiencia_generacion_ingreso': eficiencia_generacion_ingreso,
+            'promedio_por_dia': promedio_por_dia,
+            'horas_por_actividad': horas_por_actividad
+        })
+    
+    # Ordenar por eficiencia operacional
+    eficiencia_tecnicos.sort(key=lambda x: x['eficiencia_operacional'], reverse=True)
+    
+    # Calcular promedios generales
+    if eficiencia_tecnicos:
+        promedio_eficiencia_operacional = sum(item['eficiencia_operacional'] for item in eficiencia_tecnicos) / len(eficiencia_tecnicos)
+        promedio_eficiencia_aprobacion = sum(item['eficiencia_aprobacion'] for item in eficiencia_tecnicos) / len(eficiencia_tecnicos)
+        promedio_eficiencia_disponibilidad = sum(item['eficiencia_disponibilidad'] for item in eficiencia_tecnicos) / len(eficiencia_tecnicos)
+        promedio_eficiencia_generacion = sum(item['eficiencia_generacion_ingreso'] for item in eficiencia_tecnicos) / len(eficiencia_tecnicos)
+    else:
+        promedio_eficiencia_operacional = promedio_eficiencia_aprobacion = promedio_eficiencia_disponibilidad = promedio_eficiencia_generacion = 0
+    
+    # Exportar a Excel si se solicita
+    if exportar:
+        import pandas as pd
+        from django.http import HttpResponse
+        
+        datos = []
+        for item in eficiencia_tecnicos:
+            datos.append({
+                'Técnico': f"{item['tecnico'].apellido}, {item['tecnico'].nombre}",
+                'Email': item['tecnico'].email,
+                'Sucursal': item['tecnico'].sucursal.nombre if item['tecnico'].sucursal else 'Sin sucursal',
+                'Total Horas': round(item['total_horas'].total_seconds() / 3600, 2),
+                'Horas Facturables': round(item['horas_facturables'].total_seconds() / 3600, 2),
+                'Horas No Facturables': round(item['horas_no_facturables'].total_seconds() / 3600, 2),
+                'Horas Disponibles': round(item['horas_disponibles'].total_seconds() / 3600, 2),
+                'Horas No Disponibles': round(item['horas_no_disponibles'].total_seconds() / 3600, 2),
+                'Horas Generan Ingreso': round(item['horas_generan_ingreso'].total_seconds() / 3600, 2),
+                'Horas No Generan Ingreso': round(item['horas_no_generan_ingreso'].total_seconds() / 3600, 2),
+                'Horas Aprobadas': round(item['horas_aprobadas'].total_seconds() / 3600, 2),
+                'Horas Pendientes': round(item['horas_pendientes'].total_seconds() / 3600, 2),
+                'Total Registros': item['total_registros'],
+                'Días Trabajados': item['dias_trabajados'],
+                'Eficiencia Operacional (%)': round(item['eficiencia_operacional'], 2),
+                'Eficiencia Aprobación (%)': round(item['eficiencia_aprobacion'], 2),
+                'Eficiencia Disponibilidad (%)': round(item['eficiencia_disponibilidad'], 2),
+                'Eficiencia Generación Ingreso (%)': round(item['eficiencia_generacion_ingreso'], 2),
+                'Promedio por Día (h)': round(item['promedio_por_dia'].total_seconds() / 3600, 2)
+            })
+        
+        df = pd.DataFrame(datos)
+        response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        response['Content-Disposition'] = 'attachment; filename=eficiencia_tecnicos.xlsx'
+        df.to_excel(response, index=False)
+        return response
+    
+    # Obtener lista de sucursales para el filtro
+    from recursosHumanos.models import Sucursal
+    sucursales_filtro = Sucursal.objects.filter(activo=True)
+    
+    context = {
+        'titulo': 'Eficiencia de Técnicos',
+        'eficiencia_tecnicos': eficiencia_tecnicos,
+        'promedio_eficiencia_operacional': promedio_eficiencia_operacional,
+        'promedio_eficiencia_aprobacion': promedio_eficiencia_aprobacion,
+        'promedio_eficiencia_disponibilidad': promedio_eficiencia_disponibilidad,
+        'promedio_eficiencia_generacion': promedio_eficiencia_generacion,
+        'fecha_inicio': fecha_inicio,
+        'fecha_fin': fecha_fin,
+        'sucursal_filtro': sucursal,
+        'sucursales_filtro': sucursales_filtro,
+    }
+    
+    return render(request, 'reportes/horas/eficiencia.html', context)
 
 @login_required
 def desempeno_tecnicos(request):
     """Reporte de desempeño de técnicos"""
-    return render(request, 'reportes/horas/desempeno.html')
+    from recursosHumanos.models import RegistroHorasTecnico, Usuario
+    from django.db.models import Sum, Count, F, ExpressionWrapper, fields, Q, Avg
+    from datetime import datetime, timedelta
+    
+    # Obtener parámetros de filtro
+    fecha_inicio = request.GET.get('fecha_inicio')
+    fecha_fin = request.GET.get('fecha_fin')
+    sucursal = request.GET.get('sucursal')
+    exportar = request.GET.get('exportar') == 'excel'
+    
+    # Filtrar registros de horas
+    registros = RegistroHorasTecnico.objects.all()
+    
+    # Aplicar filtros
+    if fecha_inicio:
+        registros = registros.filter(fecha__gte=fecha_inicio)
+    if fecha_fin:
+        registros = registros.filter(fecha__lte=fecha_fin)
+    if sucursal:
+        registros = registros.filter(tecnico__sucursal_id=sucursal)
+    
+    # Obtener técnicos que tienen registros
+    tecnicos_con_registros = registros.values('tecnico').distinct()
+    tecnicos = Usuario.objects.filter(
+        id__in=tecnicos_con_registros,
+        rol='TECNICO'
+    ).select_related('sucursal').order_by('sucursal__nombre', 'apellido', 'nombre')
+    
+    # Calcular métricas de desempeño por técnico
+    desempeno_tecnicos = []
+    for tecnico in tecnicos:
+        # Filtrar registros del técnico
+        registros_tecnico = registros.filter(tecnico=tecnico)
+        
+        # Calcular métricas básicas
+        total_horas = registros_tecnico.aggregate(
+            total=Sum(
+                ExpressionWrapper(
+                    F('hora_fin') - F('hora_inicio'),
+                    output_field=fields.DurationField()
+                )
+            )
+        )['total'] or timedelta(0)
+        
+        horas_disponibles = registros_tecnico.filter(
+            tipo_hora__disponibilidad='DISPONIBLE'
+        ).aggregate(
+            total=Sum(
+                ExpressionWrapper(
+                    F('hora_fin') - F('hora_inicio'),
+                    output_field=fields.DurationField()
+                )
+            )
+        )['total'] or timedelta(0)
+        
+        horas_generan_ingreso = registros_tecnico.filter(
+            tipo_hora__disponibilidad='DISPONIBLE',
+            tipo_hora__genera_ingreso='INGRESO'
+        ).aggregate(
+            total=Sum(
+                ExpressionWrapper(
+                    F('hora_fin') - F('hora_inicio'),
+                    output_field=fields.DurationField()
+                )
+            )
+        )['total'] or timedelta(0)
+        
+        horas_aprobadas = registros_tecnico.filter(aprobado=True).aggregate(
+            total=Sum(
+                ExpressionWrapper(
+                    F('hora_fin') - F('hora_inicio'),
+                    output_field=fields.DurationField()
+                )
+            )
+        )['total'] or timedelta(0)
+        
+        # Calcular métricas de desempeño
+        total_registros = registros_tecnico.count()
+        dias_trabajados = registros_tecnico.values('fecha').distinct().count()
+        
+        # Calcular puntuaciones de desempeño (0-100)
+        
+        # 1. Puntuación de Productividad (30% del total)
+        productividad = 0
+        if horas_disponibles.total_seconds() > 0:
+            productividad = (horas_generan_ingreso.total_seconds() / horas_disponibles.total_seconds()) * 100
+        puntuacion_productividad = min(productividad, 100) * 0.30
+        
+        # 2. Puntuación de Aprobación (25% del total)
+        aprobacion = 0
+        if total_horas.total_seconds() > 0:
+            aprobacion = (horas_aprobadas.total_seconds() / total_horas.total_seconds()) * 100
+        puntuacion_aprobacion = min(aprobacion, 100) * 0.25
+        
+        # 3. Puntuación de Consistencia (20% del total)
+        # Basada en la regularidad de trabajo (días trabajados vs días totales del período)
+        if fecha_inicio and fecha_fin:
+            fecha_inicio_dt = datetime.strptime(fecha_inicio, '%Y-%m-%d').date()
+            fecha_fin_dt = datetime.strptime(fecha_fin, '%Y-%m-%d').date()
+            dias_periodo = (fecha_fin_dt - fecha_inicio_dt).days + 1
+            consistencia = (dias_trabajados / dias_periodo) * 100 if dias_periodo > 0 else 0
+        else:
+            consistencia = 100  # Si no hay filtro de fechas, asumir consistencia perfecta
+        puntuacion_consistencia = min(consistencia, 100) * 0.20
+        
+        # 4. Puntuación de Eficiencia (15% del total)
+        eficiencia = 0
+        if total_horas.total_seconds() > 0:
+            eficiencia = (horas_disponibles.total_seconds() / total_horas.total_seconds()) * 100
+        puntuacion_eficiencia = min(eficiencia, 100) * 0.15
+        
+        # 5. Puntuación de Volumen (10% del total)
+        # Basada en el promedio de horas por día (máximo 8 horas = 100%)
+        promedio_por_dia = timedelta(0)
+        if dias_trabajados > 0:
+            promedio_por_dia = timedelta(seconds=total_horas.total_seconds() / dias_trabajados)
+        
+        horas_por_dia = promedio_por_dia.total_seconds() / 3600
+        volumen = min((horas_por_dia / 8) * 100, 100)  # Máximo 8 horas = 100%
+        puntuacion_volumen = volumen * 0.10
+        
+        # Calcular puntuación total
+        puntuacion_total = (
+            puntuacion_productividad + 
+            puntuacion_aprobacion + 
+            puntuacion_consistencia + 
+            puntuacion_eficiencia + 
+            puntuacion_volumen
+        )
+        
+        # Determinar nivel de desempeño
+        if puntuacion_total >= 90:
+            nivel_desempeno = "Excelente"
+            color_nivel = "success"
+        elif puntuacion_total >= 80:
+            nivel_desempeno = "Muy Bueno"
+            color_nivel = "info"
+        elif puntuacion_total >= 70:
+            nivel_desempeno = "Bueno"
+            color_nivel = "primary"
+        elif puntuacion_total >= 60:
+            nivel_desempeno = "Regular"
+            color_nivel = "warning"
+        else:
+            nivel_desempeno = "Necesita Mejora"
+            color_nivel = "danger"
+        
+        # Calcular tendencia (comparar con período anterior)
+        tendencia = 0
+        if fecha_inicio and fecha_fin:
+            fecha_inicio_dt = datetime.strptime(fecha_inicio, '%Y-%m-%d').date()
+            fecha_fin_dt = datetime.strptime(fecha_fin, '%Y-%m-%d').date()
+            duracion_periodo = (fecha_fin_dt - fecha_inicio_dt).days
+            
+            fecha_inicio_anterior = fecha_inicio_dt - timedelta(days=duracion_periodo)
+            fecha_fin_anterior = fecha_inicio_dt - timedelta(days=1)
+            
+            registros_anterior = RegistroHorasTecnico.objects.filter(
+                tecnico=tecnico,
+                fecha__range=[fecha_inicio_anterior, fecha_fin_anterior]
+            )
+            
+            horas_anterior = registros_anterior.aggregate(
+                total=Sum(
+                    ExpressionWrapper(
+                        F('hora_fin') - F('hora_inicio'),
+                        output_field=fields.DurationField()
+                    )
+                )
+            )['total'] or timedelta(0)
+            
+            if horas_anterior.total_seconds() > 0:
+                tendencia = ((total_horas.total_seconds() - horas_anterior.total_seconds()) / horas_anterior.total_seconds()) * 100
+        
+        # Calcular horas por actividad
+        horas_por_actividad = registros_tecnico.values('tipo_hora__nombre').annotate(
+            total_horas=Sum(
+                ExpressionWrapper(
+                    F('hora_fin') - F('hora_inicio'),
+                    output_field=fields.DurationField()
+                )
+            ),
+            cantidad_registros=Count('id')
+        ).order_by('-total_horas')[:5]  # Top 5 actividades
+        
+        desempeno_tecnicos.append({
+            'tecnico': tecnico,
+            'total_horas': total_horas,
+            'horas_disponibles': horas_disponibles,
+            'horas_generan_ingreso': horas_generan_ingreso,
+            'horas_aprobadas': horas_aprobadas,
+            'total_registros': total_registros,
+            'dias_trabajados': dias_trabajados,
+            'productividad': productividad,
+            'aprobacion': aprobacion,
+            'consistencia': consistencia,
+            'eficiencia': eficiencia,
+            'volumen': volumen,
+            'promedio_por_dia': promedio_por_dia,
+            'puntuacion_productividad': puntuacion_productividad,
+            'puntuacion_aprobacion': puntuacion_aprobacion,
+            'puntuacion_consistencia': puntuacion_consistencia,
+            'puntuacion_eficiencia': puntuacion_eficiencia,
+            'puntuacion_volumen': puntuacion_volumen,
+            'puntuacion_total': puntuacion_total,
+            'nivel_desempeno': nivel_desempeno,
+            'color_nivel': color_nivel,
+            'tendencia': tendencia,
+            'horas_por_actividad': horas_por_actividad
+        })
+    
+    # Ordenar por puntuación total
+    desempeno_tecnicos.sort(key=lambda x: x['puntuacion_total'], reverse=True)
+    
+    # Calcular promedios generales
+    if desempeno_tecnicos:
+        promedio_puntuacion_total = sum(item['puntuacion_total'] for item in desempeno_tecnicos) / len(desempeno_tecnicos)
+        promedio_productividad = sum(item['productividad'] for item in desempeno_tecnicos) / len(desempeno_tecnicos)
+        promedio_aprobacion = sum(item['aprobacion'] for item in desempeno_tecnicos) / len(desempeno_tecnicos)
+        promedio_consistencia = sum(item['consistencia'] for item in desempeno_tecnicos) / len(desempeno_tecnicos)
+    else:
+        promedio_puntuacion_total = promedio_productividad = promedio_aprobacion = promedio_consistencia = 0
+    
+    # Exportar a Excel si se solicita
+    if exportar:
+        import pandas as pd
+        from django.http import HttpResponse
+        
+        datos = []
+        for item in desempeno_tecnicos:
+            datos.append({
+                'Técnico': f"{item['tecnico'].apellido}, {item['tecnico'].nombre}",
+                'Email': item['tecnico'].email,
+                'Sucursal': item['tecnico'].sucursal.nombre if item['tecnico'].sucursal else 'Sin sucursal',
+                'Total Horas': round(item['total_horas'].total_seconds() / 3600, 2),
+                'Horas Disponibles': round(item['horas_disponibles'].total_seconds() / 3600, 2),
+                'Horas Generan Ingreso': round(item['horas_generan_ingreso'].total_seconds() / 3600, 2),
+                'Horas Aprobadas': round(item['horas_aprobadas'].total_seconds() / 3600, 2),
+                'Total Registros': item['total_registros'],
+                'Días Trabajados': item['dias_trabajados'],
+                'Productividad (%)': round(item['productividad'], 2),
+                'Aprobación (%)': round(item['aprobacion'], 2),
+                'Consistencia (%)': round(item['consistencia'], 2),
+                'Eficiencia (%)': round(item['eficiencia'], 2),
+                'Volumen (%)': round(item['volumen'], 2),
+                'Promedio por Día (h)': round(item['promedio_por_dia'].total_seconds() / 3600, 2),
+                'Puntuación Total': round(item['puntuacion_total'], 2),
+                'Nivel de Desempeño': item['nivel_desempeno'],
+                'Tendencia (%)': round(item['tendencia'], 2)
+            })
+        
+        df = pd.DataFrame(datos)
+        response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        response['Content-Disposition'] = 'attachment; filename=desempeno_tecnicos.xlsx'
+        df.to_excel(response, index=False)
+        return response
+    
+    # Obtener lista de sucursales para el filtro
+    from recursosHumanos.models import Sucursal
+    sucursales_filtro = Sucursal.objects.filter(activo=True)
+    
+    context = {
+        'titulo': 'Desempeño de Técnicos',
+        'desempeno_tecnicos': desempeno_tecnicos,
+        'promedio_puntuacion_total': promedio_puntuacion_total,
+        'promedio_productividad': promedio_productividad,
+        'promedio_aprobacion': promedio_aprobacion,
+        'promedio_consistencia': promedio_consistencia,
+        'fecha_inicio': fecha_inicio,
+        'fecha_fin': fecha_fin,
+        'sucursal_filtro': sucursal,
+        'sucursales_filtro': sucursales_filtro,
+    }
+    
+    return render(request, 'reportes/horas/desempeno.html', context)
 
 # ===== REPORTES DE SERVICIOS =====
 

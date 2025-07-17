@@ -1,47 +1,183 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Horas por Sucursal{% endblock %}
-
 {% block content %}
 <div class="container-fluid">
+    <!-- Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb">
-                    <li class="breadcrumb-item">
-                        <a href="{% url 'reportes:dashboard_reportes' %}">
-                            <i class="bi bi-graph-up me-1"></i>Reportes
-                        </a>
-                    </li>
-                    <li class="breadcrumb-item">
-                        <a href="{% url 'reportes:horas' %}">Horas</a>
-                    </li>
-                    <li class="breadcrumb-item active">Por Sucursal</li>
-                </ol>
-            </nav>
-            <h1 class="h2 mb-0">
-                <i class="bi bi-building me-2"></i>Horas por Sucursal
-            </h1>
-            <p class="text-muted">Análisis de horas por sucursal</p>
-        </div>
-        <div>
+        <h1 class="h3 mb-0">
+            <i class="bi bi-building text-primary"></i>
+            {{ titulo }}
+        </h1>
+        <div class="d-flex gap-2">
             <a href="{% url 'reportes:horas' %}" class="btn btn-outline-secondary">
-                <i class="bi bi-arrow-left me-1"></i>Volver
+                <i class="bi bi-arrow-left"></i> Volver
+            </a>
+            <a href="?exportar=excel{% if fecha_inicio %}&fecha_inicio={{ fecha_inicio }}{% endif %}{% if fecha_fin %}&fecha_fin={{ fecha_fin }}{% endif %}" class="btn btn-success">
+                <i class="bi bi-file-earmark-excel"></i> Exportar Excel
             </a>
         </div>
     </div>
 
-    <div class="row">
-        <div class="col-12">
-            <div class="card">
+    <!-- Filtros -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-3">
+                    <label for="fecha_inicio" class="form-label">Fecha Inicio</label>
+                    <input type="date" class="form-control" id="fecha_inicio" name="fecha_inicio" value="{{ fecha_inicio|default:'' }}">
+                </div>
+                <div class="col-md-3">
+                    <label for="fecha_fin" class="form-label">Fecha Fin</label>
+                    <input type="date" class="form-control" id="fecha_fin" name="fecha_fin" value="{{ fecha_fin|default:'' }}">
+                </div>
+                <div class="col-md-3 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary me-2">
+                        <i class="bi bi-search"></i> Filtrar
+                    </button>
+                    <a href="{% url 'reportes:horas_sucursal' %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-clockwise"></i> Limpiar
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Resumen General -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white border-0 shadow">
                 <div class="card-body text-center">
-                    <i class="bi bi-building" style="font-size: 4rem; color: #6c757d;"></i>
-                    <h5 class="mt-3">Horas por Sucursal</h5>
-                    <p class="text-muted">Esta funcionalidad estará disponible próximamente</p>
+                    <h4>{{ total_general_horas|floatformat:1 }}h</h4>
+                    <p class="mb-0">Total Horas</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white border-0 shadow">
+                <div class="card-body text-center">
+                    <h4>{{ total_general_tecnicos }}</h4>
+                    <p class="mb-0">Total Técnicos</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white border-0 shadow">
+                <div class="card-body text-center">
+                    <h4>{{ total_general_registros }}</h4>
+                    <p class="mb-0">Total Registros</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white border-0 shadow">
+                <div class="card-body text-center">
+                    <h4>{{ horas_por_sucursal|length }}</h4>
+                    <p class="mb-0">Sucursales</p>
                 </div>
             </div>
         </div>
     </div>
+
+    <!-- Tabla de Datos -->
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0">
+                <i class="bi bi-table"></i> Horas por Sucursal
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover" id="tablaHorasSucursal">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Sucursal</th>
+                            <th>Total Horas</th>
+                            <th>Horas Disponibles</th>
+                            <th>Horas No Disponibles</th>
+                            <th>Generan Ingreso</th>
+                            <th>Horas Aprobadas</th>
+                            <th>Técnicos</th>
+                            <th>Registros</th>
+                            <th>Eficiencia (%)</th>
+                            <th>Productividad (%)</th>
+                            <th>Promedio/Técnico</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in horas_por_sucursal %}
+                        <tr>
+                            <td>
+                                <strong>{{ item.sucursal.nombre }}</strong>
+                            </td>
+                            <td>
+                                <span class="badge bg-primary">{{ item.total_horas|floatformat:1 }}h</span>
+                            </td>
+                            <td>
+                                <span class="badge bg-success">{{ item.horas_disponibles|floatformat:1 }}h</span>
+                            </td>
+                            <td>
+                                <span class="badge bg-secondary">{{ item.horas_no_disponibles|floatformat:1 }}h</span>
+                            </td>
+                            <td>
+                                <span class="badge bg-danger">{{ item.horas_generan_ingreso|floatformat:1 }}h</span>
+                            </td>
+                            <td>
+                                <span class="badge bg-info">{{ item.horas_aprobadas|floatformat:1 }}h</span>
+                            </td>
+                            <td>
+                                <span class="badge bg-warning">{{ item.total_tecnicos }}</span>
+                            </td>
+                            <td>
+                                <span class="badge bg-dark">{{ item.total_registros }}</span>
+                            </td>
+                            <td>
+                                {% if item.eficiencia >= 80 %}
+                                    <span class="badge bg-success">{{ item.eficiencia|floatformat:1 }}%</span>
+                                {% elif item.eficiencia >= 60 %}
+                                    <span class="badge bg-warning">{{ item.eficiencia|floatformat:1 }}%</span>
+                                {% else %}
+                                    <span class="badge bg-danger">{{ item.eficiencia|floatformat:1 }}%</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if item.productividad >= 80 %}
+                                    <span class="badge bg-success">{{ item.productividad|floatformat:1 }}%</span>
+                                {% elif item.productividad >= 60 %}
+                                    <span class="badge bg-warning">{{ item.productividad|floatformat:1 }}%</span>
+                                {% else %}
+                                    <span class="badge bg-danger">{{ item.productividad|floatformat:1 }}%</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="badge bg-primary">{{ item.promedio_por_tecnico|floatformat:1 }}h</span>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="11" class="text-center text-muted">
+                                <i class="bi bi-inbox display-4"></i>
+                                <p class="mt-2">No hay datos disponibles para el período seleccionado</p>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 </div>
+
+<script>
+$(document).ready(function() {
+    $('#tablaHorasSucursal').DataTable({
+        language: {
+            url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json'
+        },
+        order: [[1, 'desc']], // Ordenar por total de horas descendente
+        pageLength: 25,
+        responsive: true
+    });
+});
+</script>
 {% endblock %}

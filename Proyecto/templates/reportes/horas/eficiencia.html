@@ -1,47 +1,284 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Eficiencia de Técnicos{% endblock %}
-
 {% block content %}
 <div class="container-fluid">
+    <!-- Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb">
-                    <li class="breadcrumb-item">
-                        <a href="{% url 'reportes:dashboard_reportes' %}">
-                            <i class="bi bi-graph-up me-1"></i>Reportes
-                        </a>
-                    </li>
-                    <li class="breadcrumb-item">
-                        <a href="{% url 'reportes:horas' %}">Horas</a>
-                    </li>
-                    <li class="breadcrumb-item active">Eficiencia</li>
-                </ol>
-            </nav>
-            <h1 class="h2 mb-0">
-                <i class="bi bi-graph-up-arrow me-2"></i>Eficiencia de Técnicos
-            </h1>
-            <p class="text-muted">Análisis de eficiencia</p>
-        </div>
-        <div>
+        <h1 class="h3 mb-0">
+            <i class="bi bi-speedometer2 text-primary"></i>
+            {{ titulo }}
+        </h1>
+        <div class="d-flex gap-2">
             <a href="{% url 'reportes:horas' %}" class="btn btn-outline-secondary">
-                <i class="bi bi-arrow-left me-1"></i>Volver
+                <i class="bi bi-arrow-left"></i> Volver
+            </a>
+            <a href="?exportar=excel{% if fecha_inicio %}&fecha_inicio={{ fecha_inicio }}{% endif %}{% if fecha_fin %}&fecha_fin={{ fecha_fin }}{% endif %}{% if sucursal_filtro %}&sucursal={{ sucursal_filtro }}{% endif %}" class="btn btn-success">
+                <i class="bi bi-file-earmark-excel"></i> Exportar Excel
             </a>
         </div>
     </div>
 
-    <div class="row">
-        <div class="col-12">
-            <div class="card">
+    <!-- Filtros -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-2">
+                    <label for="fecha_inicio" class="form-label">Fecha Inicio</label>
+                    <input type="date" class="form-control" id="fecha_inicio" name="fecha_inicio" value="{{ fecha_inicio|default:'' }}">
+                </div>
+                <div class="col-md-2">
+                    <label for="fecha_fin" class="form-label">Fecha Fin</label>
+                    <input type="date" class="form-control" id="fecha_fin" name="fecha_fin" value="{{ fecha_fin|default:'' }}">
+                </div>
+                <div class="col-md-3">
+                    <label for="sucursal" class="form-label">Sucursal</label>
+                    <select class="form-select" id="sucursal" name="sucursal">
+                        <option value="">Todas las sucursales</option>
+                        {% for sucursal in sucursales_filtro %}
+                        <option value="{{ sucursal.id }}" {% if sucursal_filtro == sucursal.id|stringformat:"s" %}selected{% endif %}>
+                            {{ sucursal.nombre }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary me-2">
+                        <i class="bi bi-search"></i> Filtrar
+                    </button>
+                    <a href="{% url 'reportes:eficiencia' %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-clockwise"></i> Limpiar
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Métricas Promedio -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card border-0 shadow">
                 <div class="card-body text-center">
-                    <i class="bi bi-graph-up-arrow" style="font-size: 4rem; color: #6c757d;"></i>
-                    <h5 class="mt-3">Eficiencia de Técnicos</h5>
-                    <p class="text-muted">Esta funcionalidad estará disponible próximamente</p>
+                    <div class="display-6 text-primary mb-2">{{ promedio_eficiencia_operacional|floatformat:1 }}%</div>
+                    <h6 class="text-muted">Eficiencia Operacional</h6>
+                    <small class="text-muted">Horas facturables / Horas totales</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow">
+                <div class="card-body text-center">
+                    <div class="display-6 text-success mb-2">{{ promedio_eficiencia_aprobacion|floatformat:1 }}%</div>
+                    <h6 class="text-muted">Eficiencia Aprobación</h6>
+                    <small class="text-muted">Horas aprobadas / Horas totales</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow">
+                <div class="card-body text-center">
+                    <div class="display-6 text-info mb-2">{{ promedio_eficiencia_disponibilidad|floatformat:1 }}%</div>
+                    <h6 class="text-muted">Eficiencia Disponibilidad</h6>
+                    <small class="text-muted">Horas disponibles / Horas totales</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow">
+                <div class="card-body text-center">
+                    <div class="display-6 text-warning mb-2">{{ promedio_eficiencia_generacion|floatformat:1 }}%</div>
+                    <h6 class="text-muted">Eficiencia Generación</h6>
+                    <small class="text-muted">Horas que generan ingreso / Horas disponibles</small>
                 </div>
             </div>
         </div>
     </div>
+
+    <!-- Tabla de Eficiencia -->
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0">
+                <i class="bi bi-table"></i> Análisis de Eficiencia por Técnico
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover" id="tablaEficiencia">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Técnico</th>
+                            <th>Email</th>
+                            <th>Sucursal</th>
+                            <th>Total Horas</th>
+                            <th>Horas Facturables</th>
+                            <th>Horas No Facturables</th>
+                            <th>Horas Disponibles</th>
+                            <th>Horas No Disponibles</th>
+                            <th>Generan Ingreso</th>
+                            <th>No Generan Ingreso</th>
+                            <th>Horas Aprobadas</th>
+                            <th>Horas Pendientes</th>
+                            <th>Eficiencia Operacional (%)</th>
+                            <th>Eficiencia Aprobación (%)</th>
+                            <th>Eficiencia Disponibilidad (%)</th>
+                            <th>Eficiencia Generación (%)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in eficiencia_tecnicos %}
+                        <tr>
+                            <td>
+                                <strong>{{ item.tecnico.apellido }}, {{ item.tecnico.nombre }}</strong>
+                            </td>
+                            <td>
+                                <small>{{ item.tecnico.email }}</small>
+                            </td>
+                            <td>
+                                <span class="badge bg-secondary">{{ item.tecnico.sucursal.nombre|default:"Sin sucursal" }}</span>
+                            </td>
+                            <td>
+                                <span class="badge bg-primary">{{ item.total_horas|floatformat:1 }}h</span>
+                            </td>
+                            <td>
+                                <span class="badge bg-success">{{ item.horas_facturables|floatformat:1 }}h</span>
+                            </td>
+                            <td>
+                                <span class="badge bg-danger">{{ item.horas_no_facturables|floatformat:1 }}h</span>
+                            </td>
+                            <td>
+                                <span class="badge bg-info">{{ item.horas_disponibles|floatformat:1 }}h</span>
+                            </td>
+                            <td>
+                                <span class="badge bg-secondary">{{ item.horas_no_disponibles|floatformat:1 }}h</span>
+                            </td>
+                            <td>
+                                <span class="badge bg-success">{{ item.horas_generan_ingreso|floatformat:1 }}h</span>
+                            </td>
+                            <td>
+                                <span class="badge bg-warning">{{ item.horas_no_generan_ingreso|floatformat:1 }}h</span>
+                            </td>
+                            <td>
+                                <span class="badge bg-info">{{ item.horas_aprobadas|floatformat:1 }}h</span>
+                            </td>
+                            <td>
+                                <span class="badge bg-warning">{{ item.horas_pendientes|floatformat:1 }}h</span>
+                            </td>
+                            <td>
+                                {% if item.eficiencia_operacional >= 80 %}
+                                    <span class="badge bg-success">{{ item.eficiencia_operacional|floatformat:1 }}%</span>
+                                {% elif item.eficiencia_operacional >= 60 %}
+                                    <span class="badge bg-warning">{{ item.eficiencia_operacional|floatformat:1 }}%</span>
+                                {% else %}
+                                    <span class="badge bg-danger">{{ item.eficiencia_operacional|floatformat:1 }}%</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if item.eficiencia_aprobacion >= 80 %}
+                                    <span class="badge bg-success">{{ item.eficiencia_aprobacion|floatformat:1 }}%</span>
+                                {% elif item.eficiencia_aprobacion >= 60 %}
+                                    <span class="badge bg-warning">{{ item.eficiencia_aprobacion|floatformat:1 }}%</span>
+                                {% else %}
+                                    <span class="badge bg-danger">{{ item.eficiencia_aprobacion|floatformat:1 }}%</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if item.eficiencia_disponibilidad >= 80 %}
+                                    <span class="badge bg-success">{{ item.eficiencia_disponibilidad|floatformat:1 }}%</span>
+                                {% elif item.eficiencia_disponibilidad >= 60 %}
+                                    <span class="badge bg-warning">{{ item.eficiencia_disponibilidad|floatformat:1 }}%</span>
+                                {% else %}
+                                    <span class="badge bg-danger">{{ item.eficiencia_disponibilidad|floatformat:1 }}%</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if item.eficiencia_generacion_ingreso >= 80 %}
+                                    <span class="badge bg-success">{{ item.eficiencia_generacion_ingreso|floatformat:1 }}%</span>
+                                {% elif item.eficiencia_generacion_ingreso >= 60 %}
+                                    <span class="badge bg-warning">{{ item.eficiencia_generacion_ingreso|floatformat:1 }}%</span>
+                                {% else %}
+                                    <span class="badge bg-danger">{{ item.eficiencia_generacion_ingreso|floatformat:1 }}%</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="16" class="text-center text-muted">
+                                <i class="bi bi-inbox display-4"></i>
+                                <p class="mt-2">No hay datos disponibles para el período seleccionado</p>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Análisis por Actividad -->
+    {% if eficiencia_tecnicos %}
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-pie-chart"></i> Distribución por Actividad y Categoría
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for item in eficiencia_tecnicos|slice:":3" %}
+                        {% if item.horas_por_actividad %}
+                        <div class="col-md-4 mb-3">
+                            <h6 class="text-primary">{{ item.tecnico.apellido }}, {{ item.tecnico.nombre }}</h6>
+                            <div class="table-responsive">
+                                <table class="table table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>Actividad</th>
+                                            <th>Categoría</th>
+                                            <th>Horas</th>
+                                            <th>Registros</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for actividad in item.horas_por_actividad %}
+                                        <tr>
+                                            <td><small>{{ actividad.tipo_hora__nombre }}</small></td>
+                                            <td>
+                                                {% if actividad.tipo_hora__categoria_facturacion == 'FACTURABLE' %}
+                                                    <span class="badge bg-success">Facturable</span>
+                                                {% else %}
+                                                    <span class="badge bg-danger">No Facturable</span>
+                                                {% endif %}
+                                            </td>
+                                            <td><span class="badge bg-primary">{{ actividad.total_horas|floatformat:1 }}h</span></td>
+                                            <td><span class="badge bg-secondary">{{ actividad.cantidad_registros }}</span></td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
 </div>
+
+<script>
+$(document).ready(function() {
+    $('#tablaEficiencia').DataTable({
+        language: {
+            url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json'
+        },
+        order: [[12, 'desc']], // Ordenar por eficiencia operacional descendente
+        pageLength: 25,
+        responsive: true
+    });
+});
+</script>
 {% endblock %}
