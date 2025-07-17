@@ -232,7 +232,7 @@ def facturacion_por_tecnico(request):
         servicios_completados = servicios_tecnico.count()
         
         # Calcular valor por hora
-        valor_por_hora = total_mano_obra / horas_decimal if horas_decimal > 0 else 0
+        valor_por_hora = total_mano_obra / Decimal(str(horas_decimal)) if horas_decimal > 0 else Decimal('0')
         
         facturacion_por_tecnico.append({
             'tecnico': tecnico,
