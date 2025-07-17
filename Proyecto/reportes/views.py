@@ -1142,6 +1142,10 @@ def reportes_encuestas(request):
     # Calcular tasa de respuesta
     tasa_respuesta = (encuestas_respondidas / total_encuestas * 100) if total_encuestas > 0 else 0
     
+    # Calcular porcentajes para las barras de progreso
+    porcentaje_cumplimiento = promedio_cumplimiento * 10
+    porcentaje_recomendacion = promedio_recomendacion * 10
+    
     context = {
         'total_encuestas': total_encuestas,
         'encuestas_enviadas': encuestas_enviadas,
@@ -1153,7 +1157,9 @@ def reportes_encuestas(request):
         'nps_detractores': round(nps_detractores, 1),
         'promedio_cumplimiento': round(promedio_cumplimiento, 1),
         'promedio_recomendacion': round(promedio_recomendacion, 1),
-        'tasa_respuesta': round(tasa_respuesta, 1)
+        'tasa_respuesta': round(tasa_respuesta, 1),
+        'porcentaje_cumplimiento': round(porcentaje_cumplimiento, 1),
+        'porcentaje_recomendacion': round(porcentaje_recomendacion, 1),
     }
     
     return render(request, 'reportes/encuestas/dashboard.html', context)
@@ -1381,10 +1387,19 @@ def encuestas_porcentajes(request):
     # Calcular distribución por calificaciones
     distribucion_cumplimiento = {}
     distribucion_recomendacion = {}
+    porcentajes_cumplimiento = {}
+    porcentajes_recomendacion = {}
     
     for i in range(1, 11):
-        distribucion_cumplimiento[i] = respuestas.filter(cumplimiento_acuerdo=i).count()
-        distribucion_recomendacion[i] = respuestas.filter(probabilidad_recomendacion=i).count()
+        count_cumplimiento = respuestas.filter(cumplimiento_acuerdo=i).count()
+        count_recomendacion = respuestas.filter(probabilidad_recomendacion=i).count()
+        
+        distribucion_cumplimiento[i] = count_cumplimiento
+        distribucion_recomendacion[i] = count_recomendacion
+        
+        # Calcular porcentajes
+        porcentajes_cumplimiento[i] = (count_cumplimiento / encuestas_respondidas * 100) if encuestas_respondidas > 0 else 0
+        porcentajes_recomendacion[i] = (count_recomendacion / encuestas_respondidas * 100) if encuestas_respondidas > 0 else 0
     
     # Calcular tendencias por período
     if periodo == 'mes':
@@ -1411,6 +1426,7 @@ def encuestas_porcentajes(request):
                     'total_respuestas': total_mes,
                     'promedio_cumplimiento': round(respuestas_mes.aggregate(avg=Avg('cumplimiento_acuerdo'))['avg'] or 0, 1),
                     'promedio_recomendacion': round(respuestas_mes.aggregate(avg=Avg('probabilidad_recomendacion'))['avg'] or 0, 1),
+                    'porcentaje_tendencia': round((nps_mes + 100) / 2, 1) if nps_mes >= 0 else 0,
                 })
     else:
         # Últimas 12 semanas
@@ -1434,6 +1450,7 @@ def encuestas_porcentajes(request):
                     'total_respuestas': total_semana,
                     'promedio_cumplimiento': round(respuestas_semana.aggregate(avg=Avg('cumplimiento_acuerdo'))['avg'] or 0, 1),
                     'promedio_recomendacion': round(respuestas_semana.aggregate(avg=Avg('probabilidad_recomendacion'))['avg'] or 0, 1),
+                    'porcentaje_tendencia': round((nps_semana + 100) / 2, 1) if nps_semana >= 0 else 0,
                 })
     
     # Exportar a Excel si se solicita
@@ -1452,6 +1469,8 @@ def encuestas_porcentajes(request):
         'promedio_recomendacion': round(promedio_recomendacion, 1),
         'distribucion_cumplimiento': distribucion_cumplimiento,
         'distribucion_recomendacion': distribucion_recomendacion,
+        'porcentajes_cumplimiento': porcentajes_cumplimiento,
+        'porcentajes_recomendacion': porcentajes_recomendacion,
         'tendencias': tendencias,
         'periodo': periodo,
         'fecha_inicio': fecha_inicio,

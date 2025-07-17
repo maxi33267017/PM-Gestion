@@ -195,16 +195,16 @@
                                         <td>{{ calificacion }}/10</td>
                                         <td>{{ cantidad }}</td>
                                         <td>
-                                            {% if encuestas_respondidas > 0 %}
-                                                {{ cantidad|mul:100|div:encuestas_respondidas|floatformat:1 }}%
-                                            {% else %}
-                                                0%
-                                            {% endif %}
+                                            {% for key, value in porcentajes_cumplimiento.items %}
+                                                {% if key == calificacion %}
+                                                    {{ value|floatformat:1 }}%
+                                                {% endif %}
+                                            {% endfor %}
                                         </td>
                                         <td>
                                             <div class="progress" style="height: 20px;">
                                                 <div class="progress-bar {% if calificacion >= 9 %}bg-success{% elif calificacion >= 7 %}bg-warning{% else %}bg-danger{% endif %}" 
-                                                     style="width: {% if encuestas_respondidas > 0 %}{{ cantidad|mul:100|div:encuestas_respondidas }}{% else %}0{% endif %}%">
+                                                     style="width: {% for key, value in porcentajes_cumplimiento.items %}{% if key == calificacion %}{{ value }}{% endif %}{% endfor %}%">
                                                 </div>
                                             </div>
                                         </td>
@@ -238,16 +238,16 @@
                                         <td>{{ calificacion }}/10</td>
                                         <td>{{ cantidad }}</td>
                                         <td>
-                                            {% if encuestas_respondidas > 0 %}
-                                                {{ cantidad|mul:100|div:encuestas_respondidas|floatformat:1 }}%
-                                            {% else %}
-                                                0%
-                                            {% endif %}
+                                            {% for key, value in porcentajes_recomendacion.items %}
+                                                {% if key == calificacion %}
+                                                    {{ value|floatformat:1 }}%
+                                                {% endif %}
+                                            {% endfor %}
                                         </td>
                                         <td>
                                             <div class="progress" style="height: 20px;">
                                                 <div class="progress-bar {% if calificacion >= 9 %}bg-success{% elif calificacion >= 7 %}bg-warning{% else %}bg-danger{% endif %}" 
-                                                     style="width: {% if encuestas_respondidas > 0 %}{{ cantidad|mul:100|div:encuestas_respondidas }}{% else %}0{% endif %}%">
+                                                     style="width: {% for key, value in porcentajes_recomendacion.items %}{% if key == calificacion %}{{ value }}{% endif %}{% endfor %}%">
                                                 </div>
                                             </div>
                                         </td>
@@ -295,7 +295,7 @@
                                     <td>
                                         <div class="progress" style="height: 20px;">
                                             <div class="progress-bar {% if tendencia.nps >= 50 %}bg-success{% elif tendencia.nps >= 0 %}bg-warning{% else %}bg-danger{% endif %}" 
-                                                 style="width: {% if tendencia.nps >= 0 %}{{ tendencia.nps|add:100|div:2 }}{% else %}0{% endif %}%">
+                                                 style="width: {{ tendencia.porcentaje_tendencia }}%">
                                             </div>
                                         </div>
                                     </td>

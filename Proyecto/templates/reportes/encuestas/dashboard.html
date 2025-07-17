@@ -144,7 +144,7 @@
                 <div class="card-body text-center">
                     <h2 class="text-primary">{{ promedio_cumplimiento|floatformat:1 }}/10</h2>
                     <div class="progress" style="height: 25px;">
-                        <div class="progress-bar bg-primary" style="width: {{ promedio_cumplimiento|mul:10 }}%"></div>
+                        <div class="progress-bar bg-primary" style="width: {{ porcentaje_cumplimiento }}%"></div>
                     </div>
                     <small class="text-muted">Promedio de cumplimiento de acuerdos</small>
                 </div>
@@ -158,7 +158,7 @@
                 <div class="card-body text-center">
                     <h2 class="text-success">{{ promedio_recomendacion|floatformat:1 }}/10</h2>
                     <div class="progress" style="height: 25px;">
-                        <div class="progress-bar bg-success" style="width: {{ promedio_recomendacion|mul:10 }}%"></div>
+                        <div class="progress-bar bg-success" style="width: {{ porcentaje_recomendacion }}%"></div>
                     </div>
                     <small class="text-muted">Promedio de probabilidad de recomendación</small>
                 </div>
