@@ -1,0 +1,94 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Servicios Completados Sin Ingresos{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item">
+                        <a href="{% url 'reportes:dashboard_reportes' %}">
+                            <i class="bi bi-graph-up me-1"></i>Reportes
+                        </a>
+                    </li>
+                    <li class="breadcrumb-item">
+                        <a href="{% url 'reportes:servicios' %}">Servicios</a>
+                    </li>
+                    <li class="breadcrumb-item active">Sin Ingresos</li>
+                </ol>
+            </nav>
+            <h1 class="h2 mb-0">
+                <i class="bi bi-cash me-2"></i>Servicios Completados Sin Ingresos
+            </h1>
+            <p class="text-muted">Servicios completados cuyo valor total es $0 (sin mano de obra, repuestos ni gastos)</p>
+        </div>
+        <div>
+            <a href="{% url 'reportes:servicios' %}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-1"></i>Volver
+            </a>
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <div class="col-12 text-end">
+            <a href="?excel=1" class="btn btn-success">
+                <i class="bi bi-file-earmark-excel me-1"></i> Descargar Excel
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    {% if servicios %}
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover align-middle">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Fecha</th>
+                                    <th>Cliente</th>
+                                    <th>Equipo</th>
+                                    <th>Tipo de trabajo</th>
+                                    <th>Orden de servicio</th>
+                                    <th>Mano de obra</th>
+                                    <th>Gastos</th>
+                                    <th>Repuestos</th>
+                                    <th>Total</th>
+                                    <th>Observaciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in servicios %}
+                                <tr>
+                                    <td>{{ item.servicio.id }}</td>
+                                    <td>{{ item.servicio.fecha_servicio|date:"d/m/Y" }}</td>
+                                    <td>{{ item.servicio.preorden.cliente.razon_social }}</td>
+                                    <td>{{ item.servicio.preorden.equipo.modelo }} - {{ item.servicio.preorden.equipo.numero_serie }}</td>
+                                    <td>{{ item.servicio.get_trabajo_display }}</td>
+                                    <td>{{ item.servicio.orden_servicio|default:"-" }}</td>
+                                    <td>${{ item.valor_mano_obra|floatformat:2 }}</td>
+                                    <td>${{ item.total_gastos|floatformat:2 }}</td>
+                                    <td>${{ item.total_repuestos|floatformat:2 }}</td>
+                                    <td><strong>${{ item.valor_total|floatformat:2 }}</strong></td>
+                                    <td>{{ item.servicio.observaciones|default:"-" }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                        <div class="alert alert-success text-center">
+                            <i class="bi bi-check-circle me-2"></i>No hay servicios completados sin ingresos.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

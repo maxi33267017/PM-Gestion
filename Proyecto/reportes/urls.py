@@ -33,6 +33,7 @@ urlpatterns = [
     path('servicios/tiempo-promedio/', views.tiempo_promedio_servicios, name='tiempo_promedio'),
     path('servicios/sucursal/', views.servicios_por_sucursal, name='servicios_sucursal'),
     path('servicios/tecnico/', views.servicios_por_tecnico, name='servicios_tecnico'),
+    path('servicios/sin-ingresos/', views.servicios_sin_ingresos, name='servicios_sin_ingresos'),
     
     # Reportes de Embudos
     path('embudos/', views.reportes_embudos, name='embudos'),

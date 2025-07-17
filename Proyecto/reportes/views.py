@@ -1,10 +1,12 @@
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse, HttpResponse
-from django.db.models import Sum, Count, Avg, Q
+from django.db.models import Sum, Count, Avg, Q, F
 from django.utils import timezone
 from datetime import datetime, timedelta
 import json
+import pandas as pd
+from decimal import Decimal
 
 # Importar modelos necesarios
 from gestionDeTaller.models import Servicio, PreOrden
@@ -178,6 +180,48 @@ def servicios_por_sucursal(request):
 def servicios_por_tecnico(request):
     """Reporte de servicios por técnico"""
     return render(request, 'reportes/servicios/por_tecnico.html')
+
+@login_required
+def servicios_sin_ingresos(request):
+    servicios = Servicio.objects.filter(estado='COMPLETADO').select_related('preorden__cliente', 'preorden__equipo').prefetch_related('gastos', 'repuestos').order_by('fecha_servicio')
+    servicios_sin_ingresos = []
+    for servicio in servicios:
+        valor_mano_obra = servicio.valor_mano_obra or Decimal('0.00')
+        total_gastos = servicio.gastos.aggregate(total=Sum('monto'))['total'] or Decimal('0.00')
+        total_repuestos = servicio.repuestos.aggregate(total=Sum(F('precio_unitario') * F('cantidad')))['total'] or Decimal('0.00')
+        valor_total = valor_mano_obra + total_gastos + total_repuestos
+        if valor_total == Decimal('0.00'):
+            servicios_sin_ingresos.append({
+                'servicio': servicio,
+                'valor_mano_obra': valor_mano_obra,
+                'total_gastos': total_gastos,
+                'total_repuestos': total_repuestos,
+                'valor_total': valor_total
+            })
+    # Descarga Excel
+    if request.GET.get('excel') == '1':
+        datos = []
+        for item in servicios_sin_ingresos:
+            s = item['servicio']
+            datos.append({
+                'ID': s.id,
+                'Fecha': s.fecha_servicio,
+                'Cliente': s.preorden.cliente.razon_social,
+                'Equipo': f"{s.preorden.equipo.modelo} - {s.preorden.equipo.numero_serie}",
+                'Tipo de trabajo': s.get_trabajo_display(),
+                'Orden de servicio': s.orden_servicio or '',
+                'Observaciones': s.observaciones or '',
+                'Mano de obra': float(item['valor_mano_obra']),
+                'Gastos': float(item['total_gastos']),
+                'Repuestos': float(item['total_repuestos']),
+                'Total': float(item['valor_total'])
+            })
+        df = pd.DataFrame(datos)
+        response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        response['Content-Disposition'] = 'attachment; filename=servicios_sin_ingresos.xlsx'
+        df.to_excel(response, index=False)
+        return response
+    return render(request, 'reportes/servicios/sin_ingresos.html', {'servicios': servicios_sin_ingresos})
 
 # ===== REPORTES DE EMBUDOS =====
 
