@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse, HttpResponse
-from django.db.models import Sum, Count, Avg, Q, F, ExpressionWrapper, DurationField
+from django.db.models import Sum, Count, Avg, Q, F, ExpressionWrapper, DurationField, fields
 from django.utils import timezone
 from datetime import datetime, timedelta
 import json
@@ -985,17 +985,17 @@ def preordenes_estadisticas(request):
     
     # Estadísticas por tipo de trabajo
     tipos_trabajo = preordenes.values('tipo_trabajo').annotate(
-        cantidad=Count('id')
+        cantidad=Count('numero')
     ).order_by('-cantidad')
     
     # Estadísticas por clasificación
     clasificaciones = preordenes.values('clasificacion').annotate(
-        cantidad=Count('id')
+        cantidad=Count('numero')
     ).order_by('-cantidad')
     
     # Estadísticas por sucursal
     sucursales = preordenes.values('sucursal__nombre').annotate(
-        cantidad=Count('id')
+        cantidad=Count('numero')
     ).order_by('-cantidad')
     
     # Estadísticas por mes (últimos 12 meses)
@@ -1332,7 +1332,7 @@ def servicios_completados(request):
 def tiempo_promedio_servicios(request):
     """Reporte de tiempo promedio de servicios"""
     from gestionDeTaller.models import Servicio
-    from django.db.models import Avg, Count, F
+    from django.db.models import Avg, Count, F, ExpressionWrapper, fields
     from datetime import datetime, timedelta
     
     # Obtener parámetros de filtro
@@ -1359,16 +1359,26 @@ def tiempo_promedio_servicios(request):
     # Calcular estadísticas generales
     total_servicios = servicios.count()
     
-    # Tiempo promedio por tipo de trabajo
+    # Calcular tiempo promedio desde creación hasta fecha de servicio
     tiempo_por_trabajo = servicios.values('trabajo').annotate(
         cantidad=Count('id'),
-        tiempo_promedio=Avg('duracion_estimada')
+        tiempo_promedio=Avg(
+            ExpressionWrapper(
+                F('fecha_servicio') - F('fecha_creacion__date'),
+                output_field=fields.DurationField()
+            )
+        )
     ).order_by('-cantidad')
     
     # Tiempo promedio por sucursal
     tiempo_por_sucursal = servicios.values('preorden__sucursal__nombre').annotate(
         cantidad=Count('id'),
-        tiempo_promedio=Avg('duracion_estimada')
+        tiempo_promedio=Avg(
+            ExpressionWrapper(
+                F('fecha_servicio') - F('fecha_creacion__date'),
+                output_field=fields.DurationField()
+            )
+        )
     ).order_by('-cantidad')
     
     # Tiempo promedio por técnico
@@ -1385,8 +1395,13 @@ def tiempo_promedio_servicios(request):
         
         cantidad = tecnico_servicios.count()
         tiempo_promedio = tecnico_servicios.aggregate(
-            promedio=Avg('duracion_estimada')
-        )['promedio'] or 0
+            promedio=Avg(
+                ExpressionWrapper(
+                    F('fecha_servicio') - F('fecha_creacion__date'),
+                    output_field=fields.DurationField()
+                )
+            )
+        )['promedio'] or timedelta(0)
         
         tiempo_por_tecnico.append({
             'tecnico': tecnico,
@@ -1399,8 +1414,13 @@ def tiempo_promedio_servicios(request):
     
     # Tiempo promedio general
     tiempo_promedio_general = servicios.aggregate(
-        promedio=Avg('duracion_estimada')
-    )['promedio'] or 0
+        promedio=Avg(
+            ExpressionWrapper(
+                F('fecha_servicio') - F('fecha_creacion__date'),
+                output_field=fields.DurationField()
+            )
+        )
+    )['promedio'] or timedelta(0)
     
     # Exportar a Excel si se solicita
     if exportar:
@@ -1410,13 +1430,14 @@ def tiempo_promedio_servicios(request):
         datos = []
         for servicio in servicios:
             tecnicos = ', '.join([f"{t.apellido}, {t.nombre}" for t in servicio.preorden.tecnicos.all()])
+            duracion = (servicio.fecha_servicio - servicio.fecha_creacion.date()).days
             datos.append({
                 'ID': servicio.id,
                 'Fecha': servicio.fecha_servicio.strftime('%d/%m/%Y'),
                 'Sucursal': servicio.preorden.sucursal.nombre,
                 'Técnicos': tecnicos,
                 'Tipo Trabajo': servicio.get_trabajo_display(),
-                'Duración Estimada': servicio.duracion_estimada or 0,
+                'Duración (días)': duracion,
                 'Orden Servicio': servicio.orden_servicio or ''
             })
         
