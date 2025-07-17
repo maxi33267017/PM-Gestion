@@ -100,6 +100,7 @@
                                     <th>Horas Trabajadas</th>
                                     <th>Servicios</th>
                                     <th>Promedio/Servicio</th>
+                                    <th>Valor por Hora</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -116,6 +117,7 @@
                                     <td>{{ item.horas_trabajadas|floatformat:1 }}h</td>
                                     <td>{{ item.servicios_completados }}</td>
                                     <td>${{ item.promedio_por_servicio|floatformat:0 }}</td>
+                                    <td>${{ item.valor_por_hora|floatformat:0 }}/h</td>
                                 </tr>
                                 {% endfor %}
                             </tbody>

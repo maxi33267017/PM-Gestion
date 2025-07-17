@@ -231,6 +231,9 @@ def facturacion_por_tecnico(request):
         # Calcular servicios completados
         servicios_completados = servicios_tecnico.count()
         
+        # Calcular valor por hora
+        valor_por_hora = total_mano_obra / horas_decimal if horas_decimal > 0 else 0
+        
         facturacion_por_tecnico.append({
             'tecnico': tecnico,
             'total_facturacion': total_facturacion,
@@ -239,7 +242,8 @@ def facturacion_por_tecnico(request):
             'repuestos': total_repuestos,
             'horas_trabajadas': horas_decimal,
             'servicios_completados': servicios_completados,
-            'promedio_por_servicio': total_facturacion / servicios_completados if servicios_completados > 0 else 0
+            'promedio_por_servicio': total_facturacion / servicios_completados if servicios_completados > 0 else 0,
+            'valor_por_hora': valor_por_hora
         })
     
     # Ordenar por facturación total
@@ -258,7 +262,8 @@ def facturacion_por_tecnico(request):
                 'Repuestos': float(item['repuestos']),
                 'Horas Trabajadas': round(item['horas_trabajadas'], 2),
                 'Servicios Completados': item['servicios_completados'],
-                'Promedio por Servicio': float(item['promedio_por_servicio'])
+                'Promedio por Servicio': float(item['promedio_por_servicio']),
+                'Valor por Hora': float(item['valor_por_hora'])
             })
         
         df = pd.DataFrame(datos)
