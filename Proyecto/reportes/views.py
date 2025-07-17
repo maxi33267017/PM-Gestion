@@ -1180,9 +1180,8 @@ def encuestas_enviadas(request):
     # Filtrar encuestas enviadas
     encuestas = EncuestaServicio.objects.select_related(
         'servicio__preorden__cliente',
-        'servicio__tecnico',
-        'servicio__sucursal'
-    ).prefetch_related('respuestas')
+        'servicio__preorden__sucursal'
+    ).prefetch_related('respuestas', 'servicio__preorden__tecnicos')
     
     # Aplicar filtros
     if fecha_inicio:
@@ -1259,9 +1258,8 @@ def encuestas_respuestas(request):
         estado='RESPONDIDA'
     ).select_related(
         'servicio__preorden__cliente',
-        'servicio__tecnico',
-        'servicio__sucursal'
-    ).prefetch_related('respuestas')
+        'servicio__preorden__sucursal'
+    ).prefetch_related('respuestas', 'servicio__preorden__tecnicos')
     
     # Aplicar filtros
     if fecha_inicio:

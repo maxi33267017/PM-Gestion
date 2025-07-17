@@ -145,15 +145,17 @@
                                         </td>
                                         <td>{{ encuesta.servicio.preorden.cliente.razon_social }}</td>
                                         <td>
-                                            {% if encuesta.servicio.tecnico %}
-                                                {{ encuesta.servicio.tecnico.get_full_name }}
+                                            {% if encuesta.servicio.preorden.tecnicos.all %}
+                                                {% for tecnico in encuesta.servicio.preorden.tecnicos.all %}
+                                                    {{ tecnico.get_full_name }}{% if not forloop.last %}, {% endif %}
+                                                {% endfor %}
                                             {% else %}
                                                 <span class="text-muted">N/A</span>
                                             {% endif %}
                                         </td>
                                         <td>
-                                            {% if encuesta.servicio.sucursal %}
-                                                {{ encuesta.servicio.sucursal.nombre }}
+                                            {% if encuesta.servicio.preorden.sucursal %}
+                                                {{ encuesta.servicio.preorden.sucursal.nombre }}
                                             {% else %}
                                                 <span class="text-muted">N/A</span>
                                             {% endif %}
