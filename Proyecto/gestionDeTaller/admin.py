@@ -75,6 +75,36 @@ class PlanAccion5SAdmin(admin.ModelAdmin):
     list_filter = ['estado', 'fecha_limite']
 
 
+@admin.register(Evidencia)
+class EvidenciaAdmin(admin.ModelAdmin):
+    list_display = ['preorden', 'imagen_preview', 'fecha_subida']
+    list_filter = ['fecha_subida', 'preorden__tipo_trabajo']
+    search_fields = ['preorden__numero', 'preorden__cliente__razon_social']
+    readonly_fields = ['fecha_subida', 'imagen_preview']
+    date_hierarchy = 'fecha_subida'
+    
+    fieldsets = (
+        ('Información de la Evidencia', {
+            'fields': ('preorden', 'imagen')
+        }),
+        ('Vista Previa', {
+            'fields': ('imagen_preview',),
+            'classes': ('collapse',)
+        }),
+        ('Información del Sistema', {
+            'fields': ('fecha_subida',),
+            'classes': ('collapse',)
+        }),
+    )
+    
+    def imagen_preview(self, obj):
+        if obj.imagen:
+            return f'<img src="{obj.imagen.url}" style="max-width: 200px; max-height: 200px;" />'
+        return "Sin imagen"
+    imagen_preview.short_description = 'Vista Previa'
+    imagen_preview.allow_tags = True
+
+
 @admin.register(EvidenciaRevision5S)
 class EvidenciaRevision5SAdmin(admin.ModelAdmin):
     list_display = ['revision', 'descripcion', 'fecha_subida']
