@@ -114,28 +114,28 @@
                             <div class="border rounded p-3">
                                 <h5 class="text-primary">Q1 (Ene-Mar)</h5>
                                 <h4>${{ q1|floatformat:0 }}</h4>
-                                <small class="text-muted">{{ q1|div:total_anual|mul:100|floatformat:1 }}% del total</small>
+                                <small class="text-muted">{{ q1_porcentaje|floatformat:1 }}% del total</small>
                             </div>
                         </div>
                         <div class="col-md-3">
                             <div class="border rounded p-3">
                                 <h5 class="text-success">Q2 (Abr-Jun)</h5>
                                 <h4>${{ q2|floatformat:0 }}</h4>
-                                <small class="text-muted">{{ q2|div:total_anual|mul:100|floatformat:1 }}% del total</small>
+                                <small class="text-muted">{{ q2_porcentaje|floatformat:1 }}% del total</small>
                             </div>
                         </div>
                         <div class="col-md-3">
                             <div class="border rounded p-3">
                                 <h5 class="text-warning">Q3 (Jul-Sep)</h5>
                                 <h4>${{ q3|floatformat:0 }}</h4>
-                                <small class="text-muted">{{ q3|div:total_anual|mul:100|floatformat:1 }}% del total</small>
+                                <small class="text-muted">{{ q3_porcentaje|floatformat:1 }}% del total</small>
                             </div>
                         </div>
                         <div class="col-md-3">
                             <div class="border rounded p-3">
                                 <h5 class="text-danger">Q4 (Oct-Dic)</h5>
                                 <h4>${{ q4|floatformat:0 }}</h4>
-                                <small class="text-muted">{{ q4|div:total_anual|mul:100|floatformat:1 }}% del total</small>
+                                <small class="text-muted">{{ q4_porcentaje|floatformat:1 }}% del total</small>
                             </div>
                         </div>
                     </div>

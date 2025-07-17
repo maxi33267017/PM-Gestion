@@ -856,6 +856,12 @@ def facturacion_anual(request):
     q3 = sum(item['total_facturacion'] for item in facturacion_anual[6:9])
     q4 = sum(item['total_facturacion'] for item in facturacion_anual[9:12])
     
+    # Calcular porcentajes trimestrales
+    q1_porcentaje = (q1 / total_anual * 100) if total_anual > 0 else 0
+    q2_porcentaje = (q2 / total_anual * 100) if total_anual > 0 else 0
+    q3_porcentaje = (q3 / total_anual * 100) if total_anual > 0 else 0
+    q4_porcentaje = (q4 / total_anual * 100) if total_anual > 0 else 0
+    
     # Descarga Excel
     if request.GET.get('excel') == '1':
         datos = []
@@ -895,6 +901,10 @@ def facturacion_anual(request):
         'q2': q2,
         'q3': q3,
         'q4': q4,
+        'q1_porcentaje': q1_porcentaje,
+        'q2_porcentaje': q2_porcentaje,
+        'q3_porcentaje': q3_porcentaje,
+        'q4_porcentaje': q4_porcentaje,
         'años_disponibles': range(2020, timezone.now().year + 1)
     }
     return render(request, 'reportes/facturacion/anual.html', context)
