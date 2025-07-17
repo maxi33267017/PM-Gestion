@@ -388,7 +388,15 @@ def crear_preorden(request):
                 # Guardar imágenes de evidencia
                 evidencia_files = request.FILES.getlist('imagen')  # Recoger todas las evidencias subidas
                 for evidencia_file in evidencia_files:
-                    Evidencia.objects.create(preorden=preorden, imagen=evidencia_file)
+                    if evidencia_file and evidencia_file.name:  # Verificar que el archivo no esté vacío y tenga nombre
+                        Evidencia.objects.create(preorden=preorden, imagen=evidencia_file)
+                
+                # Procesar campos de imagen dinámicos (imagen_0, imagen_1, etc.)
+                for key in request.FILES.keys():
+                    if key.startswith('imagen_') and key != 'imagen':
+                        evidencia_file = request.FILES[key]
+                        if evidencia_file and evidencia_file.name:  # Verificar que el archivo no esté vacío y tenga nombre
+                            Evidencia.objects.create(preorden=preorden, imagen=evidencia_file)
 
                 messages.success(request, 'Preorden creada correctamente.')
                 return redirect('gestionDeTaller:lista_preordenes')
@@ -931,8 +939,15 @@ def editar_preorden(request, preorden_id):
                 # Guardar imágenes de evidencia
                 evidencia_files = request.FILES.getlist('imagen')  # Recoger todas las evidencias subidas
                 for evidencia_file in evidencia_files:
-                    if evidencia_file:  # Verificar que el archivo no esté vacío
+                    if evidencia_file and evidencia_file.name:  # Verificar que el archivo no esté vacío y tenga nombre
                         Evidencia.objects.create(preorden=preorden, imagen=evidencia_file)
+                
+                # Procesar campos de imagen dinámicos (imagen_0, imagen_1, etc.)
+                for key in request.FILES.keys():
+                    if key.startswith('imagen_') and key != 'imagen':
+                        evidencia_file = request.FILES[key]
+                        if evidencia_file and evidencia_file.name:  # Verificar que el archivo no esté vacío y tenga nombre
+                            Evidencia.objects.create(preorden=preorden, imagen=evidencia_file)
                 
                 messages.success(request, 'Preorden actualizada correctamente.')
                 return redirect('gestionDeTaller:lista_preordenes')
