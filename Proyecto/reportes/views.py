@@ -117,7 +117,60 @@ def dashboard_reportes(request):
 @login_required
 def reportes_facturacion(request):
     """Dashboard de reportes de facturación"""
-    return render(request, 'reportes/facturacion/dashboard.html')
+    
+    # Calcular estadísticas de facturación
+    from datetime import datetime, timedelta
+    from django.utils import timezone
+    
+    # Fecha actual y año actual
+    ahora = timezone.now()
+    inicio_ano = ahora.replace(month=1, day=1, hour=0, minute=0, second=0, microsecond=0)
+    
+    # Servicios completados con facturación
+    servicios_completados = Servicio.objects.filter(
+        estado='COMPLETADO'
+    )
+    
+    # Facturación total (mano de obra + gastos + repuestos)
+    facturacion_total = servicios_completados.aggregate(
+        total=Sum('valor_mano_obra')
+    )['total'] or 0
+    
+    # Agregar gastos y repuestos
+    total_gastos = servicios_completados.aggregate(
+        total=Sum('gastos__monto')
+    )['total'] or 0
+    
+    total_repuestos = servicios_completados.aggregate(
+        total=Sum(F('repuestos__precio_unitario') * F('repuestos__cantidad'))
+    )['total'] or 0
+    
+    facturacion_total += total_gastos + total_repuestos
+    
+    # Servicios facturados (con algún valor)
+    servicios_facturados = servicios_completados.filter(
+        Q(valor_mano_obra__gt=0) | 
+        Q(gastos__isnull=False) | 
+        Q(repuestos__isnull=False)
+    ).distinct().count()
+    
+    # Técnicos activos
+    tecnicos_activos = Usuario.objects.filter(
+        rol='TECNICO',
+        is_active=True
+    ).count()
+    
+    # Sucursales
+    sucursales_count = Sucursal.objects.count()
+    
+    context = {
+        'facturacion_total': f"${facturacion_total:,.0f}",
+        'servicios_facturados': servicios_facturados,
+        'tecnicos_activos': tecnicos_activos,
+        'sucursales_count': sucursales_count
+    }
+    
+    return render(request, 'reportes/facturacion/dashboard.html', context)
 
 @login_required
 def facturacion_por_tecnico(request):
@@ -125,23 +178,278 @@ def facturacion_por_tecnico(request):
     fecha_inicio = request.GET.get('fecha_inicio')
     fecha_fin = request.GET.get('fecha_fin')
     
-    # Lógica para obtener datos de facturación por técnico
+    # Obtener técnicos activos
+    tecnicos = Usuario.objects.filter(
+        rol='TECNICO',
+        is_active=True
+    ).order_by('first_name', 'last_name')
+    
+    # Filtrar por fechas si se proporcionan
+    servicios_query = Servicio.objects.filter(estado='COMPLETADO')
+    if fecha_inicio:
+        servicios_query = servicios_query.filter(fecha_servicio__gte=fecha_inicio)
+    if fecha_fin:
+        servicios_query = servicios_query.filter(fecha_servicio__lte=fecha_fin)
+    
+    # Calcular facturación por técnico
+    facturacion_por_tecnico = []
+    for tecnico in tecnicos:
+        # Obtener servicios donde el técnico registró horas
+        servicios_tecnico = servicios_query.filter(
+            registrohorastecnico__tecnico=tecnico
+        ).distinct()
+        
+        # Calcular facturación
+        total_mano_obra = servicios_tecnico.aggregate(
+            total=Sum('valor_mano_obra')
+        )['total'] or 0
+        
+        total_gastos = servicios_tecnico.aggregate(
+            total=Sum('gastos__monto')
+        )['total'] or 0
+        
+        total_repuestos = servicios_tecnico.aggregate(
+            total=Sum(F('repuestos__precio_unitario') * F('repuestos__cantidad'))
+        )['total'] or 0
+        
+        total_facturacion = total_mano_obra + total_gastos + total_repuestos
+        
+        # Calcular horas trabajadas
+        horas_trabajadas = servicios_tecnico.aggregate(
+            total_horas=Sum('registrohorastecnico__duracion')
+        )['total_horas'] or timedelta()
+        
+        horas_decimal = horas_trabajadas.total_seconds() / 3600 if horas_trabajadas else 0
+        
+        # Calcular servicios completados
+        servicios_completados = servicios_tecnico.count()
+        
+        facturacion_por_tecnico.append({
+            'tecnico': tecnico,
+            'total_facturacion': total_facturacion,
+            'mano_obra': total_mano_obra,
+            'gastos': total_gastos,
+            'repuestos': total_repuestos,
+            'horas_trabajadas': horas_decimal,
+            'servicios_completados': servicios_completados,
+            'promedio_por_servicio': total_facturacion / servicios_completados if servicios_completados > 0 else 0
+        })
+    
+    # Ordenar por facturación total
+    facturacion_por_tecnico.sort(key=lambda x: x['total_facturacion'], reverse=True)
+    
+    # Descarga Excel
+    if request.GET.get('excel') == '1':
+        datos = []
+        for item in facturacion_por_tecnico:
+            datos.append({
+                'Técnico': f"{item['tecnico'].first_name} {item['tecnico'].last_name}",
+                'Email': item['tecnico'].email,
+                'Total Facturación': float(item['total_facturacion']),
+                'Mano de Obra': float(item['mano_obra']),
+                'Gastos': float(item['gastos']),
+                'Repuestos': float(item['repuestos']),
+                'Horas Trabajadas': round(item['horas_trabajadas'], 2),
+                'Servicios Completados': item['servicios_completados'],
+                'Promedio por Servicio': float(item['promedio_por_servicio'])
+            })
+        
+        df = pd.DataFrame(datos)
+        response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        response['Content-Disposition'] = 'attachment; filename=facturacion_por_tecnico.xlsx'
+        df.to_excel(response, index=False)
+        return response
+    
     context = {
         'titulo': 'Facturación por Técnico',
         'fecha_inicio': fecha_inicio,
-        'fecha_fin': fecha_fin
+        'fecha_fin': fecha_fin,
+        'facturacion_por_tecnico': facturacion_por_tecnico,
+        'total_general': sum(item['total_facturacion'] for item in facturacion_por_tecnico)
     }
     return render(request, 'reportes/facturacion/por_tecnico.html', context)
 
 @login_required
 def facturacion_por_sucursal(request):
     """Reporte de facturación por sucursal"""
-    return render(request, 'reportes/facturacion/por_sucursal.html')
+    fecha_inicio = request.GET.get('fecha_inicio')
+    fecha_fin = request.GET.get('fecha_fin')
+    
+    # Obtener sucursales
+    sucursales = Sucursal.objects.all().order_by('nombre')
+    
+    # Filtrar por fechas si se proporcionan
+    servicios_query = Servicio.objects.filter(estado='COMPLETADO')
+    if fecha_inicio:
+        servicios_query = servicios_query.filter(fecha_servicio__gte=fecha_inicio)
+    if fecha_fin:
+        servicios_query = servicios_query.filter(fecha_servicio__lte=fecha_fin)
+    
+    # Calcular facturación por sucursal
+    facturacion_por_sucursal = []
+    for sucursal in sucursales:
+        # Obtener servicios de la sucursal
+        servicios_sucursal = servicios_query.filter(
+            preorden__cliente__sucursal=sucursal
+        )
+        
+        # Calcular facturación
+        total_mano_obra = servicios_sucursal.aggregate(
+            total=Sum('valor_mano_obra')
+        )['total'] or 0
+        
+        total_gastos = servicios_sucursal.aggregate(
+            total=Sum('gastos__monto')
+        )['total'] or 0
+        
+        total_repuestos = servicios_sucursal.aggregate(
+            total=Sum(F('repuestos__precio_unitario') * F('repuestos__cantidad'))
+        )['total'] or 0
+        
+        total_facturacion = total_mano_obra + total_gastos + total_repuestos
+        
+        # Calcular servicios completados
+        servicios_completados = servicios_sucursal.count()
+        
+        # Calcular clientes únicos
+        clientes_unicos = servicios_sucursal.values('preorden__cliente').distinct().count()
+        
+        # Calcular técnicos que trabajaron
+        tecnicos_unicos = servicios_sucursal.values('registrohorastecnico__tecnico').distinct().count()
+        
+        facturacion_por_sucursal.append({
+            'sucursal': sucursal,
+            'total_facturacion': total_facturacion,
+            'mano_obra': total_mano_obra,
+            'gastos': total_gastos,
+            'repuestos': total_repuestos,
+            'servicios_completados': servicios_completados,
+            'clientes_unicos': clientes_unicos,
+            'tecnicos_unicos': tecnicos_unicos,
+            'promedio_por_servicio': total_facturacion / servicios_completados if servicios_completados > 0 else 0
+        })
+    
+    # Ordenar por facturación total
+    facturacion_por_sucursal.sort(key=lambda x: x['total_facturacion'], reverse=True)
+    
+    # Descarga Excel
+    if request.GET.get('excel') == '1':
+        datos = []
+        for item in facturacion_por_sucursal:
+            datos.append({
+                'Sucursal': item['sucursal'].nombre,
+                'Total Facturación': float(item['total_facturacion']),
+                'Mano de Obra': float(item['mano_obra']),
+                'Gastos': float(item['gastos']),
+                'Repuestos': float(item['repuestos']),
+                'Servicios Completados': item['servicios_completados'],
+                'Clientes Únicos': item['clientes_unicos'],
+                'Técnicos Únicos': item['tecnicos_unicos'],
+                'Promedio por Servicio': float(item['promedio_por_servicio'])
+            })
+        
+        df = pd.DataFrame(datos)
+        response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        response['Content-Disposition'] = 'attachment; filename=facturacion_por_sucursal.xlsx'
+        df.to_excel(response, index=False)
+        return response
+    
+    context = {
+        'titulo': 'Facturación por Sucursal',
+        'fecha_inicio': fecha_inicio,
+        'fecha_fin': fecha_fin,
+        'facturacion_por_sucursal': facturacion_por_sucursal,
+        'total_general': sum(item['total_facturacion'] for item in facturacion_por_sucursal)
+    }
+    return render(request, 'reportes/facturacion/por_sucursal.html', context)
 
 @login_required
 def facturacion_mensual(request):
     """Reporte de facturación mensual"""
-    return render(request, 'reportes/facturacion/mensual.html')
+    año = request.GET.get('año', timezone.now().year)
+    
+    # Calcular facturación por mes del año seleccionado
+    facturacion_mensual = []
+    total_anual = 0
+    
+    for mes in range(1, 13):
+        # Fecha inicio y fin del mes
+        fecha_inicio = timezone.datetime(int(año), mes, 1, tzinfo=timezone.utc)
+        if mes == 12:
+            fecha_fin = timezone.datetime(int(año) + 1, 1, 1, tzinfo=timezone.utc) - timedelta(days=1)
+        else:
+            fecha_fin = timezone.datetime(int(año), mes + 1, 1, tzinfo=timezone.utc) - timedelta(days=1)
+        
+        # Obtener servicios del mes
+        servicios_mes = Servicio.objects.filter(
+            estado='COMPLETADO',
+            fecha_servicio__gte=fecha_inicio,
+            fecha_servicio__lte=fecha_fin
+        )
+        
+        # Calcular facturación
+        total_mano_obra = servicios_mes.aggregate(
+            total=Sum('valor_mano_obra')
+        )['total'] or 0
+        
+        total_gastos = servicios_mes.aggregate(
+            total=Sum('gastos__monto')
+        )['total'] or 0
+        
+        total_repuestos = servicios_mes.aggregate(
+            total=Sum(F('repuestos__precio_unitario') * F('repuestos__cantidad'))
+        )['total'] or 0
+        
+        total_facturacion = total_mano_obra + total_gastos + total_repuestos
+        total_anual += total_facturacion
+        
+        # Calcular servicios completados
+        servicios_completados = servicios_mes.count()
+        
+        # Calcular clientes únicos
+        clientes_unicos = servicios_mes.values('preorden__cliente').distinct().count()
+        
+        facturacion_mensual.append({
+            'mes': mes,
+            'nombre_mes': fecha_inicio.strftime('%B'),
+            'total_facturacion': total_facturacion,
+            'mano_obra': total_mano_obra,
+            'gastos': total_gastos,
+            'repuestos': total_repuestos,
+            'servicios_completados': servicios_completados,
+            'clientes_unicos': clientes_unicos,
+            'promedio_por_servicio': total_facturacion / servicios_completados if servicios_completados > 0 else 0
+        })
+    
+    # Descarga Excel
+    if request.GET.get('excel') == '1':
+        datos = []
+        for item in facturacion_mensual:
+            datos.append({
+                'Mes': item['nombre_mes'],
+                'Total Facturación': float(item['total_facturacion']),
+                'Mano de Obra': float(item['mano_obra']),
+                'Gastos': float(item['gastos']),
+                'Repuestos': float(item['repuestos']),
+                'Servicios Completados': item['servicios_completados'],
+                'Clientes Únicos': item['clientes_unicos'],
+                'Promedio por Servicio': float(item['promedio_por_servicio'])
+            })
+        
+        df = pd.DataFrame(datos)
+        response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        response['Content-Disposition'] = f'attachment; filename=facturacion_mensual_{año}.xlsx'
+        df.to_excel(response, index=False)
+        return response
+    
+    context = {
+        'titulo': 'Facturación Mensual',
+        'año': año,
+        'facturacion_mensual': facturacion_mensual,
+        'total_anual': total_anual,
+        'años_disponibles': range(2020, timezone.now().year + 1)
+    }
+    return render(request, 'reportes/facturacion/mensual.html', context)
 
 @login_required
 def facturacion_trimestral(request):

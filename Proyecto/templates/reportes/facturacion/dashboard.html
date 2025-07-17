@@ -119,19 +119,19 @@
     <div class="stats-summary">
         <div class="row">
             <div class="col-md-3 stat-item">
-                <div class="stat-number">$0</div>
+                <div class="stat-number">{{ facturacion_total|default:"$0" }}</div>
                 <div class="stat-label">Facturación Total</div>
             </div>
             <div class="col-md-3 stat-item">
-                <div class="stat-number">0</div>
+                <div class="stat-number">{{ servicios_facturados|default:"0" }}</div>
                 <div class="stat-label">Servicios Facturados</div>
             </div>
             <div class="col-md-3 stat-item">
-                <div class="stat-number">0</div>
+                <div class="stat-number">{{ tecnicos_activos|default:"0" }}</div>
                 <div class="stat-label">Técnicos Activos</div>
             </div>
             <div class="col-md-3 stat-item">
-                <div class="stat-number">0</div>
+                <div class="stat-number">{{ sucursales_count|default:"0" }}</div>
                 <div class="stat-label">Sucursales</div>
             </div>
         </div>
