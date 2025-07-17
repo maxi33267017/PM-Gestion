@@ -459,17 +459,445 @@ def facturacion_mensual(request):
 @login_required
 def facturacion_trimestral(request):
     """Reporte de facturación trimestral"""
-    return render(request, 'reportes/facturacion/trimestral.html')
+    año = request.GET.get('año', timezone.now().year)
+    
+    # Calcular facturación por trimestre del año seleccionado
+    facturacion_trimestral = []
+    total_anual = 0
+    
+    for trimestre in range(1, 5):
+        # Definir meses del trimestre
+        if trimestre == 1:
+            meses = [1, 2, 3]
+            nombre_trimestre = "Q1 (Ene-Mar)"
+        elif trimestre == 2:
+            meses = [4, 5, 6]
+            nombre_trimestre = "Q2 (Abr-Jun)"
+        elif trimestre == 3:
+            meses = [7, 8, 9]
+            nombre_trimestre = "Q3 (Jul-Sep)"
+        else:
+            meses = [10, 11, 12]
+            nombre_trimestre = "Q4 (Oct-Dic)"
+        
+        # Calcular facturación del trimestre
+        total_trimestre = 0
+        servicios_trimestre = 0
+        clientes_unicos = set()
+        
+        for mes in meses:
+            # Fecha inicio y fin del mes
+            fecha_inicio = timezone.datetime(int(año), mes, 1, tzinfo=timezone.utc)
+            if mes == 12:
+                fecha_fin = timezone.datetime(int(año) + 1, 1, 1, tzinfo=timezone.utc) - timedelta(days=1)
+            else:
+                fecha_fin = timezone.datetime(int(año), mes + 1, 1, tzinfo=timezone.utc) - timedelta(days=1)
+            
+            # Obtener servicios del mes
+            servicios_mes = Servicio.objects.filter(
+                estado='COMPLETADO',
+                fecha_servicio__gte=fecha_inicio,
+                fecha_servicio__lte=fecha_fin
+            )
+            
+            # Calcular facturación del mes
+            total_mano_obra = servicios_mes.aggregate(
+                total=Sum('valor_mano_obra')
+            )['total'] or 0
+            
+            total_gastos = servicios_mes.aggregate(
+                total=Sum('gastos__monto')
+            )['total'] or 0
+            
+            total_repuestos = servicios_mes.aggregate(
+                total=Sum(F('repuestos__precio_unitario') * F('repuestos__cantidad'))
+            )['total'] or 0
+            
+            total_mes = total_mano_obra + total_gastos + total_repuestos
+            total_trimestre += total_mes
+            servicios_trimestre += servicios_mes.count()
+            
+            # Agregar clientes únicos
+            clientes_mes = servicios_mes.values_list('preorden__cliente', flat=True)
+            clientes_unicos.update(clientes_mes)
+        
+        total_anual += total_trimestre
+        
+        facturacion_trimestral.append({
+            'trimestre': trimestre,
+            'nombre_trimestre': nombre_trimestre,
+            'meses': meses,
+            'total_facturacion': total_trimestre,
+            'servicios_completados': servicios_trimestre,
+            'clientes_unicos': len(clientes_unicos),
+            'promedio_por_servicio': total_trimestre / servicios_trimestre if servicios_trimestre > 0 else 0
+        })
+    
+    # Calcular datos del año anterior para comparación
+    año_anterior = int(año) - 1
+    facturacion_anterior = []
+    total_anterior = 0
+    
+    for trimestre in range(1, 5):
+        total_trimestre_anterior = 0
+        for mes in range((trimestre-1)*3 + 1, trimestre*3 + 1):
+            fecha_inicio = timezone.datetime(año_anterior, mes, 1, tzinfo=timezone.utc)
+            if mes == 12:
+                fecha_fin = timezone.datetime(año_anterior + 1, 1, 1, tzinfo=timezone.utc) - timedelta(days=1)
+            else:
+                fecha_fin = timezone.datetime(año_anterior, mes + 1, 1, tzinfo=timezone.utc) - timedelta(days=1)
+            
+            servicios_mes = Servicio.objects.filter(
+                estado='COMPLETADO',
+                fecha_servicio__gte=fecha_inicio,
+                fecha_servicio__lte=fecha_fin
+            )
+            
+            total_mano_obra = servicios_mes.aggregate(total=Sum('valor_mano_obra'))['total'] or 0
+            total_gastos = servicios_mes.aggregate(total=Sum('gastos__monto'))['total'] or 0
+            total_repuestos = servicios_mes.aggregate(
+                total=Sum(F('repuestos__precio_unitario') * F('repuestos__cantidad'))
+            )['total'] or 0
+            
+            total_trimestre_anterior += total_mano_obra + total_gastos + total_repuestos
+        
+        total_anterior += total_trimestre_anterior
+        facturacion_anterior.append(total_trimestre_anterior)
+    
+    # Agregar comparación con año anterior
+    for i, item in enumerate(facturacion_trimestral):
+        item['facturacion_anterior'] = facturacion_anterior[i]
+        item['variacion'] = item['total_facturacion'] - item['facturacion_anterior']
+        item['variacion_porcentual'] = (
+            (item['variacion'] / item['facturacion_anterior'] * 100) 
+            if item['facturacion_anterior'] > 0 else 0
+        )
+    
+    # Descarga Excel
+    if request.GET.get('excel') == '1':
+        datos = []
+        for item in facturacion_trimestral:
+            datos.append({
+                'Trimestre': item['nombre_trimestre'],
+                'Total Facturación': float(item['total_facturacion']),
+                'Servicios Completados': item['servicios_completados'],
+                'Clientes Únicos': item['clientes_unicos'],
+                'Promedio por Servicio': float(item['promedio_por_servicio']),
+                'Facturación Año Anterior': float(item['facturacion_anterior']),
+                'Variación': float(item['variacion']),
+                'Variación %': round(item['variacion_porcentual'], 2)
+            })
+        
+        df = pd.DataFrame(datos)
+        response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        response['Content-Disposition'] = f'attachment; filename=facturacion_trimestral_{año}.xlsx'
+        df.to_excel(response, index=False)
+        return response
+    
+    context = {
+        'titulo': 'Facturación Trimestral',
+        'año': año,
+        'facturacion_trimestral': facturacion_trimestral,
+        'total_anual': total_anual,
+        'total_anterior': total_anterior,
+        'variacion_anual': total_anual - total_anterior,
+        'variacion_anual_porcentual': ((total_anual - total_anterior) / total_anterior * 100) if total_anterior > 0 else 0,
+        'años_disponibles': range(2020, timezone.now().year + 1)
+    }
+    return render(request, 'reportes/facturacion/trimestral.html', context)
 
 @login_required
 def facturacion_semestral(request):
     """Reporte de facturación semestral"""
-    return render(request, 'reportes/facturacion/semestral.html')
+    año = request.GET.get('año', timezone.now().year)
+    
+    # Calcular facturación por semestre del año seleccionado
+    facturacion_semestral = []
+    total_anual = 0
+    
+    for semestre in range(1, 3):
+        # Definir meses del semestre
+        if semestre == 1:
+            meses = [1, 2, 3, 4, 5, 6]
+            nombre_semestre = "S1 (Ene-Jun)"
+        else:
+            meses = [7, 8, 9, 10, 11, 12]
+            nombre_semestre = "S2 (Jul-Dic)"
+        
+        # Calcular facturación del semestre
+        total_semestre = 0
+        servicios_semestre = 0
+        clientes_unicos = set()
+        
+        for mes in meses:
+            # Fecha inicio y fin del mes
+            fecha_inicio = timezone.datetime(int(año), mes, 1, tzinfo=timezone.utc)
+            if mes == 12:
+                fecha_fin = timezone.datetime(int(año) + 1, 1, 1, tzinfo=timezone.utc) - timedelta(days=1)
+            else:
+                fecha_fin = timezone.datetime(int(año), mes + 1, 1, tzinfo=timezone.utc) - timedelta(days=1)
+            
+            # Obtener servicios del mes
+            servicios_mes = Servicio.objects.filter(
+                estado='COMPLETADO',
+                fecha_servicio__gte=fecha_inicio,
+                fecha_servicio__lte=fecha_fin
+            )
+            
+            # Calcular facturación del mes
+            total_mano_obra = servicios_mes.aggregate(
+                total=Sum('valor_mano_obra')
+            )['total'] or 0
+            
+            total_gastos = servicios_mes.aggregate(
+                total=Sum('gastos__monto')
+            )['total'] or 0
+            
+            total_repuestos = servicios_mes.aggregate(
+                total=Sum(F('repuestos__precio_unitario') * F('repuestos__cantidad'))
+            )['total'] or 0
+            
+            total_mes = total_mano_obra + total_gastos + total_repuestos
+            total_semestre += total_mes
+            servicios_semestre += servicios_mes.count()
+            
+            # Agregar clientes únicos
+            clientes_mes = servicios_mes.values_list('preorden__cliente', flat=True)
+            clientes_unicos.update(clientes_mes)
+        
+        total_anual += total_semestre
+        
+        facturacion_semestral.append({
+            'semestre': semestre,
+            'nombre_semestre': nombre_semestre,
+            'meses': meses,
+            'total_facturacion': total_semestre,
+            'servicios_completados': servicios_semestre,
+            'clientes_unicos': len(clientes_unicos),
+            'promedio_por_servicio': total_semestre / servicios_semestre if servicios_semestre > 0 else 0
+        })
+    
+    # Calcular datos del año anterior para comparación
+    año_anterior = int(año) - 1
+    facturacion_anterior = []
+    total_anterior = 0
+    
+    for semestre in range(1, 3):
+        total_semestre_anterior = 0
+        for mes in range((semestre-1)*6 + 1, semestre*6 + 1):
+            fecha_inicio = timezone.datetime(año_anterior, mes, 1, tzinfo=timezone.utc)
+            if mes == 12:
+                fecha_fin = timezone.datetime(año_anterior + 1, 1, 1, tzinfo=timezone.utc) - timedelta(days=1)
+            else:
+                fecha_fin = timezone.datetime(año_anterior, mes + 1, 1, tzinfo=timezone.utc) - timedelta(days=1)
+            
+            servicios_mes = Servicio.objects.filter(
+                estado='COMPLETADO',
+                fecha_servicio__gte=fecha_inicio,
+                fecha_servicio__lte=fecha_fin
+            )
+            
+            total_mano_obra = servicios_mes.aggregate(total=Sum('valor_mano_obra'))['total'] or 0
+            total_gastos = servicios_mes.aggregate(total=Sum('gastos__monto'))['total'] or 0
+            total_repuestos = servicios_mes.aggregate(
+                total=Sum(F('repuestos__precio_unitario') * F('repuestos__cantidad'))
+            )['total'] or 0
+            
+            total_semestre_anterior += total_mano_obra + total_gastos + total_repuestos
+        
+        total_anterior += total_semestre_anterior
+        facturacion_anterior.append(total_semestre_anterior)
+    
+    # Agregar comparación con año anterior
+    for i, item in enumerate(facturacion_semestral):
+        item['facturacion_anterior'] = facturacion_anterior[i]
+        item['variacion'] = item['total_facturacion'] - item['facturacion_anterior']
+        item['variacion_porcentual'] = (
+            (item['variacion'] / item['facturacion_anterior'] * 100) 
+            if item['facturacion_anterior'] > 0 else 0
+        )
+    
+    # Descarga Excel
+    if request.GET.get('excel') == '1':
+        datos = []
+        for item in facturacion_semestral:
+            datos.append({
+                'Semestre': item['nombre_semestre'],
+                'Total Facturación': float(item['total_facturacion']),
+                'Servicios Completados': item['servicios_completados'],
+                'Clientes Únicos': item['clientes_unicos'],
+                'Promedio por Servicio': float(item['promedio_por_servicio']),
+                'Facturación Año Anterior': float(item['facturacion_anterior']),
+                'Variación': float(item['variacion']),
+                'Variación %': round(item['variacion_porcentual'], 2)
+            })
+        
+        df = pd.DataFrame(datos)
+        response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        response['Content-Disposition'] = f'attachment; filename=facturacion_semestral_{año}.xlsx'
+        df.to_excel(response, index=False)
+        return response
+    
+    context = {
+        'titulo': 'Facturación Semestral',
+        'año': año,
+        'facturacion_semestral': facturacion_semestral,
+        'total_anual': total_anual,
+        'total_anterior': total_anterior,
+        'variacion_anual': total_anual - total_anterior,
+        'variacion_anual_porcentual': ((total_anual - total_anterior) / total_anterior * 100) if total_anterior > 0 else 0,
+        'años_disponibles': range(2020, timezone.now().year + 1)
+    }
+    return render(request, 'reportes/facturacion/semestral.html', context)
 
 @login_required
 def facturacion_anual(request):
     """Reporte de facturación anual"""
-    return render(request, 'reportes/facturacion/anual.html')
+    año = request.GET.get('año', timezone.now().year)
+    
+    # Calcular facturación del año seleccionado
+    facturacion_anual = []
+    total_anual = 0
+    
+    for mes in range(1, 13):
+        # Fecha inicio y fin del mes
+        fecha_inicio = timezone.datetime(int(año), mes, 1, tzinfo=timezone.utc)
+        if mes == 12:
+            fecha_fin = timezone.datetime(int(año) + 1, 1, 1, tzinfo=timezone.utc) - timedelta(days=1)
+        else:
+            fecha_fin = timezone.datetime(int(año), mes + 1, 1, tzinfo=timezone.utc) - timedelta(days=1)
+        
+        # Obtener servicios del mes
+        servicios_mes = Servicio.objects.filter(
+            estado='COMPLETADO',
+            fecha_servicio__gte=fecha_inicio,
+            fecha_servicio__lte=fecha_fin
+        )
+        
+        # Calcular facturación del mes
+        total_mano_obra = servicios_mes.aggregate(
+            total=Sum('valor_mano_obra')
+        )['total'] or 0
+        
+        total_gastos = servicios_mes.aggregate(
+            total=Sum('gastos__monto')
+        )['total'] or 0
+        
+        total_repuestos = servicios_mes.aggregate(
+            total=Sum(F('repuestos__precio_unitario') * F('repuestos__cantidad'))
+        )['total'] or 0
+        
+        total_mes = total_mano_obra + total_gastos + total_repuestos
+        total_anual += total_mes
+        
+        # Calcular servicios completados
+        servicios_completados = servicios_mes.count()
+        
+        # Calcular clientes únicos
+        clientes_unicos = servicios_mes.values('preorden__cliente').distinct().count()
+        
+        facturacion_anual.append({
+            'mes': mes,
+            'nombre_mes': fecha_inicio.strftime('%B'),
+            'total_facturacion': total_mes,
+            'mano_obra': total_mano_obra,
+            'gastos': total_gastos,
+            'repuestos': total_repuestos,
+            'servicios_completados': servicios_completados,
+            'clientes_unicos': clientes_unicos,
+            'promedio_por_servicio': total_mes / servicios_completados if servicios_completados > 0 else 0
+        })
+    
+    # Calcular datos del año anterior para comparación
+    año_anterior = int(año) - 1
+    facturacion_anterior = []
+    total_anterior = 0
+    
+    for mes in range(1, 13):
+        fecha_inicio = timezone.datetime(año_anterior, mes, 1, tzinfo=timezone.utc)
+        if mes == 12:
+            fecha_fin = timezone.datetime(año_anterior + 1, 1, 1, tzinfo=timezone.utc) - timedelta(days=1)
+        else:
+            fecha_fin = timezone.datetime(año_anterior, mes + 1, 1, tzinfo=timezone.utc) - timedelta(days=1)
+        
+        servicios_mes = Servicio.objects.filter(
+            estado='COMPLETADO',
+            fecha_servicio__gte=fecha_inicio,
+            fecha_servicio__lte=fecha_fin
+        )
+        
+        total_mano_obra = servicios_mes.aggregate(total=Sum('valor_mano_obra'))['total'] or 0
+        total_gastos = servicios_mes.aggregate(total=Sum('gastos__monto'))['total'] or 0
+        total_repuestos = servicios_mes.aggregate(
+            total=Sum(F('repuestos__precio_unitario') * F('repuestos__cantidad'))
+        )['total'] or 0
+        
+        total_mes_anterior = total_mano_obra + total_gastos + total_repuestos
+        total_anterior += total_mes_anterior
+        facturacion_anterior.append(total_mes_anterior)
+    
+    # Agregar comparación con año anterior
+    for i, item in enumerate(facturacion_anual):
+        item['facturacion_anterior'] = facturacion_anterior[i]
+        item['variacion'] = item['total_facturacion'] - item['facturacion_anterior']
+        item['variacion_porcentual'] = (
+            (item['variacion'] / item['facturacion_anterior'] * 100) 
+            if item['facturacion_anterior'] > 0 else 0
+        )
+    
+    # Calcular métricas adicionales
+    total_servicios = sum(item['servicios_completados'] for item in facturacion_anual)
+    total_clientes = sum(item['clientes_unicos'] for item in facturacion_anual)
+    promedio_mensual = total_anual / 12 if total_anual > 0 else 0
+    
+    # Calcular trimestres
+    q1 = sum(item['total_facturacion'] for item in facturacion_anual[:3])
+    q2 = sum(item['total_facturacion'] for item in facturacion_anual[3:6])
+    q3 = sum(item['total_facturacion'] for item in facturacion_anual[6:9])
+    q4 = sum(item['total_facturacion'] for item in facturacion_anual[9:12])
+    
+    # Descarga Excel
+    if request.GET.get('excel') == '1':
+        datos = []
+        for item in facturacion_anual:
+            datos.append({
+                'Mes': item['nombre_mes'],
+                'Total Facturación': float(item['total_facturacion']),
+                'Mano de Obra': float(item['mano_obra']),
+                'Gastos': float(item['gastos']),
+                'Repuestos': float(item['repuestos']),
+                'Servicios Completados': item['servicios_completados'],
+                'Clientes Únicos': item['clientes_unicos'],
+                'Promedio por Servicio': float(item['promedio_por_servicio']),
+                'Facturación Año Anterior': float(item['facturacion_anterior']),
+                'Variación': float(item['variacion']),
+                'Variación %': round(item['variacion_porcentual'], 2)
+            })
+        
+        df = pd.DataFrame(datos)
+        response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        response['Content-Disposition'] = f'attachment; filename=facturacion_anual_{año}.xlsx'
+        df.to_excel(response, index=False)
+        return response
+    
+    context = {
+        'titulo': 'Facturación Anual',
+        'año': año,
+        'facturacion_anual': facturacion_anual,
+        'total_anual': total_anual,
+        'total_anterior': total_anterior,
+        'variacion_anual': total_anual - total_anterior,
+        'variacion_anual_porcentual': ((total_anual - total_anterior) / total_anterior * 100) if total_anterior > 0 else 0,
+        'total_servicios': total_servicios,
+        'total_clientes': total_clientes,
+        'promedio_mensual': promedio_mensual,
+        'q1': q1,
+        'q2': q2,
+        'q3': q3,
+        'q4': q4,
+        'años_disponibles': range(2020, timezone.now().year + 1)
+    }
+    return render(request, 'reportes/facturacion/anual.html', context)
 
 # ===== REPORTES DE HORAS =====
 
