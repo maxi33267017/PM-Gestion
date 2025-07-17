@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse, HttpResponse
-from django.db.models import Sum, Count, Avg, Q, F
+from django.db.models import Sum, Count, Avg, Q, F, ExpressionWrapper, DurationField
 from django.utils import timezone
 from datetime import datetime, timedelta
 import json
@@ -216,7 +216,12 @@ def facturacion_por_tecnico(request):
         
         # Calcular horas trabajadas
         horas_trabajadas = servicios_tecnico.aggregate(
-            total_horas=Sum('registrohorastecnico__duracion')
+            total_horas=Sum(
+                ExpressionWrapper(
+                    F('registrohorastecnico__hora_fin') - F('registrohorastecnico__hora_inicio'),
+                    output_field=DurationField()
+                )
+            )
         )['total_horas'] or timedelta()
         
         horas_decimal = horas_trabajadas.total_seconds() / 3600 if horas_trabajadas else 0
