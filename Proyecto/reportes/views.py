@@ -1190,7 +1190,13 @@ def horas_por_sucursal(request):
     horas_por_sucursal.sort(key=lambda x: x['total_horas'], reverse=True)
     
     # Calcular totales generales
-    total_general_horas = sum(item['total_horas'] for item in horas_por_sucursal)
+    total_general_horas = timedelta(0)
+    for item in horas_por_sucursal:
+        if isinstance(item['total_horas'], timedelta):
+            total_general_horas += item['total_horas']
+        else:
+            total_general_horas += timedelta(seconds=item['total_horas'])
+    
     total_general_tecnicos = sum(item['total_tecnicos'] for item in horas_por_sucursal)
     total_general_registros = sum(item['total_registros'] for item in horas_por_sucursal)
     
@@ -1364,7 +1370,13 @@ def horas_por_tecnico(request):
     horas_por_tecnico.sort(key=lambda x: x['total_horas'], reverse=True)
     
     # Calcular totales generales
-    total_general_horas = sum(item['total_horas'] for item in horas_por_tecnico)
+    total_general_horas = timedelta(0)
+    for item in horas_por_tecnico:
+        if isinstance(item['total_horas'], timedelta):
+            total_general_horas += item['total_horas']
+        else:
+            total_general_horas += timedelta(seconds=item['total_horas'])
+    
     total_general_tecnicos = len(horas_por_tecnico)
     total_general_registros = sum(item['total_registros'] for item in horas_por_tecnico)
     
