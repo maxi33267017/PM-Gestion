@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load reportes_filters %}
 
 {% block title %}Tiempo Promedio de Servicios{% endblock %}
 
@@ -45,7 +46,7 @@
         <div class="col-md-6">
             <div class="card bg-info text-white border-0 shadow">
                 <div class="card-body text-center">
-                    <h4>{{ tiempo_promedio_general|floatformat:1 }} hrs</h4>
+                    <h4>{{ tiempo_promedio_general|hours_format }} hrs</h4>
                     <p class="mb-0">Tiempo Promedio General</p>
                 </div>
             </div>
@@ -129,7 +130,7 @@
                                                 {% endif %}
                                             </td>
                                             <td>{{ item.cantidad }}</td>
-                                            <td>{{ item.tiempo_promedio|floatformat:1 }} hrs</td>
+                                            <td>{{ item.tiempo_promedio|hours_format }} hrs</td>
                                         </tr>
                                     {% endfor %}
                                 </tbody>
@@ -164,7 +165,7 @@
                                         <tr>
                                             <td>{{ item.preorden__sucursal__nombre }}</td>
                                             <td>{{ item.cantidad }}</td>
-                                            <td>{{ item.tiempo_promedio|floatformat:1 }} hrs</td>
+                                            <td>{{ item.tiempo_promedio|hours_format }} hrs</td>
                                         </tr>
                                     {% endfor %}
                                 </tbody>
@@ -204,7 +205,7 @@
                                             <td>
                                                 <span class="badge bg-primary">{{ item.cantidad }}</span>
                                             </td>
-                                            <td>{{ item.tiempo_promedio|floatformat:1 }} hrs</td>
+                                            <td>{{ item.tiempo_promedio|hours_format }} hrs</td>
                                             <td>
                                                 {% if item.tiempo_promedio <= tiempo_promedio_general %}
                                                     <span class="badge bg-success">Eficiente</span>
