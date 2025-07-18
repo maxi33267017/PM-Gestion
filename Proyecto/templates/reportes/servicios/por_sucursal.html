@@ -39,6 +39,9 @@
                 <div class="card-body text-center">
                     <h4>{{ total_servicios }}</h4>
                     <p class="mb-0">Total Servicios</p>
+                    {% if servicios_sin_sucursal > 0 %}
+                        <small class="text-light">{{ servicios_sin_sucursal }} sin sucursal</small>
+                    {% endif %}
                 </div>
             </div>
         </div>
@@ -150,6 +153,21 @@
                                 </tr>
                                 {% endwith %}
                             {% endfor %}
+                            
+                            {% if servicios_sin_sucursal > 0 %}
+                                <tr class="table-warning">
+                                    <td><strong><em>Sin Sucursal Asignada</em></strong></td>
+                                    <td>
+                                        <span class="badge bg-warning">{{ servicios_sin_sucursal }}</span>
+                                    </td>
+                                    <td colspan="6" class="text-center text-muted">
+                                        <em>Servicios sin sucursal asignada</em>
+                                    </td>
+                                    <td>
+                                        <strong>$0</strong>
+                                    </td>
+                                </tr>
+                            {% endif %}
                         </tbody>
                     </table>
                 </div>
