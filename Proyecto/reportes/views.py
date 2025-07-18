@@ -2751,31 +2751,38 @@ def servicios_por_sucursal(request):
     fecha_fin = request.GET.get('fecha_fin')
     exportar = request.GET.get('exportar') == 'excel'
     
-    # Filtrar servicios
+    # Filtrar servicios - solo considerar servicios completados o facturados para cálculos financieros
     servicios = Servicio.objects.all()
+    servicios_financieros = Servicio.objects.filter(
+        estado__in=['COMPLETADO', 'A_FACTURAR']
+    )
     
     # Aplicar filtros
     if fecha_inicio:
         servicios = servicios.filter(fecha_servicio__gte=fecha_inicio)
+        servicios_financieros = servicios_financieros.filter(fecha_servicio__gte=fecha_inicio)
     if fecha_fin:
         servicios = servicios.filter(fecha_servicio__lte=fecha_fin)
+        servicios_financieros = servicios_financieros.filter(fecha_servicio__lte=fecha_fin)
     
-    # Agrupar por sucursal
+    # Agrupar por sucursal - usar servicios_financieros para cálculos de dinero
     servicios_por_sucursal = servicios.values('preorden__sucursal__nombre').annotate(
         total_servicios=Count('id'),
         programados=Count('id', filter=Q(estado='PROGRAMADO')),
         en_proceso=Count('id', filter=Q(estado='EN_PROCESO')),
         completados=Count('id', filter=Q(estado='COMPLETADO')),
-        total_mano_obra=Sum('valor_mano_obra'),
-        total_gastos=Sum('gastos__monto'),
-        total_repuestos=Sum(F('repuestos__precio_unitario') * F('repuestos__cantidad'))
+        a_facturar=Count('id', filter=Q(estado='A_FACTURAR')),
+        # Usar servicios_financieros para cálculos de dinero
+        total_mano_obra=Sum('valor_mano_obra', filter=Q(estado__in=['COMPLETADO', 'A_FACTURAR'])),
+        total_gastos=Sum('gastos__monto', filter=Q(estado__in=['COMPLETADO', 'A_FACTURAR'])),
+        total_repuestos=Sum(F('repuestos__precio_unitario') * F('repuestos__cantidad'), filter=Q(estado__in=['COMPLETADO', 'A_FACTURAR']))
     ).order_by('-total_servicios')
     
-    # Calcular totales
+    # Calcular totales usando servicios_financieros
     total_servicios = servicios.count()
-    total_mano_obra = servicios.aggregate(total=Sum('valor_mano_obra'))['total'] or Decimal('0.00')
-    total_gastos = servicios.aggregate(total=Sum('gastos__monto'))['total'] or Decimal('0.00')
-    total_repuestos = servicios.aggregate(total=Sum(F('repuestos__precio_unitario') * F('repuestos__cantidad')))['total'] or Decimal('0.00')
+    total_mano_obra = servicios_financieros.aggregate(total=Sum('valor_mano_obra'))['total'] or Decimal('0.00')
+    total_gastos = servicios_financieros.aggregate(total=Sum('gastos__monto'))['total'] or Decimal('0.00')
+    total_repuestos = servicios_financieros.aggregate(total=Sum(F('repuestos__precio_unitario') * F('repuestos__cantidad')))['total'] or Decimal('0.00')
     valor_total = total_mano_obra + total_gastos + total_repuestos
     
     # Exportar a Excel si se solicita
@@ -2792,6 +2799,7 @@ def servicios_por_sucursal(request):
                 'Programados': item['programados'],
                 'En Proceso': item['en_proceso'],
                 'Completados': item['completados'],
+                'A Facturar': item['a_facturar'],
                 'Mano de Obra': float(item['total_mano_obra'] or 0),
                 'Gastos': float(item['total_gastos'] or 0),
                 'Repuestos': float(item['total_repuestos'] or 0),
@@ -2829,14 +2837,19 @@ def servicios_por_tecnico(request):
     fecha_fin = request.GET.get('fecha_fin')
     exportar = request.GET.get('exportar') == 'excel'
     
-    # Filtrar servicios
+    # Filtrar servicios - solo considerar servicios completados o facturados para cálculos financieros
     servicios = Servicio.objects.all()
+    servicios_financieros = Servicio.objects.filter(
+        estado__in=['COMPLETADO', 'A_FACTURAR']
+    )
     
     # Aplicar filtros
     if fecha_inicio:
         servicios = servicios.filter(fecha_servicio__gte=fecha_inicio)
+        servicios_financieros = servicios_financieros.filter(fecha_servicio__gte=fecha_inicio)
     if fecha_fin:
         servicios = servicios.filter(fecha_servicio__lte=fecha_fin)
+        servicios_financieros = servicios_financieros.filter(fecha_servicio__lte=fecha_fin)
     
     # Agrupar por técnico (usando ManyToMany)
     servicios_por_tecnico = []
@@ -2848,16 +2861,19 @@ def servicios_por_tecnico(request):
     
     for tecnico_id in tecnicos_unicos:
         tecnico_servicios = servicios.filter(preorden__tecnicos__id=tecnico_id)
+        tecnico_servicios_financieros = servicios_financieros.filter(preorden__tecnicos__id=tecnico_id)
         tecnico = tecnico_servicios.first().preorden.tecnicos.get(id=tecnico_id)
         
         total_servicios = tecnico_servicios.count()
         programados = tecnico_servicios.filter(estado='PROGRAMADO').count()
         en_proceso = tecnico_servicios.filter(estado='EN_PROCESO').count()
         completados = tecnico_servicios.filter(estado='COMPLETADO').count()
+        a_facturar = tecnico_servicios.filter(estado='A_FACTURAR').count()
         
-        total_mano_obra = tecnico_servicios.aggregate(total=Sum('valor_mano_obra'))['total'] or Decimal('0.00')
-        total_gastos = tecnico_servicios.aggregate(total=Sum('gastos__monto'))['total'] or Decimal('0.00')
-        total_repuestos = tecnico_servicios.aggregate(total=Sum(F('repuestos__precio_unitario') * F('repuestos__cantidad')))['total'] or Decimal('0.00')
+        # Usar servicios_financieros para cálculos de dinero
+        total_mano_obra = tecnico_servicios_financieros.aggregate(total=Sum('valor_mano_obra'))['total'] or Decimal('0.00')
+        total_gastos = tecnico_servicios_financieros.aggregate(total=Sum('gastos__monto'))['total'] or Decimal('0.00')
+        total_repuestos = tecnico_servicios_financieros.aggregate(total=Sum(F('repuestos__precio_unitario') * F('repuestos__cantidad')))['total'] or Decimal('0.00')
         
         servicios_por_tecnico.append({
             'tecnico': tecnico,
@@ -2865,6 +2881,7 @@ def servicios_por_tecnico(request):
             'programados': programados,
             'en_proceso': en_proceso,
             'completados': completados,
+            'a_facturar': a_facturar,
             'total_mano_obra': total_mano_obra,
             'total_gastos': total_gastos,
             'total_repuestos': total_repuestos,
@@ -2873,11 +2890,11 @@ def servicios_por_tecnico(request):
     # Ordenar por total de servicios
     servicios_por_tecnico.sort(key=lambda x: x['total_servicios'], reverse=True)
     
-    # Calcular totales
+    # Calcular totales usando servicios_financieros
     total_servicios = servicios.count()
-    total_mano_obra = servicios.aggregate(total=Sum('valor_mano_obra'))['total'] or Decimal('0.00')
-    total_gastos = servicios.aggregate(total=Sum('gastos__monto'))['total'] or Decimal('0.00')
-    total_repuestos = servicios.aggregate(total=Sum(F('repuestos__precio_unitario') * F('repuestos__cantidad')))['total'] or Decimal('0.00')
+    total_mano_obra = servicios_financieros.aggregate(total=Sum('valor_mano_obra'))['total'] or Decimal('0.00')
+    total_gastos = servicios_financieros.aggregate(total=Sum('gastos__monto'))['total'] or Decimal('0.00')
+    total_repuestos = servicios_financieros.aggregate(total=Sum(F('repuestos__precio_unitario') * F('repuestos__cantidad')))['total'] or Decimal('0.00')
     valor_total = total_mano_obra + total_gastos + total_repuestos
     
     # Exportar a Excel si se solicita
@@ -2894,6 +2911,7 @@ def servicios_por_tecnico(request):
                 'Programados': item['programados'],
                 'En Proceso': item['en_proceso'],
                 'Completados': item['completados'],
+                'A Facturar': item['a_facturar'],
                 'Mano de Obra': float(item['total_mano_obra']),
                 'Gastos': float(item['total_gastos']),
                 'Repuestos': float(item['total_repuestos']),
