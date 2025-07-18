@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load reportes_filters %}
 
 {% block content %}
 <div class="container-fluid">
@@ -61,7 +62,7 @@
         <div class="col-md-2">
             <div class="card bg-info text-white border-0 shadow">
                 <div class="card-body text-center">
-                    <h4>{{ total_horas|floatformat:1 }}h</h4>
+                    <h4>{{ total_horas|hours_format }}h</h4>
                     <p class="mb-0">Total Horas</p>
                 </div>
             </div>
@@ -69,7 +70,7 @@
         <div class="col-md-2">
             <div class="card bg-warning text-white border-0 shadow">
                 <div class="card-body text-center">
-                    <h4>{{ horas_disponibles|floatformat:1 }}h</h4>
+                    <h4>{{ horas_disponibles|hours_format }}h</h4>
                     <p class="mb-0">Horas Disponibles</p>
                 </div>
             </div>
@@ -77,7 +78,7 @@
         <div class="col-md-2">
             <div class="card bg-danger text-white border-0 shadow">
                 <div class="card-body text-center">
-                    <h4>{{ horas_generan_ingreso|floatformat:1 }}h</h4>
+                    <h4>{{ horas_generan_ingreso|hours_format }}h</h4>
                     <p class="mb-0">Generan Ingreso</p>
                 </div>
             </div>
@@ -85,7 +86,7 @@
         <div class="col-md-2">
             <div class="card bg-secondary text-white border-0 shadow">
                 <div class="card-body text-center">
-                    <h4>{{ horas_aprobadas|floatformat:1 }}h</h4>
+                    <h4>{{ horas_aprobadas|hours_format }}h</h4>
                     <p class="mb-0">Horas Aprobadas</p>
                 </div>
             </div>
@@ -115,7 +116,7 @@
         <div class="col-md-3">
             <div class="card border-0 shadow">
                 <div class="card-body text-center">
-                    <div class="display-6 text-info mb-2">{{ promedio_horas_tecnico|floatformat:1 }}h</div>
+                    <div class="display-6 text-info mb-2">{{ promedio_horas_tecnico|hours_format }}h</div>
                     <h6 class="text-muted">Promedio por Técnico</h6>
                     <small class="text-muted">Horas promedio por técnico</small>
                 </div>
@@ -124,7 +125,7 @@
         <div class="col-md-3">
             <div class="card border-0 shadow">
                 <div class="card-body text-center">
-                    <div class="display-6 text-warning mb-2">{{ horas_no_disponibles|floatformat:1 }}h</div>
+                    <div class="display-6 text-warning mb-2">{{ horas_no_disponibles|hours_format }}h</div>
                     <h6 class="text-muted">No Disponibles</h6>
                     <small class="text-muted">Horas no disponibles</small>
                 </div>

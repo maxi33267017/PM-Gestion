@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load reportes_filters %}
 
 {% block content %}
 <div class="container-fluid">
@@ -135,16 +136,16 @@
                                 <span class="badge bg-secondary">{{ item.tecnico.sucursal.nombre|default:"Sin sucursal" }}</span>
                             </td>
                             <td>
-                                <span class="badge bg-primary">{{ item.total_horas|floatformat:1 }}h</span>
+                                <span class="badge bg-primary">{{ item.total_horas|hours_format }}h</span>
                             </td>
                             <td>
-                                <span class="badge bg-success">{{ item.horas_disponibles|floatformat:1 }}h</span>
+                                <span class="badge bg-success">{{ item.horas_disponibles|hours_format }}h</span>
                             </td>
                             <td>
-                                <span class="badge bg-danger">{{ item.horas_generan_ingreso|floatformat:1 }}h</span>
+                                <span class="badge bg-danger">{{ item.horas_generan_ingreso|hours_format }}h</span>
                             </td>
                             <td>
-                                <span class="badge bg-info">{{ item.horas_aprobadas|floatformat:1 }}h</span>
+                                <span class="badge bg-info">{{ item.horas_aprobadas|hours_format }}h</span>
                             </td>
                             <td>
                                 <span class="badge bg-primary">{{ item.dias_trabajados }}</span>
@@ -177,10 +178,10 @@
                                 {% endif %}
                             </td>
                             <td>
-                                <span class="badge bg-primary">{{ item.promedio_por_dia|floatformat:1 }}h</span>
+                                <span class="badge bg-primary">{{ item.promedio_por_dia|hours_format }}h</span>
                             </td>
                             <td>
-                                <span class="badge bg-danger">{{ item.promedio_productivo_por_dia|floatformat:1 }}h</span>
+                                <span class="badge bg-danger">{{ item.promedio_productivo_por_dia|hours_format }}h</span>
                             </td>
                             <td>
                                 {% if item.tendencia > 0 %}

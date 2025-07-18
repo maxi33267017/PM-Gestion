@@ -1,1 +1,1 @@
-# Este archivo hace que el directorio sea un paquete de Python 
+# This file is intentionally empty to make the directory a Python package 
