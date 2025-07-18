@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse, HttpResponse
-from django.db.models import Sum, Count, Avg, Q, F, ExpressionWrapper, DurationField, fields
+from django.db.models import Sum, Count, Avg, Q, F, ExpressionWrapper, DurationField, fields, Case, When, Value
 from django.utils import timezone
 from datetime import datetime, timedelta
 import json
@@ -2582,7 +2582,7 @@ def servicios_completados(request):
 def tiempo_promedio_servicios(request):
     """Reporte de tiempo promedio de servicios"""
     from gestionDeTaller.models import Servicio
-    from django.db.models import Avg, Count, F, ExpressionWrapper, fields
+    from django.db.models import Avg, Count, F, ExpressionWrapper, fields, Case, When, Value
     from datetime import datetime, timedelta
     
     # Obtener parámetros de filtro
@@ -2609,13 +2609,19 @@ def tiempo_promedio_servicios(request):
     # Calcular estadísticas generales
     total_servicios = servicios.count()
     
-    # Calcular tiempo promedio desde creación hasta fecha de servicio
+    # Calcular tiempo promedio desde creación hasta fecha de servicio (solo valores positivos)
     tiempo_por_trabajo = servicios.values('trabajo').annotate(
         cantidad=Count('id'),
         tiempo_promedio=Avg(
-            ExpressionWrapper(
-                F('fecha_servicio') - F('fecha_creacion__date'),
-                output_field=fields.DurationField()
+            Case(
+                When(
+                    fecha_servicio__gt=F('fecha_creacion__date'),
+                    then=ExpressionWrapper(
+                        F('fecha_servicio') - F('fecha_creacion__date'),
+                        output_field=fields.DurationField()
+                    )
+                ),
+                default=Value(timedelta(0))
             )
         )
     ).order_by('-cantidad')
@@ -2624,9 +2630,15 @@ def tiempo_promedio_servicios(request):
     tiempo_por_sucursal = servicios.values('preorden__sucursal__nombre').annotate(
         cantidad=Count('id'),
         tiempo_promedio=Avg(
-            ExpressionWrapper(
-                F('fecha_servicio') - F('fecha_creacion__date'),
-                output_field=fields.DurationField()
+            Case(
+                When(
+                    fecha_servicio__gt=F('fecha_creacion__date'),
+                    then=ExpressionWrapper(
+                        F('fecha_servicio') - F('fecha_creacion__date'),
+                        output_field=fields.DurationField()
+                    )
+                ),
+                default=Value(timedelta(0))
             )
         )
     ).order_by('-cantidad')
@@ -2646,9 +2658,15 @@ def tiempo_promedio_servicios(request):
         cantidad = tecnico_servicios.count()
         tiempo_promedio = tecnico_servicios.aggregate(
             promedio=Avg(
-                ExpressionWrapper(
-                    F('fecha_servicio') - F('fecha_creacion__date'),
-                    output_field=fields.DurationField()
+                Case(
+                    When(
+                        fecha_servicio__gt=F('fecha_creacion__date'),
+                        then=ExpressionWrapper(
+                            F('fecha_servicio') - F('fecha_creacion__date'),
+                            output_field=fields.DurationField()
+                        )
+                    ),
+                    default=Value(timedelta(0))
                 )
             )
         )['promedio'] or timedelta(0)
@@ -2665,9 +2683,15 @@ def tiempo_promedio_servicios(request):
     # Tiempo promedio general
     tiempo_promedio_general = servicios.aggregate(
         promedio=Avg(
-            ExpressionWrapper(
-                F('fecha_servicio') - F('fecha_creacion__date'),
-                output_field=fields.DurationField()
+            Case(
+                When(
+                    fecha_servicio__gt=F('fecha_creacion__date'),
+                    then=ExpressionWrapper(
+                        F('fecha_servicio') - F('fecha_creacion__date'),
+                        output_field=fields.DurationField()
+                    )
+                ),
+                default=Value(timedelta(0))
             )
         )
     )['promedio'] or timedelta(0)
