@@ -642,7 +642,7 @@
                             <i class="bi bi-pencil"></i>
                             Editar Servicio
                         </button>
-                        <span class="badge bg-danger">Solo Gerente puede modificar</span>
+                        <span class="badge bg-danger">Solo Gerente/Administración puede modificar</span>
                     {% endif %}
                     
                     {% if servicio.preorden.tipo_trabajo == 'PRESENCIAL_CAMPO' %}
@@ -694,7 +694,7 @@
                         Descargar PDF
                     </a>
                     
-                    {% if user.rol == 'GERENTE' %}
+                    {% if user.rol in 'GERENTE,ADMINISTRACION' %}
                         <a href="{% url 'gestionDeTaller:historial_cambios_informe' servicio.id %}" class="sidebar-btn">
                             <i class="fas fa-history"></i>
                             Historial Cambios en IS
@@ -704,7 +704,7 @@
             </div>
 
             <!-- Historial -->
-            {% if user.rol == 'GERENTE' %}
+            {% if user.rol in 'GERENTE,ADMINISTRACION' %}
             <div class="sidebar-section">
                 <div class="sidebar-title">
                     <i class="fas fa-history"></i>
@@ -720,7 +720,7 @@
             {% endif %}
 
             <!-- Financiero -->
-            {% if user.rol == 'GERENTE' or user.rol == 'ADMINISTRATIVO' %}
+            {% if user.rol in 'GERENTE,ADMINISTRATIVO,ADMINISTRACION' %}
             <div class="sidebar-section">
                 <div class="sidebar-title">
                     <i class="fas fa-dollar-sign"></i>
@@ -940,7 +940,7 @@
     </div>
 
     <!-- Pedidos de Repuestos/Terceros -->
-    {% if user.rol == 'GERENTE' or user.rol == 'ADMINISTRATIVO' %}
+    {% if user.rol in 'GERENTE,ADMINISTRATIVO,ADMINISTRACION' %}
     <div class="row">
         <div class="col-md-12">
             <div class="card">
