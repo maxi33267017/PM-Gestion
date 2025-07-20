@@ -34,17 +34,17 @@ def puede_cambiar_estado(user, servicio, nuevo_estado):
     Returns:
         bool: True si puede cambiar, False en caso contrario
     """
-    # Gerente siempre puede cambiar estados
-    if user.rol == 'GERENTE':
+    # Gerente y Administración siempre pueden cambiar estados
+    if user.rol in ['GERENTE', 'ADMINISTRACION']:
         return True
     
     # Si el servicio está "Finalizado a Facturar", solo puede ir a "Completado"
     if servicio.estado == 'A_FACTURAR':
         return nuevo_estado == 'COMPLETADO'
     
-    # Para otros estados, técnicos y administradores pueden cambiar
+    # Para otros estados, técnicos y administrativos pueden cambiar
     # siempre que no esté en estado crítico
-    if user.rol in ['TECNICO', 'ADMINISTRATIVO', 'ADMINISTRACION']:
+    if user.rol in ['TECNICO', 'ADMINISTRATIVO']:
         return True
     
     return False
@@ -76,16 +76,16 @@ def puede_modificar_servicio(user, servicio):
     Returns:
         bool: True si puede modificar, False en caso contrario
     """
-    # Gerente siempre puede modificar
-    if user.rol == 'GERENTE':
+    # Gerente y Administración siempre pueden modificar
+    if user.rol in ['GERENTE', 'ADMINISTRACION']:
         return True
     
-    # Si el servicio está "Finalizado a Facturar", solo gerente puede modificar
+    # Si el servicio está "Finalizado a Facturar", solo gerente y administración pueden modificar
     if servicio.estado == 'A_FACTURAR':
         return False
     
-    # Para otros estados, técnicos y administradores pueden modificar
-    return user.rol in ['TECNICO', 'ADMINISTRATIVO', 'ADMINISTRACION']
+    # Para otros estados, técnicos y administrativos pueden modificar
+    return user.rol in ['TECNICO', 'ADMINISTRATIVO']
 
 def puede_modificar_informe(user, servicio):
     """
@@ -98,16 +98,16 @@ def puede_modificar_informe(user, servicio):
     Returns:
         bool: True si puede modificar, False en caso contrario
     """
-    # Gerente siempre puede modificar
-    if user.rol == 'GERENTE':
+    # Gerente y Administración siempre pueden modificar
+    if user.rol in ['GERENTE', 'ADMINISTRACION']:
         return True
     
-    # Si el servicio tiene firma del cliente, solo gerente puede modificar
+    # Si el servicio tiene firma del cliente, solo gerente y administración pueden modificar
     if servicio.firma_cliente:
         return False
     
-    # Para otros casos, técnicos y administradores pueden modificar
-    return user.rol in ['TECNICO', 'ADMINISTRATIVO', 'ADMINISTRACION']
+    # Para otros casos, técnicos y administrativos pueden modificar
+    return user.rol in ['TECNICO', 'ADMINISTRATIVO']
 
 def validar_cambio_estado(user, servicio, nuevo_estado):
     """
@@ -170,8 +170,8 @@ def obtener_estados_disponibles(user, servicio):
     Returns:
         list: Lista de estados disponibles
     """
-    if user.rol == 'GERENTE':
-        # Gerente puede cambiar a cualquier estado válido
+    if user.rol in ['GERENTE', 'ADMINISTRACION']:
+        # Gerente y Administración pueden cambiar a cualquier estado válido
         return ESTADOS_PERMITIDOS.get(servicio.estado, [])
     
     elif servicio.estado == 'A_FACTURAR':
