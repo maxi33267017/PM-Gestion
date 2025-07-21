@@ -2767,11 +2767,11 @@ def servicios_por_sucursal(request):
     
     # Agrupar por sucursal - usar servicios_financieros para cálculos de dinero
     servicios_por_sucursal = servicios.values('preorden__sucursal__nombre').annotate(
-        total_servicios=Count('id'),
-        programados=Count('id', filter=Q(estado='PROGRAMADO')),
-        en_proceso=Count('id', filter=Q(estado='EN_PROCESO')),
-        completados=Count('id', filter=Q(estado='COMPLETADO')),
-        a_facturar=Count('id', filter=Q(estado='A_FACTURAR')),
+        total_servicios=Count('id', distinct=True),
+        programados=Count('id', filter=Q(estado='PROGRAMADO'), distinct=True),
+        en_proceso=Count('id', filter=Q(estado='EN_PROCESO'), distinct=True),
+        completados=Count('id', filter=Q(estado='COMPLETADO'), distinct=True),
+        a_facturar=Count('id', filter=Q(estado='A_FACTURAR'), distinct=True),
         # Usar servicios_financieros para cálculos de dinero
         total_mano_obra=Sum('valor_mano_obra', filter=Q(estado__in=['COMPLETADO', 'A_FACTURAR'])),
         total_gastos=Sum('gastos__monto', filter=Q(estado__in=['COMPLETADO', 'A_FACTURAR'])),
