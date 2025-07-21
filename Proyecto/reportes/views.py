@@ -2778,11 +2778,20 @@ def servicios_por_sucursal(request):
         total_repuestos=Sum(F('repuestos__precio_unitario') * F('repuestos__cantidad'), filter=Q(estado__in=['COMPLETADO', 'A_FACTURAR']))
     ).order_by('-total_servicios')
     
-    # Calcular totales usando servicios_financieros
+    # Calcular totales usando servicios (no servicios_financieros para contar)
     total_servicios = servicios.count()
-    total_servicios_con_sucursal = sum(item['total_servicios'] for item in servicios_por_sucursal)
-    servicios_sin_sucursal = total_servicios - total_servicios_con_sucursal
     
+    # Calcular totales por estado para verificación
+    total_programados = servicios.filter(estado='PROGRAMADO').count()
+    total_en_proceso = servicios.filter(estado='EN_PROCESO').count()
+    total_espera_repuestos = servicios.filter(estado='ESPERA_REPUESTOS').count()
+    total_a_facturar = servicios.filter(estado='A_FACTURAR').count()
+    total_completados = servicios.filter(estado='COMPLETADO').count()
+    
+    # Calcular servicios sin sucursal correctamente
+    servicios_sin_sucursal = servicios.filter(preorden__sucursal__isnull=True).count()
+    
+    # Calcular totales financieros usando servicios_financieros
     total_mano_obra = servicios_financieros.aggregate(total=Sum('valor_mano_obra'))['total'] or Decimal('0.00')
     total_gastos = servicios_financieros.aggregate(total=Sum('gastos__monto'))['total'] or Decimal('0.00')
     total_repuestos = servicios_financieros.aggregate(total=Sum(F('repuestos__precio_unitario') * F('repuestos__cantidad')))['total'] or Decimal('0.00')
@@ -2818,7 +2827,6 @@ def servicios_por_sucursal(request):
     context = {
         'servicios_por_sucursal': servicios_por_sucursal,
         'total_servicios': total_servicios,
-        'total_servicios_con_sucursal': total_servicios_con_sucursal,
         'servicios_sin_sucursal': servicios_sin_sucursal,
         'total_mano_obra': total_mano_obra,
         'total_gastos': total_gastos,
