@@ -1812,7 +1812,12 @@
                 </div>
             </div>
             <div class="mt-3">
-                <button type="button" class="btn btn-success btn-sm" onclick="usarRepuestoEncontrado('${repuesto.codigo}', '${repuesto.descripcion || ''}', ${repuesto.costo || 0}, ${repuesto.precio_venta})">
+                <button type="button" class="btn btn-success btn-sm" 
+                        data-codigo="${repuesto.codigo}" 
+                        data-descripcion="${repuesto.descripcion || ''}" 
+                        data-costo="${repuesto.costo || 0}" 
+                        data-precio="${repuesto.precio_venta}"
+                        onclick="usarRepuestoEncontradoDesdeData(this)">
                     <i class="fas fa-check me-2"></i>Usar este Repuesto
                 </button>
             </div>
@@ -1823,6 +1828,16 @@
     function mostrarRepuestoNoEncontrado() {
         document.getElementById('resultado_busqueda').style.display = 'none';
         document.getElementById('no_encontrado').style.display = 'block';
+    }
+
+    // Función para usar repuesto encontrado desde data attributes
+    function usarRepuestoEncontradoDesdeData(button) {
+        const codigo = button.getAttribute('data-codigo');
+        const descripcion = button.getAttribute('data-descripcion');
+        const costo = button.getAttribute('data-costo');
+        const precio = button.getAttribute('data-precio');
+        
+        usarRepuestoEncontrado(codigo, descripcion, costo, precio);
     }
 
     // Función para usar repuesto encontrado
