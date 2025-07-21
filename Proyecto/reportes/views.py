@@ -3764,8 +3764,18 @@ def preordenes_sin_servicio(request):
     # Calcular tasa de conversión (últimos 30 días)
     fecha_limite = timezone.now().date() - timedelta(days=30)
     preordenes_30_dias = PreOrden.objects.filter(
-        fecha_creacion__gte=fecha_limite
+        fecha_creacion__gte=fecha_limite,
+        activo=True
     )
+    
+    # Aplicar filtros adicionales
+    if sucursal_id:
+        preordenes_30_dias = preordenes_30_dias.filter(sucursal_id=sucursal_id)
+    if clasificacion:
+        preordenes_30_dias = preordenes_30_dias.filter(clasificacion=clasificacion)
+    if tipo_trabajo:
+        preordenes_30_dias = preordenes_30_dias.filter(tipo_trabajo=tipo_trabajo)
+    
     total_30_dias = preordenes_30_dias.count()
     con_servicio_30_dias = preordenes_30_dias.filter(servicio__isnull=False).count()
     tasa_conversion = (con_servicio_30_dias / total_30_dias * 100) if total_30_dias > 0 else 0
