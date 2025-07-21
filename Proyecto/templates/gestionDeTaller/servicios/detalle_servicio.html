@@ -1776,6 +1776,8 @@
             return;
         }
 
+        console.log('Buscando repuesto con código:', codigo);
+
         fetch(`{% url 'gestionDeTaller:obtener_repuesto' %}?codigo=${encodeURIComponent(codigo)}`, {
             method: 'GET',
             headers: {
@@ -1784,8 +1786,10 @@
         })
         .then(response => response.json())
         .then(data => {
+            console.log('Respuesta del servidor:', data);
             if (data.success) {
                 repuestoEncontrado = data.repuesto; // Almacenar en variable global
+                console.log('Repuesto almacenado en variable global:', repuestoEncontrado);
                 mostrarRepuestoEncontrado(data.repuesto);
             } else {
                 repuestoEncontrado = null;
@@ -1841,13 +1845,22 @@
             }
             
             const { codigo, descripcion, costo, precio_venta } = repuestoEncontrado;
-            console.log('Llenando formulario con:', { codigo, descripcion, costo, precio_venta }); // Debug log
+            console.log('=== DEBUG REPUESTO ===');
+            console.log('Repuesto global:', repuestoEncontrado);
+            console.log('Datos extraídos:', { codigo, descripcion, costo, precio_venta });
             
             // Llenar el formulario de venta
             const codigoField = document.getElementById('id_codigo');
             const descripcionField = document.getElementById('id_descripcion');
             const costoField = document.getElementById('id_costo_unitario');
             const precioField = document.getElementById('id_precio_unitario');
+            
+            console.log('Campos encontrados:', {
+                codigoField: !!codigoField,
+                descripcionField: !!descripcionField,
+                costoField: !!costoField,
+                precioField: !!precioField
+            });
             
             if (codigoField) codigoField.value = codigo;
             if (descripcionField) descripcionField.value = descripcion || '';
@@ -1859,7 +1872,13 @@
                 descripcion: descripcionField?.value,
                 costo: costoField?.value,
                 precio: precioField?.value
-            }); // Debug log
+            });
+            
+            // Verificar si el campo de descripción realmente se actualizó
+            setTimeout(() => {
+                const descripcionActual = document.getElementById('id_descripcion')?.value;
+                console.log('Descripción después de 100ms:', descripcionActual);
+            }, 100);
             
             // Mostrar formulario de venta
             const formularioVenta = document.getElementById('formulario_venta');
@@ -1881,7 +1900,7 @@
             if (nuevoCodigo) nuevoCodigo.disabled = true;
             if (nuevoPrecio) nuevoPrecio.disabled = true;
             
-            console.log('Repuesto seleccionado:', repuestoEncontrado);
+            console.log('=== FIN DEBUG REPUESTO ===');
         } catch (error) {
             console.error('Error en usarRepuestoEncontrado:', error);
             alert('Error al seleccionar el repuesto. Por favor intenta nuevamente.');
