@@ -167,6 +167,17 @@
     .item-title {
         font-weight: 500;
         color: var(--primary-color);
+        margin-bottom: 0.25rem;
+    }
+
+    .item-subtitle {
+        font-size: 0.9rem;
+        color: #666;
+        margin-bottom: 0.25rem;
+    }
+
+    .item-subtitle i {
+        color: var(--info-color);
     }
 
     .item-status {
@@ -340,8 +351,18 @@
                         {% for servicio in servicios_asignados %}
                         <li class="clickable-item" onclick="window.location.href='{% url 'gestionDeTaller:detalle_servicio' servicio.id %}'">
                             <div>
-                                <div class="item-title">{{ servicio.preorden.cliente.nombre }} - {{ servicio.preorden.equipo.modelo }}</div>
-                                <small class="text-muted">{{ servicio.fecha_servicio|date:"d/m/Y" }}</small>
+                                <div class="item-title">
+                                    <strong>Servicio #{{ servicio.id }}</strong> - {{ servicio.preorden.cliente.razon_social }}
+                                </div>
+                                <div class="item-subtitle">
+                                    <i class="bi bi-tools me-1"></i>{{ servicio.preorden.equipo.modelo.nombre }} ({{ servicio.preorden.equipo.numero_serie }})
+                                </div>
+                                <small class="text-muted">
+                                    <i class="bi bi-calendar me-1"></i>{{ servicio.fecha_servicio|date:"d/m/Y" }}
+                                    {% if servicio.orden_servicio %}
+                                        <span class="ms-2"><i class="bi bi-hash me-1"></i>OR: {{ servicio.orden_servicio }}</span>
+                                    {% endif %}
+                                </small>
                             </div>
                             <span class="item-status status-{{ servicio.estado|lower|cut:"_" }}">
                                 {{ servicio.get_estado_display }}

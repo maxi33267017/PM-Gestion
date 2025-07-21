@@ -3606,10 +3606,14 @@ def dashboard_tecnico(request):
     # Obtener datos específicos del técnico
     tecnico = request.user
     
-    # Servicios asignados al técnico (pendientes y en progreso)
+    # Servicios asignados al técnico (pendientes y en progreso) con información detallada
     servicios_asignados = Servicio.objects.filter(
         preorden__tecnicos=tecnico,
         estado__in=['PROGRAMADO', 'EN_PROCESO', 'ESPERA_REPUESTOS']
+    ).select_related(
+        'preorden__cliente', 
+        'preorden__equipo__modelo',
+        'preorden__equipo__tipo_equipo'
     ).order_by('estado', '-fecha_servicio')[:5]
     
     # Preórdenes sin servicio asignado al técnico
@@ -3617,7 +3621,7 @@ def dashboard_tecnico(request):
         tecnicos=tecnico,
         servicio__isnull=True,
         activo=True
-    ).order_by('-fecha_creacion')[:5]
+    ).select_related('cliente', 'equipo__modelo').order_by('-fecha_creacion')[:5]
     
     # Alertas CSC asignadas al técnico
     from centroSoluciones.models import AlertaEquipo
@@ -3636,7 +3640,7 @@ def dashboard_tecnico(request):
     # Horas registradas hoy
     from recursosHumanos.models import RegistroHorasTecnico
     from datetime import date
-    from django.db.models import ExpressionWrapper, DurationField, F
+    from django.db.models import ExpressionWrapper, DurationField, F, Sum
     horas_hoy = RegistroHorasTecnico.objects.filter(
         tecnico=tecnico,
         fecha=date.today()
