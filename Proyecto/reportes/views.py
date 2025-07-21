@@ -3778,6 +3778,7 @@ def preordenes_sin_servicio(request):
     
     total_30_dias = preordenes_30_dias.count()
     con_servicio_30_dias = preordenes_30_dias.filter(servicio__isnull=False).count()
+    sin_servicio_30_dias = total_30_dias - con_servicio_30_dias
     tasa_conversion = (con_servicio_30_dias / total_30_dias * 100) if total_30_dias > 0 else 0
     
     # Análisis por cliente
@@ -3848,6 +3849,7 @@ def preordenes_sin_servicio(request):
         'total_perdidas': total_perdidas,
         'tasa_conversion': tasa_conversion,
         'con_servicio_30_dias': con_servicio_30_dias,
+        'sin_servicio_30_dias': sin_servicio_30_dias,
         'total_30_dias': total_30_dias,
         'clientes_con_mas_preordenes': clientes_con_mas_preordenes,
         'sucursales_analisis': sucursales_analisis,
