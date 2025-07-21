@@ -250,13 +250,6 @@ class RegistroHorasTecnico(models.Model):
         return f"{self.tecnico} - {self.fecha} - {self.tipo_hora}"
 
     def save(self, *args, **kwargs):
-        """
-        Validaciones al guardar:
-        1. La hora de inicio debe ser menor que la hora de fin.
-        2. Si la actividad es DISPONIBLE y genera INGRESO, el servicio es obligatorio.
-        3. Si la actividad no es DISPONIBLE o no genera INGRESO, el servicio debe ser NULL.
-        4. Solo se pueden registrar horas en servicios en proceso.
-        """
         if self.hora_inicio >= self.hora_fin:
             raise ValueError("La hora de inicio debe ser menor que la hora de fin.")
 
@@ -267,8 +260,17 @@ class RegistroHorasTecnico(models.Model):
             if self.servicio:
                 raise ValueError("Las horas no productivas no pueden estar asociadas a un servicio.")
 
-        if self.servicio and self.servicio.estado not in ['EN_PROCESO', 'PROGRAMADO', 'A_FACTURAR']:
-            raise ValueError("Solo se pueden registrar horas en servicios en proceso, programados o finalizados a facturar.")
+        # Validar que el servicio esté en un estado válido y no sea muy antiguo
+        if self.servicio:
+            from django.utils import timezone
+            from datetime import timedelta
+            
+            fecha_limite = timezone.now().date() - timedelta(days=15)
+            
+            if self.servicio.estado not in ['EN_PROCESO', 'PROGRAMADO', 'A_FACTURAR', 'COMPLETADO']:
+                raise ValueError("Solo se pueden registrar horas en servicios en proceso, programados, finalizados a facturar o completados recientemente.")
+            elif self.servicio.estado == 'COMPLETADO' and self.servicio.fecha_servicio < fecha_limite:
+                raise ValueError("No se pueden registrar horas en servicios completados con más de 15 días de antigüedad.")
 
         super().save(*args, **kwargs)
 
