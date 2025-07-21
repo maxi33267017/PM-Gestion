@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse, HttpResponse
-from django.db.models import Sum, Count, Avg, Q, F, ExpressionWrapper, DurationField, fields, Case, When, Value, FloatField
+from django.db.models import Sum, Count, Avg, Q, F, ExpressionWrapper, DurationField, fields, Case, When, Value, FloatField, Max
 from django.utils import timezone
 from datetime import datetime, timedelta
 import json
