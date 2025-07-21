@@ -393,8 +393,18 @@
                         {% for preorden in preordenes_sin_servicio %}
                         <li class="clickable-item" onclick="window.location.href='{% url 'gestionDeTaller:detalle_preorden' preorden.numero %}'">
                             <div>
-                                <div class="item-title">{{ preorden.cliente.nombre }} - {{ preorden.equipo.modelo }}</div>
-                                <small class="text-muted">{{ preorden.fecha_creacion|date:"d/m/Y" }}</small>
+                                <div class="item-title">
+                                    <strong>Preorden #{{ preorden.numero }}</strong> - {{ preorden.cliente.razon_social }}
+                                </div>
+                                <div class="item-subtitle">
+                                    <i class="bi bi-tools me-1"></i>{{ preorden.equipo.modelo.nombre }} ({{ preorden.equipo.numero_serie }})
+                                </div>
+                                <small class="text-muted">
+                                    <i class="bi bi-calendar me-1"></i>{{ preorden.fecha_creacion|date:"d/m/Y" }}
+                                    {% if preorden.tipo_trabajo %}
+                                        <span class="ms-2"><i class="bi bi-geo-alt me-1"></i>{{ preorden.get_tipo_trabajo_display }}</span>
+                                    {% endif %}
+                                </small>
                             </div>
                             <span class="item-status status-pendiente">Sin Servicio</span>
                         </li>

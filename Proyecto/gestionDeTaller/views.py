@@ -3636,7 +3636,11 @@ def dashboard_tecnico(request):
         tecnicos=tecnico,
         servicio__isnull=True,
         activo=True
-    ).select_related('cliente', 'equipo__modelo').order_by('-fecha_creacion')[:5]
+    ).select_related(
+        'cliente', 
+        'equipo__modelo',
+        'equipo__modelo__tipo_equipo'
+    ).order_by('-fecha_creacion')[:5]
     
     # Alertas CSC asignadas al técnico
     from centroSoluciones.models import AlertaEquipo
