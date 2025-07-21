@@ -1795,6 +1795,7 @@
 
     // Función para mostrar repuesto encontrado
     function mostrarRepuestoEncontrado(repuesto) {
+        console.log('Repuesto encontrado:', repuesto); // Debug log
         document.getElementById('resultado_busqueda').style.display = 'block';
         document.getElementById('no_encontrado').style.display = 'none';
         
@@ -1837,12 +1838,16 @@
         const costo = button.getAttribute('data-costo');
         const precio = button.getAttribute('data-precio');
         
+        console.log('Datos leídos del botón:', { codigo, descripcion, costo, precio }); // Debug log
+        
         usarRepuestoEncontrado(codigo, descripcion, costo, precio);
     }
 
     // Función para usar repuesto encontrado
     function usarRepuestoEncontrado(codigo, descripcion, costo, precio) {
         try {
+            console.log('Llenando formulario con:', { codigo, descripcion, costo, precio }); // Debug log
+            
             // Llenar el formulario de venta
             const codigoField = document.getElementById('id_codigo');
             const descripcionField = document.getElementById('id_descripcion');
@@ -1853,6 +1858,13 @@
             if (descripcionField) descripcionField.value = descripcion || '';
             if (costoField) costoField.value = costo || '';
             if (precioField) precioField.value = precio || '';
+            
+            console.log('Valores establecidos en campos:', {
+                codigo: codigoField?.value,
+                descripcion: descripcionField?.value,
+                costo: costoField?.value,
+                precio: precioField?.value
+            }); // Debug log
             
             // Mostrar formulario de venta
             const formularioVenta = document.getElementById('formulario_venta');

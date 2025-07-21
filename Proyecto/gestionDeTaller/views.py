@@ -631,12 +631,7 @@ def agregar_venta_repuesto(request, servicio_id):
     servicio = get_object_or_404(Servicio, id=servicio_id)
     
     if request.method == 'POST':
-        # Debug: imprimir los datos recibidos
-        print("Datos POST recibidos:", request.POST)
-        
         form = VentaRepuestoForm(request.POST)
-        print("Formulario válido:", form.is_valid())
-        print("Errores del formulario:", form.errors)
         
         if form.is_valid():
             repuesto = form.save(commit=False)
@@ -645,7 +640,7 @@ def agregar_venta_repuesto(request, servicio_id):
             messages.success(request, "Venta de repuesto agregada exitosamente.")
             return redirect('gestionDeTaller:detalle_servicio', servicio_id=servicio.id)
         else:
-            # Debug: mostrar errores específicos del formulario
+            # Mostrar errores específicos del formulario
             error_messages = []
             for field, errors in form.errors.items():
                 for error in errors:
