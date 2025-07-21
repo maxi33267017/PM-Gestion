@@ -518,3 +518,183 @@ class SugerenciaMejora(models.Model):
         elif self.fecha_revision:
             return (self.fecha_revision - self.fecha_sugerencia).days
         return None
+
+class EmbudoChecklistAdicional(models.Model):
+    """Modelo para el embudo de checklist adicionales y observaciones de informes de equipos"""
+    
+    ETAPA_CHOICES = [
+        ('IDENTIFICADO', 'Identificado'),
+        ('EN_ANALISIS', 'En Análisis'),
+        ('PLANIFICADO', 'Planificado'),
+        ('EN_DESARROLLO', 'En Desarrollo'),
+        ('IMPLEMENTADO', 'Implementado'),
+        ('VERIFICADO', 'Verificado'),
+        ('CERRADO', 'Cerrado'),
+        ('CANCELADO', 'Cancelado'),
+    ]
+    
+    PRIORIDAD_CHOICES = [
+        ('BAJA', 'Baja'),
+        ('MEDIA', 'Media'),
+        ('ALTA', 'Alta'),
+        ('CRITICA', 'Crítica'),
+    ]
+    
+    TIPO_CHOICES = [
+        ('CHECKLIST_ADICIONAL', 'Checklist Adicional'),
+        ('OBSERVACION', 'Observación'),
+        ('MEJORA_PROCEDIMIENTO', 'Mejora de Procedimiento'),
+        ('MANTENIMIENTO_PREVENTIVO', 'Mantenimiento Preventivo'),
+        ('SEGURIDAD', 'Seguridad'),
+        ('CALIDAD', 'Calidad'),
+        ('OTRO', 'Otro'),
+    ]
+    
+    # Información básica
+    titulo = models.CharField(max_length=200, verbose_name="Título")
+    descripcion = models.TextField(verbose_name="Descripción Detallada")
+    tipo = models.CharField(max_length=30, choices=TIPO_CHOICES, verbose_name="Tipo")
+    prioridad = models.CharField(max_length=10, choices=PRIORIDAD_CHOICES, default='MEDIA', verbose_name="Prioridad")
+    etapa = models.CharField(max_length=20, choices=ETAPA_CHOICES, default='IDENTIFICADO', verbose_name="Etapa")
+    
+    # Relaciones
+    servicio = models.ForeignKey(
+        'gestionDeTaller.Servicio',
+        on_delete=models.CASCADE,
+        verbose_name="Servicio Relacionado",
+        related_name='checklists_adicionales'
+    )
+    equipo = models.ForeignKey(
+        'clientes.Equipo',
+        on_delete=models.CASCADE,
+        verbose_name="Equipo",
+        related_name='checklists_adicionales'
+    )
+    cliente = models.ForeignKey(
+        Cliente,
+        on_delete=models.CASCADE,
+        verbose_name="Cliente",
+        related_name='checklists_adicionales'
+    )
+    
+    # Responsables
+    identificado_por = models.ForeignKey(
+        Usuario,
+        on_delete=models.CASCADE,
+        verbose_name="Identificado por",
+        related_name='checklists_identificados'
+    )
+    responsable_implementacion = models.ForeignKey(
+        Usuario,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        verbose_name="Responsable de Implementación",
+        related_name='checklists_responsable'
+    )
+    
+    # Fechas
+    fecha_identificacion = models.DateTimeField(auto_now_add=True, verbose_name="Fecha de Identificación")
+    fecha_limite = models.DateField(null=True, blank=True, verbose_name="Fecha Límite")
+    fecha_implementacion = models.DateField(null=True, blank=True, verbose_name="Fecha de Implementación")
+    fecha_verificacion = models.DateField(null=True, blank=True, verbose_name="Fecha de Verificación")
+    fecha_ultima_actividad = models.DateTimeField(auto_now=True, verbose_name="Última Actividad")
+    
+    # Campos adicionales
+    costo_estimado = models.DecimalField(
+        max_digits=10, 
+        decimal_places=2, 
+        null=True, 
+        blank=True, 
+        verbose_name="Costo Estimado"
+    )
+    tiempo_estimado_horas = models.DecimalField(
+        max_digits=6, 
+        decimal_places=2, 
+        null=True, 
+        blank=True, 
+        verbose_name="Tiempo Estimado (horas)"
+    )
+    recursos_necesarios = models.TextField(blank=True, verbose_name="Recursos Necesarios")
+    observaciones = models.TextField(blank=True, verbose_name="Observaciones")
+    
+    # Campos de auditoría
+    fecha_creacion = models.DateTimeField(auto_now_add=True, verbose_name="Fecha de Creación")
+    fecha_modificacion = models.DateTimeField(auto_now=True, verbose_name="Última Modificación")
+    
+    class Meta:
+        verbose_name = "Embudo de Checklist Adicional"
+        verbose_name_plural = "Embudos de Checklist Adicionales"
+        ordering = ['-fecha_identificacion']
+        indexes = [
+            models.Index(fields=['etapa', 'prioridad']),
+            models.Index(fields=['fecha_identificacion']),
+            models.Index(fields=['responsable_implementacion']),
+        ]
+    
+    def __str__(self):
+        return f"{self.titulo} - {self.get_etapa_display()}"
+    
+    @property
+    def dias_pendiente(self):
+        """Calcula los días que lleva pendiente"""
+        if self.etapa in ['IMPLEMENTADO', 'VERIFICADO', 'CERRADO', 'CANCELADO']:
+            return 0
+        return (timezone.now().date() - self.fecha_identificacion.date()).days
+    
+    @property
+    def esta_vencido(self):
+        """Verifica si está vencido"""
+        if self.fecha_limite and self.etapa not in ['IMPLEMENTADO', 'VERIFICADO', 'CERRADO', 'CANCELADO']:
+            return timezone.now().date() > self.fecha_limite
+        return False
+    
+    @property
+    def tiempo_restante(self):
+        """Calcula el tiempo restante hasta la fecha límite"""
+        if self.fecha_limite and self.etapa not in ['IMPLEMENTADO', 'VERIFICADO', 'CERRADO', 'CANCELADO']:
+            return (self.fecha_limite - timezone.now().date()).days
+        return None
+    
+    def avanzar_etapa(self, nueva_etapa, usuario=None):
+        """Método para avanzar a la siguiente etapa"""
+        etapas = [choice[0] for choice in self.ETAPA_CHOICES]
+        etapa_actual_index = etapas.index(self.etapa)
+        
+        if nueva_etapa in etapas:
+            self.etapa = nueva_etapa
+            self.fecha_ultima_actividad = timezone.now()
+            
+            # Actualizar fechas específicas según la etapa
+            if nueva_etapa == 'IMPLEMENTADO':
+                self.fecha_implementacion = timezone.now().date()
+            elif nueva_etapa == 'VERIFICADO':
+                self.fecha_verificacion = timezone.now().date()
+            
+            self.save()
+            return True
+        return False
+    
+    def get_color_prioridad(self):
+        """Retorna el color CSS para la prioridad"""
+        colores = {
+            'BAJA': '#28a745',
+            'MEDIA': '#ffc107',
+            'ALTA': '#fd7e14',
+            'CRITICA': '#dc3545',
+        }
+        return colores.get(self.prioridad, '#6c757d')
+    
+    def get_color_etapa(self):
+        """Retorna el color CSS para la etapa"""
+        colores = {
+            'IDENTIFICADO': '#17a2b8',
+            'EN_ANALISIS': '#6f42c1',
+            'PLANIFICADO': '#fd7e14',
+            'EN_DESARROLLO': '#ffc107',
+            'IMPLEMENTADO': '#28a745',
+            'VERIFICADO': '#20c997',
+            'CERRADO': '#6c757d',
+            'CANCELADO': '#dc3545',
+        }
+        return colores.get(self.etapa, '#6c757d')

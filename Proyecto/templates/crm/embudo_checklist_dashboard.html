@@ -1,0 +1,331 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ titulo }} - CRM{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
+<style>
+    .metric-card {
+        border-left: 4px solid #007bff;
+        transition: transform 0.2s;
+    }
+    .metric-card:hover {
+        transform: translateY(-2px);
+    }
+    .card-pendientes { border-left-color: #ffc107; }
+    .card-vencidos { border-left-color: #dc3545; }
+    .card-criticos { border-left-color: #fd7e14; }
+    
+    .status-badge {
+        font-size: 0.75rem;
+        padding: 0.25rem 0.5rem;
+    }
+    
+    .checklist-card {
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        margin-bottom: 1rem;
+        transition: all 0.3s ease;
+    }
+    .checklist-card:hover {
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        border-color: #007bff;
+    }
+    
+    .checklist-header {
+        background-color: #f8f9fa;
+        padding: 0.75rem 1rem;
+        border-bottom: 1px solid #dee2e6;
+        border-radius: 8px 8px 0 0;
+    }
+    
+    .checklist-body {
+        padding: 1rem;
+    }
+    
+    .metric-value {
+        font-size: 2rem;
+        font-weight: bold;
+    }
+    
+    .metric-label {
+        font-size: 0.875rem;
+        color: #6c757d;
+    }
+    
+    .filter-section {
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 2rem;
+    }
+    
+    .progress-custom {
+        height: 25px;
+        border-radius: 12px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0">
+                <i class="bi bi-clipboard-check text-warning me-2"></i>{{ titulo }}
+            </h1>
+            <p class="text-muted">Seguimiento de checklist adicionales y observaciones de informes</p>
+        </div>
+        <div>
+            <a href="{% url 'crm:crear_checklist_adicional' %}" class="btn btn-success">
+                <i class="bi bi-plus-circle me-2"></i>Nuevo Checklist
+            </a>
+            <a href="{% url 'crm:embudo_ventas_dashboard' %}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-2"></i>Volver a Embudos
+            </a>
+        </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="filter-section">
+        <form method="get" class="row g-3">
+            <div class="col-md-2">
+                <label for="etapa" class="form-label">Etapa</label>
+                <select name="etapa" id="etapa" class="form-select">
+                    <option value="">Todas las etapas</option>
+                    <option value="IDENTIFICADO" {% if etapa_filtro == 'IDENTIFICADO' %}selected{% endif %}>Identificado</option>
+                    <option value="EN_ANALISIS" {% if etapa_filtro == 'EN_ANALISIS' %}selected{% endif %}>En Análisis</option>
+                    <option value="PLANIFICADO" {% if etapa_filtro == 'PLANIFICADO' %}selected{% endif %}>Planificado</option>
+                    <option value="EN_DESARROLLO" {% if etapa_filtro == 'EN_DESARROLLO' %}selected{% endif %}>En Desarrollo</option>
+                    <option value="IMPLEMENTADO" {% if etapa_filtro == 'IMPLEMENTADO' %}selected{% endif %}>Implementado</option>
+                    <option value="VERIFICADO" {% if etapa_filtro == 'VERIFICADO' %}selected{% endif %}>Verificado</option>
+                    <option value="CERRADO" {% if etapa_filtro == 'CERRADO' %}selected{% endif %}>Cerrado</option>
+                    <option value="CANCELADO" {% if etapa_filtro == 'CANCELADO' %}selected{% endif %}>Cancelado</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label for="prioridad" class="form-label">Prioridad</label>
+                <select name="prioridad" id="prioridad" class="form-select">
+                    <option value="">Todas las prioridades</option>
+                    <option value="BAJA" {% if prioridad_filtro == 'BAJA' %}selected{% endif %}>Baja</option>
+                    <option value="MEDIA" {% if prioridad_filtro == 'MEDIA' %}selected{% endif %}>Media</option>
+                    <option value="ALTA" {% if prioridad_filtro == 'ALTA' %}selected{% endif %}>Alta</option>
+                    <option value="CRITICA" {% if prioridad_filtro == 'CRITICA' %}selected{% endif %}>Crítica</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label for="tipo" class="form-label">Tipo</label>
+                <select name="tipo" id="tipo" class="form-select">
+                    <option value="">Todos los tipos</option>
+                    <option value="CHECKLIST_ADICIONAL" {% if tipo_filtro == 'CHECKLIST_ADICIONAL' %}selected{% endif %}>Checklist Adicional</option>
+                    <option value="OBSERVACION" {% if tipo_filtro == 'OBSERVACION' %}selected{% endif %}>Observación</option>
+                    <option value="MEJORA_PROCEDIMIENTO" {% if tipo_filtro == 'MEJORA_PROCEDIMIENTO' %}selected{% endif %}>Mejora de Procedimiento</option>
+                    <option value="MANTENIMIENTO_PREVENTIVO" {% if tipo_filtro == 'MANTENIMIENTO_PREVENTIVO' %}selected{% endif %}>Mantenimiento Preventivo</option>
+                    <option value="SEGURIDAD" {% if tipo_filtro == 'SEGURIDAD' %}selected{% endif %}>Seguridad</option>
+                    <option value="CALIDAD" {% if tipo_filtro == 'CALIDAD' %}selected{% endif %}>Calidad</option>
+                    <option value="OTRO" {% if tipo_filtro == 'OTRO' %}selected{% endif %}>Otro</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label for="responsable" class="form-label">Responsable</label>
+                <select name="responsable" id="responsable" class="form-select">
+                    <option value="">Todos los responsables</option>
+                    {% for responsable in responsables_filtro %}
+                        <option value="{{ responsable.id }}" {% if responsable_filtro == responsable.id|stringformat:"s" %}selected{% endif %}>
+                            {{ responsable.apellido }}, {{ responsable.nombre }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary me-2">
+                    <i class="bi bi-funnel"></i> Filtrar
+                </button>
+                <a href="{% url 'crm:embudo_checklist_dashboard' %}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-clockwise"></i> Limpiar
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Métricas Generales -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card metric-card">
+                <div class="card-body text-center">
+                    <div class="metric-value text-primary">{{ total_checklists }}</div>
+                    <div class="metric-label">Total Checklists</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card metric-card card-pendientes">
+                <div class="card-body text-center">
+                    <div class="metric-value text-warning">{{ checklists_pendientes }}</div>
+                    <div class="metric-label">Pendientes</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card metric-card card-vencidos">
+                <div class="card-body text-center">
+                    <div class="metric-value text-danger">{{ checklists_vencidos }}</div>
+                    <div class="metric-label">Vencidos</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card metric-card card-criticos">
+                <div class="card-body text-center">
+                    <div class="metric-value text-danger">{{ checklists_criticos }}</div>
+                    <div class="metric-label">Críticos</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Análisis por Etapa -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-list-check"></i> Análisis por Etapa
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% for etapa in etapas_stats %}
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span class="fw-bold">{{ etapa.get_etapa_display }}</span>
+                            <span class="badge bg-primary">{{ etapa.total }}</span>
+                        </div>
+                        <div class="progress progress-custom">
+                            {% if total_checklists > 0 %}
+                            {% widthratio etapa.total total_checklists 100 as porcentaje %}
+                            <div class="progress-bar bg-primary" style="width: {{ porcentaje }}%"></div>
+                            {% endif %}
+                        </div>
+                        <small class="text-muted">
+                            Críticos: {{ etapa.criticos }} | Vencidos: {{ etapa.vencidos }}
+                        </small>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-exclamation-triangle"></i> Análisis por Prioridad
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% for prioridad in prioridades_stats %}
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span class="fw-bold">{{ prioridad.get_prioridad_display }}</span>
+                            <span class="badge bg-warning">{{ prioridad.total }}</span>
+                        </div>
+                        <div class="progress progress-custom">
+                            {% if total_checklists > 0 %}
+                            {% widthratio prioridad.total total_checklists 100 as porcentaje %}
+                            <div class="progress-bar bg-warning" style="width: {{ porcentaje }}%"></div>
+                            {% endif %}
+                        </div>
+                        <small class="text-muted">
+                            Pendientes: {{ prioridad.pendientes }}
+                        </small>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Checklists Recientes -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-clock-history"></i> Checklists Recientes
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% for checklist in checklists_recientes %}
+                    <div class="checklist-card">
+                        <div class="checklist-header">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h6 class="mb-0">{{ checklist.titulo }}</h6>
+                                <div>
+                                    <span class="badge" style="background-color: {{ checklist.get_color_etapa }}; color: white;">
+                                        {{ checklist.get_etapa_display }}
+                                    </span>
+                                    <span class="badge" style="background-color: {{ checklist.get_color_prioridad }}; color: white;">
+                                        {{ checklist.get_prioridad_display }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="checklist-body">
+                            <p class="mb-2">{{ checklist.descripcion|truncatewords:30 }}</p>
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <small class="text-muted">
+                                        <i class="bi bi-person"></i> {{ checklist.cliente.razon_social }}
+                                    </small>
+                                </div>
+                                <div class="col-md-3">
+                                    <small class="text-muted">
+                                        <i class="bi bi-tools"></i> {{ checklist.equipo.modelo.nombre }}
+                                    </small>
+                                </div>
+                                <div class="col-md-3">
+                                    <small class="text-muted">
+                                        <i class="bi bi-calendar"></i> {{ checklist.fecha_identificacion|date:"d/m/Y" }}
+                                    </small>
+                                </div>
+                                <div class="col-md-3">
+                                    <small class="text-muted">
+                                        <i class="bi bi-clock"></i> {{ checklist.dias_pendiente }} días
+                                    </small>
+                                </div>
+                            </div>
+                            <div class="mt-2">
+                                <a href="{% url 'crm:detalle_checklist' checklist.id %}" class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-eye me-1"></i>Ver Detalle
+                                </a>
+                                {% if checklist.esta_vencido %}
+                                <span class="badge bg-danger ms-2">Vencido</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="text-center py-4">
+                        <i class="bi bi-clipboard display-4 text-muted"></i>
+                        <p class="text-muted mt-2">No hay checklists recientes</p>
+                        <a href="{% url 'crm:crear_checklist_adicional' %}" class="btn btn-primary">
+                            <i class="bi bi-plus-circle me-2"></i>Crear Primer Checklist
+                        </a>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Auto-refresh cada 5 minutos
+    setTimeout(function() {
+        location.reload();
+    }, 300000);
+</script>
+{% endblock %} 

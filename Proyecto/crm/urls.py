@@ -41,6 +41,12 @@ urlpatterns = [
     path('embudo-ventas-origen/<str:origen>/', views.embudo_ventas_origen, name='embudo_ventas_origen'),
     path('embudo-ventas-detalle/<int:embudo_id>/', views.embudo_ventas_detalle, name='embudo_ventas_detalle'),
     path('crear-contacto/', views.crear_contacto, name='crear_contacto'),
+    # URLs para Embudo de Checklist Adicionales
+    path('embudo-checklist/', views.embudo_checklist_dashboard, name='embudo_checklist_dashboard'),
+    path('embudo-checklist/crear/', views.crear_checklist_adicional, name='crear_checklist_adicional'),
+    path('embudo-checklist/<int:checklist_id>/', views.detalle_checklist, name='detalle_checklist'),
+    path('embudo-checklist/etapa/<str:etapa>/', views.checklist_por_etapa, name='checklist_por_etapa'),
+    path('embudo-checklist/prioridad/<str:prioridad>/', views.checklist_por_prioridad, name='checklist_por_prioridad'),
     # URLs para Reportes de Facturación
     path('reporte-facturacion/', views.reporte_facturacion, name='reporte_facturacion'),
     path('exportar-reporte-excel/', views.exportar_reporte_excel, name='exportar_reporte_excel'),

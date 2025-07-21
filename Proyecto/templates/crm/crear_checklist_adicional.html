@@ -1,0 +1,230 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ titulo }} - CRM{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
+<style>
+    .form-section {
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .servicio-card {
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+    
+    .servicio-card:hover {
+        border-color: #007bff;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .servicio-card.selected {
+        border-color: #007bff;
+        background-color: #e3f2fd;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0">
+                <i class="bi bi-plus-circle text-success me-2"></i>{{ titulo }}
+            </h1>
+            <p class="text-muted">Crear un nuevo checklist adicional basado en un servicio</p>
+        </div>
+        <div>
+            <a href="{% url 'crm:embudo_checklist_dashboard' %}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-2"></i>Volver al Dashboard
+            </a>
+        </div>
+    </div>
+
+    <form method="post">
+        {% csrf_token %}
+        
+        <!-- Selección de Servicio -->
+        <div class="form-section">
+            <h5 class="mb-3">
+                <i class="bi bi-tools me-2"></i>Seleccionar Servicio
+            </h5>
+            <div class="row">
+                {% for servicio in servicios %}
+                <div class="col-md-6 col-lg-4">
+                    <div class="servicio-card" onclick="seleccionarServicio({{ servicio.id }}, this)">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h6 class="mb-1">{{ servicio.preorden.cliente.razon_social }}</h6>
+                                <p class="mb-1 text-muted">{{ servicio.preorden.equipo.modelo.nombre }}</p>
+                                <small class="text-muted">{{ servicio.preorden.equipo.numero_serie }}</small>
+                            </div>
+                            <div class="text-end">
+                                <span class="badge bg-primary">{{ servicio.get_estado_display }}</span>
+                                <br>
+                                <small class="text-muted">{{ servicio.fecha_servicio|date:"d/m/Y" }}</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            <input type="hidden" name="servicio" id="servicio_seleccionado" required>
+        </div>
+
+        <!-- Información del Checklist -->
+        <div class="form-section">
+            <h5 class="mb-3">
+                <i class="bi bi-clipboard-check me-2"></i>Información del Checklist
+            </h5>
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="mb-3">
+                        <label for="titulo" class="form-label">Título *</label>
+                        <input type="text" class="form-control" id="titulo" name="titulo" required 
+                               placeholder="Ej: Revisar sistema de frenos">
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label for="tipo" class="form-label">Tipo *</label>
+                        <select class="form-select" id="tipo" name="tipo" required>
+                            <option value="">Seleccionar tipo</option>
+                            <option value="CHECKLIST_ADICIONAL">Checklist Adicional</option>
+                            <option value="OBSERVACION">Observación</option>
+                            <option value="MEJORA_PROCEDIMIENTO">Mejora de Procedimiento</option>
+                            <option value="MANTENIMIENTO_PREVENTIVO">Mantenimiento Preventivo</option>
+                            <option value="SEGURIDAD">Seguridad</option>
+                            <option value="CALIDAD">Calidad</option>
+                            <option value="OTRO">Otro</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mb-3">
+                <label for="descripcion" class="form-label">Descripción Detallada *</label>
+                <textarea class="form-control" id="descripcion" name="descripcion" rows="4" required
+                          placeholder="Describe detalladamente el checklist o observación..."></textarea>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-3">
+                    <div class="mb-3">
+                        <label for="prioridad" class="form-label">Prioridad *</label>
+                        <select class="form-select" id="prioridad" name="prioridad" required>
+                            <option value="">Seleccionar prioridad</option>
+                            <option value="BAJA">Baja</option>
+                            <option value="MEDIA">Media</option>
+                            <option value="ALTA">Alta</option>
+                            <option value="CRITICA">Crítica</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="mb-3">
+                        <label for="responsable" class="form-label">Responsable</label>
+                        <select class="form-select" id="responsable" name="responsable">
+                            <option value="">Sin asignar</option>
+                            {% for responsable in responsables %}
+                                <option value="{{ responsable.id }}">
+                                    {{ responsable.apellido }}, {{ responsable.nombre }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="mb-3">
+                        <label for="fecha_limite" class="form-label">Fecha Límite</label>
+                        <input type="date" class="form-control" id="fecha_limite" name="fecha_limite">
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="mb-3">
+                        <label for="tiempo_estimado" class="form-label">Tiempo Estimado (horas)</label>
+                        <input type="number" class="form-control" id="tiempo_estimado" name="tiempo_estimado" 
+                               step="0.5" min="0" placeholder="2.5">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="costo_estimado" class="form-label">Costo Estimado</label>
+                        <div class="input-group">
+                            <span class="input-group-text">$</span>
+                            <input type="number" class="form-control" id="costo_estimado" name="costo_estimado" 
+                                   step="0.01" min="0" placeholder="0.00">
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="recursos_necesarios" class="form-label">Recursos Necesarios</label>
+                        <input type="text" class="form-control" id="recursos_necesarios" name="recursos_necesarios" 
+                               placeholder="Ej: Repuestos, herramientas especiales...">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mb-3">
+                <label for="observaciones" class="form-label">Observaciones Adicionales</label>
+                <textarea class="form-control" id="observaciones" name="observaciones" rows="3"
+                          placeholder="Observaciones adicionales o notas importantes..."></textarea>
+            </div>
+        </div>
+
+        <!-- Botones de Acción -->
+        <div class="d-flex justify-content-end gap-2">
+            <a href="{% url 'crm:embudo_checklist_dashboard' %}" class="btn btn-outline-secondary">
+                <i class="bi bi-x-circle me-2"></i>Cancelar
+            </a>
+            <button type="submit" class="btn btn-success">
+                <i class="bi bi-check-circle me-2"></i>Crear Checklist
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function seleccionarServicio(servicioId, elemento) {
+        // Remover selección anterior
+        document.querySelectorAll('.servicio-card').forEach(card => {
+            card.classList.remove('selected');
+        });
+        
+        // Seleccionar el nuevo
+        elemento.classList.add('selected');
+        document.getElementById('servicio_seleccionado').value = servicioId;
+    }
+    
+    // Validación del formulario
+    document.querySelector('form').addEventListener('submit', function(e) {
+        const servicio = document.getElementById('servicio_seleccionado').value;
+        const titulo = document.getElementById('titulo').value;
+        const descripcion = document.getElementById('descripcion').value;
+        const tipo = document.getElementById('tipo').value;
+        const prioridad = document.getElementById('prioridad').value;
+        
+        if (!servicio || !titulo || !descripcion || !tipo || !prioridad) {
+            e.preventDefault();
+            alert('Por favor completa todos los campos obligatorios.');
+            return false;
+        }
+    });
+</script>
+{% endblock %} 

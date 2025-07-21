@@ -1788,3 +1788,270 @@ def exportar_reporte_excel(request):
                 ])
     
     return response
+
+# ===== EMBUDO DE CHECKLIST ADICIONALES =====
+
+@login_required
+def embudo_checklist_dashboard(request):
+    """Dashboard principal del embudo de checklist adicionales"""
+    
+    # Obtener filtros
+    etapa_filtro = request.GET.get('etapa', '')
+    prioridad_filtro = request.GET.get('prioridad', '')
+    tipo_filtro = request.GET.get('tipo', '')
+    responsable_filtro = request.GET.get('responsable', '')
+    
+    # Base queryset
+    from .models import EmbudoChecklistAdicional
+    checklists = EmbudoChecklistAdicional.objects.select_related(
+        'servicio', 'equipo', 'cliente', 'identificado_por', 'responsable_implementacion'
+    ).prefetch_related('servicio__preorden__sucursal')
+    
+    # Aplicar filtros
+    if etapa_filtro:
+        checklists = checklists.filter(etapa=etapa_filtro)
+    if prioridad_filtro:
+        checklists = checklists.filter(prioridad=prioridad_filtro)
+    if tipo_filtro:
+        checklists = checklists.filter(tipo=tipo_filtro)
+    if responsable_filtro:
+        checklists = checklists.filter(responsable_implementacion_id=responsable_filtro)
+    
+    # Calcular métricas generales
+    total_checklists = checklists.count()
+    checklists_pendientes = checklists.exclude(etapa__in=['IMPLEMENTADO', 'VERIFICADO', 'CERRADO']).count()
+    checklists_vencidos = sum(1 for c in checklists if c.esta_vencido)
+    checklists_criticos = checklists.filter(prioridad='CRITICA').exclude(etapa__in=['IMPLEMENTADO', 'VERIFICADO', 'CERRADO']).count()
+    
+    # Análisis por etapa
+    etapas_stats = checklists.values('etapa').annotate(
+        total=Count('id'),
+        criticos=Count('id', filter=Q(prioridad='CRITICA')),
+        vencidos=Count('id', filter=Q(fecha_limite__lt=timezone.now().date()))
+    ).order_by('etapa')
+    
+    # Análisis por prioridad
+    prioridades_stats = checklists.values('prioridad').annotate(
+        total=Count('id'),
+        pendientes=Count('id', filter=~Q(etapa__in=['IMPLEMENTADO', 'VERIFICADO', 'CERRADO']))
+    ).order_by('prioridad')
+    
+    # Análisis por tipo
+    tipos_stats = checklists.values('tipo').annotate(
+        total=Count('id'),
+        completados=Count('id', filter=Q(etapa__in=['IMPLEMENTADO', 'VERIFICADO', 'CERRADO']))
+    ).order_by('-total')
+    
+    # Top responsables
+    responsables_stats = checklists.values(
+        'responsable_implementacion__nombre', 
+        'responsable_implementacion__apellido',
+        'responsable_implementacion__id'
+    ).annotate(
+        total=Count('id'),
+        pendientes=Count('id', filter=~Q(etapa__in=['IMPLEMENTADO', 'VERIFICADO', 'CERRADO'])),
+        vencidos=Count('id', filter=Q(fecha_limite__lt=timezone.now().date()))
+    ).filter(responsable_implementacion__isnull=False).order_by('-total')
+    
+    # Checklists recientes
+    checklists_recientes = checklists.order_by('-fecha_identificacion')[:10]
+    
+    # Obtener datos para filtros
+    from recursosHumanos.models import Usuario
+    responsables_filtro = Usuario.objects.filter(is_active=True).order_by('apellido', 'nombre')
+    
+    context = {
+        'titulo': 'Embudo de Checklist Adicionales',
+        'total_checklists': total_checklists,
+        'checklists_pendientes': checklists_pendientes,
+        'checklists_vencidos': checklists_vencidos,
+        'checklists_criticos': checklists_criticos,
+        'etapas_stats': etapas_stats,
+        'prioridades_stats': prioridades_stats,
+        'tipos_stats': tipos_stats,
+        'responsables_stats': responsables_stats,
+        'checklists_recientes': checklists_recientes,
+        'responsables_filtro': responsables_filtro,
+        'etapa_filtro': etapa_filtro,
+        'prioridad_filtro': prioridad_filtro,
+        'tipo_filtro': tipo_filtro,
+        'responsable_filtro': responsable_filtro,
+    }
+    
+    return render(request, 'crm/embudo_checklist_dashboard.html', context)
+
+@login_required
+def crear_checklist_adicional(request):
+    """Crear un nuevo checklist adicional"""
+    
+    if request.method == 'POST':
+        from .models import EmbudoChecklistAdicional
+        from gestionDeTaller.models import Servicio
+        from clientes.models import Equipo
+        
+        try:
+            # Obtener datos del formulario
+            servicio_id = request.POST.get('servicio')
+            titulo = request.POST.get('titulo')
+            descripcion = request.POST.get('descripcion')
+            tipo = request.POST.get('tipo')
+            prioridad = request.POST.get('prioridad')
+            responsable_id = request.POST.get('responsable')
+            fecha_limite = request.POST.get('fecha_limite')
+            costo_estimado = request.POST.get('costo_estimado')
+            tiempo_estimado = request.POST.get('tiempo_estimado')
+            recursos_necesarios = request.POST.get('recursos_necesarios')
+            observaciones = request.POST.get('observaciones')
+            
+            # Validar datos requeridos
+            if not all([servicio_id, titulo, descripcion, tipo, prioridad]):
+                messages.error(request, 'Todos los campos obligatorios deben estar completos.')
+                return redirect('crm:embudo_checklist_dashboard')
+            
+            # Obtener objetos relacionados
+            servicio = get_object_or_404(Servicio, id=servicio_id)
+            responsable = None
+            if responsable_id:
+                responsable = get_object_or_404(Usuario, id=responsable_id)
+            
+            # Crear el checklist
+            checklist = EmbudoChecklistAdicional.objects.create(
+                titulo=titulo,
+                descripcion=descripcion,
+                tipo=tipo,
+                prioridad=prioridad,
+                servicio=servicio,
+                equipo=servicio.preorden.equipo,
+                cliente=servicio.preorden.cliente,
+                identificado_por=request.user,
+                responsable_implementacion=responsable,
+                fecha_limite=fecha_limite if fecha_limite else None,
+                costo_estimado=costo_estimado if costo_estimado else None,
+                tiempo_estimado_horas=tiempo_estimado if tiempo_estimado else None,
+                recursos_necesarios=recursos_necesarios,
+                observaciones=observaciones,
+            )
+            
+            messages.success(request, f'Checklist "{titulo}" creado exitosamente.')
+            return redirect('crm:detalle_checklist', checklist_id=checklist.id)
+            
+        except Exception as e:
+            messages.error(request, f'Error al crear el checklist: {str(e)}')
+            return redirect('crm:embudo_checklist_dashboard')
+    
+    # GET request - mostrar formulario
+    from gestionDeTaller.models import Servicio
+    servicios = Servicio.objects.filter(
+        estado__in=['COMPLETADO', 'EN_PROCESO']
+    ).select_related('preorden__cliente', 'preorden__equipo').order_by('-fecha_servicio')
+    
+    from recursosHumanos.models import Usuario
+    responsables = Usuario.objects.filter(is_active=True).order_by('apellido', 'nombre')
+    
+    context = {
+        'titulo': 'Crear Checklist Adicional',
+        'servicios': servicios,
+        'responsables': responsables,
+    }
+    
+    return render(request, 'crm/crear_checklist_adicional.html', context)
+
+@login_required
+def detalle_checklist(request, checklist_id):
+    """Detalle de un checklist específico"""
+    
+    from .models import EmbudoChecklistAdicional
+    checklist = get_object_or_404(
+        EmbudoChecklistAdicional.objects.select_related(
+            'servicio', 'equipo', 'cliente', 'identificado_por', 'responsable_implementacion'
+        ),
+        id=checklist_id
+    )
+    
+    if request.method == 'POST':
+        # Procesar cambio de etapa
+        nueva_etapa = request.POST.get('nueva_etapa')
+        if nueva_etapa and nueva_etapa in dict(EmbudoChecklistAdicional.ETAPA_CHOICES):
+            if checklist.avanzar_etapa(nueva_etapa, request.user):
+                messages.success(request, f'Checklist avanzado a etapa: {checklist.get_etapa_display()}')
+            else:
+                messages.error(request, 'No se pudo avanzar la etapa.')
+        
+        # Actualizar otros campos
+        checklist.titulo = request.POST.get('titulo', checklist.titulo)
+        checklist.descripcion = request.POST.get('descripcion', checklist.descripcion)
+        checklist.prioridad = request.POST.get('prioridad', checklist.prioridad)
+        checklist.observaciones = request.POST.get('observaciones', checklist.observaciones)
+        
+        responsable_id = request.POST.get('responsable')
+        if responsable_id:
+            checklist.responsable_implementacion = get_object_or_404(Usuario, id=responsable_id)
+        
+        fecha_limite = request.POST.get('fecha_limite')
+        if fecha_limite:
+            checklist.fecha_limite = fecha_limite
+        
+        checklist.save()
+        messages.success(request, 'Checklist actualizado exitosamente.')
+        return redirect('crm:detalle_checklist', checklist_id=checklist.id)
+    
+    # Obtener datos para el formulario
+    from recursosHumanos.models import Usuario
+    responsables = Usuario.objects.filter(is_active=True).order_by('apellido', 'nombre')
+    
+    context = {
+        'checklist': checklist,
+        'responsables': responsables,
+    }
+    
+    return render(request, 'crm/detalle_checklist.html', context)
+
+@login_required
+def checklist_por_etapa(request, etapa):
+    """Mostrar checklists por etapa específica"""
+    
+    from .models import EmbudoChecklistAdicional
+    
+    if etapa not in dict(EmbudoChecklistAdicional.ETAPA_CHOICES):
+        messages.error(request, 'Etapa no válida.')
+        return redirect('crm:embudo_checklist_dashboard')
+    
+    checklists = EmbudoChecklistAdicional.objects.filter(
+        etapa=etapa
+    ).select_related(
+        'servicio', 'equipo', 'cliente', 'identificado_por', 'responsable_implementacion'
+    ).order_by('-fecha_identificacion')
+    
+    context = {
+        'titulo': f'Checklists - {dict(EmbudoChecklistAdicional.ETAPA_CHOICES)[etapa]}',
+        'checklists': checklists,
+        'etapa_actual': etapa,
+        'total_checklists': checklists.count(),
+    }
+    
+    return render(request, 'crm/checklist_por_etapa.html', context)
+
+@login_required
+def checklist_por_prioridad(request, prioridad):
+    """Mostrar checklists por prioridad específica"""
+    
+    from .models import EmbudoChecklistAdicional
+    
+    if prioridad not in dict(EmbudoChecklistAdicional.PRIORIDAD_CHOICES):
+        messages.error(request, 'Prioridad no válida.')
+        return redirect('crm:embudo_checklist_dashboard')
+    
+    checklists = EmbudoChecklistAdicional.objects.filter(
+        prioridad=prioridad
+    ).select_related(
+        'servicio', 'equipo', 'cliente', 'identificado_por', 'responsable_implementacion'
+    ).order_by('-fecha_identificacion')
+    
+    context = {
+        'titulo': f'Checklists - Prioridad {dict(EmbudoChecklistAdicional.PRIORIDAD_CHOICES)[prioridad]}',
+        'checklists': checklists,
+        'prioridad_actual': prioridad,
+        'total_checklists': checklists.count(),
+    }
+    
+    return render(request, 'crm/checklist_por_prioridad.html', context)

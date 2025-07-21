@@ -232,10 +232,18 @@
     <div class="row mt-4">
         <div class="col-12">
             <div class="card shadow-sm">
-                <div class="card-header">
+                <div class="card-header d-flex justify-content-between align-items-center">
                     <h5 class="mb-0">
                         <i class="bi bi-clock-history me-2"></i>Embudos Recientes
                     </h5>
+                    <div>
+                        <a href="{% url 'crm:embudo_checklist_dashboard' %}" class="btn btn-warning btn-sm">
+                            <i class="bi bi-clipboard-check me-1"></i>Checklist Adicionales
+                        </a>
+                        <a href="{% url 'crm:crear_embudo' %}" class="btn btn-success btn-sm">
+                            <i class="bi bi-plus-circle me-1"></i>Nuevo Embudo
+                        </a>
+                    </div>
                 </div>
                 <div class="card-body">
                     <div class="table-responsive">
@@ -283,10 +291,28 @@
                                         <small class="text-muted">{{ embudo.fecha_ultima_actividad|date:"d/m/Y H:i" }}</small>
                                     </td>
                                     <td>
-                                        <a href="{% url 'crm:embudo_ventas_detalle' embudo.id %}" 
-                                           class="btn btn-sm btn-outline-primary">
-                                            <i class="bi bi-eye me-1"></i>Ver
-                                        </a>
+                                        <div class="btn-group" role="group">
+                                            <a href="{% url 'crm:embudo_ventas_detalle' embudo.id %}" 
+                                               class="btn btn-sm btn-outline-primary">
+                                                <i class="bi bi-eye me-1"></i>Ver
+                                            </a>
+                                            <button type="button" class="btn btn-sm btn-outline-info dropdown-toggle dropdown-toggle-split" 
+                                                    data-bs-toggle="dropdown" aria-expanded="false">
+                                                <span class="visually-hidden">Toggle Dropdown</span>
+                                            </button>
+                                            <ul class="dropdown-menu">
+                                                <li><a class="dropdown-item" href="{% url 'crm:embudo_ventas_detalle' embudo.id %}">
+                                                    <i class="bi bi-eye me-2"></i>Ver Detalle
+                                                </a></li>
+                                                <li><a class="dropdown-item" href="{% url 'crm:crear_contacto' %}?embudo={{ embudo.id }}">
+                                                    <i class="bi bi-plus-circle me-2"></i>Agregar Contacto
+                                                </a></li>
+                                                <li><hr class="dropdown-divider"></li>
+                                                <li><a class="dropdown-item" href="{% url 'crm:embudo_checklist_dashboard' %}?servicio={{ embudo.servicio.id|default:'' }}">
+                                                    <i class="bi bi-clipboard-check me-2"></i>Crear Checklist
+                                                </a></li>
+                                            </ul>
+                                        </div>
                                     </td>
                                 </tr>
                                 {% empty %}
@@ -294,11 +320,55 @@
                                     <td colspan="7" class="text-center py-4">
                                         <i class="bi bi-inbox display-4 text-muted"></i>
                                         <p class="text-muted mt-2">No hay embudos recientes</p>
+                                        <a href="{% url 'crm:crear_embudo' %}" class="btn btn-primary">
+                                            <i class="bi bi-plus-circle me-2"></i>Crear Primer Embudo
+                                        </a>
                                     </td>
                                 </tr>
                                 {% endfor %}
                             </tbody>
                         </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Acceso Rápido a Embudos -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-lightning me-2"></i>Acceso Rápido
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <a href="{% url 'crm:embudo_ventas_origen' 'ALERTA_EQUIPO' %}" class="btn btn-outline-primary w-100">
+                                <i class="bi bi-exclamation-triangle me-2"></i>
+                                Alertas de Equipo
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="{% url 'crm:embudo_ventas_origen' 'LEAD_JD' %}" class="btn btn-outline-success w-100">
+                                <i class="bi bi-truck me-2"></i>
+                                Leads John Deere
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="{% url 'crm:embudo_ventas_origen' 'SERVICIO_EXISTENTE' %}" class="btn btn-outline-info w-100">
+                                <i class="bi bi-tools me-2"></i>
+                                Servicios Existentes
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="{% url 'crm:embudo_checklist_dashboard' %}" class="btn btn-outline-warning w-100">
+                                <i class="bi bi-clipboard-check me-2"></i>
+                                Checklist Adicionales
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>
