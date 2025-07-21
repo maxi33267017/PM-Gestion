@@ -19,7 +19,7 @@ class ModeloEquipoAdmin(admin.ModelAdmin):
 class EquipoAdmin(admin.ModelAdmin):
     list_display = ['numero_serie', 'modelo', 'cliente']
     list_filter = ['modelo']
-    search_fields = ['numero_serie', 'cliente__nombre']
+    search_fields = ['numero_serie', 'cliente__razon_social']
 
 @admin.register(TipoEquipo)
 class TipoEquipoAdmin(admin.ModelAdmin):
@@ -46,7 +46,7 @@ class ClienteAdmin(admin.ModelAdmin):
 class ContactoClienteAdmin(admin.ModelAdmin):
     list_display = ['cliente', 'nombre', 'apellido', 'rol']
     list_filter = ['cliente']
-    search_fields = ['cliente', 'rol']
+    search_fields = ['cliente__razon_social', 'nombre', 'apellido', 'rol']
 
 
 @admin.register(ModeloMotor)
@@ -67,4 +67,4 @@ class ModeloMotorAdmin(admin.ModelAdmin):
 class RegistroHorometroAdmin(admin.ModelAdmin):
     list_display = ['equipo', 'horas', 'origen']
     list_filter = ['equipo', 'origen']
-    search_fields = ['equipo',]
+    search_fields = ['equipo__numero_serie', 'origen']
