@@ -3774,7 +3774,7 @@ def preordenes_sin_servicio(request):
     clientes_con_mas_preordenes = preordenes_sin_servicio.values(
         'cliente__razon_social', 'cliente__id'
     ).annotate(
-        total=Count('id'),
+        total=Count('numero'),
         ultima_preorden=Max('fecha_creacion')
     ).order_by('-total')[:10]
     
@@ -3782,13 +3782,13 @@ def preordenes_sin_servicio(request):
     sucursales_analisis = preordenes_sin_servicio.values(
         'sucursal__nombre', 'sucursal__id'
     ).annotate(
-        total=Count('id'),
-        recientes=Count('id', filter=Q(fecha_creacion__gte=fecha_actual - timedelta(days=7))),
-        en_riesgo=Count('id', filter=Q(
+        total=Count('numero'),
+        recientes=Count('numero', filter=Q(fecha_creacion__gte=fecha_actual - timedelta(days=7))),
+        en_riesgo=Count('numero', filter=Q(
             fecha_creacion__gte=fecha_actual - timedelta(days=15),
             fecha_creacion__lt=fecha_actual - timedelta(days=7)
         )),
-        perdidas=Count('id', filter=Q(fecha_creacion__lt=fecha_actual - timedelta(days=15)))
+        perdidas=Count('numero', filter=Q(fecha_creacion__lt=fecha_actual - timedelta(days=15)))
     ).order_by('-total')
     
     # Exportar a Excel si se solicita
