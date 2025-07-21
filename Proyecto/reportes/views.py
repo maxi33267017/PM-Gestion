@@ -1473,7 +1473,7 @@ def productividad_tecnicos(request):
                     output_field=fields.DurationField()
                 )
             ),
-            cantidad_registros=Count('id')
+            cantidad_registros=Count('id', distinct=True)
         ).order_by('-total_horas')
         
         # Calcular métricas generales
@@ -1819,7 +1819,7 @@ def eficiencia_tecnicos(request):
                     output_field=fields.DurationField()
                 )
             ),
-            cantidad_registros=Count('id')
+            cantidad_registros=Count('id', distinct=True)
         ).order_by('-total_horas')
         
         # Calcular promedio de horas por día
@@ -2099,7 +2099,7 @@ def desempeno_tecnicos(request):
                     output_field=fields.DurationField()
                 )
             ),
-            cantidad_registros=Count('id')
+            cantidad_registros=Count('id', distinct=True)
         ).order_by('-total_horas')[:5]  # Top 5 actividades
         
         desempeno_tecnicos.append({
@@ -2611,7 +2611,7 @@ def tiempo_promedio_servicios(request):
     
     # Calcular tiempo promedio desde creación hasta fecha de servicio (solo valores positivos)
     tiempo_por_trabajo = servicios.values('trabajo').annotate(
-        cantidad=Count('id'),
+        cantidad=Count('id', distinct=True),
         tiempo_promedio=Avg(
             Case(
                 When(
@@ -2628,7 +2628,7 @@ def tiempo_promedio_servicios(request):
     
     # Tiempo promedio por sucursal
     tiempo_por_sucursal = servicios.values('preorden__sucursal__nombre').annotate(
-        cantidad=Count('id'),
+        cantidad=Count('id', distinct=True),
         tiempo_promedio=Avg(
             Case(
                 When(

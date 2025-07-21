@@ -47,7 +47,7 @@ def dashboard_ventas(request):
     equipos_por_sucursal = EquipoStock.objects.filter(
         estado='EN_STOCK'
     ).values('sucursal__nombre').annotate(
-        total=Count('id')
+        total=Count('id', distinct=True)
     ).order_by('-total')
     
     context = {

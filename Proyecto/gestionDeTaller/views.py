@@ -3147,9 +3147,9 @@ def personal_tools_dashboard(request):
     herramientas_por_categoria = HerramientaPersonal.objects.values(
         'categoria'
     ).annotate(
-        total=Count('id'),
-        asignadas=Count('id', filter=Q(estado='ASIGNADA')),
-        mantenimiento=Count('id', filter=Q(estado='MANTENIMIENTO'))
+        total=Count('id', distinct=True),
+        asignadas=Count('id', filter=Q(estado='ASIGNADA'), distinct=True),
+        mantenimiento=Count('id', filter=Q(estado='MANTENIMIENTO'), distinct=True)
     )
     
     # Últimas auditorías

@@ -586,14 +586,14 @@ def dashboard_campania(request, campania_id):
     
     # Contactos por responsable
     contactos_por_responsable = contactos.values('responsable__nombre').annotate(
-        total=Count('id'),
-        exitosas=Count('id', filter=Q(resultado='VENTA_EXITOSA')),
-        perdidas=Count('id', filter=Q(resultado='VENTA_PERDIDA'))
+        total=Count('id', distinct=True),
+        exitosas=Count('id', filter=Q(resultado='VENTA_EXITOSA'), distinct=True),
+        perdidas=Count('id', filter=Q(resultado='VENTA_PERDIDA'), distinct=True)
     )
     
     # Contactos por resultado
     contactos_por_resultado = contactos.values('resultado').annotate(
-        total=Count('id')
+        total=Count('id', distinct=True)
     )
     
     context = {
@@ -1132,13 +1132,13 @@ def embudo_ventas_dashboard(request):
     
     # Estadísticas por etapa
     etapas_stats = embudos.values('etapa').annotate(
-        total=Count('id'),
+        total=Count('id', distinct=True),
         valor_total=Sum('valor_estimado')
     ).order_by('etapa')
     
     # Estadísticas por origen
     origenes_stats = embudos.values('origen').annotate(
-        total=Count('id'),
+        total=Count('id', distinct=True),
         valor_total=Sum('valor_estimado')
     ).order_by('-total')
     
@@ -1147,7 +1147,7 @@ def embudo_ventas_dashboard(request):
         campana__isnull=False,
         campana__sucursal=request.user.sucursal
     ).values('campana__nombre', 'campana__id').annotate(
-        total=Count('id'),
+        total=Count('id', distinct=True),
         valor_total=Sum('valor_estimado')
     ).order_by('-total')
     
@@ -1373,7 +1373,7 @@ def generar_datos_embudo(embudos):
     
     # Obtener estadísticas por etapa
     etapas_stats = embudos.values('etapa').annotate(
-        total=Count('id'),
+        total=Count('id', distinct=True),
         valor_total=Sum('valor_estimado')
     )
     
