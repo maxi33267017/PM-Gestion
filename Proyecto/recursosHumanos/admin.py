@@ -99,8 +99,17 @@ from recursosHumanos.models import ActividadTrabajo
 
 @admin.register(ActividadTrabajo)
 class ActividadTrabajoAdmin(admin.ModelAdmin):
-    list_display = ('nombre',)  # Muestra el nombre y el tipo de hora
-    search_fields = ('nombre',)  # Permite buscar por nombre o categoría
+    list_display = ('nombre', 'disponibilidad', 'genera_ingreso', 'requiere_servicio')
+    list_filter = ('disponibilidad', 'genera_ingreso', 'requiere_servicio')
+    search_fields = ('nombre',)
+    fieldsets = (
+        ('Información Básica', {
+            'fields': ('nombre', 'descripcion')
+        }),
+        ('Configuración', {
+            'fields': ('disponibilidad', 'genera_ingreso', 'categoria_facturacion', 'requiere_servicio')
+        }),
+    )
 
 
 @admin.register(SesionCronometro)

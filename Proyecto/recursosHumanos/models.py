@@ -199,6 +199,11 @@ class ActividadTrabajo(models.Model):
     disponibilidad = models.CharField(max_length=15, choices=DISPONIBILIDAD_CHOICES, verbose_name="Disponibilidad")
     genera_ingreso = models.CharField(max_length=15, choices=GENERACION_INGRESO_CHOICES, verbose_name="Generación de Ingreso", null=True, blank=True)
     categoria_facturacion = models.CharField(max_length=15, choices=CATEGORIA_FACTURACION_CHOICES, verbose_name="Categoría de Facturación", null=True, blank=True)
+    requiere_servicio = models.BooleanField(
+        default=False, 
+        verbose_name="Requiere Asociación de Servicio",
+        help_text="Si está marcado, esta actividad siempre requiere asociar un servicio"
+    )
    
     class Meta:
         verbose_name = "Actividad de Trabajo"
@@ -253,7 +258,12 @@ class RegistroHorasTecnico(models.Model):
         if self.hora_inicio >= self.hora_fin:
             raise ValueError("La hora de inicio debe ser menor que la hora de fin.")
 
-        if self.tipo_hora.disponibilidad == 'DISPONIBLE' and self.tipo_hora.genera_ingreso == 'INGRESO':
+        # Nueva lógica: verificar si la actividad requiere servicio
+        if self.tipo_hora.requiere_servicio:
+            if not self.servicio:
+                raise ValueError("Esta actividad requiere asociar un servicio.")
+        # Lógica existente para compatibilidad (mantener como fallback)
+        elif self.tipo_hora.disponibilidad == 'DISPONIBLE' and self.tipo_hora.genera_ingreso == 'INGRESO':
             if not self.servicio:
                 raise ValueError("Las horas productivas deben estar asociadas a un servicio.")
         else:
@@ -271,7 +281,7 @@ class RegistroHorasTecnico(models.Model):
                 raise ValueError("Solo se pueden registrar horas en servicios en proceso, programados, finalizados a facturar o completados recientemente.")
             elif self.servicio.estado == 'COMPLETADO' and self.servicio.fecha_servicio < fecha_limite:
                 raise ValueError("No se pueden registrar horas en servicios completados con más de 15 días de antigüedad.")
-
+        
         super().save(*args, **kwargs)
 
 

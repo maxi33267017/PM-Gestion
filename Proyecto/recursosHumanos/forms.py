@@ -73,7 +73,8 @@ class RegistroHorasTecnicoForm(forms.ModelForm):
         servicio = cleaned_data.get("servicio")
         numero_informe = cleaned_data.get("numero_informe")
 
-        if tipo_hora and tipo_hora.disponibilidad == "DISPONIBLE" and tipo_hora.genera_ingreso == "INGRESO":
+        # Nueva lógica: verificar si la actividad requiere servicio
+        if tipo_hora and tipo_hora.requiere_servicio:
             if not servicio:
                 if numero_informe:
                     # Calcular la fecha límite para la búsqueda por número de informe
@@ -88,19 +89,34 @@ class RegistroHorasTecnicoForm(forms.ModelForm):
                     else:
                         cleaned_data["servicio"] = servicio
                 else:
-                    self.add_error("servicio", "Debe ingresar el número de informe o seleccionar un servicio.")
+                    self.add_error("servicio", "Esta actividad requiere asociar un servicio.")
+        
+        # Lógica existente para compatibilidad (mantener como fallback)
+        elif tipo_hora and tipo_hora.disponibilidad == "DISPONIBLE" and tipo_hora.genera_ingreso == "INGRESO":
+            if not servicio:
+                if numero_informe:
+                    # Calcular la fecha límite para la búsqueda por número de informe
+                    fecha_limite = timezone.now().date() - timedelta(days=15)
+                    servicio = Servicio.objects.filter(
+                        numero_orden=numero_informe, 
+                        estado__in=['EN_PROCESO', 'PROGRAMADO', 'A_FACTURAR', 'COMPLETADO'],
+                        fecha_servicio__gte=fecha_limite
+                    ).first()
+                    if not servicio:
+                        self.add_error("numero_informe", "No se encontró un servicio con ese número de informe en estado válido o es muy antiguo (más de 15 días).")
+                    else:
+                        cleaned_data["servicio"] = servicio
+                else:
+                    self.add_error("servicio", "Las horas productivas deben estar asociadas a un servicio.")
 
-        if tipo_hora and (tipo_hora.disponibilidad != "DISPONIBLE" or tipo_hora.genera_ingreso != "INGRESO"):
-            cleaned_data["servicio"] = None  # No permitir servicio para horas no productivas
-
-        # Verificar que el servicio esté en un estado válido y no sea muy antiguo
+        # Validar que el servicio esté en un estado válido y no sea muy antiguo
         if servicio:
             fecha_limite = timezone.now().date() - timedelta(days=15)
             if servicio.estado not in ['EN_PROCESO', 'PROGRAMADO', 'A_FACTURAR', 'COMPLETADO']:
                 self.add_error("servicio", "Solo se pueden registrar horas en servicios en proceso, programados, finalizados a facturar o completados recientemente.")
             elif servicio.estado == 'COMPLETADO' and servicio.fecha_servicio < fecha_limite:
                 self.add_error("servicio", "No se pueden registrar horas en servicios completados con más de 15 días de antigüedad.")
-
+        
         return cleaned_data
 
 from django import forms
