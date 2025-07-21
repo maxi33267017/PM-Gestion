@@ -3613,7 +3613,7 @@ def dashboard_tecnico(request):
     ).select_related(
         'preorden__cliente', 
         'preorden__equipo__modelo',
-        'preorden__equipo__tipo_equipo'
+        'preorden__equipo__modelo__tipo_equipo'
     ).order_by('estado', '-fecha_servicio')[:5]
     
     # Preórdenes sin servicio asignado al técnico
