@@ -1,4 +1,6 @@
 from django import forms
+from django.utils import timezone
+from datetime import timedelta
 from gestionDeTaller.models import Servicio
 from recursosHumanos.models import RegistroHorasTecnico, ActividadTrabajo
 
@@ -24,8 +26,18 @@ class RegistroHorasTecnicoForm(forms.ModelForm):
         self.tecnico = kwargs.pop('tecnico', None)  # Obtener el técnico del kwargs
         super().__init__(*args, **kwargs)
 
+        # Calcular la fecha límite (15 días atrás desde hoy)
+        fecha_limite = timezone.now().date() - timedelta(days=15)
+
         # Filtrar servicios por estado y sucursal del técnico
-        servicios_query = Servicio.objects.filter(estado__in=["EN_PROCESO", "PROGRAMADO", "A_FACTURAR"])
+        # Incluir servicios completados solo si no han pasado más de 15 días
+        servicios_query = Servicio.objects.filter(
+            estado__in=["EN_PROCESO", "PROGRAMADO", "A_FACTURAR", "COMPLETADO"]
+        ).filter(
+            # Para servicios completados, verificar que no sean más antiguos de 15 días
+            fecha_servicio__gte=fecha_limite
+        )
+        
         if self.tecnico and self.tecnico.sucursal:
             servicios_query = servicios_query.filter(preorden__sucursal=self.tecnico.sucursal)
         self.fields['servicio'].queryset = servicios_query
@@ -64,9 +76,15 @@ class RegistroHorasTecnicoForm(forms.ModelForm):
         if tipo_hora and tipo_hora.disponibilidad == "DISPONIBLE" and tipo_hora.genera_ingreso == "INGRESO":
             if not servicio:
                 if numero_informe:
-                    servicio = Servicio.objects.filter(numero_orden=numero_informe, estado__in=['EN_PROCESO', 'PROGRAMADO', 'A_FACTURAR']).first()
+                    # Calcular la fecha límite para la búsqueda por número de informe
+                    fecha_limite = timezone.now().date() - timedelta(days=15)
+                    servicio = Servicio.objects.filter(
+                        numero_orden=numero_informe, 
+                        estado__in=['EN_PROCESO', 'PROGRAMADO', 'A_FACTURAR', 'COMPLETADO'],
+                        fecha_servicio__gte=fecha_limite
+                    ).first()
                     if not servicio:
-                        self.add_error("numero_informe", "No se encontró un servicio con ese número de informe en estado EN PROCESO, PROGRAMADO o FINALIZADO A FACTURAR.")
+                        self.add_error("numero_informe", "No se encontró un servicio con ese número de informe en estado válido o es muy antiguo (más de 15 días).")
                     else:
                         cleaned_data["servicio"] = servicio
                 else:
@@ -75,8 +93,13 @@ class RegistroHorasTecnicoForm(forms.ModelForm):
         if tipo_hora and (tipo_hora.disponibilidad != "DISPONIBLE" or tipo_hora.genera_ingreso != "INGRESO"):
             cleaned_data["servicio"] = None  # No permitir servicio para horas no productivas
 
-        if servicio and servicio.estado and servicio.estado not in ['EN_PROCESO', 'PROGRAMADO', 'A_FACTURAR']:
-            self.add_error("servicio", "Solo se pueden registrar horas en servicios en proceso, programados o finalizados a facturar.")
+        # Verificar que el servicio esté en un estado válido y no sea muy antiguo
+        if servicio:
+            fecha_limite = timezone.now().date() - timedelta(days=15)
+            if servicio.estado not in ['EN_PROCESO', 'PROGRAMADO', 'A_FACTURAR', 'COMPLETADO']:
+                self.add_error("servicio", "Solo se pueden registrar horas en servicios en proceso, programados, finalizados a facturar o completados recientemente.")
+            elif servicio.estado == 'COMPLETADO' and servicio.fecha_servicio < fecha_limite:
+                self.add_error("servicio", "No se pueden registrar horas en servicios completados con más de 15 días de antigüedad.")
 
         return cleaned_data
 

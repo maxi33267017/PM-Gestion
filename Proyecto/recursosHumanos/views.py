@@ -23,9 +23,15 @@ def cronometro(request):
     # Obtener actividades disponibles
     actividades = ActividadTrabajo.objects.all().order_by('disponibilidad', 'genera_ingreso', 'nombre')
     
-    # Obtener servicios disponibles (PROGRAMADO, EN_ESPERA_REPUESTOS, EN_PROCESO, A_FACTURAR)
+    # Calcular la fecha límite (15 días atrás desde hoy)
+    fecha_limite = timezone.now().date() - timedelta(days=15)
+    
+    # Obtener servicios disponibles incluyendo completados recientes
     servicios = Servicio.objects.filter(
-        estado__in=['PROGRAMADO', 'ESPERA_REPUESTOS', 'EN_PROCESO', 'A_FACTURAR']
+        estado__in=['PROGRAMADO', 'ESPERA_REPUESTOS', 'EN_PROCESO', 'A_FACTURAR', 'COMPLETADO']
+    ).filter(
+        # Para servicios completados, verificar que no sean más antiguos de 15 días
+        fecha_servicio__gte=fecha_limite
     ).order_by('estado', '-fecha_servicio')
     
     # Filtrar por sucursal del técnico si no es superuser
