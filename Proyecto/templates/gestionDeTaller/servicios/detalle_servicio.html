@@ -1764,6 +1764,9 @@
         }
     });
 
+    // Variable global para almacenar el repuesto encontrado
+    let repuestoEncontrado = null;
+
     // Función para buscar repuesto
     function buscarRepuesto() {
         const codigo = document.getElementById('codigo_busqueda').value.trim();
@@ -1782,8 +1785,10 @@
         .then(response => response.json())
         .then(data => {
             if (data.success) {
+                repuestoEncontrado = data.repuesto; // Almacenar en variable global
                 mostrarRepuestoEncontrado(data.repuesto);
             } else {
+                repuestoEncontrado = null;
                 mostrarRepuestoNoEncontrado();
             }
         })
@@ -1813,12 +1818,7 @@
                 </div>
             </div>
             <div class="mt-3">
-                <button type="button" class="btn btn-success btn-sm" 
-                        data-codigo="${repuesto.codigo}" 
-                        data-descripcion="${repuesto.descripcion || ''}" 
-                        data-costo="${repuesto.costo || 0}" 
-                        data-precio="${repuesto.precio_venta}"
-                        onclick="usarRepuestoEncontradoDesdeData(this)">
+                <button type="button" class="btn btn-success btn-sm" onclick="usarRepuestoEncontrado()">
                     <i class="fas fa-check me-2"></i>Usar este Repuesto
                 </button>
             </div>
@@ -1831,22 +1831,17 @@
         document.getElementById('no_encontrado').style.display = 'block';
     }
 
-    // Función para usar repuesto encontrado desde data attributes
-    function usarRepuestoEncontradoDesdeData(button) {
-        const codigo = button.getAttribute('data-codigo');
-        const descripcion = button.getAttribute('data-descripcion');
-        const costo = button.getAttribute('data-costo');
-        const precio = button.getAttribute('data-precio');
-        
-        console.log('Datos leídos del botón:', { codigo, descripcion, costo, precio }); // Debug log
-        
-        usarRepuestoEncontrado(codigo, descripcion, costo, precio);
-    }
-
     // Función para usar repuesto encontrado
-    function usarRepuestoEncontrado(codigo, descripcion, costo, precio) {
+    function usarRepuestoEncontrado() {
         try {
-            console.log('Llenando formulario con:', { codigo, descripcion, costo, precio }); // Debug log
+            if (!repuestoEncontrado) {
+                console.error('No hay repuesto encontrado');
+                alert('Error: No hay repuesto seleccionado');
+                return;
+            }
+            
+            const { codigo, descripcion, costo, precio_venta } = repuestoEncontrado;
+            console.log('Llenando formulario con:', { codigo, descripcion, costo, precio_venta }); // Debug log
             
             // Llenar el formulario de venta
             const codigoField = document.getElementById('id_codigo');
@@ -1857,7 +1852,7 @@
             if (codigoField) codigoField.value = codigo;
             if (descripcionField) descripcionField.value = descripcion || '';
             if (costoField) costoField.value = costo || '';
-            if (precioField) precioField.value = precio || '';
+            if (precioField) precioField.value = precio_venta || '';
             
             console.log('Valores establecidos en campos:', {
                 codigo: codigoField?.value,
@@ -1886,7 +1881,7 @@
             if (nuevoCodigo) nuevoCodigo.disabled = true;
             if (nuevoPrecio) nuevoPrecio.disabled = true;
             
-            console.log('Repuesto seleccionado:', { codigo, descripcion, costo, precio });
+            console.log('Repuesto seleccionado:', repuestoEncontrado);
         } catch (error) {
             console.error('Error en usarRepuestoEncontrado:', error);
             alert('Error al seleccionar el repuesto. Por favor intenta nuevamente.');
