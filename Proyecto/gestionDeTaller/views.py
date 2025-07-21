@@ -1027,11 +1027,17 @@ def tecnicos(request):
     # Verificar si el usuario es gerente (puede ver todos los técnicos)
     es_gerente = request.user.rol == 'GERENTE'
     es_superuser = request.user.is_superuser
+    es_tecnico = request.user.rol == 'TECNICO'
 
-    # Filtrar usuarios con rol "Técnico" según la sucursal del usuario o mostrar todos si es gerente/superuser
+    # Filtrar usuarios según el rol del usuario
     if es_superuser or es_gerente:
+        # Gerentes y superusuarios ven todos los técnicos
         tecnicos_visibles = Usuario.objects.filter(rol='TECNICO')
+    elif es_tecnico:
+        # Técnicos solo ven su propio usuario
+        tecnicos_visibles = Usuario.objects.filter(id=request.user.id)
     else:
+        # Otros roles (ADMINISTRATIVO) ven técnicos de su sucursal
         tecnicos_visibles = Usuario.objects.filter(rol='TECNICO', sucursal=request.user.sucursal)
 
     # Procesar el formulario de filtro si se envía
@@ -1317,7 +1323,16 @@ def exportar_registros_horas(tecnicos, fecha_inicio, fecha_fin):
 @login_required
 def detalle_tecnico(request, tecnico_id):
     tecnico = get_object_or_404(Usuario, pk=tecnico_id)
-
+    
+    # Validación de seguridad: técnicos solo pueden ver su propio detalle
+    es_gerente = request.user.rol == 'GERENTE'
+    es_superuser = request.user.is_superuser
+    es_tecnico = request.user.rol == 'TECNICO'
+    
+    if es_tecnico and request.user.id != tecnico_id:
+        messages.error(request, "No tienes permisos para ver el detalle de otros técnicos.")
+        return redirect('gestionDeTaller:tecnicos')
+    
     # Obtener la fecha actual y calcular el inicio de la semana
     fecha_actual = datetime.today().date()
 
