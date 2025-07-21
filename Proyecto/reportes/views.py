@@ -3877,9 +3877,9 @@ def metricas_conversion_preordenes(request):
     
     # Análisis por clasificación
     conversion_por_clasificacion = preordenes.values('clasificacion').annotate(
-        total=Count('id'),
-        con_servicio=Count('id', filter=Q(servicio__isnull=False)),
-        sin_servicio=Count('id', filter=Q(servicio__isnull=True))
+        total=Count('numero'),
+        con_servicio=Count('numero', filter=Q(servicio__isnull=False)),
+        sin_servicio=Count('numero', filter=Q(servicio__isnull=True))
     ).annotate(
         tasa_conversion=ExpressionWrapper(
             F('con_servicio') * 100.0 / F('total'),
@@ -3889,9 +3889,9 @@ def metricas_conversion_preordenes(request):
     
     # Análisis por tipo de trabajo
     conversion_por_tipo = preordenes.values('tipo_trabajo').annotate(
-        total=Count('id'),
-        con_servicio=Count('id', filter=Q(servicio__isnull=False)),
-        sin_servicio=Count('id', filter=Q(servicio__isnull=True))
+        total=Count('numero'),
+        con_servicio=Count('numero', filter=Q(servicio__isnull=False)),
+        sin_servicio=Count('numero', filter=Q(servicio__isnull=True))
     ).annotate(
         tasa_conversion=ExpressionWrapper(
             F('con_servicio') * 100.0 / F('total'),
@@ -3901,9 +3901,9 @@ def metricas_conversion_preordenes(request):
     
     # Análisis por sucursal
     conversion_por_sucursal = preordenes.values('sucursal__nombre').annotate(
-        total=Count('id'),
-        con_servicio=Count('id', filter=Q(servicio__isnull=False)),
-        sin_servicio=Count('id', filter=Q(servicio__isnull=True))
+        total=Count('numero'),
+        con_servicio=Count('numero', filter=Q(servicio__isnull=False)),
+        sin_servicio=Count('numero', filter=Q(servicio__isnull=True))
     ).annotate(
         tasa_conversion=ExpressionWrapper(
             F('con_servicio') * 100.0 / F('total'),
@@ -3937,9 +3937,9 @@ def metricas_conversion_preordenes(request):
     
     # Top clientes con mejor/menor conversión
     clientes_conversion = preordenes.values('cliente__razon_social').annotate(
-        total=Count('id'),
-        con_servicio=Count('id', filter=Q(servicio__isnull=False)),
-        sin_servicio=Count('id', filter=Q(servicio__isnull=True))
+        total=Count('numero'),
+        con_servicio=Count('numero', filter=Q(servicio__isnull=False)),
+        sin_servicio=Count('numero', filter=Q(servicio__isnull=True))
     ).annotate(
         tasa_conversion=ExpressionWrapper(
             F('con_servicio') * 100.0 / F('total'),
