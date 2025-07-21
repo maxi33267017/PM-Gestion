@@ -1,0 +1,376 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ titulo }} - Reportes{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
+<style>
+    .metric-card {
+        border-left: 4px solid #007bff;
+        transition: transform 0.2s;
+    }
+    .metric-card:hover {
+        transform: translateY(-2px);
+    }
+    
+    .conversion-rate {
+        font-size: 2.5rem;
+        font-weight: bold;
+    }
+    
+    .progress-custom {
+        height: 25px;
+        border-radius: 12px;
+    }
+    
+    .table-hover tbody tr:hover {
+        background-color: rgba(0,123,255,0.1);
+    }
+    
+    .badge-conversion {
+        font-size: 0.875rem;
+        padding: 0.5rem 0.75rem;
+    }
+    
+    .chart-container {
+        position: relative;
+        height: 300px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0">{{ titulo }}</h1>
+            <p class="text-muted">Análisis detallado de conversión de preórdenes a servicios</p>
+        </div>
+        <div>
+            <a href="{% url 'reportes:preordenes_sin_servicio' %}" class="btn btn-outline-primary">
+                <i class="bi bi-arrow-left"></i> Volver a Preórdenes Sin Servicio
+            </a>
+        </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-4">
+                    <label for="periodo_dias" class="form-label">Período de Análisis</label>
+                    <select name="periodo_dias" id="periodo_dias" class="form-select">
+                        <option value="7" {% if periodo_dias == 7 %}selected{% endif %}>Últimos 7 días</option>
+                        <option value="15" {% if periodo_dias == 15 %}selected{% endif %}>Últimos 15 días</option>
+                        <option value="30" {% if periodo_dias == 30 %}selected{% endif %}>Últimos 30 días</option>
+                        <option value="60" {% if periodo_dias == 60 %}selected{% endif %}>Últimos 60 días</option>
+                        <option value="90" {% if periodo_dias == 90 %}selected{% endif %}>Últimos 90 días</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label for="sucursal" class="form-label">Sucursal</label>
+                    <select name="sucursal" id="sucursal" class="form-select">
+                        <option value="">Todas las sucursales</option>
+                        {% for sucursal in sucursales_filtro %}
+                            <option value="{{ sucursal.id }}" {% if sucursal_filtro == sucursal.id|stringformat:"s" %}selected{% endif %}>
+                                {{ sucursal.nombre }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary me-2">
+                        <i class="bi bi-funnel"></i> Aplicar Filtros
+                    </button>
+                    <a href="{% url 'reportes:metricas_conversion_preordenes' %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-clockwise"></i> Limpiar
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Métricas Principales -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card metric-card">
+                <div class="card-body text-center">
+                    <div class="conversion-rate text-primary">{{ tasa_conversion|floatformat:1 }}%</div>
+                    <div class="text-muted">Tasa de Conversión</div>
+                    <small class="text-muted">{{ preordenes_con_servicio }} de {{ total_preordenes }} preórdenes</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card metric-card">
+                <div class="card-body text-center">
+                    <div class="conversion-rate text-success">{{ total_preordenes }}</div>
+                    <div class="text-muted">Total Preórdenes</div>
+                    <small class="text-muted">En el período seleccionado</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card metric-card">
+                <div class="card-body text-center">
+                    <div class="conversion-rate text-info">{{ preordenes_con_servicio }}</div>
+                    <div class="text-muted">Con Servicio</div>
+                    <small class="text-muted">Conversiones exitosas</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card metric-card">
+                <div class="card-body text-center">
+                    <div class="conversion-rate text-warning">{{ preordenes_sin_servicio }}</div>
+                    <div class="text-muted">Sin Servicio</div>
+                    <small class="text-muted">Oportunidades perdidas</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Análisis por Clasificación -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-tags"></i> Conversión por Clasificación
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% for item in conversion_por_clasificacion %}
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span class="fw-bold">{{ item.get_clasificacion_display }}</span>
+                            <span class="badge badge-conversion bg-primary">{{ item.tasa_conversion|floatformat:1 }}%</span>
+                        </div>
+                        <div class="progress progress-custom">
+                            <div class="progress-bar bg-success" style="width: {{ item.con_servicio|div:item.total|mul:100 }}%">
+                                {{ item.con_servicio }}
+                            </div>
+                            <div class="progress-bar bg-warning" style="width: {{ item.sin_servicio|div:item.total|mul:100 }}%">
+                                {{ item.sin_servicio }}
+                            </div>
+                        </div>
+                        <small class="text-muted">Total: {{ item.total }} | Con servicio: {{ item.con_servicio }} | Sin servicio: {{ item.sin_servicio }}</small>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-tools"></i> Conversión por Tipo de Trabajo
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% for item in conversion_por_tipo %}
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span class="fw-bold">{{ item.get_tipo_trabajo_display }}</span>
+                            <span class="badge badge-conversion bg-primary">{{ item.tasa_conversion|floatformat:1 }}%</span>
+                        </div>
+                        <div class="progress progress-custom">
+                            <div class="progress-bar bg-success" style="width: {{ item.con_servicio|div:item.total|mul:100 }}%">
+                                {{ item.con_servicio }}
+                            </div>
+                            <div class="progress-bar bg-warning" style="width: {{ item.sin_servicio|div:item.total|mul:100 }}%">
+                                {{ item.sin_servicio }}
+                            </div>
+                        </div>
+                        <small class="text-muted">Total: {{ item.total }} | Con servicio: {{ item.con_servicio }} | Sin servicio: {{ item.sin_servicio }}</small>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Análisis por Sucursal -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-building"></i> Performance por Sucursal
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Sucursal</th>
+                                    <th>Total Preórdenes</th>
+                                    <th>Con Servicio</th>
+                                    <th>Sin Servicio</th>
+                                    <th>Tasa Conversión</th>
+                                    <th>Performance</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for sucursal in conversion_por_sucursal %}
+                                <tr>
+                                    <td><strong>{{ sucursal.sucursal__nombre }}</strong></td>
+                                    <td><span class="badge bg-primary">{{ sucursal.total }}</span></td>
+                                    <td><span class="badge bg-success">{{ sucursal.con_servicio }}</span></td>
+                                    <td><span class="badge bg-warning">{{ sucursal.sin_servicio }}</span></td>
+                                    <td>
+                                        <span class="badge badge-conversion 
+                                            {% if sucursal.tasa_conversion >= 80 %}bg-success
+                                            {% elif sucursal.tasa_conversion >= 60 %}bg-warning
+                                            {% else %}bg-danger{% endif %}">
+                                            {{ sucursal.tasa_conversion|floatformat:1 }}%
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="progress" style="height: 20px;">
+                                            <div class="progress-bar 
+                                                {% if sucursal.tasa_conversion >= 80 %}bg-success
+                                                {% elif sucursal.tasa_conversion >= 60 %}bg-warning
+                                                {% else %}bg-danger{% endif %}" 
+                                                style="width: {{ sucursal.tasa_conversion }}%">
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Evolución Mensual -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-graph-up"></i> Evolución de Conversión (Últimos 12 Meses)
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Mes</th>
+                                    <th>Total Preórdenes</th>
+                                    <th>Con Servicio</th>
+                                    <th>Sin Servicio</th>
+                                    <th>Tasa Conversión</th>
+                                    <th>Tendencia</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for mes in conversion_mensual %}
+                                <tr>
+                                    <td><strong>{{ mes.mes }}</strong></td>
+                                    <td><span class="badge bg-primary">{{ mes.total }}</span></td>
+                                    <td><span class="badge bg-success">{{ mes.con_servicio }}</span></td>
+                                    <td><span class="badge bg-warning">{{ mes.sin_servicio }}</span></td>
+                                    <td>
+                                        <span class="badge badge-conversion 
+                                            {% if mes.tasa_conversion >= 80 %}bg-success
+                                            {% elif mes.tasa_conversion >= 60 %}bg-warning
+                                            {% else %}bg-danger{% endif %}">
+                                            {{ mes.tasa_conversion|floatformat:1 }}%
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="progress" style="height: 20px;">
+                                            <div class="progress-bar 
+                                                {% if mes.tasa_conversion >= 80 %}bg-success
+                                                {% elif mes.tasa_conversion >= 60 %}bg-warning
+                                                {% else %}bg-danger{% endif %}" 
+                                                style="width: {{ mes.tasa_conversion }}%">
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top Clientes por Conversión -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-trophy"></i> Top Clientes por Tasa de Conversión
+                    </h5>
+                    <small class="text-muted">Solo clientes con 3 o más preórdenes en el período</small>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Cliente</th>
+                                    <th>Total Preórdenes</th>
+                                    <th>Con Servicio</th>
+                                    <th>Sin Servicio</th>
+                                    <th>Tasa Conversión</th>
+                                    <th>Performance</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for cliente in clientes_conversion %}
+                                <tr>
+                                    <td><strong>{{ cliente.cliente__razon_social }}</strong></td>
+                                    <td><span class="badge bg-primary">{{ cliente.total }}</span></td>
+                                    <td><span class="badge bg-success">{{ cliente.con_servicio }}</span></td>
+                                    <td><span class="badge bg-warning">{{ cliente.sin_servicio }}</span></td>
+                                    <td>
+                                        <span class="badge badge-conversion 
+                                            {% if cliente.tasa_conversion >= 80 %}bg-success
+                                            {% elif cliente.tasa_conversion >= 60 %}bg-warning
+                                            {% else %}bg-danger{% endif %}">
+                                            {{ cliente.tasa_conversion|floatformat:1 }}%
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="progress" style="height: 20px;">
+                                            <div class="progress-bar 
+                                                {% if cliente.tasa_conversion >= 80 %}bg-success
+                                                {% elif cliente.tasa_conversion >= 60 %}bg-warning
+                                                {% else %}bg-danger{% endif %}" 
+                                                style="width: {{ cliente.tasa_conversion }}%">
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Auto-refresh cada 10 minutos
+    setTimeout(function() {
+        location.reload();
+    }, 600000);
+</script>
+{% endblock %} 

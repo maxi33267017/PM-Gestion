@@ -252,6 +252,14 @@
                 <i class="bi bi-gear-fill"></i>
                 Servicios en Proceso
             </a>
+            <a href="{% url 'reportes:preordenes_sin_servicio' %}" class="action-btn">
+                <i class="bi bi-exclamation-triangle"></i>
+                Preórdenes Sin Servicio
+            </a>
+            <a href="{% url 'reportes:metricas_conversion_preordenes' %}" class="action-btn">
+                <i class="bi bi-graph-up"></i>
+                Métricas de Conversión
+            </a>
             <a href="{% url 'reportes:encuestas_porcentajes' %}" class="action-btn">
                 <i class="bi bi-clipboard-data"></i>
                 Satisfacción Clientes

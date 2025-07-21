@@ -35,6 +35,10 @@ urlpatterns = [
     path('servicios/tecnico/', views.servicios_por_tecnico, name='servicios_tecnico'),
     path('servicios/sin-ingresos/', views.servicios_sin_ingresos, name='servicios_sin_ingresos'),
     
+    # Reportes de Preórdenes Sin Servicio
+    path('preordenes/sin-servicio/', views.preordenes_sin_servicio, name='preordenes_sin_servicio'),
+    path('preordenes/metricas-conversion/', views.metricas_conversion_preordenes, name='metricas_conversion_preordenes'),
+    
     # Reportes de Embudos
     path('embudos/', views.reportes_embudos, name='embudos'),
     path('embudos/cantidad/', views.embudos_cantidad, name='embudos_cantidad'),

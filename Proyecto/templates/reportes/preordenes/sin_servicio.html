@@ -1,0 +1,427 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ titulo }} - Reportes{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
+<style>
+    .card-metric {
+        border-left: 4px solid #007bff;
+        transition: transform 0.2s;
+    }
+    .card-metric:hover {
+        transform: translateY(-2px);
+    }
+    .card-recientes { border-left-color: #28a745; }
+    .card-riesgo { border-left-color: #ffc107; }
+    .card-perdidas { border-left-color: #dc3545; }
+    .card-conversion { border-left-color: #17a2b8; }
+    
+    .status-badge {
+        font-size: 0.75rem;
+        padding: 0.25rem 0.5rem;
+    }
+    .status-reciente { background-color: #d4edda; color: #155724; }
+    .status-riesgo { background-color: #fff3cd; color: #856404; }
+    .status-perdida { background-color: #f8d7da; color: #721c24; }
+    .status-urgente { background-color: #f8d7da; color: #721c24; font-weight: bold; }
+    
+    .opportunity-card {
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        margin-bottom: 1rem;
+        transition: all 0.3s ease;
+    }
+    .opportunity-card:hover {
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        border-color: #007bff;
+    }
+    
+    .opportunity-header {
+        background-color: #f8f9fa;
+        padding: 0.75rem 1rem;
+        border-bottom: 1px solid #dee2e6;
+        border-radius: 8px 8px 0 0;
+    }
+    
+    .opportunity-body {
+        padding: 1rem;
+    }
+    
+    .metric-value {
+        font-size: 2rem;
+        font-weight: bold;
+    }
+    
+    .metric-label {
+        font-size: 0.875rem;
+        color: #6c757d;
+    }
+    
+    .filter-section {
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 2rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0">{{ titulo }}</h1>
+            <p class="text-muted">Seguimiento de oportunidades de negocio sin servicio asignado</p>
+        </div>
+        <div>
+            <a href="?exportar=true" class="btn btn-success">
+                <i class="bi bi-file-earmark-excel"></i> Exportar Excel
+            </a>
+        </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="filter-section">
+        <form method="get" class="row g-3">
+            <div class="col-md-3">
+                <label for="sucursal" class="form-label">Sucursal</label>
+                <select name="sucursal" id="sucursal" class="form-select">
+                    <option value="">Todas las sucursales</option>
+                    {% for sucursal in sucursales_filtro %}
+                        <option value="{{ sucursal.id }}" {% if sucursal_filtro == sucursal.id|stringformat:"s" %}selected{% endif %}>
+                            {{ sucursal.nombre }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label for="clasificacion" class="form-label">Clasificación</label>
+                <select name="clasificacion" id="clasificacion" class="form-select">
+                    <option value="">Todas las clasificaciones</option>
+                    <option value="SPOT" {% if clasificacion_filtro == 'SPOT' %}selected{% endif %}>Spot</option>
+                    <option value="PROGRAMADO" {% if clasificacion_filtro == 'PROGRAMADO' %}selected{% endif %}>Programado</option>
+                    <option value="CAMPAÑA" {% if clasificacion_filtro == 'CAMPAÑA' %}selected{% endif %}>Campaña</option>
+                    <option value="ADICIONAL" {% if clasificacion_filtro == 'ADICIONAL' %}selected{% endif %}>Adicional</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label for="tipo_trabajo" class="form-label">Tipo de Trabajo</label>
+                <select name="tipo_trabajo" id="tipo_trabajo" class="form-select">
+                    <option value="">Todos los tipos</option>
+                    <option value="PRESENCIAL_TALLER" {% if tipo_trabajo_filtro == 'PRESENCIAL_TALLER' %}selected{% endif %}>Presencial en Taller</option>
+                    <option value="PRESENCIAL_CAMPO" {% if tipo_trabajo_filtro == 'PRESENCIAL_CAMPO' %}selected{% endif %}>Presencial en Campo</option>
+                    <option value="REMOTO" {% if tipo_trabajo_filtro == 'REMOTO' %}selected{% endif %}>Asistencia Remota</option>
+                </select>
+            </div>
+            <div class="col-md-3 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary me-2">
+                    <i class="bi bi-funnel"></i> Filtrar
+                </button>
+                <a href="{% url 'reportes:preordenes_sin_servicio' %}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-clockwise"></i> Limpiar
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Métricas Generales -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card card-metric card-recientes">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <div class="metric-value text-success">{{ total_recientes }}</div>
+                            <div class="metric-label">Recientes (0-7 días)</div>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="bi bi-clock text-success" style="font-size: 2rem;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card card-metric card-riesgo">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <div class="metric-value text-warning">{{ total_en_riesgo }}</div>
+                            <div class="metric-label">En Riesgo (8-15 días)</div>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="bi bi-exclamation-triangle text-warning" style="font-size: 2rem;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card card-metric card-perdidas">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <div class="metric-value text-danger">{{ total_perdidas }}</div>
+                            <div class="metric-label">Perdidas (15+ días)</div>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="bi bi-x-circle text-danger" style="font-size: 2rem;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card card-metric card-conversion">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <div class="metric-value text-info">{{ tasa_conversion|floatformat:1 }}%</div>
+                            <div class="metric-label">Tasa Conversión (30 días)</div>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="bi bi-graph-up text-info" style="font-size: 2rem;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Detalles de Conversión -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-pie-chart"></i> Resumen de Conversión (Últimos 30 días)
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-4">
+                            <div class="metric-value text-primary">{{ total_30_dias }}</div>
+                            <div class="metric-label">Total Preórdenes</div>
+                        </div>
+                        <div class="col-4">
+                            <div class="metric-value text-success">{{ con_servicio_30_dias }}</div>
+                            <div class="metric-label">Con Servicio</div>
+                        </div>
+                        <div class="col-4">
+                            <div class="metric-value text-danger">{{ total_30_dias|add:"-"|add:con_servicio_30_dias|stringformat:"s"|add:"0" }}</div>
+                            <div class="metric-label">Sin Servicio</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-building"></i> Análisis por Sucursal
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Sucursal</th>
+                                    <th>Total</th>
+                                    <th>Recientes</th>
+                                    <th>En Riesgo</th>
+                                    <th>Perdidas</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for sucursal in sucursales_analisis %}
+                                <tr>
+                                    <td>{{ sucursal.sucursal__nombre }}</td>
+                                    <td><span class="badge bg-primary">{{ sucursal.total }}</span></td>
+                                    <td><span class="badge bg-success">{{ sucursal.recientes }}</span></td>
+                                    <td><span class="badge bg-warning">{{ sucursal.en_riesgo }}</span></td>
+                                    <td><span class="badge bg-danger">{{ sucursal.perdidas }}</span></td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Oportunidades por Categoría -->
+    <div class="row">
+        <!-- Recientes -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-clock"></i> Recientes ({{ total_recientes }})
+                    </h5>
+                </div>
+                <div class="card-body" style="max-height: 600px; overflow-y: auto;">
+                    {% for item in oportunidades_por_tiempo.recientes %}
+                    <div class="opportunity-card">
+                        <div class="opportunity-header">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h6 class="mb-0">Preorden #{{ item.preorden.numero }}</h6>
+                                <span class="status-badge status-reciente">Reciente</span>
+                            </div>
+                        </div>
+                        <div class="opportunity-body">
+                            <p class="mb-1"><strong>{{ item.preorden.cliente.razon_social }}</strong></p>
+                            <p class="mb-1 text-muted">{{ item.preorden.equipo.modelo.nombre }} ({{ item.preorden.equipo.numero_serie }})</p>
+                            <p class="mb-2">{{ item.preorden.get_tipo_trabajo_display }} - {{ item.preorden.get_clasificacion_display }}</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <small class="text-muted">
+                                    <i class="bi bi-calendar"></i> {{ item.preorden.fecha_estimada|date:"d/m/Y" }}
+                                </small>
+                                <small class="text-muted">
+                                    {{ item.dias_desde_creacion }} días
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <p class="text-muted text-center">No hay preórdenes recientes</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- En Riesgo -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-exclamation-triangle"></i> En Riesgo ({{ total_en_riesgo }})
+                    </h5>
+                </div>
+                <div class="card-body" style="max-height: 600px; overflow-y: auto;">
+                    {% for item in oportunidades_por_tiempo.en_riesgo %}
+                    <div class="opportunity-card">
+                        <div class="opportunity-header">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h6 class="mb-0">Preorden #{{ item.preorden.numero }}</h6>
+                                <span class="status-badge {% if item.urgente %}status-urgente{% else %}status-riesgo{% endif %}">
+                                    {% if item.urgente %}Urgente{% else %}En Riesgo{% endif %}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="opportunity-body">
+                            <p class="mb-1"><strong>{{ item.preorden.cliente.razon_social }}</strong></p>
+                            <p class="mb-1 text-muted">{{ item.preorden.equipo.modelo.nombre }} ({{ item.preorden.equipo.numero_serie }})</p>
+                            <p class="mb-2">{{ item.preorden.get_tipo_trabajo_display }} - {{ item.preorden.get_clasificacion_display }}</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <small class="text-muted">
+                                    <i class="bi bi-calendar"></i> {{ item.preorden.fecha_estimada|date:"d/m/Y" }}
+                                </small>
+                                <small class="text-muted">
+                                    {{ item.dias_desde_creacion }} días
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <p class="text-muted text-center">No hay preórdenes en riesgo</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Perdidas -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-x-circle"></i> Perdidas ({{ total_perdidas }})
+                    </h5>
+                </div>
+                <div class="card-body" style="max-height: 600px; overflow-y: auto;">
+                    {% for item in oportunidades_por_tiempo.perdidas %}
+                    <div class="opportunity-card">
+                        <div class="opportunity-header">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h6 class="mb-0">Preorden #{{ item.preorden.numero }}</h6>
+                                <span class="status-badge status-perdida">Perdida</span>
+                            </div>
+                        </div>
+                        <div class="opportunity-body">
+                            <p class="mb-1"><strong>{{ item.preorden.cliente.razon_social }}</strong></p>
+                            <p class="mb-1 text-muted">{{ item.preorden.equipo.modelo.nombre }} ({{ item.preorden.equipo.numero_serie }})</p>
+                            <p class="mb-2">{{ item.preorden.get_tipo_trabajo_display }} - {{ item.preorden.get_clasificacion_display }}</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <small class="text-muted">
+                                    <i class="bi bi-calendar"></i> {{ item.preorden.fecha_estimada|date:"d/m/Y" }}
+                                </small>
+                                <small class="text-muted">
+                                    {{ item.dias_desde_creacion }} días
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <p class="text-muted text-center">No hay preórdenes perdidas</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top Clientes -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-people"></i> Top 10 Clientes con Más Preórdenes Sin Servicio
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Cliente</th>
+                                    <th>Total Preórdenes</th>
+                                    <th>Última Preorden</th>
+                                    <th>Días desde Última</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for cliente in clientes_con_mas_preordenes %}
+                                <tr>
+                                    <td>{{ cliente.cliente__razon_social }}</td>
+                                    <td><span class="badge bg-primary">{{ cliente.total }}</span></td>
+                                    <td>{{ cliente.ultima_preorden|date:"d/m/Y" }}</td>
+                                    <td>
+                                        {% with dias=cliente.ultima_preorden|timesince:fecha_actual %}
+                                            <span class="badge bg-warning">{{ dias }}</span>
+                                        {% endwith %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Auto-refresh cada 5 minutos
+    setTimeout(function() {
+        location.reload();
+    }, 300000);
+</script>
+{% endblock %} 

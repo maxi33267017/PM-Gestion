@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse, HttpResponse
-from django.db.models import Sum, Count, Avg, Q, F, ExpressionWrapper, DurationField, fields, Case, When, Value
+from django.db.models import Sum, Count, Avg, Q, F, ExpressionWrapper, DurationField, fields, Case, When, Value, FloatField
 from django.utils import timezone
 from datetime import datetime, timedelta
 import json
@@ -91,6 +91,12 @@ def dashboard_reportes(request):
                 'icono': 'bi-tools',
                 'url': 'reportes:servicios',
                 'descripcion': 'Reportes de servicios, preórdenes y tiempos promedio'
+            },
+            {
+                'titulo': 'Preórdenes Sin Servicio',
+                'icono': 'bi-exclamation-triangle',
+                'url': 'reportes:preordenes_sin_servicio',
+                'descripcion': 'Seguimiento de oportunidades de negocio sin servicio asignado'
             },
             {
                 'titulo': 'Embudos',
@@ -3695,3 +3701,270 @@ def exportar_encuestas_porcentajes_excel(tendencias, distribucion_cumplimiento, 
     response['Content-Disposition'] = 'attachment; filename="encuestas_porcentajes.xlsx"'
     
     return response
+
+@login_required
+def preordenes_sin_servicio(request):
+    """Dashboard de preórdenes sin servicio asignado"""
+    
+    # Obtener filtros
+    sucursal_id = request.GET.get('sucursal', '')
+    clasificacion = request.GET.get('clasificacion', '')
+    tipo_trabajo = request.GET.get('tipo_trabajo', '')
+    exportar = request.GET.get('exportar') == 'true'
+    
+    # Base queryset de preórdenes sin servicio
+    preordenes_sin_servicio = PreOrden.objects.filter(
+        activo=True,
+        servicio__isnull=True
+    ).select_related('cliente', 'equipo', 'sucursal', 'creado_por').prefetch_related('tecnicos')
+    
+    # Aplicar filtros
+    if sucursal_id:
+        preordenes_sin_servicio = preordenes_sin_servicio.filter(sucursal_id=sucursal_id)
+    
+    if clasificacion:
+        preordenes_sin_servicio = preordenes_sin_servicio.filter(clasificacion=clasificacion)
+    
+    if tipo_trabajo:
+        preordenes_sin_servicio = preordenes_sin_servicio.filter(tipo_trabajo=tipo_trabajo)
+    
+    # Calcular días transcurridos y categorizar
+    fecha_actual = timezone.now().date()
+    oportunidades_por_tiempo = {
+        'recientes': [],
+        'en_riesgo': [],
+        'perdidas': []
+    }
+    
+    for preorden in preordenes_sin_servicio:
+        dias_desde_creacion = (fecha_actual - preorden.fecha_creacion.date()).days
+        dias_desde_estimada = (fecha_actual - preorden.fecha_estimada).days
+        
+        # Categorizar por tiempo transcurrido
+        if dias_desde_creacion <= 7:
+            categoria = 'recientes'
+        elif dias_desde_creacion <= 15:
+            categoria = 'en_riesgo'
+        else:
+            categoria = 'perdidas'
+        
+        oportunidades_por_tiempo[categoria].append({
+            'preorden': preorden,
+            'dias_desde_creacion': dias_desde_creacion,
+            'dias_desde_estimada': dias_desde_estimada,
+            'urgente': dias_desde_estimada < 0  # Fecha estimada pasada
+        })
+    
+    # Calcular métricas generales
+    total_preordenes = preordenes_sin_servicio.count()
+    total_recientes = len(oportunidades_por_tiempo['recientes'])
+    total_en_riesgo = len(oportunidades_por_tiempo['en_riesgo'])
+    total_perdidas = len(oportunidades_por_tiempo['perdidas'])
+    
+    # Calcular tasa de conversión (últimos 30 días)
+    fecha_limite = timezone.now().date() - timedelta(days=30)
+    preordenes_30_dias = PreOrden.objects.filter(
+        fecha_creacion__gte=fecha_limite
+    )
+    total_30_dias = preordenes_30_dias.count()
+    con_servicio_30_dias = preordenes_30_dias.filter(servicio__isnull=False).count()
+    tasa_conversion = (con_servicio_30_dias / total_30_dias * 100) if total_30_dias > 0 else 0
+    
+    # Análisis por cliente
+    clientes_con_mas_preordenes = preordenes_sin_servicio.values(
+        'cliente__razon_social', 'cliente__id'
+    ).annotate(
+        total=Count('id'),
+        ultima_preorden=Max('fecha_creacion')
+    ).order_by('-total')[:10]
+    
+    # Análisis por sucursal
+    sucursales_analisis = preordenes_sin_servicio.values(
+        'sucursal__nombre', 'sucursal__id'
+    ).annotate(
+        total=Count('id'),
+        recientes=Count('id', filter=Q(fecha_creacion__gte=fecha_actual - timedelta(days=7))),
+        en_riesgo=Count('id', filter=Q(
+            fecha_creacion__gte=fecha_actual - timedelta(days=15),
+            fecha_creacion__lt=fecha_actual - timedelta(days=7)
+        )),
+        perdidas=Count('id', filter=Q(fecha_creacion__lt=fecha_actual - timedelta(days=15)))
+    ).order_by('-total')
+    
+    # Exportar a Excel si se solicita
+    if exportar:
+        import pandas as pd
+        from django.http import HttpResponse
+        
+        datos = []
+        for categoria, preordenes in oportunidades_por_tiempo.items():
+            for item in preordenes:
+                preorden = item['preorden']
+                tecnicos = ', '.join([f"{t.apellido}, {t.nombre}" for t in preorden.tecnicos.all()])
+                
+                datos.append({
+                    'Número': preorden.numero,
+                    'Cliente': preorden.cliente.razon_social,
+                    'Equipo': f"{preorden.equipo.modelo.nombre} ({preorden.equipo.numero_serie})",
+                    'Sucursal': preorden.sucursal.nombre,
+                    'Tipo Trabajo': preorden.get_tipo_trabajo_display(),
+                    'Clasificación': preorden.get_clasificacion_display(),
+                    'Fecha Estimada': preorden.fecha_estimada,
+                    'Fecha Creación': preorden.fecha_creacion.date(),
+                    'Días desde Creación': item['dias_desde_creacion'],
+                    'Días desde Estimada': item['dias_desde_estimada'],
+                    'Técnicos Asignados': tecnicos,
+                    'Creado por': f"{preorden.creado_por.apellido}, {preorden.creado_por.nombre}",
+                    'Categoría': categoria.upper(),
+                    'Urgente': 'SÍ' if item['urgente'] else 'NO'
+                })
+        
+        df = pd.DataFrame(datos)
+        response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        response['Content-Disposition'] = 'attachment; filename=preordenes_sin_servicio.xlsx'
+        df.to_excel(response, index=False)
+        return response
+    
+    # Obtener datos para filtros
+    from recursosHumanos.models import Sucursal
+    sucursales_filtro = Sucursal.objects.filter(activo=True)
+    
+    context = {
+        'titulo': 'Preórdenes Sin Servicio',
+        'oportunidades_por_tiempo': oportunidades_por_tiempo,
+        'total_preordenes': total_preordenes,
+        'total_recientes': total_recientes,
+        'total_en_riesgo': total_en_riesgo,
+        'total_perdidas': total_perdidas,
+        'tasa_conversion': tasa_conversion,
+        'con_servicio_30_dias': con_servicio_30_dias,
+        'total_30_dias': total_30_dias,
+        'clientes_con_mas_preordenes': clientes_con_mas_preordenes,
+        'sucursales_analisis': sucursales_analisis,
+        'sucursales_filtro': sucursales_filtro,
+        'sucursal_filtro': sucursal_id,
+        'clasificacion_filtro': clasificacion,
+        'tipo_trabajo_filtro': tipo_trabajo,
+        'fecha_actual': fecha_actual,
+    }
+    
+    return render(request, 'reportes/preordenes/sin_servicio.html', context)
+
+@login_required
+def metricas_conversion_preordenes(request):
+    """Métricas detalladas de conversión de preórdenes a servicios"""
+    
+    # Parámetros de filtro
+    periodo_dias = int(request.GET.get('periodo_dias', 30))
+    sucursal_id = request.GET.get('sucursal', '')
+    
+    fecha_limite = timezone.now().date() - timedelta(days=periodo_dias)
+    
+    # Base queryset
+    preordenes = PreOrden.objects.filter(
+        fecha_creacion__gte=fecha_limite
+    ).select_related('cliente', 'equipo', 'sucursal', 'servicio')
+    
+    if sucursal_id:
+        preordenes = preordenes.filter(sucursal_id=sucursal_id)
+    
+    # Métricas generales
+    total_preordenes = preordenes.count()
+    preordenes_con_servicio = preordenes.filter(servicio__isnull=False).count()
+    preordenes_sin_servicio = total_preordenes - preordenes_con_servicio
+    
+    tasa_conversion = (preordenes_con_servicio / total_preordenes * 100) if total_preordenes > 0 else 0
+    
+    # Análisis por clasificación
+    conversion_por_clasificacion = preordenes.values('clasificacion').annotate(
+        total=Count('id'),
+        con_servicio=Count('id', filter=Q(servicio__isnull=False)),
+        sin_servicio=Count('id', filter=Q(servicio__isnull=True))
+    ).annotate(
+        tasa_conversion=ExpressionWrapper(
+            F('con_servicio') * 100.0 / F('total'),
+            output_field=FloatField()
+        )
+    ).order_by('-total')
+    
+    # Análisis por tipo de trabajo
+    conversion_por_tipo = preordenes.values('tipo_trabajo').annotate(
+        total=Count('id'),
+        con_servicio=Count('id', filter=Q(servicio__isnull=False)),
+        sin_servicio=Count('id', filter=Q(servicio__isnull=True))
+    ).annotate(
+        tasa_conversion=ExpressionWrapper(
+            F('con_servicio') * 100.0 / F('total'),
+            output_field=FloatField()
+        )
+    ).order_by('-total')
+    
+    # Análisis por sucursal
+    conversion_por_sucursal = preordenes.values('sucursal__nombre').annotate(
+        total=Count('id'),
+        con_servicio=Count('id', filter=Q(servicio__isnull=False)),
+        sin_servicio=Count('id', filter=Q(servicio__isnull=True))
+    ).annotate(
+        tasa_conversion=ExpressionWrapper(
+            F('con_servicio') * 100.0 / F('total'),
+            output_field=FloatField()
+        )
+    ).order_by('-tasa_conversion')
+    
+    # Análisis temporal (últimos 12 meses)
+    conversion_mensual = []
+    for i in range(12):
+        fecha_inicio = timezone.now().date() - timedelta(days=30 * (i + 1))
+        fecha_fin = timezone.now().date() - timedelta(days=30 * i)
+        
+        preordenes_mes = preordenes.filter(
+            fecha_creacion__date__range=[fecha_inicio, fecha_fin]
+        )
+        
+        total_mes = preordenes_mes.count()
+        con_servicio_mes = preordenes_mes.filter(servicio__isnull=False).count()
+        tasa_mes = (con_servicio_mes / total_mes * 100) if total_mes > 0 else 0
+        
+        conversion_mensual.append({
+            'mes': fecha_inicio.strftime('%B %Y'),
+            'total': total_mes,
+            'con_servicio': con_servicio_mes,
+            'sin_servicio': total_mes - con_servicio_mes,
+            'tasa_conversion': tasa_mes
+        })
+    
+    conversion_mensual.reverse()  # Ordenar cronológicamente
+    
+    # Top clientes con mejor/menor conversión
+    clientes_conversion = preordenes.values('cliente__razon_social').annotate(
+        total=Count('id'),
+        con_servicio=Count('id', filter=Q(servicio__isnull=False)),
+        sin_servicio=Count('id', filter=Q(servicio__isnull=True))
+    ).annotate(
+        tasa_conversion=ExpressionWrapper(
+            F('con_servicio') * 100.0 / F('total'),
+            output_field=FloatField()
+        )
+    ).filter(total__gte=3).order_by('-tasa_conversion')  # Solo clientes con 3+ preórdenes
+    
+    # Obtener datos para filtros
+    from recursosHumanos.models import Sucursal
+    sucursales_filtro = Sucursal.objects.filter(activo=True)
+    
+    context = {
+        'titulo': 'Métricas de Conversión de Preórdenes',
+        'periodo_dias': periodo_dias,
+        'total_preordenes': total_preordenes,
+        'preordenes_con_servicio': preordenes_con_servicio,
+        'preordenes_sin_servicio': preordenes_sin_servicio,
+        'tasa_conversion': tasa_conversion,
+        'conversion_por_clasificacion': conversion_por_clasificacion,
+        'conversion_por_tipo': conversion_por_tipo,
+        'conversion_por_sucursal': conversion_por_sucursal,
+        'conversion_mensual': conversion_mensual,
+        'clientes_conversion': clientes_conversion,
+        'sucursales_filtro': sucursales_filtro,
+        'sucursal_filtro': sucursal_id,
+    }
+    
+    return render(request, 'reportes/preordenes/metricas_conversion.html', context)
