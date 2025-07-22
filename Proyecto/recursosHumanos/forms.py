@@ -77,7 +77,7 @@ class RegistroHorasTecnicoForm(forms.ModelForm):
         servicio = cleaned_data.get("servicio")
         numero_informe = cleaned_data.get("numero_informe")
 
-        # Nueva lógica: verificar si la actividad requiere servicio
+        # Lógica principal: verificar si la actividad requiere servicio
         if tipo_hora and tipo_hora.requiere_servicio:
             if not servicio:
                 if numero_informe:
@@ -96,26 +96,6 @@ class RegistroHorasTecnicoForm(forms.ModelForm):
                         cleaned_data["servicio"] = servicio
                 else:
                     self.add_error("servicio", "Esta actividad requiere asociar un servicio.")
-        
-        # Lógica existente para compatibilidad (mantener como fallback)
-        elif tipo_hora and tipo_hora.disponibilidad == "DISPONIBLE" and tipo_hora.genera_ingreso == "INGRESO":
-            if not servicio:
-                if numero_informe:
-                    # Calcular la fecha límite para la búsqueda por número de informe (solo para COMPLETADO)
-                    fecha_limite = timezone.now().date() - timedelta(days=15)
-                    servicio = Servicio.objects.filter(
-                        numero_orden=numero_informe, 
-                        estado__in=['EN_PROCESO', 'PROGRAMADO', 'A_FACTURAR', 'COMPLETADO']
-                    ).filter(
-                        models.Q(estado__in=['EN_PROCESO', 'PROGRAMADO', 'A_FACTURAR']) |
-                        models.Q(estado='COMPLETADO', fecha_servicio__gte=fecha_limite)
-                    ).first()
-                    if not servicio:
-                        self.add_error("numero_informe", "No se encontró un servicio con ese número de informe en estado válido o es muy antiguo (más de 15 días para servicios completados).")
-                    else:
-                        cleaned_data["servicio"] = servicio
-                else:
-                    self.add_error("servicio", "Las horas productivas deben estar asociadas a un servicio.")
 
         # Validar que el servicio esté en un estado válido y no sea muy antiguo (solo para COMPLETADO)
         if servicio:
