@@ -1520,18 +1520,8 @@ def registrar_horas(request, tecnico_id):
             registro.tecnico = tecnico
             registro.fecha = fecha
             
-            # Validar que la actividad sea consistente con el servicio
-            if registro.tipo_hora.disponibilidad == 'DISPONIBLE' and registro.tipo_hora.genera_ingreso == 'INGRESO':
-                if not registro.servicio:
-                    form.add_error('servicio', 'Las horas productivas deben estar asociadas a un servicio.')
-                    return render(request, 'gestionDeTaller/tecnicos/registrar_horas.html', {
-                        'tecnico': tecnico,
-                        'form': form,
-                        'fecha': fecha,
-                        'registros_previos': registros_previos
-                    })
-            else:
-                registro.servicio = None  # No permitir servicio para horas no productivas
+            # La validación de servicio ya se maneja en el formulario y modelo
+            # basándose en el campo requiere_servicio de la actividad
             
             registro.save()
             messages.success(request, "Horas registradas correctamente.")
