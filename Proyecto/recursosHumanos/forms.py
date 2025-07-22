@@ -3,6 +3,7 @@ from django.utils import timezone
 from datetime import timedelta
 from gestionDeTaller.models import Servicio
 from recursosHumanos.models import RegistroHorasTecnico, ActividadTrabajo
+from django.db import models
 
 class RegistroHorasTecnicoForm(forms.ModelForm):
     numero_informe = forms.CharField(
@@ -26,16 +27,19 @@ class RegistroHorasTecnicoForm(forms.ModelForm):
         self.tecnico = kwargs.pop('tecnico', None)  # Obtener el técnico del kwargs
         super().__init__(*args, **kwargs)
 
-        # Calcular la fecha límite (15 días atrás desde hoy)
+        # Calcular la fecha límite (15 días atrás desde hoy) - solo para servicios COMPLETADO
         fecha_limite = timezone.now().date() - timedelta(days=15)
 
         # Filtrar servicios por estado y sucursal del técnico
-        # Incluir servicios completados solo si no han pasado más de 15 días
+        # Solo aplicar filtro de fecha para servicios COMPLETADO
         servicios_query = Servicio.objects.filter(
             estado__in=["EN_PROCESO", "PROGRAMADO", "A_FACTURAR", "COMPLETADO"]
-        ).filter(
-            # Para servicios completados, verificar que no sean más antiguos de 15 días
-            fecha_servicio__gte=fecha_limite
+        )
+        
+        # Aplicar filtro de fecha solo para servicios COMPLETADO
+        servicios_query = servicios_query.filter(
+            models.Q(estado__in=["EN_PROCESO", "PROGRAMADO", "A_FACTURAR"]) |
+            models.Q(estado="COMPLETADO", fecha_servicio__gte=fecha_limite)
         )
         
         if self.tecnico and self.tecnico.sucursal:
@@ -77,15 +81,17 @@ class RegistroHorasTecnicoForm(forms.ModelForm):
         if tipo_hora and tipo_hora.requiere_servicio:
             if not servicio:
                 if numero_informe:
-                    # Calcular la fecha límite para la búsqueda por número de informe
+                    # Calcular la fecha límite para la búsqueda por número de informe (solo para COMPLETADO)
                     fecha_limite = timezone.now().date() - timedelta(days=15)
                     servicio = Servicio.objects.filter(
                         numero_orden=numero_informe, 
-                        estado__in=['EN_PROCESO', 'PROGRAMADO', 'A_FACTURAR', 'COMPLETADO'],
-                        fecha_servicio__gte=fecha_limite
+                        estado__in=['EN_PROCESO', 'PROGRAMADO', 'A_FACTURAR', 'COMPLETADO']
+                    ).filter(
+                        models.Q(estado__in=['EN_PROCESO', 'PROGRAMADO', 'A_FACTURAR']) |
+                        models.Q(estado='COMPLETADO', fecha_servicio__gte=fecha_limite)
                     ).first()
                     if not servicio:
-                        self.add_error("numero_informe", "No se encontró un servicio con ese número de informe en estado válido o es muy antiguo (más de 15 días).")
+                        self.add_error("numero_informe", "No se encontró un servicio con ese número de informe en estado válido o es muy antiguo (más de 15 días para servicios completados).")
                     else:
                         cleaned_data["servicio"] = servicio
                 else:
@@ -95,21 +101,23 @@ class RegistroHorasTecnicoForm(forms.ModelForm):
         elif tipo_hora and tipo_hora.disponibilidad == "DISPONIBLE" and tipo_hora.genera_ingreso == "INGRESO":
             if not servicio:
                 if numero_informe:
-                    # Calcular la fecha límite para la búsqueda por número de informe
+                    # Calcular la fecha límite para la búsqueda por número de informe (solo para COMPLETADO)
                     fecha_limite = timezone.now().date() - timedelta(days=15)
                     servicio = Servicio.objects.filter(
                         numero_orden=numero_informe, 
-                        estado__in=['EN_PROCESO', 'PROGRAMADO', 'A_FACTURAR', 'COMPLETADO'],
-                        fecha_servicio__gte=fecha_limite
+                        estado__in=['EN_PROCESO', 'PROGRAMADO', 'A_FACTURAR', 'COMPLETADO']
+                    ).filter(
+                        models.Q(estado__in=['EN_PROCESO', 'PROGRAMADO', 'A_FACTURAR']) |
+                        models.Q(estado='COMPLETADO', fecha_servicio__gte=fecha_limite)
                     ).first()
                     if not servicio:
-                        self.add_error("numero_informe", "No se encontró un servicio con ese número de informe en estado válido o es muy antiguo (más de 15 días).")
+                        self.add_error("numero_informe", "No se encontró un servicio con ese número de informe en estado válido o es muy antiguo (más de 15 días para servicios completados).")
                     else:
                         cleaned_data["servicio"] = servicio
                 else:
                     self.add_error("servicio", "Las horas productivas deben estar asociadas a un servicio.")
 
-        # Validar que el servicio esté en un estado válido y no sea muy antiguo
+        # Validar que el servicio esté en un estado válido y no sea muy antiguo (solo para COMPLETADO)
         if servicio:
             fecha_limite = timezone.now().date() - timedelta(days=15)
             if servicio.estado not in ['EN_PROCESO', 'PROGRAMADO', 'A_FACTURAR', 'COMPLETADO']:

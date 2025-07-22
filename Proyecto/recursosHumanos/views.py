@@ -9,6 +9,7 @@ import json
 from datetime import datetime, time, timedelta
 from .models import SesionCronometro, ActividadTrabajo, Usuario, AlertaCronometro
 from gestionDeTaller.models import Servicio, LogCambioServicio
+from django.db import models
 
 @login_required
 def cronometro(request):
@@ -23,15 +24,16 @@ def cronometro(request):
     # Obtener actividades disponibles
     actividades = ActividadTrabajo.objects.all().order_by('disponibilidad', 'genera_ingreso', 'nombre')
     
-    # Calcular la fecha límite (15 días atrás desde hoy)
+    # Calcular la fecha límite (15 días atrás desde hoy) - solo para servicios COMPLETADO
     fecha_limite = timezone.now().date() - timedelta(days=15)
     
     # Obtener servicios disponibles incluyendo completados recientes
     servicios = Servicio.objects.filter(
         estado__in=['PROGRAMADO', 'ESPERA_REPUESTOS', 'EN_PROCESO', 'A_FACTURAR', 'COMPLETADO']
     ).filter(
-        # Para servicios completados, verificar que no sean más antiguos de 15 días
-        fecha_servicio__gte=fecha_limite
+        # Aplicar filtro de fecha solo para servicios COMPLETADO
+        models.Q(estado__in=['PROGRAMADO', 'ESPERA_REPUESTOS', 'EN_PROCESO', 'A_FACTURAR']) |
+        models.Q(estado='COMPLETADO', fecha_servicio__gte=fecha_limite)
     ).order_by('estado', '-fecha_servicio')
     
     # Filtrar por sucursal del técnico si no es superuser
