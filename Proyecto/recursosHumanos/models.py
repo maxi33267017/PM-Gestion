@@ -262,11 +262,12 @@ class RegistroHorasTecnico(models.Model):
         if self.tipo_hora.requiere_servicio:
             if not self.servicio:
                 raise ValueError("Esta actividad requiere asociar un servicio.")
-        # Lógica existente para compatibilidad (mantener como fallback)
-        elif self.tipo_hora.disponibilidad == 'DISPONIBLE' and self.tipo_hora.genera_ingreso == 'INGRESO':
-            if not self.servicio:
-                raise ValueError("Las horas productivas deben estar asociadas a un servicio.")
-        else:
+        # Lógica para actividades que NO requieren servicio pero son productivas
+        elif self.tipo_hora.disponibilidad == 'DISPONIBLE' and self.tipo_hora.genera_ingreso == 'INGRESO' and not self.tipo_hora.requiere_servicio:
+            # Estas actividades pueden existir sin servicio (ej: viajes, capacitaciones, etc.)
+            pass
+        # Lógica para actividades no productivas
+        elif self.tipo_hora.disponibilidad == 'NO_DISPONIBLE' or self.tipo_hora.genera_ingreso == 'NO_INGRESO':
             if self.servicio:
                 raise ValueError("Las horas no productivas no pueden estar asociadas a un servicio.")
 
