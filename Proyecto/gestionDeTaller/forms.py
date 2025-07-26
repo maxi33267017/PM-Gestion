@@ -346,11 +346,11 @@ class Revision5SForm(forms.ModelForm):
         model = Revision5S
         fields = [
             'sucursal', 'fecha_revision', 'fecha_proxima',
-            'bancos_trabajo', 'herramientas_funcionales', 'piezas_organizadas',
-            'herramientas_devueltas', 'box_limpios', 'sala_garantia',
-            'piso_limpio', 'instrumentos_limpios', 'paredes_limpias',
-            'personal_uniformado', 'epp_usado', 'herramientas_calibradas',
-            'residuos_gestionados', 'documentacion_actualizada', 'procedimientos_seguidos'
+            'box_trabajo_limpios', 'mesas_trabajo_estaticas', 'herramientas_uso_comun_devueltas',
+            'paredes_limpias_tachos_ok', 'herramientas_no_uso_limpias', 'sala_garantia_ordenada',
+            'epp_correspondiente_usado', 'herramientas_calibradas_certificadas', 'area_trabajo_limpia',
+            'procedimientos_seguidos', 'documentacion_actualizada', 'mantenimiento_preventivo',
+            'residuos_gestionados', 'mejora_continua', 'capacitacion_actualizada'
         ]
         widgets = {
             'fecha_revision': forms.DateInput(attrs={'type': 'date'}),

@@ -428,30 +428,105 @@ class Revision5S(models.Model):
     fecha_revision = models.DateField()
     fecha_proxima = models.DateField()
     
-    # Seiri (Clasificar)
-    bancos_trabajo = models.CharField(max_length=20, choices=ESTADO_CHOICES)
-    herramientas_funcionales = models.CharField(max_length=20, choices=ESTADO_CHOICES)
-    piezas_organizadas = models.CharField(max_length=20, choices=ESTADO_CHOICES)
+    # Seiri (Clasificar) - Organizar y clasificar elementos necesarios
+    box_trabajo_limpios = models.CharField(
+        max_length=20, 
+        choices=ESTADO_CHOICES,
+        default='CONFORME',
+        verbose_name="Box de trabajo están limpios, sin aceite en el piso, ordenados, sin elementos en el piso"
+    )
+    mesas_trabajo_estaticas = models.CharField(
+        max_length=20, 
+        choices=ESTADO_CHOICES,
+        default='CONFORME',
+        verbose_name="Mesas de trabajo estáticas están limpias, sin elementos ajenos a un trabajo en curso"
+    )
+    herramientas_uso_comun_devueltas = models.CharField(
+        max_length=20, 
+        choices=ESTADO_CHOICES,
+        default='CONFORME',
+        verbose_name="Las herramientas de uso común o especiales han sido devueltas (sin contar las que se estén usando en un trabajo en curso)"
+    )
     
-    # Seiton (Ordenar)
-    herramientas_devueltas = models.CharField(max_length=20, choices=ESTADO_CHOICES)
-    box_limpios = models.CharField(max_length=20, choices=ESTADO_CHOICES)
-    sala_garantia = models.CharField(max_length=20, choices=ESTADO_CHOICES)
+    # Seiton (Ordenar) - Organizar elementos para uso eficiente
+    paredes_limpias_tachos_ok = models.CharField(
+        max_length=20, 
+        choices=ESTADO_CHOICES,
+        default='CONFORME',
+        verbose_name="Las paredes están limpias y los tachos de basura están ok (si están llenos y no se sacó la basura está mal)"
+    )
+    herramientas_no_uso_limpias = models.CharField(
+        max_length=20, 
+        choices=ESTADO_CHOICES,
+        default='CONFORME',
+        verbose_name="Las herramientas de uso común o especiales que no se están usando en un trabajo en curso se encuentran limpias"
+    )
+    sala_garantia_ordenada = models.CharField(
+        max_length=20, 
+        choices=ESTADO_CHOICES,
+        default='CONFORME',
+        verbose_name="Sala de garantía se encuentra ordenada y con los elementos e información que corresponde según los procedimientos"
+    )
     
-    # Seiso (Limpiar)
-    piso_limpio = models.CharField(max_length=20, choices=ESTADO_CHOICES)
-    instrumentos_limpios = models.CharField(max_length=20, choices=ESTADO_CHOICES)
-    paredes_limpias = models.CharField(max_length=20, choices=ESTADO_CHOICES)
+    # Seiso (Limpiar) - Mantener limpieza y orden
+    epp_correspondiente_usado = models.CharField(
+        max_length=20, 
+        choices=ESTADO_CHOICES,
+        default='CONFORME',
+        verbose_name="Se están usando los EPP correspondientes en los trabajos en curso y todos tienen el uniforme correspondiente"
+    )
+    herramientas_calibradas_certificadas = models.CharField(
+        max_length=20, 
+        choices=ESTADO_CHOICES,
+        default='CONFORME',
+        verbose_name="Todas las herramientas se encuentran calibradas y certificadas (las que correspondan)"
+    )
+    area_trabajo_limpia = models.CharField(
+        max_length=20, 
+        choices=ESTADO_CHOICES,
+        default='CONFORME',
+        verbose_name="El área de trabajo se mantiene limpia y ordenada durante las operaciones"
+    )
     
-    # Seiketsu (Estandarizar)
-    personal_uniformado = models.CharField(max_length=20, choices=ESTADO_CHOICES)
-    epp_usado = models.CharField(max_length=20, choices=ESTADO_CHOICES)
-    herramientas_calibradas = models.CharField(max_length=20, choices=ESTADO_CHOICES)
+    # Seiketsu (Estandarizar) - Estandarizar procesos y procedimientos
+    procedimientos_seguidos = models.CharField(
+        max_length=20, 
+        choices=ESTADO_CHOICES,
+        default='CONFORME',
+        verbose_name="Los procedimientos de trabajo se siguen correctamente según los estándares establecidos"
+    )
+    documentacion_actualizada = models.CharField(
+        max_length=20, 
+        choices=ESTADO_CHOICES,
+        default='CONFORME',
+        verbose_name="La documentación técnica y procedimental está actualizada y accesible"
+    )
+    mantenimiento_preventivo = models.CharField(
+        max_length=20, 
+        choices=ESTADO_CHOICES,
+        default='CONFORME',
+        verbose_name="El mantenimiento preventivo de equipos y herramientas se realiza según el cronograma establecido"
+    )
     
-    # Shitsuke (Disciplina)
-    residuos_gestionados = models.CharField(max_length=20, choices=ESTADO_CHOICES)
-    documentacion_actualizada = models.CharField(max_length=20, choices=ESTADO_CHOICES)
-    procedimientos_seguidos = models.CharField(max_length=20, choices=ESTADO_CHOICES)
+    # Shitsuke (Disciplina) - Mantener la disciplina y mejorar continuamente
+    residuos_gestionados = models.CharField(
+        max_length=20, 
+        choices=ESTADO_CHOICES,
+        default='CONFORME',
+        verbose_name="Los residuos se gestionan correctamente según los procedimientos de reciclaje y disposición"
+    )
+    mejora_continua = models.CharField(
+        max_length=20, 
+        choices=ESTADO_CHOICES,
+        default='CONFORME',
+        verbose_name="Se identifican y documentan oportunidades de mejora en los procesos de trabajo"
+    )
+    capacitacion_actualizada = models.CharField(
+        max_length=20, 
+        choices=ESTADO_CHOICES,
+        default='CONFORME',
+        verbose_name="El personal cuenta con la capacitación actualizada en procedimientos de seguridad y calidad"
+    )
 
     porcentaje_conformidad = models.DecimalField(max_digits=5, decimal_places=2, editable=False)
     fecha_creacion = models.DateTimeField(auto_now_add=True)
@@ -470,11 +545,11 @@ class Revision5S(models.Model):
 
     def calcular_conformidad(self):
         campos = [
-            self.bancos_trabajo, self.herramientas_funcionales, self.piezas_organizadas,
-            self.herramientas_devueltas, self.box_limpios, self.sala_garantia,
-            self.piso_limpio, self.instrumentos_limpios, self.paredes_limpias,
-            self.personal_uniformado, self.epp_usado, self.herramientas_calibradas,
-            self.residuos_gestionados, self.documentacion_actualizada, self.procedimientos_seguidos
+            self.box_trabajo_limpios, self.mesas_trabajo_estaticas, self.herramientas_uso_comun_devueltas,
+            self.paredes_limpias_tachos_ok, self.herramientas_no_uso_limpias, self.sala_garantia_ordenada,
+            self.epp_correspondiente_usado, self.herramientas_calibradas_certificadas, self.area_trabajo_limpia,
+            self.procedimientos_seguidos, self.documentacion_actualizada, self.mantenimiento_preventivo,
+            self.residuos_gestionados, self.mejora_continua, self.capacitacion_actualizada
         ]
         total = len(campos)
         conformes = campos.count('CONFORME')

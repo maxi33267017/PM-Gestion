@@ -216,70 +216,190 @@
         <!-- Seiri (Clasificar) -->
         <div class="col-md-6 mb-4">
             <div class="s5-card">
-                <div class="s5-header seiri"><h5><i class="bi bi-sort-down"></i> Seiri (Clasificar)</h5></div>
+                <div class="s5-header seiri">
+                    <h5><i class="bi bi-sort-down"></i> Seiri (Clasificar)</h5>
+                    <small>Organizar y clasificar elementos necesarios</small>
+                </div>
                 <div class="s5-body">
-                    <div class="mb-3"><label class="form-label">Bancos de Trabajo:</label>
-                        <div class="progress"><div class="progress-bar {% if revision.bancos_trabajo == 'CONFORME' %}bg-success{% else %}bg-danger{% endif %}" role="progressbar" style="width: 100%;">{{ revision.get_bancos_trabajo_display }}</div></div></div>
-                    <div class="mb-3"><label class="form-label">Herramientas Funcionales:</label>
-                        <div class="progress"><div class="progress-bar {% if revision.herramientas_funcionales == 'CONFORME' %}bg-success{% else %}bg-danger{% endif %}" role="progressbar" style="width: 100%;">{{ revision.get_herramientas_funcionales_display }}</div></div></div>
-                    <div class="mb-3"><label class="form-label">Piezas Organizadas:</label>
-                        <div class="progress"><div class="progress-bar {% if revision.piezas_organizadas == 'CONFORME' %}bg-success{% else %}bg-danger{% endif %}" role="progressbar" style="width: 100%;">{{ revision.get_piezas_organizadas_display }}</div></div></div>
+                    <div class="mb-3">
+                        <label class="form-label">Box de trabajo:</label>
+                        <small class="text-muted d-block mb-1">Están limpios, sin aceite en el piso, ordenados, sin elementos en el piso</small>
+                        <div class="progress">
+                            <div class="progress-bar {% if revision.box_trabajo_limpios == 'CONFORME' %}bg-success{% else %}bg-danger{% endif %}" role="progressbar" style="width: 100%;">
+                                {{ revision.get_box_trabajo_limpios_display }}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Mesas de trabajo estáticas:</label>
+                        <small class="text-muted d-block mb-1">Están limpias, sin elementos ajenos a un trabajo en curso</small>
+                        <div class="progress">
+                            <div class="progress-bar {% if revision.mesas_trabajo_estaticas == 'CONFORME' %}bg-success{% else %}bg-danger{% endif %}" role="progressbar" style="width: 100%;">
+                                {{ revision.get_mesas_trabajo_estaticas_display }}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Herramientas devueltas:</label>
+                        <small class="text-muted d-block mb-1">Las herramientas de uso común o especiales han sido devueltas (sin contar las que se estén usando en un trabajo en curso)</small>
+                        <div class="progress">
+                            <div class="progress-bar {% if revision.herramientas_uso_comun_devueltas == 'CONFORME' %}bg-success{% else %}bg-danger{% endif %}" role="progressbar" style="width: 100%;">
+                                {{ revision.get_herramientas_uso_comun_devueltas_display }}
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
         <!-- Seiton (Ordenar) -->
         <div class="col-md-6 mb-4">
             <div class="s5-card">
-                <div class="s5-header seiton"><h5><i class="bi bi-grid-3x3"></i> Seiton (Ordenar)</h5></div>
+                <div class="s5-header seiton">
+                    <h5><i class="bi bi-grid-3x3"></i> Seiton (Ordenar)</h5>
+                    <small>Organizar elementos para uso eficiente</small>
+                </div>
                 <div class="s5-body">
-                    <div class="mb-3"><label class="form-label">Herramientas Devueltas:</label>
-                        <div class="progress"><div class="progress-bar {% if revision.herramientas_devueltas == 'CONFORME' %}bg-success{% else %}bg-danger{% endif %}" role="progressbar" style="width: 100%;">{{ revision.get_herramientas_devueltas_display }}</div></div></div>
-                    <div class="mb-3"><label class="form-label">Box Limpios:</label>
-                        <div class="progress"><div class="progress-bar {% if revision.box_limpios == 'CONFORME' %}bg-success{% else %}bg-danger{% endif %}" role="progressbar" style="width: 100%;">{{ revision.get_box_limpios_display }}</div></div></div>
-                    <div class="mb-3"><label class="form-label">Sala Garantía:</label>
-                        <div class="progress"><div class="progress-bar {% if revision.sala_garantia == 'CONFORME' %}bg-success{% else %}bg-danger{% endif %}" role="progressbar" style="width: 100%;">{{ revision.get_sala_garantia_display }}</div></div></div>
+                    <div class="mb-3">
+                        <label class="form-label">Paredes y tachos:</label>
+                        <small class="text-muted d-block mb-1">Las paredes están limpias y los tachos de basura están ok (si están llenos y no se sacó la basura está mal)</small>
+                        <div class="progress">
+                            <div class="progress-bar {% if revision.paredes_limpias_tachos_ok == 'CONFORME' %}bg-success{% else %}bg-danger{% endif %}" role="progressbar" style="width: 100%;">
+                                {{ revision.get_paredes_limpias_tachos_ok_display }}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Herramientas no en uso:</label>
+                        <small class="text-muted d-block mb-1">Las herramientas de uso común o especiales que no se están usando en un trabajo en curso se encuentran limpias</small>
+                        <div class="progress">
+                            <div class="progress-bar {% if revision.herramientas_no_uso_limpias == 'CONFORME' %}bg-success{% else %}bg-danger{% endif %}" role="progressbar" style="width: 100%;">
+                                {{ revision.get_herramientas_no_uso_limpias_display }}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Sala de garantía:</label>
+                        <small class="text-muted d-block mb-1">Se encuentra ordenada y con los elementos e información que corresponde según los procedimientos</small>
+                        <div class="progress">
+                            <div class="progress-bar {% if revision.sala_garantia_ordenada == 'CONFORME' %}bg-success{% else %}bg-danger{% endif %}" role="progressbar" style="width: 100%;">
+                                {{ revision.get_sala_garantia_ordenada_display }}
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
         <!-- Seiso (Limpiar) -->
         <div class="col-md-6 mb-4">
             <div class="s5-card">
-                <div class="s5-header seiso"><h5><i class="bi bi-brush"></i> Seiso (Limpiar)</h5></div>
+                <div class="s5-header seiso">
+                    <h5><i class="bi bi-brush"></i> Seiso (Limpiar)</h5>
+                    <small>Mantener limpieza y orden</small>
+                </div>
                 <div class="s5-body">
-                    <div class="mb-3"><label class="form-label">Piso Limpio:</label>
-                        <div class="progress"><div class="progress-bar {% if revision.piso_limpio == 'CONFORME' %}bg-success{% else %}bg-danger{% endif %}" role="progressbar" style="width: 100%;">{{ revision.get_piso_limpio_display }}</div></div></div>
-                    <div class="mb-3"><label class="form-label">Instrumentos Limpios:</label>
-                        <div class="progress"><div class="progress-bar {% if revision.instrumentos_limpios == 'CONFORME' %}bg-success{% else %}bg-danger{% endif %}" role="progressbar" style="width: 100%;">{{ revision.get_instrumentos_limpios_display }}</div></div></div>
-                    <div class="mb-3"><label class="form-label">Paredes Limpias:</label>
-                        <div class="progress"><div class="progress-bar {% if revision.paredes_limpias == 'CONFORME' %}bg-success{% else %}bg-danger{% endif %}" role="progressbar" style="width: 100%;">{{ revision.get_paredes_limpias_display }}</div></div></div>
+                    <div class="mb-3">
+                        <label class="form-label">EPP y uniformes:</label>
+                        <small class="text-muted d-block mb-1">Se están usando los EPP correspondientes en los trabajos en curso y todos tienen el uniforme correspondiente</small>
+                        <div class="progress">
+                            <div class="progress-bar {% if revision.epp_correspondiente_usado == 'CONFORME' %}bg-success{% else %}bg-danger{% endif %}" role="progressbar" style="width: 100%;">
+                                {{ revision.get_epp_correspondiente_usado_display }}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Herramientas calibradas:</label>
+                        <small class="text-muted d-block mb-1">Todas las herramientas se encuentran calibradas y certificadas (las que correspondan)</small>
+                        <div class="progress">
+                            <div class="progress-bar {% if revision.herramientas_calibradas_certificadas == 'CONFORME' %}bg-success{% else %}bg-danger{% endif %}" role="progressbar" style="width: 100%;">
+                                {{ revision.get_herramientas_calibradas_certificadas_display }}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Área de trabajo:</label>
+                        <small class="text-muted d-block mb-1">El área de trabajo se mantiene limpia y ordenada durante las operaciones</small>
+                        <div class="progress">
+                            <div class="progress-bar {% if revision.area_trabajo_limpia == 'CONFORME' %}bg-success{% else %}bg-danger{% endif %}" role="progressbar" style="width: 100%;">
+                                {{ revision.get_area_trabajo_limpia_display }}
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
         <!-- Seiketsu (Estandarizar) -->
         <div class="col-md-6 mb-4">
             <div class="s5-card">
-                <div class="s5-header seiketsu"><h5><i class="bi bi-award"></i> Seiketsu (Estandarizar)</h5></div>
+                <div class="s5-header seiketsu">
+                    <h5><i class="bi bi-award"></i> Seiketsu (Estandarizar)</h5>
+                    <small>Estandarizar procesos y procedimientos</small>
+                </div>
                 <div class="s5-body">
-                    <div class="mb-3"><label class="form-label">Personal Uniformado:</label>
-                        <div class="progress"><div class="progress-bar {% if revision.personal_uniformado == 'CONFORME' %}bg-success{% else %}bg-danger{% endif %}" role="progressbar" style="width: 100%;">{{ revision.get_personal_uniformado_display }}</div></div></div>
-                    <div class="mb-3"><label class="form-label">EPP Usado:</label>
-                        <div class="progress"><div class="progress-bar {% if revision.epp_usado == 'CONFORME' %}bg-success{% else %}bg-danger{% endif %}" role="progressbar" style="width: 100%;">{{ revision.get_epp_usado_display }}</div></div></div>
-                    <div class="mb-3"><label class="form-label">Herramientas Calibradas:</label>
-                        <div class="progress"><div class="progress-bar {% if revision.herramientas_calibradas == 'CONFORME' %}bg-success{% else %}bg-danger{% endif %}" role="progressbar" style="width: 100%;">{{ revision.get_herramientas_calibradas_display }}</div></div></div>
+                    <div class="mb-3">
+                        <label class="form-label">Procedimientos:</label>
+                        <small class="text-muted d-block mb-1">Los procedimientos de trabajo se siguen correctamente según los estándares establecidos</small>
+                        <div class="progress">
+                            <div class="progress-bar {% if revision.procedimientos_seguidos == 'CONFORME' %}bg-success{% else %}bg-danger{% endif %}" role="progressbar" style="width: 100%;">
+                                {{ revision.get_procedimientos_seguidos_display }}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Documentación:</label>
+                        <small class="text-muted d-block mb-1">La documentación técnica y procedimental está actualizada y accesible</small>
+                        <div class="progress">
+                            <div class="progress-bar {% if revision.documentacion_actualizada == 'CONFORME' %}bg-success{% else %}bg-danger{% endif %}" role="progressbar" style="width: 100%;">
+                                {{ revision.get_documentacion_actualizada_display }}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Mantenimiento preventivo:</label>
+                        <small class="text-muted d-block mb-1">El mantenimiento preventivo de equipos y herramientas se realiza según el cronograma establecido</small>
+                        <div class="progress">
+                            <div class="progress-bar {% if revision.mantenimiento_preventivo == 'CONFORME' %}bg-success{% else %}bg-danger{% endif %}" role="progressbar" style="width: 100%;">
+                                {{ revision.get_mantenimiento_preventivo_display }}
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
         <!-- Shitsuke (Disciplina) -->
         <div class="col-md-6 mb-4">
             <div class="s5-card">
-                <div class="s5-header shitsuke"><h5><i class="bi bi-lightning"></i> Shitsuke (Disciplina)</h5></div>
+                <div class="s5-header shitsuke">
+                    <h5><i class="bi bi-lightning"></i> Shitsuke (Disciplina)</h5>
+                    <small>Mantener la disciplina y mejorar continuamente</small>
+                </div>
                 <div class="s5-body">
-                    <div class="mb-3"><label class="form-label">Residuos Gestionados:</label>
-                        <div class="progress"><div class="progress-bar {% if revision.residuos_gestionados == 'CONFORME' %}bg-success{% else %}bg-danger{% endif %}" role="progressbar" style="width: 100%;">{{ revision.get_residuos_gestionados_display }}</div></div></div>
-                    <div class="mb-3"><label class="form-label">Documentación Actualizada:</label>
-                        <div class="progress"><div class="progress-bar {% if revision.documentacion_actualizada == 'CONFORME' %}bg-success{% else %}bg-danger{% endif %}" role="progressbar" style="width: 100%;">{{ revision.get_documentacion_actualizada_display }}</div></div></div>
-                    <div class="mb-3"><label class="form-label">Procedimientos Seguidos:</label>
-                        <div class="progress"><div class="progress-bar {% if revision.procedimientos_seguidos == 'CONFORME' %}bg-success{% else %}bg-danger{% endif %}" role="progressbar" style="width: 100%;">{{ revision.get_procedimientos_seguidos_display }}</div></div></div>
+                    <div class="mb-3">
+                        <label class="form-label">Gestión de residuos:</label>
+                        <small class="text-muted d-block mb-1">Los residuos se gestionan correctamente según los procedimientos de reciclaje y disposición</small>
+                        <div class="progress">
+                            <div class="progress-bar {% if revision.residuos_gestionados == 'CONFORME' %}bg-success{% else %}bg-danger{% endif %}" role="progressbar" style="width: 100%;">
+                                {{ revision.get_residuos_gestionados_display }}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Mejora continua:</label>
+                        <small class="text-muted d-block mb-1">Se identifican y documentan oportunidades de mejora en los procesos de trabajo</small>
+                        <div class="progress">
+                            <div class="progress-bar {% if revision.mejora_continua == 'CONFORME' %}bg-success{% else %}bg-danger{% endif %}" role="progressbar" style="width: 100%;">
+                                {{ revision.get_mejora_continua_display }}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Capacitación:</label>
+                        <small class="text-muted d-block mb-1">El personal cuenta con la capacitación actualizada en procedimientos de seguridad y calidad</small>
+                        <div class="progress">
+                            <div class="progress-bar {% if revision.capacitacion_actualizada == 'CONFORME' %}bg-success{% else %}bg-danger{% endif %}" role="progressbar" style="width: 100%;">
+                                {{ revision.get_capacitacion_actualizada_display }}
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
