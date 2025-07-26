@@ -74,10 +74,8 @@
                                     </label>
                                     <select name="responsable_{{ item }}" id="responsable_{{ item|slugify }}" class="form-select" required>
                                         <option value="">Seleccionar responsable...</option>
-                                        {% for usuario in revision.sucursal.usuarios.all %}
-                                            {% if usuario.is_active %}
+                                        {% for usuario in usuarios_disponibles %}
                                             <option value="{{ usuario.id }}">{{ usuario.get_nombre_completo }}</option>
-                                            {% endif %}
                                         {% endfor %}
                                     </select>
                                 </div>

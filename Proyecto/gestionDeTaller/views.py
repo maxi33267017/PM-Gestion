@@ -1702,7 +1702,9 @@ def crear_plan_accion_5s(request, revision_id):
     
     return render(request, 'gestionDeTaller/5s/crear_plan_accion.html', {
         'revision': revision,
-        'items_no_conformes': items_no_conformes
+        'items_no_conformes': items_no_conformes,
+        'usuarios_disponibles': Usuario.objects.filter(is_active=True).order_by('apellido', 'nombre'),
+        'today': timezone.now().date()
     })
 
 @login_required
