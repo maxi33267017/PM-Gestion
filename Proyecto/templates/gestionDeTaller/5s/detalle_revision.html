@@ -223,7 +223,7 @@
                 <div class="s5-body">
                     <div class="mb-3">
                         <label class="form-label">Box de trabajo:</label>
-                        <small class="text-muted d-block mb-1">Están limpios, sin aceite en el piso, ordenados, sin elementos en el piso</small>
+                        <small class="text-muted d-block mb-1">Están limpios, sin aceite, ordenados y sin elementos en el piso</small>
                         <div class="progress">
                             <div class="progress-bar {% if revision.box_trabajo_limpios == 'CONFORME' %}bg-success{% else %}bg-danger{% endif %}" role="progressbar" style="width: 100%;">
                                 {{ revision.get_box_trabajo_limpios_display }}
@@ -260,8 +260,8 @@
                 </div>
                 <div class="s5-body">
                     <div class="mb-3">
-                        <label class="form-label">Paredes y tachos:</label>
-                        <small class="text-muted d-block mb-1">Las paredes están limpias y los tachos de basura están ok (si están llenos y no se sacó la basura está mal)</small>
+                        <label class="form-label">Paredes y cestos:</label>
+                        <small class="text-muted d-block mb-1">Las paredes están limpias y los cestos de basura están siendo vaciados según corresponda</small>
                         <div class="progress">
                             <div class="progress-bar {% if revision.paredes_limpias_tachos_ok == 'CONFORME' %}bg-success{% else %}bg-danger{% endif %}" role="progressbar" style="width: 100%;">
                                 {{ revision.get_paredes_limpias_tachos_ok_display }}
@@ -270,7 +270,7 @@
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Herramientas no en uso:</label>
-                        <small class="text-muted d-block mb-1">Las herramientas de uso común o especiales que no se están usando en un trabajo en curso se encuentran limpias</small>
+                        <small class="text-muted d-block mb-1">Las herramientas de uso común o especiales que no se están usando en un trabajo en curso se encuentran limpias y devueltas</small>
                         <div class="progress">
                             <div class="progress-bar {% if revision.herramientas_no_uso_limpias == 'CONFORME' %}bg-success{% else %}bg-danger{% endif %}" role="progressbar" style="width: 100%;">
                                 {{ revision.get_herramientas_no_uso_limpias_display }}
@@ -315,15 +315,6 @@
                             </div>
                         </div>
                     </div>
-                    <div class="mb-3">
-                        <label class="form-label">Área de trabajo:</label>
-                        <small class="text-muted d-block mb-1">El área de trabajo se mantiene limpia y ordenada durante las operaciones</small>
-                        <div class="progress">
-                            <div class="progress-bar {% if revision.area_trabajo_limpia == 'CONFORME' %}bg-success{% else %}bg-danger{% endif %}" role="progressbar" style="width: 100%;">
-                                {{ revision.get_area_trabajo_limpia_display }}
-                            </div>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
@@ -341,15 +332,6 @@
                         <div class="progress">
                             <div class="progress-bar {% if revision.procedimientos_seguidos == 'CONFORME' %}bg-success{% else %}bg-danger{% endif %}" role="progressbar" style="width: 100%;">
                                 {{ revision.get_procedimientos_seguidos_display }}
-                            </div>
-                        </div>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Documentación:</label>
-                        <small class="text-muted d-block mb-1">La documentación técnica y procedimental está actualizada y accesible</small>
-                        <div class="progress">
-                            <div class="progress-bar {% if revision.documentacion_actualizada == 'CONFORME' %}bg-success{% else %}bg-danger{% endif %}" role="progressbar" style="width: 100%;">
-                                {{ revision.get_documentacion_actualizada_display }}
                             </div>
                         </div>
                     </div>
@@ -375,7 +357,7 @@
                 <div class="s5-body">
                     <div class="mb-3">
                         <label class="form-label">Gestión de residuos:</label>
-                        <small class="text-muted d-block mb-1">Los residuos se gestionan correctamente según los procedimientos de reciclaje y disposición</small>
+                        <small class="text-muted d-block mb-1">Los residuos depositados afuera del taller se gestionan correctamente según los procedimientos de reciclaje y disposición</small>
                         <div class="progress">
                             <div class="progress-bar {% if revision.residuos_gestionados == 'CONFORME' %}bg-success{% else %}bg-danger{% endif %}" role="progressbar" style="width: 100%;">
                                 {{ revision.get_residuos_gestionados_display }}
@@ -388,15 +370,6 @@
                         <div class="progress">
                             <div class="progress-bar {% if revision.mejora_continua == 'CONFORME' %}bg-success{% else %}bg-danger{% endif %}" role="progressbar" style="width: 100%;">
                                 {{ revision.get_mejora_continua_display }}
-                            </div>
-                        </div>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Capacitación:</label>
-                        <small class="text-muted d-block mb-1">El personal cuenta con la capacitación actualizada en procedimientos de seguridad y calidad</small>
-                        <div class="progress">
-                            <div class="progress-bar {% if revision.capacitacion_actualizada == 'CONFORME' %}bg-success{% else %}bg-danger{% endif %}" role="progressbar" style="width: 100%;">
-                                {{ revision.get_capacitacion_actualizada_display }}
                             </div>
                         </div>
                     </div>

@@ -433,7 +433,7 @@ class Revision5S(models.Model):
         max_length=20, 
         choices=ESTADO_CHOICES,
         default='CONFORME',
-        verbose_name="Box de trabajo están limpios, sin aceite en el piso, ordenados, sin elementos en el piso"
+        verbose_name="Box de trabajo están limpios, sin aceite, ordenados y sin elementos en el piso"
     )
     mesas_trabajo_estaticas = models.CharField(
         max_length=20, 
@@ -453,13 +453,13 @@ class Revision5S(models.Model):
         max_length=20, 
         choices=ESTADO_CHOICES,
         default='CONFORME',
-        verbose_name="Las paredes están limpias y los tachos de basura están ok (si están llenos y no se sacó la basura está mal)"
+        verbose_name="Las paredes están limpias y los cestos de basura estan siendo vaciados segun corresponda"
     )
     herramientas_no_uso_limpias = models.CharField(
         max_length=20, 
         choices=ESTADO_CHOICES,
         default='CONFORME',
-        verbose_name="Las herramientas de uso común o especiales que no se están usando en un trabajo en curso se encuentran limpias"
+        verbose_name="Las herramientas de uso común o especiales que no se están usando en un trabajo en curso se encuentran limpias y devueltas"
     )
     sala_garantia_ordenada = models.CharField(
         max_length=20, 
@@ -481,12 +481,7 @@ class Revision5S(models.Model):
         default='CONFORME',
         verbose_name="Todas las herramientas se encuentran calibradas y certificadas (las que correspondan)"
     )
-    area_trabajo_limpia = models.CharField(
-        max_length=20, 
-        choices=ESTADO_CHOICES,
-        default='CONFORME',
-        verbose_name="El área de trabajo se mantiene limpia y ordenada durante las operaciones"
-    )
+
     
     # Seiketsu (Estandarizar) - Estandarizar procesos y procedimientos
     procedimientos_seguidos = models.CharField(
@@ -495,12 +490,7 @@ class Revision5S(models.Model):
         default='CONFORME',
         verbose_name="Los procedimientos de trabajo se siguen correctamente según los estándares establecidos"
     )
-    documentacion_actualizada = models.CharField(
-        max_length=20, 
-        choices=ESTADO_CHOICES,
-        default='CONFORME',
-        verbose_name="La documentación técnica y procedimental está actualizada y accesible"
-    )
+
     mantenimiento_preventivo = models.CharField(
         max_length=20, 
         choices=ESTADO_CHOICES,
@@ -513,7 +503,7 @@ class Revision5S(models.Model):
         max_length=20, 
         choices=ESTADO_CHOICES,
         default='CONFORME',
-        verbose_name="Los residuos se gestionan correctamente según los procedimientos de reciclaje y disposición"
+        verbose_name="Los residuos depositados afuera del taller se gestionan correctamente según los procedimientos de reciclaje y disposición"
     )
     mejora_continua = models.CharField(
         max_length=20, 
@@ -521,12 +511,7 @@ class Revision5S(models.Model):
         default='CONFORME',
         verbose_name="Se identifican y documentan oportunidades de mejora en los procesos de trabajo"
     )
-    capacitacion_actualizada = models.CharField(
-        max_length=20, 
-        choices=ESTADO_CHOICES,
-        default='CONFORME',
-        verbose_name="El personal cuenta con la capacitación actualizada en procedimientos de seguridad y calidad"
-    )
+
 
     porcentaje_conformidad = models.DecimalField(max_digits=5, decimal_places=2, editable=False)
     fecha_creacion = models.DateTimeField(auto_now_add=True)
@@ -547,9 +532,9 @@ class Revision5S(models.Model):
         campos = [
             self.box_trabajo_limpios, self.mesas_trabajo_estaticas, self.herramientas_uso_comun_devueltas,
             self.paredes_limpias_tachos_ok, self.herramientas_no_uso_limpias, self.sala_garantia_ordenada,
-            self.epp_correspondiente_usado, self.herramientas_calibradas_certificadas, self.area_trabajo_limpia,
-            self.procedimientos_seguidos, self.documentacion_actualizada, self.mantenimiento_preventivo,
-            self.residuos_gestionados, self.mejora_continua, self.capacitacion_actualizada
+            self.epp_correspondiente_usado, self.herramientas_calibradas_certificadas,
+            self.procedimientos_seguidos, self.mantenimiento_preventivo,
+            self.residuos_gestionados, self.mejora_continua
         ]
         total = len(campos)
         conformes = campos.count('CONFORME')

@@ -535,7 +535,7 @@
                         </label>
                         <small class="form-text text-muted d-block mb-2">
                             <i class="bi bi-info-circle"></i>
-                            Están limpios, sin aceite en el piso, ordenados, sin elementos en el piso
+                            Están limpios, sin aceite, ordenados y sin elementos en el piso
                         </small>
                         {{ form.box_trabajo_limpios }}
                     </div>
@@ -575,11 +575,11 @@
                 <div class="s5-body">
                     <div class="form-group">
                         <label for="{{ form.paredes_limpias_tachos_ok.id_for_label }}" class="form-label">
-                            <i class="bi bi-layers"></i>Paredes y tachos
+                            <i class="bi bi-layers"></i>Paredes y cestos
                         </label>
                         <small class="form-text text-muted d-block mb-2">
                             <i class="bi bi-info-circle"></i>
-                            Las paredes están limpias y los tachos de basura están ok (si están llenos y no se sacó la basura está mal)
+                            Las paredes están limpias y los cestos de basura están siendo vaciados según corresponda
                         </small>
                         {{ form.paredes_limpias_tachos_ok }}
                     </div>
@@ -589,7 +589,7 @@
                         </label>
                         <small class="form-text text-muted d-block mb-2">
                             <i class="bi bi-info-circle"></i>
-                            Las herramientas de uso común o especiales que no se están usando en un trabajo en curso se encuentran limpias
+                            Las herramientas de uso común o especiales que no se están usando en un trabajo en curso se encuentran limpias y devueltas
                         </small>
                         {{ form.herramientas_no_uso_limpias }}
                     </div>
@@ -637,16 +637,6 @@
                         </small>
                         {{ form.herramientas_calibradas_certificadas }}
                     </div>
-                    <div class="form-group">
-                        <label for="{{ form.area_trabajo_limpia.id_for_label }}" class="form-label">
-                            <i class="bi bi-square"></i>Área de trabajo
-                        </label>
-                        <small class="form-text text-muted d-block mb-2">
-                            <i class="bi bi-info-circle"></i>
-                            El área de trabajo se mantiene limpia y ordenada durante las operaciones
-                        </small>
-                        {{ form.area_trabajo_limpia }}
-                    </div>
                 </div>
             </div>
         </div>
@@ -672,16 +662,6 @@
                             Los procedimientos de trabajo se siguen correctamente según los estándares establecidos
                         </small>
                         {{ form.procedimientos_seguidos }}
-                    </div>
-                    <div class="form-group">
-                        <label for="{{ form.documentacion_actualizada.id_for_label }}" class="form-label">
-                            <i class="bi bi-file-earmark-text"></i>Documentación
-                        </label>
-                        <small class="form-text text-muted d-block mb-2">
-                            <i class="bi bi-info-circle"></i>
-                            La documentación técnica y procedimental está actualizada y accesible
-                        </small>
-                        {{ form.documentacion_actualizada }}
                     </div>
                     <div class="form-group">
                         <label for="{{ form.mantenimiento_preventivo.id_for_label }}" class="form-label">
@@ -713,7 +693,7 @@
                         </label>
                         <small class="form-text text-muted d-block mb-2">
                             <i class="bi bi-info-circle"></i>
-                            Los residuos se gestionan correctamente según los procedimientos de reciclaje y disposición
+                            Los residuos depositados afuera del taller se gestionan correctamente según los procedimientos de reciclaje y disposición
                         </small>
                         {{ form.residuos_gestionados }}
                     </div>
@@ -726,16 +706,6 @@
                             Se identifican y documentan oportunidades de mejora en los procesos de trabajo
                         </small>
                         {{ form.mejora_continua }}
-                    </div>
-                    <div class="form-group">
-                        <label for="{{ form.capacitacion_actualizada.id_for_label }}" class="form-label">
-                            <i class="bi bi-person-badge"></i>Capacitación
-                        </label>
-                        <small class="form-text text-muted d-block mb-2">
-                            <i class="bi bi-info-circle"></i>
-                            El personal cuenta con la capacitación actualizada en procedimientos de seguridad y calidad
-                        </small>
-                        {{ form.capacitacion_actualizada }}
                     </div>
                 </div>
             </div>
