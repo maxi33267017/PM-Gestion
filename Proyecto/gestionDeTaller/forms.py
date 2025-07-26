@@ -347,7 +347,7 @@ class Revision5SForm(forms.ModelForm):
         fields = [
             'sucursal', 'fecha_revision', 'fecha_proxima',
             'box_trabajo_limpios', 'mesas_trabajo_estaticas', 'herramientas_uso_comun_devueltas',
-            'paredes_limpias_tachos_ok', 'herramientas_no_uso_limpias', 'sala_garantia_ordenada',
+            'paredes_limpias_tachos_ok', 'sala_garantia_ordenada', 'zona_repuestos_ordenada',
             'epp_correspondiente_usado', 'herramientas_calibradas_certificadas',
             'procedimientos_seguidos', 'mantenimiento_preventivo',
             'residuos_gestionados', 'mejora_continua'

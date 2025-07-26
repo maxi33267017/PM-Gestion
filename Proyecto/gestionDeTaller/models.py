@@ -445,7 +445,7 @@ class Revision5S(models.Model):
         max_length=20, 
         choices=ESTADO_CHOICES,
         default='CONFORME',
-        verbose_name="Las herramientas de uso común o especiales han sido devueltas (sin contar las que se estén usando en un trabajo en curso)"
+        verbose_name="Las herramientas de uso común o especiales han sido devueltas y se encuentran limpias (sin contar las que se estén usando en un trabajo en curso)"
     )
     
     # Seiton (Ordenar) - Organizar elementos para uso eficiente
@@ -453,19 +453,20 @@ class Revision5S(models.Model):
         max_length=20, 
         choices=ESTADO_CHOICES,
         default='CONFORME',
-        verbose_name="Las paredes están limpias y los cestos de basura estan siendo vaciados segun corresponda"
+        verbose_name="Las paredes están limpias y los cestos de basura están siendo vaciados según corresponda"
     )
-    herramientas_no_uso_limpias = models.CharField(
-        max_length=20, 
-        choices=ESTADO_CHOICES,
-        default='CONFORME',
-        verbose_name="Las herramientas de uso común o especiales que no se están usando en un trabajo en curso se encuentran limpias y devueltas"
-    )
+  
     sala_garantia_ordenada = models.CharField(
         max_length=20, 
         choices=ESTADO_CHOICES,
         default='CONFORME',
         verbose_name="Sala de garantía se encuentra ordenada y con los elementos e información que corresponde según los procedimientos"
+    )
+    zona_repuestos_ordenada = models.CharField(
+        max_length=20, 
+        choices=ESTADO_CHOICES,
+        default='CONFORME',
+        verbose_name="La zona de repuestos dentro del taller se encuentra ordenada, identificada y con elementos correctamente ubicados"
     )
     
     # Seiso (Limpiar) - Mantener limpieza y orden
@@ -531,7 +532,7 @@ class Revision5S(models.Model):
     def calcular_conformidad(self):
         campos = [
             self.box_trabajo_limpios, self.mesas_trabajo_estaticas, self.herramientas_uso_comun_devueltas,
-            self.paredes_limpias_tachos_ok, self.herramientas_no_uso_limpias, self.sala_garantia_ordenada,
+            self.paredes_limpias_tachos_ok, self.sala_garantia_ordenada, self.zona_repuestos_ordenada,
             self.epp_correspondiente_usado, self.herramientas_calibradas_certificadas,
             self.procedimientos_seguidos, self.mantenimiento_preventivo,
             self.residuos_gestionados, self.mejora_continua

@@ -286,6 +286,15 @@
                             </div>
                         </div>
                     </div>
+                    <div class="mb-3">
+                        <label class="form-label">Zona de repuestos:</label>
+                        <small class="text-muted d-block mb-1">La zona de repuestos dentro del taller se encuentra ordenada, identificada y con elementos correctamente ubicados</small>
+                        <div class="progress">
+                            <div class="progress-bar {% if revision.zona_repuestos_ordenada == 'CONFORME' %}bg-success{% else %}bg-danger{% endif %}" role="progressbar" style="width: 100%;">
+                                {{ revision.get_zona_repuestos_ordenada_display }}
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

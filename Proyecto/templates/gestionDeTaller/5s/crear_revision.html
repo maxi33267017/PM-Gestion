@@ -589,7 +589,7 @@
                         </label>
                         <small class="form-text text-muted d-block mb-2">
                             <i class="bi bi-info-circle"></i>
-                            Las herramientas de uso común o especiales que no se están usando en un trabajo en curso se encuentran limpias y devueltas
+                            Las herramientas de uso común o especiales que no se están usando en un trabajo en curso se encuentran limpias
                         </small>
                         {{ form.herramientas_no_uso_limpias }}
                     </div>
@@ -602,6 +602,16 @@
                             Se encuentra ordenada y con los elementos e información que corresponde según los procedimientos
                         </small>
                         {{ form.sala_garantia_ordenada }}
+                    </div>
+                    <div class="form-group">
+                        <label for="{{ form.zona_repuestos_ordenada.id_for_label }}" class="form-label">
+                            <i class="bi bi-boxes"></i>Zona de repuestos
+                        </label>
+                        <small class="form-text text-muted d-block mb-2">
+                            <i class="bi bi-info-circle"></i>
+                            La zona de repuestos dentro del taller se encuentra ordenada, identificada y con elementos correctamente ubicados
+                        </small>
+                        {{ form.zona_repuestos_ordenada }}
                     </div>
                 </div>
             </div>
