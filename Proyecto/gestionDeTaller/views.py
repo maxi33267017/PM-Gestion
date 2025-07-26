@@ -1657,10 +1657,20 @@ def crear_plan_accion_5s(request, revision_id):
             items_no_conformes.append(nombre)
     
     if request.method == 'POST':
+        print(f"DEBUG: POST request recibido")
+        print(f"DEBUG: POST data: {request.POST}")
+        print(f"DEBUG: FILES: {request.FILES}")
+        
         form = PlanAccion5SForm(request.POST, request.FILES)
+        print(f"DEBUG: Form is_valid(): {form.is_valid()}")
+        
         if form.is_valid():
+            print(f"DEBUG: Formulario válido")
+            print(f"DEBUG: cleaned_data: {form.cleaned_data}")
+            
             # Obtener el item no conforme del formulario
             item_no_conforme = form.cleaned_data['item_no_conforme']
+            print(f"DEBUG: item_no_conforme: {item_no_conforme}")
             
             # Verificar si hay múltiples items separados por punto y coma
             if ';' in item_no_conforme:
@@ -1672,6 +1682,7 @@ def crear_plan_accion_5s(request, revision_id):
                         plan = form.save(commit=False)
                         plan.revision = revision
                         plan.item_no_conforme = item
+                        print(f"DEBUG: Guardando plan para item: {item}")
                         plan.save()
                         planes_creados += 1
                 
@@ -1683,10 +1694,14 @@ def crear_plan_accion_5s(request, revision_id):
                 # Crear un solo plan de acción
                 plan = form.save(commit=False)
                 plan.revision = revision
+                print(f"DEBUG: Guardando plan único")
                 plan.save()
                 messages.success(request, 'Plan de acción creado exitosamente.')
             
             return redirect('gestionDeTaller:detalle_revision_5s', revision_id=revision.id)
+        else:
+            print(f"DEBUG: Errores del formulario: {form.errors}")
+            messages.error(request, f'Error en el formulario: {form.errors}')
     else:
         form = PlanAccion5SForm()
     
