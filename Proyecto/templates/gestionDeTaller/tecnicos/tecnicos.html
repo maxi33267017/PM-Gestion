@@ -564,8 +564,8 @@
                                     <div class="progress-value">{{ tecnico.productividad|floatformat:2 }}%</div>
                                     <div class="progress">
                                         <div class="progress-bar productividad" role="progressbar" 
-                                             style="width: {{ tecnico.productividad }}%" 
-                                             aria-valuenow="{{ tecnico.productividad }}" 
+                                             style="width: {{ tecnico.productividad|floatformat:2|cut:',' }}%" 
+                                             aria-valuenow="{{ tecnico.productividad|floatformat:2|cut:',' }}" 
                                              aria-valuemin="0" 
                                              aria-valuemax="100"></div>
                                     </div>
@@ -576,8 +576,8 @@
                                     <div class="progress-value">{{ tecnico.eficiencia|floatformat:2 }}%</div>
                                     <div class="progress">
                                         <div class="progress-bar eficiencia" role="progressbar" 
-                                             style="width: {{ tecnico.eficiencia }}%" 
-                                             aria-valuenow="{{ tecnico.eficiencia }}" 
+                                             style="width: {{ tecnico.eficiencia|floatformat:2|cut:',' }}%" 
+                                             aria-valuenow="{{ tecnico.eficiencia|floatformat:2|cut:',' }}" 
                                              aria-valuemin="0" 
                                              aria-valuemax="100"></div>
                                     </div>
@@ -588,8 +588,8 @@
                                     <div class="progress-value">{{ tecnico.desempeno|floatformat:2 }}%</div>
                                     <div class="progress">
                                         <div class="progress-bar desempeno" role="progressbar" 
-                                             style="width: {{ tecnico.desempeno }}%" 
-                                             aria-valuenow="{{ tecnico.desempeno }}" 
+                                             style="width: {{ tecnico.desempeno|floatformat:2|cut:',' }}%" 
+                                             aria-valuenow="{{ tecnico.desempeno|floatformat:2|cut:',' }}" 
                                              aria-valuemin="0" 
                                              aria-valuemax="100"></div>
                                     </div>

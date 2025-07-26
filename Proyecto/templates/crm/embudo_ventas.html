@@ -94,7 +94,7 @@
                     <h3 class="text-primary mb-1">{{ stats.cantidad }}</h3>
                     <p class="text-muted small mb-1">${{ stats.valor_total|floatformat:0 }}</p>
                     <div class="progress" style="height: 4px;">
-                        <div class="progress-bar bg-primary" style="width: {{ stats.porcentaje_conversion|floatformat:1 }}%"></div>
+                        <div class="progress-bar bg-primary" style="width: {{ stats.porcentaje_conversion|floatformat:2|cut:',' }}%;"></div>
                     </div>
                     <small class="text-muted">{{ stats.porcentaje_conversion|floatformat:1 }}% conversión</small>
                 </div>

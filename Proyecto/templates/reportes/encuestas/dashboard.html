@@ -98,7 +98,7 @@
                 <div class="card-body text-center">
                     <h3 class="text-success">{{ nps_promotores|floatformat:1 }}%</h3>
                     <div class="progress" style="height: 25px;">
-                        <div class="progress-bar bg-success" style="width: {{ nps_promotores }}%"></div>
+                        <div class="progress-bar bg-success" style="width: {{ nps_promotores|floatformat:2|cut:',' }}%;"></div>
                     </div>
                     <small class="text-muted">Clientes que recomendarían (9-10)</small>
                 </div>
@@ -112,7 +112,7 @@
                 <div class="card-body text-center">
                     <h3 class="text-warning">{{ nps_pasivos|floatformat:1 }}%</h3>
                     <div class="progress" style="height: 25px;">
-                        <div class="progress-bar bg-warning" style="width: {{ nps_pasivos }}%"></div>
+                        <div class="progress-bar bg-warning" style="width: {{ nps_pasivos|floatformat:2|cut:',' }}%;"></div>
                     </div>
                     <small class="text-muted">Clientes neutrales (7-8)</small>
                 </div>
@@ -126,7 +126,7 @@
                 <div class="card-body text-center">
                     <h3 class="text-danger">{{ nps_detractores|floatformat:1 }}%</h3>
                     <div class="progress" style="height: 25px;">
-                        <div class="progress-bar bg-danger" style="width: {{ nps_detractores }}%"></div>
+                        <div class="progress-bar bg-danger" style="width: {{ nps_detractores|floatformat:2|cut:',' }}%;"></div>
                     </div>
                     <small class="text-muted">Clientes insatisfechos (1-6)</small>
                 </div>
@@ -144,7 +144,7 @@
                 <div class="card-body text-center">
                     <h2 class="text-primary">{{ promedio_cumplimiento|floatformat:1 }}/10</h2>
                     <div class="progress" style="height: 25px;">
-                        <div class="progress-bar bg-primary" style="width: {{ porcentaje_cumplimiento }}%"></div>
+                        <div class="progress-bar bg-primary" style="width: {{ porcentaje_cumplimiento|floatformat:2|cut:',' }}%;"></div>
                     </div>
                     <small class="text-muted">Promedio de cumplimiento de acuerdos</small>
                 </div>
@@ -158,7 +158,7 @@
                 <div class="card-body text-center">
                     <h2 class="text-success">{{ promedio_recomendacion|floatformat:1 }}/10</h2>
                     <div class="progress" style="height: 25px;">
-                        <div class="progress-bar bg-success" style="width: {{ porcentaje_recomendacion }}%"></div>
+                        <div class="progress-bar bg-success" style="width: {{ porcentaje_recomendacion|floatformat:2|cut:',' }}%;"></div>
                     </div>
                     <small class="text-muted">Promedio de probabilidad de recomendación</small>
                 </div>

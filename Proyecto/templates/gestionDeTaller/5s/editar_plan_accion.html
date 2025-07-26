@@ -289,11 +289,11 @@
                         <div class="progress" style="width: 200px;">
                             <div class="progress-bar {% if revision.porcentaje_conformidad >= 80 %}bg-success{% elif revision.porcentaje_conformidad >= 60 %}bg-warning{% else %}bg-danger{% endif %}" 
                                  role="progressbar" 
-                                 style="width: {{ revision.porcentaje_conformidad }}%;" 
-                                 aria-valuenow="{{ revision.porcentaje_conformidad }}" 
+                                 style="width: {{ revision.porcentaje_conformidad|floatformat:2|cut:',' }}%;" 
+                                 aria-valuenow="{{ revision.porcentaje_conformidad|floatformat:2|cut:',' }}" 
                                  aria-valuemin="0" 
                                  aria-valuemax="100">
-                                {{ revision.porcentaje_conformidad }}%
+                                {{ revision.porcentaje_conformidad|floatformat:2 }}%
                             </div>
                         </div>
                     </div>

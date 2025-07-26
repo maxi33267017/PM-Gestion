@@ -135,7 +135,7 @@
                 <div class="card-body text-center">
                     <h3 class="text-success">{{ porcentaje_promotores|floatformat:1 }}%</h3>
                     <div class="progress" style="height: 25px;">
-                        <div class="progress-bar bg-success" style="width: {{ porcentaje_promotores }}%"></div>
+                        <div class="progress-bar bg-success" style="width: {{ porcentaje_promotores|floatformat:2|cut:',' }}%;"></div>
                     </div>
                     <small class="text-muted">Clientes que recomendarían (9-10)</small>
                 </div>
@@ -149,7 +149,7 @@
                 <div class="card-body text-center">
                     <h3 class="text-warning">{{ porcentaje_pasivos|floatformat:1 }}%</h3>
                     <div class="progress" style="height: 25px;">
-                        <div class="progress-bar bg-warning" style="width: {{ porcentaje_pasivos }}%"></div>
+                        <div class="progress-bar bg-warning" style="width: {{ porcentaje_pasivos|floatformat:2|cut:',' }}%;"></div>
                     </div>
                     <small class="text-muted">Clientes neutrales (7-8)</small>
                 </div>
@@ -163,7 +163,7 @@
                 <div class="card-body text-center">
                     <h3 class="text-danger">{{ porcentaje_detractores|floatformat:1 }}%</h3>
                     <div class="progress" style="height: 25px;">
-                        <div class="progress-bar bg-danger" style="width: {{ porcentaje_detractores }}%"></div>
+                        <div class="progress-bar bg-danger" style="width: {{ porcentaje_detractores|floatformat:2|cut:',' }}%;"></div>
                     </div>
                     <small class="text-muted">Clientes insatisfechos (1-6)</small>
                 </div>
