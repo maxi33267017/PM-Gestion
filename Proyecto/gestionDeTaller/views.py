@@ -1735,9 +1735,22 @@ def detalle_plan_accion_5s(request, plan_id):
     plan = get_object_or_404(PlanAccion5S, id=plan_id)
     revision = plan.revision
     
+    # Calcular conteos de estados
+    items = plan.items.all()
+    total_items = items.count()
+    items_pendientes = items.filter(estado='PENDIENTE').count()
+    items_en_proceso = items.filter(estado='EN_PROCESO').count()
+    items_completados = items.filter(estado='COMPLETADO').count()
+    items_vencidos = sum(1 for item in items if item.esta_vencido)
+    
     context = {
         'plan': plan,
         'revision': revision,
+        'total_items': total_items,
+        'items_pendientes': items_pendientes,
+        'items_en_proceso': items_en_proceso,
+        'items_completados': items_completados,
+        'items_vencidos': items_vencidos,
     }
     return render(request, 'gestionDeTaller/5s/detalle_plan_accion.html', context)
 
@@ -1745,88 +1758,11 @@ def detalle_plan_accion_5s(request, plan_id):
 def editar_plan_accion_5s(request, plan_id):
     """
     Vista para editar un plan de acción 5S existente.
+    Con la nueva estructura, redirige al detalle del plan donde se pueden editar los items individuales.
     """
     plan = get_object_or_404(PlanAccion5S, id=plan_id)
-    revision = plan.revision
-    
-    # Obtener todos los items no conformes de la revisión
-    items_no_conformes = []
-    campos_5s = [
-        ('box_trabajo_limpios', 'Box de trabajo limpios'),
-        ('mesas_trabajo_estaticas', 'Mesas de trabajo estáticas'),
-        ('herramientas_uso_comun_devueltas', 'Herramientas de uso común devueltas'),
-        ('paredes_limpias_tachos_ok', 'Paredes limpias y cestos de basura'),
-        ('sala_garantia_ordenada', 'Sala de garantía ordenada'),
-        ('zona_repuestos_ordenada', 'Zona de repuestos ordenada'),
-        ('epp_correspondiente_usado', 'EPP correspondiente usado'),
-        ('herramientas_calibradas_certificadas', 'Herramientas calibradas y certificadas'),
-        ('procedimientos_seguidos', 'Procedimientos seguidos'),
-        ('mantenimiento_preventivo', 'Mantenimiento preventivo'),
-        ('residuos_gestionados', 'Residuos gestionados'),
-        ('mejora_continua', 'Mejora continua'),
-    ]
-    
-    for campo, nombre in campos_5s:
-        if getattr(revision, campo) == 'NO_CONFORME':
-            items_no_conformes.append((campo, nombre))
-    
-    if request.method == 'POST':
-        # Procesar formulario del plan de acción
-        if 'plan_accion' in request.POST:
-            form = PlanAccion5SForm(request.POST, request.FILES, instance=plan)
-            if form.is_valid():
-                form.save()
-                messages.success(request, 'Plan de acción actualizado exitosamente.')
-                return redirect('gestionDeTaller:detalle_plan_accion_5s', plan_id=plan.id)
-        
-        # Procesar corrección de items no conformes
-        elif 'corregir_items' in request.POST:
-            # Guardar puntuación anterior
-            puntuacion_anterior = revision.porcentaje_conformidad
-            
-            # Actualizar los campos de la revisión
-            for campo, nombre in items_no_conformes:
-                if request.POST.get(f'corregir_{campo}') == 'on':
-                    setattr(revision, campo, 'CONFORME')
-            
-            # Recalcular puntuación
-            revision.calcular_conformidad()
-            revision.save()
-            
-            puntuacion_nueva = revision.porcentaje_conformidad
-            messages.success(request, f'Items corregidos exitosamente. Puntuación: {puntuacion_anterior}% → {puntuacion_nueva}%')
-            return redirect('gestionDeTaller:detalle_plan_accion_5s', plan_id=plan.id)
-        
-        # Procesar subida de múltiples evidencias
-        elif 'subir_evidencias' in request.POST:
-            imagenes = request.FILES.getlist('evidencias')
-            descripciones = request.POST.getlist('descripciones')
-            
-            for i, imagen in enumerate(imagenes):
-                if imagen:
-                    descripcion = descripciones[i] if i < len(descripciones) else ''
-                    EvidenciaPlanAccion5S.objects.create(
-                        plan_accion=plan,
-                        imagen=imagen,
-                        descripcion=descripcion
-                    )
-            
-            messages.success(request, f'{len(imagenes)} evidencias subidas exitosamente.')
-            return redirect('gestionDeTaller:detalle_plan_accion_5s', plan_id=plan.id)
-    else:
-        form = PlanAccion5SForm(instance=plan)
-    
-    # Obtener evidencias existentes
-    evidencias = plan.evidencias.all()
-    
-    context = {
-        'form': form,
-        'plan': plan,
-        'revision': revision,
-        'items_no_conformes': items_no_conformes,
-        'evidencias': evidencias,
-    }
-    return render(request, 'gestionDeTaller/5s/editar_plan_accion.html', context)
+    messages.info(request, 'Para editar el plan de acción, utiliza los botones "Editar Item" en cada item individual.')
+    return redirect('gestionDeTaller:detalle_plan_accion_5s', plan_id=plan.id)
 
 # Vistas para encuestas
 @login_required
@@ -3711,9 +3647,22 @@ def detalle_plan_accion_5s(request, plan_id):
     plan = get_object_or_404(PlanAccion5S, id=plan_id)
     revision = plan.revision
     
+    # Calcular conteos de estados
+    items = plan.items.all()
+    total_items = items.count()
+    items_pendientes = items.filter(estado='PENDIENTE').count()
+    items_en_proceso = items.filter(estado='EN_PROCESO').count()
+    items_completados = items.filter(estado='COMPLETADO').count()
+    items_vencidos = sum(1 for item in items if item.esta_vencido)
+    
     context = {
         'plan': plan,
         'revision': revision,
+        'total_items': total_items,
+        'items_pendientes': items_pendientes,
+        'items_en_proceso': items_en_proceso,
+        'items_completados': items_completados,
+        'items_vencidos': items_vencidos,
     }
     return render(request, 'gestionDeTaller/5s/detalle_plan_accion.html', context)
 

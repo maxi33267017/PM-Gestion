@@ -143,25 +143,25 @@
                     <div class="row">
                         <div class="col-md-3">
                             <div class="text-center">
-                                <span class="badge bg-danger fs-6">{{ plan.items.filter.estado='PENDIENTE'|length }}</span>
+                                <span class="badge bg-danger fs-6">{{ items_pendientes }}</span>
                                 <p class="small text-muted">Pendientes</p>
                             </div>
                         </div>
                         <div class="col-md-3">
                             <div class="text-center">
-                                <span class="badge bg-warning fs-6">{{ plan.items.filter.estado='EN_PROCESO'|length }}</span>
+                                <span class="badge bg-warning fs-6">{{ items_en_proceso }}</span>
                                 <p class="small text-muted">En Proceso</p>
                             </div>
                         </div>
                         <div class="col-md-3">
                             <div class="text-center">
-                                <span class="badge bg-success fs-6">{{ plan.items.filter.estado='COMPLETADO'|length }}</span>
+                                <span class="badge bg-success fs-6">{{ items_completados }}</span>
                                 <p class="small text-muted">Completados</p>
                             </div>
                         </div>
                         <div class="col-md-3">
                             <div class="text-center">
-                                <span class="badge bg-danger fs-6">{{ plan.items.filter.esta_vencido=True|length }}</span>
+                                <span class="badge bg-danger fs-6">{{ items_vencidos }}</span>
                                 <p class="small text-muted">Vencidos</p>
                             </div>
                         </div>
