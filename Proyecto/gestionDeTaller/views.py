@@ -1723,9 +1723,15 @@ def detalle_plan_accion_5s(request, plan_id):
     Vista para mostrar los detalles de un plan de acción 5S específico.
     """
     plan = get_object_or_404(PlanAccion5S, id=plan_id)
+    revision = plan.revision
+    
+    # Obtener todos los planes de acción de esta revisión
+    todos_los_planes = PlanAccion5S.objects.filter(revision=revision).order_by('id')
     
     context = {
         'plan': plan,
+        'revision': revision,
+        'todos_los_planes': todos_los_planes,
     }
     return render(request, 'gestionDeTaller/5s/detalle_plan_accion.html', context)
 

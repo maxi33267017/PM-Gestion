@@ -27,119 +27,140 @@
     </div>
     {% endif %}
 
-    <div class="row">
-        <div class="col-md-8">
-            <div class="card shadow-sm mb-4">
-                <div class="card-header">
-                    <h5 class="card-title mb-0">Información del Plan de Acción</h5>
-                </div>
-                <div class="card-body">
-                    <dl class="row mb-0">
-                        <dt class="col-sm-3">Item No Conforme:</dt>
-                        <dd class="col-sm-9">{{ plan.item_no_conforme }}</dd>
+    <!-- Información de la Revisión -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header">
+            <h5 class="card-title mb-0">Información de la Revisión</h5>
+        </div>
+        <div class="card-body">
+            <dl class="row mb-0">
+                <dt class="col-sm-3">Sucursal:</dt>
+                <dd class="col-sm-9">{{ revision.sucursal }}</dd>
 
-                        <dt class="col-sm-3">Acción Correctiva:</dt>
-                        <dd class="col-sm-9">{{ plan.accion_correctiva }}</dd>
+                <dt class="col-sm-3">Evaluador:</dt>
+                <dd class="col-sm-9">{{ revision.evaluador.get_nombre_completo }}</dd>
 
-                        <dt class="col-sm-3">Responsable:</dt>
-                        <dd class="col-sm-9">{{ plan.responsable.get_nombre_completo }}</dd>
+                <dt class="col-sm-3">Fecha de Revisión:</dt>
+                <dd class="col-sm-9">{{ revision.fecha_revision|date:"d/m/Y" }}</dd>
 
-                        <dt class="col-sm-3">Fecha Límite:</dt>
-                        <dd class="col-sm-9">{{ plan.fecha_limite|date:"d/m/Y" }}</dd>
-
-                        <dt class="col-sm-3">Estado:</dt>
-                        <dd class="col-sm-9">
-                            <span class="badge {% if plan.estado == 'COMPLETADO' %}bg-success{% elif plan.estado == 'EN_PROCESO' %}bg-warning{% else %}bg-danger{% endif %}">
-                                {{ plan.get_estado_display }}
-                            </span>
-                        </dd>
-
-                        <dt class="col-sm-3">Observaciones:</dt>
-                        <dd class="col-sm-9">{{ plan.observaciones|default:"Sin observaciones" }}</dd>
-                    </dl>
-                </div>
-            </div>
-
-            {% if plan.evidencias.exists %}
-            <div class="card shadow-sm">
-                <div class="card-header">
-                    <h5 class="card-title mb-0">Evidencias Después</h5>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        {% for evidencia in plan.evidencias.all %}
-                        <div class="col-md-4 mb-3">
-                            <div class="card">
-                                <img src="{{ evidencia.imagen.url }}" class="card-img-top" alt="Evidencia" style="height: 200px; object-fit: cover;">
-                                <div class="card-body">
-                                    {% if evidencia.descripcion %}
-                                    <p class="card-text">{{ evidencia.descripcion }}</p>
-                                    {% endif %}
-                                    <p class="card-text small text-muted">Fecha de subida: {{ evidencia.fecha_subida|date:"d/m/Y H:i" }}</p>
-                                </div>
-                            </div>
-                        </div>
-                        {% endfor %}
-                    </div>
-                </div>
-            </div>
-            {% elif plan.evidencia_despues %}
-            <div class="card shadow-sm">
-                <div class="card-header">
-                    <h5 class="card-title mb-0">Evidencia Después (Legacy)</h5>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="card">
-                                <img src="{{ plan.evidencia_despues.url }}" class="card-img-top" alt="Evidencia después">
-                                <div class="card-body">
-                                    <p class="card-text small text-muted">Fecha de subida: {{ plan.fecha_actualizacion|date:"d/m/Y H:i" }}</p>
-                                </div>
-                            </div>
+                <dt class="col-sm-3">Puntuación:</dt>
+                <dd class="col-sm-9">
+                    <div class="progress" style="height: 25px;">
+                        <div class="progress-bar {% if revision.porcentaje_conformidad >= 90 %}bg-success{% elif revision.porcentaje_conformidad >= 75 %}bg-warning{% else %}bg-danger{% endif %}" 
+                             role="progressbar" 
+                             style="width: {{ revision.porcentaje_conformidad }}%;" 
+                             aria-valuenow="{{ revision.porcentaje_conformidad }}" 
+                             aria-valuemin="0" 
+                             aria-valuemax="100">
+                            {{ revision.porcentaje_conformidad }}%
                         </div>
                     </div>
+                </dd>
+            </dl>
+        </div>
+    </div>
+
+    <!-- Todos los Planes de Acción -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header">
+            <h5 class="card-title mb-0">Planes de Acción de la Revisión ({{ todos_los_planes.count }})</h5>
+        </div>
+        <div class="card-body">
+            {% if todos_los_planes %}
+                {% for plan_accion in todos_los_planes %}
+                <div class="card mb-3 {% if plan_accion.id == plan.id %}border-primary{% endif %}">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h6 class="mb-0">
+                            Plan #{{ plan_accion.id }}
+                            {% if plan_accion.id == plan.id %}
+                                <span class="badge bg-primary">Actual</span>
+                            {% endif %}
+                        </h6>
+                        <span class="badge {% if plan_accion.estado == 'COMPLETADO' %}bg-success{% elif plan_accion.estado == 'EN_PROCESO' %}bg-warning{% else %}bg-danger{% endif %}">
+                            {{ plan_accion.get_estado_display }}
+                        </span>
+                    </div>
+                    <div class="card-body">
+                        <dl class="row mb-0">
+                            <dt class="col-sm-3">Item No Conforme:</dt>
+                            <dd class="col-sm-9">{{ plan_accion.item_no_conforme }}</dd>
+
+                            <dt class="col-sm-3">Acción Correctiva:</dt>
+                            <dd class="col-sm-9">{{ plan_accion.accion_correctiva }}</dd>
+
+                            <dt class="col-sm-3">Responsable:</dt>
+                            <dd class="col-sm-9">{{ plan_accion.responsable.get_nombre_completo }}</dd>
+
+                            <dt class="col-sm-3">Fecha Límite:</dt>
+                            <dd class="col-sm-9">{{ plan_accion.fecha_limite|date:"d/m/Y" }}</dd>
+
+                            <dt class="col-sm-3">Observaciones:</dt>
+                            <dd class="col-sm-9">{{ plan_accion.observaciones|default:"Sin observaciones" }}</dd>
+                        </dl>
+                        
+                        {% if plan_accion.id != plan.id %}
+                        <div class="mt-3">
+                            <a href="{% url 'gestionDeTaller:detalle_plan_accion_5s' plan_accion.id %}" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-eye"></i> Ver Detalle
+                            </a>
+                            {% if plan_accion.estado != 'COMPLETADO' %}
+                            <a href="{% url 'gestionDeTaller:editar_plan_accion_5s' plan_accion.id %}" class="btn btn-sm btn-outline-secondary">
+                                <i class="fas fa-edit"></i> Editar
+                            </a>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                    </div>
                 </div>
-            </div>
+                {% endfor %}
+            {% else %}
+                <p class="text-muted">No hay planes de acción para esta revisión.</p>
             {% endif %}
         </div>
+    </div>
 
-        <div class="col-md-4">
-            <div class="card shadow-sm">
-                <div class="card-header">
-                    <h5 class="card-title mb-0">Información de la Revisión</h5>
+    <!-- Evidencias del Plan Actual -->
+    {% if plan.evidencias.exists %}
+    <div class="card shadow-sm">
+        <div class="card-header">
+            <h5 class="card-title mb-0">Evidencias del Plan Actual</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                {% for evidencia in plan.evidencias.all %}
+                <div class="col-md-4 mb-3">
+                    <div class="card">
+                        <img src="{{ evidencia.imagen.url }}" class="card-img-top" alt="Evidencia" style="height: 200px; object-fit: cover;">
+                        <div class="card-body">
+                            {% if evidencia.descripcion %}
+                            <p class="card-text">{{ evidencia.descripcion }}</p>
+                            {% endif %}
+                            <p class="card-text small text-muted">Fecha de subida: {{ evidencia.fecha_subida|date:"d/m/Y H:i" }}</p>
+                        </div>
+                    </div>
                 </div>
-                <div class="card-body">
-                    <dl class="row mb-0">
-                        <dt class="col-sm-4">Sucursal:</dt>
-                        <dd class="col-sm-8">{{ plan.revision.sucursal }}</dd>
-
-                        <dt class="col-sm-4">Fecha:</dt>
-                        <dd class="col-sm-8">{{ plan.revision.fecha_revision|date:"d/m/Y" }}</dd>
-
-                        <dt class="col-sm-4">Puntuación:</dt>
-                        <dd class="col-sm-8">
-                            <div class="progress" style="height: 20px;">
-                                <div class="progress-bar {% if plan.revision.puntuacion_total >= 80 %}bg-success{% elif plan.revision.puntuacion_total >= 60 %}bg-warning{% else %}bg-danger{% endif %}" 
-                                     role="progressbar" 
-                                     style="width: {{ plan.revision.puntuacion_total }}%;" 
-                                     aria-valuenow="{{ plan.revision.puntuacion_total }}" 
-                                     aria-valuemin="0" 
-                                     aria-valuemax="100">
-                                    {{ plan.revision.puntuacion_total }}%
-                                </div>
-                            </div>
-                        </dd>
-                    </dl>
-
-                    <div class="mt-3">
-                        <a href="{% url 'gestionDeTaller:detalle_revision_5s' plan.revision.id %}" class="btn btn-info btn-sm w-100">
-                            <i class="fas fa-eye"></i> Ver Revisión Completa
-                        </a>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% elif plan.evidencia_despues %}
+    <div class="card shadow-sm">
+        <div class="card-header">
+            <h5 class="card-title mb-0">Evidencia del Plan Actual (Legacy)</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card">
+                        <img src="{{ plan.evidencia_despues.url }}" class="card-img-top" alt="Evidencia después">
+                        <div class="card-body">
+                            <p class="card-text small text-muted">Fecha de subida: {{ plan.fecha_actualizacion|date:"d/m/Y H:i" }}</p>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+    {% endif %}
 </main>
 {% endblock %} 
