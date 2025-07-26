@@ -1,7 +1,7 @@
 from django.contrib import admin
 from .models import (
     PreOrden, Servicio, PedidoRepuestosTerceros, GastoAsistencia,
-    VentaRepuesto, Revision5S, PlanAccion5S, EvidenciaPlanAccion5S, CostoPersonalTaller,
+    VentaRepuesto, Revision5S, PlanAccion5S, ItemPlanAccion5S, EvidenciaPlanAccion5S, CostoPersonalTaller,
     AnalisisTaller, Evidencia, ChecklistSalidaCampo, EncuestaServicio,
     RespuestaEncuesta, InsatisfaccionCliente, LogCambioServicio, ObservacionServicio,
     EvidenciaRevision5S, Repuesto, HerramientaEspecial, ReservaHerramienta, LogHerramienta,
@@ -73,6 +73,85 @@ class EvidenciaPlanAccion5SAdmin(admin.ModelAdmin):
 class PlanAccion5SAdmin(admin.ModelAdmin):
     list_display = ['revision', 'item_no_conforme', 'estado', 'fecha_limite']
     list_filter = ['estado', 'fecha_limite']
+
+
+@admin.register(ItemPlanAccion5S)
+class ItemPlanAccion5SAdmin(admin.ModelAdmin):
+    list_display = [
+        'plan_accion', 
+        'item_no_conforme', 
+        'responsable', 
+        'estado', 
+        'fecha_limite',
+        'esta_vencido_display',
+        'dias_restantes_display'
+    ]
+    list_filter = [
+        'estado', 
+        'fecha_limite', 
+        'plan_accion__revision__sucursal',
+        'responsable__rol'
+    ]
+    search_fields = [
+        'item_no_conforme', 
+        'responsable__nombre', 
+        'responsable__apellido',
+        'plan_accion__revision__sucursal__nombre'
+    ]
+    date_hierarchy = 'fecha_limite'
+    list_per_page = 25
+    
+    fieldsets = (
+        ('Información del Item', {
+            'fields': ('plan_accion', 'item_no_conforme', 'responsable')
+        }),
+        ('Estado y Fechas', {
+            'fields': ('estado', 'fecha_limite', 'fecha_completado'),
+        }),
+        ('Información de Corrección', {
+            'fields': ('comentario_correccion', 'evidencia_foto', 'observaciones'),
+        }),
+        ('Información de Auditoría', {
+            'fields': ('fecha_creacion', 'fecha_modificacion'),
+            'classes': ('collapse',)
+        }),
+    )
+    
+    readonly_fields = ['fecha_creacion', 'fecha_modificacion']
+    
+    actions = ['marcar_completado', 'marcar_en_proceso', 'marcar_pendiente']
+    
+    def marcar_completado(self, request, queryset):
+        updated = queryset.update(estado='COMPLETADO')
+        self.message_user(request, f'{updated} items marcados como completados.')
+    marcar_completado.short_description = "Marcar como completado"
+    
+    def marcar_en_proceso(self, request, queryset):
+        updated = queryset.update(estado='EN_PROCESO')
+        self.message_user(request, f'{updated} items marcados como en proceso.')
+    marcar_en_proceso.short_description = "Marcar como en proceso"
+    
+    def marcar_pendiente(self, request, queryset):
+        updated = queryset.update(estado='PENDIENTE')
+        self.message_user(request, f'{updated} items marcados como pendientes.')
+    marcar_pendiente.short_description = "Marcar como pendiente"
+    
+    def esta_vencido_display(self, obj):
+        return obj.esta_vencido
+    esta_vencido_display.boolean = True
+    esta_vencido_display.short_description = 'Vencido'
+    
+    def dias_restantes_display(self, obj):
+        if obj.estado == 'COMPLETADO':
+            return 'Completado'
+        dias = obj.dias_restantes
+        if dias < 0:
+            return f'Vencido ({abs(dias)} días)'
+        elif dias <= 3:
+            return f'⚠️ {dias} días'
+        else:
+            return f'{dias} días'
+    dias_restantes_display.short_description = 'Días Restantes'
 
 
 @admin.register(Evidencia)

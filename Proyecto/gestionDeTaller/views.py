@@ -6,7 +6,7 @@ from gestionDeTaller.forms import (
     PreordenForm, ServicioForm, ServicioEditarForm, ServicioDocumentosForm,
     ServicioManoObraForm, PedidoRepuestosTercerosForm, GastoAsistenciaForm,
     VentaRepuestoForm, EditarInformeForm, EvidenciaForm, ChecklistSalidaCampoForm,
-    FiltroExportacionServiciosForm, Revision5SForm, PlanAccion5SForm,
+    FiltroExportacionServiciosForm, Revision5SForm, PlanAccion5SForm, ItemPlanAccion5SForm,
     RespuestaEncuestaForm, InsatisfaccionClienteForm
 )
 from django.http import JsonResponse, HttpResponse, StreamingHttpResponse
@@ -38,7 +38,7 @@ import json
 from datetime import datetime, timedelta
 from .models import (
     PreOrden, Servicio, PedidoRepuestosTerceros, GastoAsistencia,
-    VentaRepuesto, Revision5S, PlanAccion5S, CostoPersonalTaller,
+    VentaRepuesto, Revision5S, PlanAccion5S, ItemPlanAccion5S, CostoPersonalTaller,
     AnalisisTaller, Evidencia, ChecklistSalidaCampo, EncuestaServicio,
     RespuestaEncuesta, InsatisfaccionCliente, ObservacionServicio, Repuesto,
     HerramientaEspecial, ReservaHerramienta, LogHerramienta,
@@ -1657,24 +1657,50 @@ def crear_plan_accion_5s(request, revision_id):
             items_no_conformes.append(nombre)
     
     if request.method == 'POST':
-        form = PlanAccion5SForm(request.POST, request.FILES)
+        # Crear el plan de acción principal
+        plan_accion = PlanAccion5S.objects.create(
+            revision=revision,
+            item_no_conforme="Items no conformes de la revisión 5S",
+            accion_correctiva="Plan de acción con items individuales",
+            responsable=request.user,
+            fecha_limite=timezone.now().date() + timedelta(days=30),  # Fecha por defecto
+            estado='PENDIENTE'
+        )
         
-        if form.is_valid():
-            # Crear un solo plan de acción con todos los items seleccionados
-            plan = form.save(commit=False)
-            plan.revision = revision
+        # Crear items individuales para cada item no conforme
+        items_creados = 0
+        for item_nombre in items_no_conformes:
+            # Obtener datos del formulario para este item específico
+            responsable_id = request.POST.get(f'responsable_{item_nombre}')
+            comentario = request.POST.get(f'comentario_{item_nombre}', '')
+            fecha_limite_str = request.POST.get(f'fecha_limite_{item_nombre}')
             
-            # El campo item_no_conforme ya viene con todos los items separados por punto y coma
-            # desde el frontend, así que no necesitamos procesarlo más
-            plan.save()
-            
-            messages.success(request, 'Plan de acción creado exitosamente.')
-            return redirect('gestionDeTaller:detalle_revision_5s', revision_id=revision.id)
-    else:
-        form = PlanAccion5SForm()
+            if responsable_id and fecha_limite_str:
+                try:
+                    responsable = Usuario.objects.get(id=responsable_id)
+                    fecha_limite = datetime.strptime(fecha_limite_str, '%Y-%m-%d').date()
+                    
+                    ItemPlanAccion5S.objects.create(
+                        plan_accion=plan_accion,
+                        item_no_conforme=item_nombre,
+                        responsable=responsable,
+                        comentario_correccion=comentario,
+                        fecha_limite=fecha_limite,
+                        estado='PENDIENTE'
+                    )
+                    items_creados += 1
+                except (Usuario.DoesNotExist, ValueError):
+                    continue
+        
+        if items_creados > 0:
+            messages.success(request, f'Plan de acción creado exitosamente con {items_creados} items.')
+        else:
+            messages.error(request, 'No se pudieron crear los items del plan de acción.')
+            plan_accion.delete()  # Eliminar el plan si no se crearon items
+        
+        return redirect('gestionDeTaller:detalle_revision_5s', revision_id=revision.id)
     
     return render(request, 'gestionDeTaller/5s/crear_plan_accion.html', {
-        'form': form,
         'revision': revision,
         'items_no_conformes': items_no_conformes
     })
@@ -3674,3 +3700,43 @@ def dashboard_tecnico(request):
     }
     
     return render(request, 'gestionDeTaller/dashboard_tecnico.html', context)
+
+@login_required
+def detalle_plan_accion_5s(request, plan_id):
+    """
+    Vista para mostrar los detalles de un plan de acción 5S específico.
+    """
+    plan = get_object_or_404(PlanAccion5S, id=plan_id)
+    revision = plan.revision
+    
+    context = {
+        'plan': plan,
+        'revision': revision,
+    }
+    return render(request, 'gestionDeTaller/5s/detalle_plan_accion.html', context)
+
+
+@login_required
+def editar_item_plan_accion_5s(request, item_id):
+    """
+    Vista para editar un item individual de un plan de acción 5S.
+    Permite actualizar el estado, agregar evidencia y comentarios.
+    """
+    item = get_object_or_404(ItemPlanAccion5S, id=item_id)
+    
+    if request.method == 'POST':
+        form = ItemPlanAccion5SForm(request.POST, request.FILES, instance=item)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Item actualizado exitosamente.')
+            return redirect('gestionDeTaller:detalle_plan_accion_5s', plan_id=item.plan_accion.id)
+    else:
+        form = ItemPlanAccion5SForm(instance=item)
+    
+    context = {
+        'form': form,
+        'item': item,
+        'plan': item.plan_accion,
+        'revision': item.plan_accion.revision,
+    }
+    return render(request, 'gestionDeTaller/5s/editar_item_plan_accion.html', context)

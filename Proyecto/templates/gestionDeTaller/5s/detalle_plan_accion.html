@@ -9,11 +9,6 @@
             <a href="{% url 'gestionDeTaller:detalle_revision_5s' plan.revision.id %}" class="btn btn-secondary">
                 <i class="fas fa-arrow-left"></i> Volver
             </a>
-            {% if plan.estado != 'COMPLETADO' %}
-            <a href="{% url 'gestionDeTaller:editar_plan_accion_5s' plan.id %}" class="btn btn-primary">
-                <i class="fas fa-edit"></i> Editar
-            </a>
-            {% endif %}
         </div>
     </div>
 
@@ -60,85 +55,125 @@
         </div>
     </div>
 
-    <!-- Plan de Acción -->
+    <!-- Items del Plan de Acción -->
     <div class="card shadow-sm mb-4">
         <div class="card-header">
-            <h5 class="card-title mb-0">Plan de Acción #{{ plan.id }}</h5>
+            <h5 class="card-title mb-0">
+                Items del Plan de Acción #{{ plan.id }}
+                <span class="badge bg-primary ms-2">{{ plan.items.count }} items</span>
+            </h5>
         </div>
         <div class="card-body">
-            <dl class="row mb-0">
-                <dt class="col-sm-3">Items No Conformes:</dt>
-                <dd class="col-sm-9">
-                    <div class="alert alert-warning">
-                        <i class="fas fa-exclamation-triangle me-2"></i>
-                        {{ plan.item_no_conforme }}
-                    </div>
-                </dd>
-
-                <dt class="col-sm-3">Acción Correctiva:</dt>
-                <dd class="col-sm-9">{{ plan.accion_correctiva }}</dd>
-
-                <dt class="col-sm-3">Responsable:</dt>
-                <dd class="col-sm-9">{{ plan.responsable.get_nombre_completo }}</dd>
-
-                <dt class="col-sm-3">Fecha Límite:</dt>
-                <dd class="col-sm-9">{{ plan.fecha_limite|date:"d/m/Y" }}</dd>
-
-                <dt class="col-sm-3">Estado:</dt>
-                <dd class="col-sm-9">
-                    <span class="badge {% if plan.estado == 'COMPLETADO' %}bg-success{% elif plan.estado == 'EN_PROCESO' %}bg-warning{% else %}bg-danger{% endif %}">
-                        {{ plan.get_estado_display }}
-                    </span>
-                </dd>
-
-                <dt class="col-sm-3">Observaciones:</dt>
-                <dd class="col-sm-9">{{ plan.observaciones|default:"Sin observaciones" }}</dd>
-            </dl>
-        </div>
-    </div>
-
-    <!-- Evidencias del Plan -->
-    {% if plan.evidencias.exists %}
-    <div class="card shadow-sm">
-        <div class="card-header">
-            <h5 class="card-title mb-0">Evidencias del Plan</h5>
-        </div>
-        <div class="card-body">
-            <div class="row">
-                {% for evidencia in plan.evidencias.all %}
-                <div class="col-md-4 mb-3">
-                    <div class="card">
-                        <img src="{{ evidencia.imagen.url }}" class="card-img-top" alt="Evidencia" style="height: 200px; object-fit: cover;">
-                        <div class="card-body">
-                            {% if evidencia.descripcion %}
-                            <p class="card-text">{{ evidencia.descripcion }}</p>
+            {% if plan.items.exists %}
+                {% for item in plan.items.all %}
+                <div class="card mb-3 {% if item.esta_vencido %}border-danger{% elif item.dias_restantes <= 3 %}border-warning{% else %}border-success{% endif %}">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h6 class="mb-0">
+                            <i class="fas fa-exclamation-triangle text-warning me-2"></i>
+                            {{ item.item_no_conforme }}
+                        </h6>
+                        <div>
+                            <span class="badge {% if item.estado == 'COMPLETADO' %}bg-success{% elif item.estado == 'EN_PROCESO' %}bg-warning{% else %}bg-danger{% endif %} me-2">
+                                {{ item.get_estado_display }}
+                            </span>
+                            {% if item.esta_vencido %}
+                                <span class="badge bg-danger">Vencido</span>
+                            {% elif item.dias_restantes <= 3 %}
+                                <span class="badge bg-warning">{{ item.dias_restantes }} días</span>
+                            {% else %}
+                                <span class="badge bg-success">{{ item.dias_restantes }} días</span>
                             {% endif %}
-                            <p class="card-text small text-muted">Fecha de subida: {{ evidencia.fecha_subida|date:"d/m/Y H:i" }}</p>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <dl class="row mb-0">
+                                    <dt class="col-sm-4">Responsable:</dt>
+                                    <dd class="col-sm-8">{{ item.responsable.get_nombre_completo }}</dd>
+                                    
+                                    <dt class="col-sm-4">Fecha Límite:</dt>
+                                    <dd class="col-sm-8">
+                                        <span class="{% if item.esta_vencido %}text-danger{% elif item.dias_restantes <= 3 %}text-warning{% else %}text-success{% endif %}">
+                                            {{ item.fecha_limite|date:"d/m/Y" }}
+                                        </span>
+                                    </dd>
+                                    
+                                    {% if item.comentario_correccion %}
+                                    <dt class="col-sm-4">Comentario:</dt>
+                                    <dd class="col-sm-8">{{ item.comentario_correccion }}</dd>
+                                    {% endif %}
+                                    
+                                    {% if item.observaciones %}
+                                    <dt class="col-sm-4">Observaciones:</dt>
+                                    <dd class="col-sm-8">{{ item.observaciones }}</dd>
+                                    {% endif %}
+                                </dl>
+                            </div>
+                            <div class="col-md-6">
+                                {% if item.evidencia_foto %}
+                                <div class="text-center">
+                                    <img src="{{ item.evidencia_foto.url }}" 
+                                         alt="Evidencia" 
+                                         class="img-thumbnail" 
+                                         style="max-width: 150px; max-height: 150px;">
+                                    <p class="text-muted small mt-2">Evidencia de corrección</p>
+                                </div>
+                                {% else %}
+                                <div class="text-center text-muted">
+                                    <i class="fas fa-image fa-3x mb-2"></i>
+                                    <p>Sin evidencia</p>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="mt-3">
+                            <a href="{% url 'gestionDeTaller:editar_item_plan_accion_5s' item.id %}" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-edit"></i> Editar Item
+                            </a>
                         </div>
                     </div>
                 </div>
                 {% endfor %}
-            </div>
-        </div>
-    </div>
-    {% elif plan.evidencia_despues %}
-    <div class="card shadow-sm">
-        <div class="card-header">
-            <h5 class="card-title mb-0">Evidencia del Plan (Legacy)</h5>
-        </div>
-        <div class="card-body">
-            <div class="row">
-                <div class="col-md-6">
-                    <div class="card">
-                        <img src="{{ plan.evidencia_despues.url }}" class="card-img-top" alt="Evidencia después">
-                        <div class="card-body">
-                            <p class="card-text small text-muted">Fecha de subida: {{ plan.fecha_actualizacion|date:"d/m/Y H:i" }}</p>
+                
+                <!-- Resumen de Estados -->
+                <div class="mt-4">
+                    <h6>Resumen de Estados:</h6>
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <span class="badge bg-danger fs-6">{{ plan.items.filter.estado='PENDIENTE'|length }}</span>
+                                <p class="small text-muted">Pendientes</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <span class="badge bg-warning fs-6">{{ plan.items.filter.estado='EN_PROCESO'|length }}</span>
+                                <p class="small text-muted">En Proceso</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <span class="badge bg-success fs-6">{{ plan.items.filter.estado='COMPLETADO'|length }}</span>
+                                <p class="small text-muted">Completados</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <span class="badge bg-danger fs-6">{{ plan.items.filter.esta_vencido=True|length }}</span>
+                                <p class="small text-muted">Vencidos</p>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
+            {% else %}
+                <div class="text-center text-muted">
+                    <i class="fas fa-clipboard-list fa-3x mb-3"></i>
+                    <p>No hay items en este plan de acción.</p>
+                </div>
+            {% endif %}
         </div>
     </div>
-    {% endif %}
 </main>
 {% endblock %} 

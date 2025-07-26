@@ -610,7 +610,65 @@ class PlanAccion5S(models.Model):
 
     def __str__(self):
         return f"Plan de Acción - {self.item_no_conforme}"
+
+
+class ItemPlanAccion5S(models.Model):
+    """
+    Modelo para manejar items individuales dentro de un plan de acción 5S.
+    Cada item tiene su propio responsable, comentario, fecha límite, evidencia y estado.
+    """
+    ESTADO_CHOICES = [
+        ('PENDIENTE', 'Pendiente'),
+        ('EN_PROCESO', 'En Proceso'),
+        ('COMPLETADO', 'Completado'),
+    ]
+
+    plan_accion = models.ForeignKey(PlanAccion5S, on_delete=models.CASCADE, related_name='items')
+    item_no_conforme = models.CharField(max_length=200, verbose_name="Item No Conforme")
+    responsable = models.ForeignKey('recursosHumanos.Usuario', on_delete=models.PROTECT, verbose_name="Responsable")
+    comentario_correccion = models.TextField(verbose_name="Comentario de Corrección", help_text="Cómo se va a corregir este desvío")
+    fecha_limite = models.DateField(verbose_name="Fecha Límite")
+    estado = models.CharField(max_length=20, choices=ESTADO_CHOICES, default='PENDIENTE', verbose_name="Estado")
+    evidencia_foto = models.ImageField(upload_to='5s/items/evidencias/', blank=True, null=True, verbose_name="Evidencia Foto")
+    fecha_completado = models.DateTimeField(blank=True, null=True, verbose_name="Fecha Completado")
+    observaciones = models.TextField(blank=True, verbose_name="Observaciones")
     
+    # Campos de auditoría
+    fecha_creacion = models.DateTimeField(auto_now_add=True, verbose_name="Fecha de Creación")
+    fecha_modificacion = models.DateTimeField(auto_now=True, verbose_name="Última Modificación")
+
+    class Meta:
+        verbose_name = "Item de Plan de Acción 5S"
+        verbose_name_plural = "Items de Planes de Acción 5S"
+        ordering = ['fecha_limite', 'item_no_conforme']
+
+    def __str__(self):
+        return f"{self.item_no_conforme} - {self.responsable.get_nombre_completo()}"
+
+    def save(self, *args, **kwargs):
+        # Si el estado cambia a COMPLETADO, establecer fecha_completado
+        if self.estado == 'COMPLETADO' and not self.fecha_completado:
+            from django.utils import timezone
+            self.fecha_completado = timezone.now()
+        elif self.estado != 'COMPLETADO':
+            self.fecha_completado = None
+        super().save(*args, **kwargs)
+
+    @property
+    def esta_vencido(self):
+        """Verifica si el item está vencido"""
+        from django.utils import timezone
+        return self.fecha_limite < timezone.now().date() and self.estado != 'COMPLETADO'
+
+    @property
+    def dias_restantes(self):
+        """Calcula los días restantes hasta la fecha límite"""
+        from django.utils import timezone
+        from datetime import date
+        hoy = timezone.now().date()
+        if self.estado == 'COMPLETADO':
+            return 0
+        return (self.fecha_limite - hoy).days
 
 
 class CostoPersonalTaller(models.Model):

@@ -51,6 +51,7 @@ urlpatterns = [
         path('5s/planes-accion/', views.lista_planes_accion_5s, name='lista_planes_accion_5s'),
         path('5s/plan-accion/<int:plan_id>/', views.detalle_plan_accion_5s, name='detalle_plan_accion_5s'),
         path('5s/plan-accion/<int:plan_id>/editar/', views.editar_plan_accion_5s, name='editar_plan_accion_5s'),
+        path('5s/item-plan-accion/<int:item_id>/editar/', views.editar_item_plan_accion_5s, name='editar_item_plan_accion_5s'),
 
         # URLs para encuestas
         path('encuestas/', views.lista_encuestas, name='lista_encuestas'),

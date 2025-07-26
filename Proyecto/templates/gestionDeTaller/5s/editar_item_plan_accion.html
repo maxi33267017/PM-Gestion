@@ -1,0 +1,158 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<main class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Editar Item del Plan de Acción</h1>
+        <a href="{% url 'gestionDeTaller:detalle_plan_accion_5s' plan.id %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Volver
+        </a>
+    </div>
+
+    <!-- Información del Item -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header">
+            <h5 class="card-title mb-0">Item: {{ item.item_no_conforme }}</h5>
+        </div>
+        <div class="card-body">
+            <dl class="row mb-0">
+                <dt class="col-sm-3">Plan de Acción:</dt>
+                <dd class="col-sm-9">#{{ plan.id }}</dd>
+                <dt class="col-sm-3">Revisión:</dt>
+                <dd class="col-sm-9">{{ revision.sucursal }} - {{ revision.fecha_revision|date:"d/m/Y" }}</dd>
+                <dt class="col-sm-3">Responsable:</dt>
+                <dd class="col-sm-9">{{ item.responsable.get_nombre_completo }}</dd>
+                <dt class="col-sm-3">Fecha Límite:</dt>
+                <dd class="col-sm-9">
+                    <span class="{% if item.esta_vencido %}text-danger{% elif item.dias_restantes <= 3 %}text-warning{% else %}text-success{% endif %}">
+                        {{ item.fecha_limite|date:"d/m/Y" }}
+                        {% if item.esta_vencido %}
+                            <span class="badge bg-danger ms-2">Vencido</span>
+                        {% elif item.dias_restantes <= 3 %}
+                            <span class="badge bg-warning ms-2">{{ item.dias_restantes }} días</span>
+                        {% else %}
+                            <span class="badge bg-success ms-2">{{ item.dias_restantes }} días</span>
+                        {% endif %}
+                    </span>
+                </dd>
+            </dl>
+        </div>
+    </div>
+
+    <!-- Formulario de Edición -->
+    <div class="card shadow-sm">
+        <div class="card-header">
+            <h5 class="card-title mb-0">Actualizar Item</h5>
+        </div>
+        <div class="card-body">
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                
+                <div class="row">
+                    <!-- Estado -->
+                    <div class="col-md-6 mb-3">
+                        <label for="{{ form.estado.id_for_label }}" class="form-label">
+                            <strong>Estado *</strong>
+                        </label>
+                        {{ form.estado }}
+                        {% if form.estado.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.estado.errors.0 }}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Fecha Límite -->
+                    <div class="col-md-6 mb-3">
+                        <label for="{{ form.fecha_limite.id_for_label }}" class="form-label">
+                            <strong>Fecha Límite *</strong>
+                        </label>
+                        {{ form.fecha_limite }}
+                        {% if form.fecha_limite.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.fecha_limite.errors.0 }}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Comentario de Corrección -->
+                <div class="mb-3">
+                    <label for="{{ form.comentario_correccion.id_for_label }}" class="form-label">
+                        <strong>Comentario de Corrección</strong>
+                    </label>
+                    {{ form.comentario_correccion }}
+                    {% if form.comentario_correccion.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ form.comentario_correccion.errors.0 }}
+                        </div>
+                    {% endif %}
+                    <div class="form-text">
+                        Describe cómo se va a corregir este desvío o qué acciones se han tomado.
+                    </div>
+                </div>
+
+                <!-- Evidencia Foto -->
+                <div class="mb-3">
+                    <label for="{{ form.evidencia_foto.id_for_label }}" class="form-label">
+                        <strong>Evidencia Foto</strong>
+                    </label>
+                    {% if item.evidencia_foto %}
+                        <div class="mb-2">
+                            <img src="{{ item.evidencia_foto.url }}" 
+                                 alt="Evidencia actual" 
+                                 class="img-thumbnail" 
+                                 style="max-width: 200px; max-height: 200px;">
+                            <p class="text-muted small">Evidencia actual</p>
+                        </div>
+                    {% endif %}
+                    {{ form.evidencia_foto }}
+                    {% if form.evidencia_foto.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ form.evidencia_foto.errors.0 }}
+                        </div>
+                    {% endif %}
+                    <div class="form-text">
+                        Sube una foto que evidencie la corrección del item no conforme.
+                    </div>
+                </div>
+
+                <!-- Observaciones -->
+                <div class="mb-3">
+                    <label for="{{ form.observaciones.id_for_label }}" class="form-label">
+                        <strong>Observaciones</strong>
+                    </label>
+                    {{ form.observaciones }}
+                    {% if form.observaciones.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ form.observaciones.errors.0 }}
+                        </div>
+                    {% endif %}
+                    <div class="form-text">
+                        Observaciones adicionales sobre el progreso o estado del item.
+                    </div>
+                </div>
+
+                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-2"></i>
+                        Guardar Cambios
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</main>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Establecer fecha mínima como hoy
+    const today = new Date().toISOString().split('T')[0];
+    const dateInput = document.querySelector('input[type="date"]');
+    if (dateInput) {
+        dateInput.min = today;
+    }
+});
+</script>
+{% endblock %} 

@@ -1,5 +1,5 @@
 from django import forms
-from .models import PreOrden, Servicio, PedidoRepuestosTerceros, GastoAsistencia, VentaRepuesto, ChecklistSalidaCampo, Revision5S, PlanAccion5S, RespuestaEncuesta, InsatisfaccionCliente
+from .models import PreOrden, Servicio, PedidoRepuestosTerceros, GastoAsistencia, VentaRepuesto, ChecklistSalidaCampo, Revision5S, PlanAccion5S, ItemPlanAccion5S, RespuestaEncuesta, InsatisfaccionCliente
 from clientes.models import Cliente
 from recursosHumanos.models import Usuario
 from django import forms
@@ -381,6 +381,36 @@ class PlanAccion5SForm(forms.ModelForm):
         fields = [
             'item_no_conforme', 'accion_correctiva', 'responsable',
             'fecha_limite', 'estado', 'evidencia_despues', 'observaciones'
+        ]
+        widgets = {
+            'fecha_limite': forms.DateInput(attrs={'type': 'date'}),
+        }
+
+
+class ItemPlanAccion5SForm(forms.ModelForm):
+    """
+    Formulario para crear y editar items individuales de un plan de acción 5S.
+    """
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Configurar el queryset de responsables
+        self.fields['responsable'].queryset = Usuario.objects.filter(is_active=True).order_by('apellido', 'nombre')
+        self.fields['responsable'].label_from_instance = lambda obj: obj.get_nombre_completo()
+        
+        # Configurar widgets con clases Bootstrap
+        self.fields['item_no_conforme'].widget.attrs.update({'class': 'form-control'})
+        self.fields['responsable'].widget.attrs.update({'class': 'form-select'})
+        self.fields['comentario_correccion'].widget.attrs.update({'class': 'form-control', 'rows': 3})
+        self.fields['fecha_limite'].widget.attrs.update({'class': 'form-control'})
+        self.fields['estado'].widget.attrs.update({'class': 'form-select'})
+        self.fields['evidencia_foto'].widget.attrs.update({'class': 'form-control'})
+        self.fields['observaciones'].widget.attrs.update({'class': 'form-control', 'rows': 2})
+    
+    class Meta:
+        model = ItemPlanAccion5S
+        fields = [
+            'item_no_conforme', 'responsable', 'comentario_correccion',
+            'fecha_limite', 'estado', 'evidencia_foto', 'observaciones'
         ]
         widgets = {
             'fecha_limite': forms.DateInput(attrs={'type': 'date'}),
