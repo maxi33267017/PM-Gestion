@@ -1638,21 +1638,18 @@ def crear_plan_accion_5s(request, revision_id):
     # Obtener items no conformes de la revisión
     items_no_conformes = []
     campos_5s = [
-        ('bancos_trabajo', 'Bancos de Trabajo'),
-        ('herramientas_funcionales', 'Herramientas Funcionales'),
-        ('piezas_organizadas', 'Piezas Organizadas'),
-        ('herramientas_devueltas', 'Herramientas Devueltas'),
-        ('box_limpios', 'Box Limpios'),
-        ('sala_garantia', 'Sala Garantía'),
-        ('piso_limpio', 'Piso Limpio'),
-        ('instrumentos_limpios', 'Instrumentos Limpios'),
-        ('paredes_limpias', 'Paredes Limpias'),
-        ('personal_uniformado', 'Personal Uniformado'),
-        ('epp_usado', 'EPP Usado'),
-        ('herramientas_calibradas', 'Herramientas Calibradas'),
-        ('residuos_gestionados', 'Residuos Gestionados'),
-        ('documentacion_actualizada', 'Documentación Actualizada'),
-        ('procedimientos_seguidos', 'Procedimientos Seguidos'),
+        ('box_trabajo_limpios', 'Box de trabajo limpios'),
+        ('mesas_trabajo_estaticas', 'Mesas de trabajo estáticas'),
+        ('herramientas_uso_comun_devueltas', 'Herramientas de uso común devueltas'),
+        ('paredes_limpias_tachos_ok', 'Paredes limpias y cestos de basura'),
+        ('sala_garantia_ordenada', 'Sala de garantía ordenada'),
+        ('zona_repuestos_ordenada', 'Zona de repuestos ordenada'),
+        ('epp_correspondiente_usado', 'EPP correspondiente usado'),
+        ('herramientas_calibradas_certificadas', 'Herramientas calibradas y certificadas'),
+        ('procedimientos_seguidos', 'Procedimientos seguidos'),
+        ('mantenimiento_preventivo', 'Mantenimiento preventivo'),
+        ('residuos_gestionados', 'Residuos gestionados'),
+        ('mejora_continua', 'Mejora continua'),
     ]
     
     for campo, nombre in campos_5s:
@@ -1742,21 +1739,18 @@ def editar_plan_accion_5s(request, plan_id):
     # Obtener todos los items no conformes de la revisión
     items_no_conformes = []
     campos_5s = [
-        ('bancos_trabajo', 'Bancos de Trabajo'),
-        ('herramientas_funcionales', 'Herramientas Funcionales'),
-        ('piezas_organizadas', 'Piezas Organizadas'),
-        ('herramientas_devueltas', 'Herramientas Devueltas'),
-        ('box_limpios', 'Box Limpios'),
-        ('sala_garantia', 'Sala Garantía'),
-        ('piso_limpio', 'Piso Limpio'),
-        ('instrumentos_limpios', 'Instrumentos Limpios'),
-        ('paredes_limpias', 'Paredes Limpias'),
-        ('personal_uniformado', 'Personal Uniformado'),
-        ('epp_usado', 'EPP Usado'),
-        ('herramientas_calibradas', 'Herramientas Calibradas'),
-        ('residuos_gestionados', 'Residuos Gestionados'),
-        ('documentacion_actualizada', 'Documentación Actualizada'),
-        ('procedimientos_seguidos', 'Procedimientos Seguidos'),
+        ('box_trabajo_limpios', 'Box de trabajo limpios'),
+        ('mesas_trabajo_estaticas', 'Mesas de trabajo estáticas'),
+        ('herramientas_uso_comun_devueltas', 'Herramientas de uso común devueltas'),
+        ('paredes_limpias_tachos_ok', 'Paredes limpias y cestos de basura'),
+        ('sala_garantia_ordenada', 'Sala de garantía ordenada'),
+        ('zona_repuestos_ordenada', 'Zona de repuestos ordenada'),
+        ('epp_correspondiente_usado', 'EPP correspondiente usado'),
+        ('herramientas_calibradas_certificadas', 'Herramientas calibradas y certificadas'),
+        ('procedimientos_seguidos', 'Procedimientos seguidos'),
+        ('mantenimiento_preventivo', 'Mantenimiento preventivo'),
+        ('residuos_gestionados', 'Residuos gestionados'),
+        ('mejora_continua', 'Mejora continua'),
     ]
     
     for campo, nombre in campos_5s:
