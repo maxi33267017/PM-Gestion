@@ -1660,33 +1660,15 @@ def crear_plan_accion_5s(request, revision_id):
         form = PlanAccion5SForm(request.POST, request.FILES)
         
         if form.is_valid():
-            # Obtener el item no conforme del formulario
-            item_no_conforme = form.cleaned_data['item_no_conforme']
+            # Crear un solo plan de acción con todos los items seleccionados
+            plan = form.save(commit=False)
+            plan.revision = revision
             
-            # Verificar si hay múltiples items separados por punto y coma
-            if ';' in item_no_conforme:
-                items = [item.strip() for item in item_no_conforme.split(';')]
-                planes_creados = 0
-                
-                for item in items:
-                    if item in items_no_conformes:  # Validar que el item sea válido
-                        plan = form.save(commit=False)
-                        plan.revision = revision
-                        plan.item_no_conforme = item
-                        plan.save()
-                        planes_creados += 1
-                
-                if planes_creados > 0:
-                    messages.success(request, f'{planes_creados} planes de acción creados exitosamente.')
-                else:
-                    messages.error(request, 'No se pudieron crear los planes de acción.')
-            else:
-                # Crear un solo plan de acción
-                plan = form.save(commit=False)
-                plan.revision = revision
-                plan.save()
-                messages.success(request, 'Plan de acción creado exitosamente.')
+            # El campo item_no_conforme ya viene con todos los items separados por punto y coma
+            # desde el frontend, así que no necesitamos procesarlo más
+            plan.save()
             
+            messages.success(request, 'Plan de acción creado exitosamente.')
             return redirect('gestionDeTaller:detalle_revision_5s', revision_id=revision.id)
     else:
         form = PlanAccion5SForm()
@@ -1725,13 +1707,9 @@ def detalle_plan_accion_5s(request, plan_id):
     plan = get_object_or_404(PlanAccion5S, id=plan_id)
     revision = plan.revision
     
-    # Obtener todos los planes de acción de esta revisión
-    todos_los_planes = PlanAccion5S.objects.filter(revision=revision).order_by('id')
-    
     context = {
         'plan': plan,
         'revision': revision,
-        'todos_los_planes': todos_los_planes,
     }
     return render(request, 'gestionDeTaller/5s/detalle_plan_accion.html', context)
 
