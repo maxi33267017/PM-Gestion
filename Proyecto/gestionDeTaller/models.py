@@ -585,7 +585,7 @@ class PlanAccion5S(models.Model):
     ]
 
     revision = models.ForeignKey(Revision5S, on_delete=models.CASCADE, related_name='planes_accion')
-    item_no_conforme = models.CharField(max_length=100)
+    item_no_conforme = models.TextField()
     accion_correctiva = models.TextField()
     responsable = models.ForeignKey('recursosHumanos.Usuario', on_delete=models.PROTECT)
     fecha_limite = models.DateField()
