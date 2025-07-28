@@ -269,11 +269,11 @@
                         </div>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Herramientas no en uso:</label>
-                        <small class="text-muted d-block mb-1">Las herramientas de uso común o especiales que no se están usando en un trabajo en curso se encuentran limpias y devueltas</small>
+                        <label class="form-label">Herramientas de uso común devueltas:</label>
+                        <small class="text-muted d-block mb-1">Las herramientas de uso común o especiales han sido devueltas y se encuentran limpias (sin contar las que se estén usando en un trabajo en curso)</small>
                         <div class="progress">
-                            <div class="progress-bar {% if revision.herramientas_no_uso_limpias == 'CONFORME' %}bg-success{% else %}bg-danger{% endif %}" role="progressbar" style="width: 100%;">
-                                {{ revision.get_herramientas_no_uso_limpias_display }}
+                            <div class="progress-bar {% if revision.herramientas_uso_comun_devueltas == 'CONFORME' %}bg-success{% else %}bg-danger{% endif %}" role="progressbar" style="width: 100%;">
+                                {{ revision.get_herramientas_uso_comun_devueltas_display }}
                             </div>
                         </div>
                     </div>
