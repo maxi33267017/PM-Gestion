@@ -1,0 +1,126 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+    .approve-card {
+        border-radius: 15px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    .approve-header {
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        color: white;
+        border-radius: 15px 15px 0 0;
+        padding: 1.5rem;
+    }
+</style>
+
+<main class="container mt-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="mb-0">
+                <i class="fas fa-check-circle text-success me-2"></i>
+                Aprobar Permiso
+            </h1>
+            <p class="text-muted mb-0">Revisa y aprueba la solicitud de permiso</p>
+        </div>
+        <a href="{% url 'recursosHumanos:lista_permisos_gerente' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i>
+            Volver
+        </a>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card approve-card">
+                <div class="approve-header">
+                    <h3 class="mb-1">Aprobar Permiso</h3>
+                    <p class="mb-0">{{ permiso.get_tipo_permiso_display }} - {{ permiso.usuario.get_nombre_completo }}</p>
+                </div>
+                <div class="card-body p-4">
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h5>Información del Empleado</h5>
+                            <ul class="list-unstyled">
+                                <li><strong>Nombre:</strong> {{ permiso.usuario.get_nombre_completo }}</li>
+                                <li><strong>Sucursal:</strong> {{ permiso.usuario.sucursal.nombre }}</li>
+                                <li><strong>Rol:</strong> {{ permiso.usuario.get_rol_display }}</li>
+                                <li><strong>Email:</strong> {{ permiso.usuario.email }}</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h5>Detalles del Permiso</h5>
+                            <ul class="list-unstyled">
+                                <li><strong>Tipo:</strong> {{ permiso.get_tipo_permiso_display }}</li>
+                                <li><strong>Fecha de Inicio:</strong> {{ permiso.fecha_inicio|date:"d/m/Y" }}</li>
+                                <li><strong>Fecha de Fin:</strong> {{ permiso.fecha_fin|date:"d/m/Y" }}</li>
+                                <li><strong>Días:</strong> {{ permiso.dias_solicitados }} días</li>
+                                <li><strong>Solicitado:</strong> {{ permiso.fecha_solicitud|date:"d/m/Y H:i" }}</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <h5>Motivo del Permiso</h5>
+                        <div class="alert alert-light">
+                            <p class="mb-0">{{ permiso.motivo }}</p>
+                        </div>
+                    </div>
+                    
+                    {% if permiso.justificativo %}
+                    <div class="mb-4">
+                        <h5>Justificativo</h5>
+                        <div class="alert alert-info">
+                            {% if permiso.descripcion_justificativo %}
+                            <p><strong>Descripción:</strong> {{ permiso.descripcion_justificativo }}</p>
+                            {% endif %}
+                            <a href="{{ permiso.justificativo.url }}" class="btn btn-sm btn-outline-primary" target="_blank">
+                                <i class="fas fa-download me-2"></i>
+                                Ver Justificativo
+                            </a>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.observaciones_aprobacion.id_for_label }}" class="form-label">
+                                <i class="fas fa-comment me-2"></i>
+                                Observaciones de Aprobación
+                            </label>
+                            {{ form.observaciones_aprobacion }}
+                            {% if form.observaciones_aprobacion.errors %}
+                            <div class="text-danger small mt-1">
+                                {{ form.observaciones_aprobacion.errors }}
+                            </div>
+                            {% endif %}
+                            <div class="form-text">
+                                Agrega comentarios sobre la aprobación (opcional).
+                            </div>
+                        </div>
+                        
+                        <div class="alert alert-success">
+                            <i class="fas fa-check-circle me-2"></i>
+                            <strong>Confirmación:</strong> Al aprobar este permiso, el empleado podrá ausentarse en las fechas solicitadas.
+                        </div>
+                        
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'recursosHumanos:lista_permisos_gerente' %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-times me-2"></i>
+                                Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-check me-2"></i>
+                                Aprobar Permiso
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+{% endblock %} 

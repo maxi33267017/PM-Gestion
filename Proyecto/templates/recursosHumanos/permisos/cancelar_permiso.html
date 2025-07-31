@@ -1,0 +1,101 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+    .cancel-card {
+        border-radius: 15px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    .cancel-header {
+        background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+        color: white;
+        border-radius: 15px 15px 0 0;
+        padding: 1.5rem;
+    }
+</style>
+
+<main class="container mt-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="mb-0">
+                <i class="fas fa-times-circle text-danger me-2"></i>
+                Cancelar Permiso
+            </h1>
+            <p class="text-muted mb-0">Confirma la cancelación de tu solicitud de permiso</p>
+        </div>
+        <a href="{% url 'recursosHumanos:detalle_permiso' permiso.id %}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i>
+            Volver
+        </a>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card cancel-card">
+                <div class="cancel-header">
+                    <h3 class="mb-1">Cancelar Permiso</h3>
+                    <p class="mb-0">{{ permiso.get_tipo_permiso_display }}</p>
+                </div>
+                <div class="card-body p-4">
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>¿Estás seguro?</strong> Esta acción cancelará tu solicitud de permiso y no se podrá deshacer.
+                    </div>
+                    
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h5>Detalles del Permiso</h5>
+                            <ul class="list-unstyled">
+                                <li><strong>Tipo:</strong> {{ permiso.get_tipo_permiso_display }}</li>
+                                <li><strong>Fecha de Inicio:</strong> {{ permiso.fecha_inicio|date:"d/m/Y" }}</li>
+                                <li><strong>Fecha de Fin:</strong> {{ permiso.fecha_fin|date:"d/m/Y" }}</li>
+                                <li><strong>Días:</strong> {{ permiso.dias_solicitados }} días</li>
+                                <li><strong>Estado:</strong> 
+                                    <span class="badge bg-{{ permiso.estado|lower }}">
+                                        {{ permiso.get_estado_display }}
+                                    </span>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h5>Motivo</h5>
+                            <p class="text-muted">{{ permiso.motivo }}</p>
+                        </div>
+                    </div>
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label for="observaciones" class="form-label">
+                                <i class="fas fa-comment me-2"></i>
+                                Observaciones (Opcional)
+                            </label>
+                            <textarea name="observaciones" id="observaciones" class="form-control" rows="3" 
+                                      placeholder="Agrega una observación sobre la cancelación..."></textarea>
+                        </div>
+                        
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Nota:</strong> Solo se pueden cancelar permisos que estén en estado "Pendiente" o "Aprobado".
+                        </div>
+                        
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'recursosHumanos:detalle_permiso' permiso.id %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-times me-2"></i>
+                                No Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-danger">
+                                <i class="fas fa-times-circle me-2"></i>
+                                Sí, Cancelar Permiso
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+{% endblock %} 

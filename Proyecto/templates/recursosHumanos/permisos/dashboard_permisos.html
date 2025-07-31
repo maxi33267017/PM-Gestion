@@ -1,0 +1,238 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+    .stats-card {
+        border-radius: 15px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        transition: transform 0.3s ease;
+    }
+    .stats-card:hover {
+        transform: translateY(-2px);
+    }
+    .stats-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 15px 15px 0 0;
+        padding: 1.5rem;
+    }
+    .chart-container {
+        position: relative;
+        height: 300px;
+        margin: 20px 0;
+    }
+</style>
+
+<main class="container mt-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="mb-0">
+                <i class="fas fa-chart-bar text-primary me-2"></i>
+                Dashboard de Permisos
+            </h1>
+            <p class="text-muted mb-0">Estadísticas y resumen de permisos y ausencias</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{% url 'recursosHumanos:lista_permisos_gerente' %}" class="btn btn-info">
+                <i class="fas fa-list me-2"></i>
+                Ver Todos
+            </a>
+            <a href="{% url 'admin:recursosHumanos_permisoausencia_changelist' %}" class="btn btn-secondary">
+                <i class="fas fa-cog me-2"></i>
+                Admin Avanzado
+            </a>
+        </div>
+    </div>
+
+    <!-- Estadísticas Principales -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card stats-card">
+                <div class="card-body text-center">
+                    <div class="stats-header">
+                        <h3 class="mb-1">{{ total_permisos }}</h3>
+                        <p class="mb-0">Total Permisos</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stats-card">
+                <div class="card-body text-center">
+                    <div class="stats-header">
+                        <h3 class="mb-1">{{ permisos_pendientes }}</h3>
+                        <p class="mb-0">Pendientes</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stats-card">
+                <div class="card-body text-center">
+                    <div class="stats-header">
+                        <h3 class="mb-1">{{ permisos_aprobados }}</h3>
+                        <p class="mb-0">Aprobados</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stats-card">
+                <div class="card-body text-center">
+                    <div class="stats-header">
+                        <h3 class="mb-1">{{ permisos_activos }}</h3>
+                        <p class="mb-0">Activos</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Gráfico de Permisos por Tipo -->
+        <div class="col-lg-6 mb-4">
+            <div class="card stats-card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-pie-chart me-2"></i>
+                        Permisos por Tipo
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if permisos_por_tipo %}
+                    <div class="chart-container">
+                        <canvas id="chartTipos"></canvas>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-chart-pie fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">No hay datos para mostrar</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Permisos Recientes -->
+        <div class="col-lg-6 mb-4">
+            <div class="card stats-card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-clock me-2"></i>
+                        Permisos Recientes
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if permisos_recientes %}
+                    <div class="list-group list-group-flush">
+                        {% for permiso in permisos_recientes %}
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1">{{ permiso.usuario.get_nombre_completo }}</h6>
+                                <small class="text-muted">
+                                    {{ permiso.get_tipo_permiso_display }} - 
+                                    {{ permiso.fecha_inicio|date:"d/m/Y" }} a {{ permiso.fecha_fin|date:"d/m/Y" }}
+                                </small>
+                            </div>
+                            <span class="badge bg-{{ permiso.estado|lower }}">
+                                {{ permiso.get_estado_display }}
+                            </span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">No hay permisos recientes</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Acciones Rápidas -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card stats-card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-bolt me-2"></i>
+                        Acciones Rápidas
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <a href="{% url 'recursosHumanos:lista_permisos_gerente' %}?estado=PENDIENTE" class="btn btn-warning btn-block">
+                                <i class="fas fa-clock me-2"></i>
+                                Ver Pendientes
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{% url 'recursosHumanos:lista_permisos_gerente' %}?estado=APROBADO" class="btn btn-success btn-block">
+                                <i class="fas fa-check me-2"></i>
+                                Ver Aprobados
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{% url 'recursosHumanos:lista_permisos_gerente' %}?estado=RECHAZADO" class="btn btn-danger btn-block">
+                                <i class="fas fa-times me-2"></i>
+                                Ver Rechazados
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{% url 'admin:recursosHumanos_permisoausencia_add' %}" class="btn btn-primary btn-block">
+                                <i class="fas fa-plus me-2"></i>
+                                Crear Permiso
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+{% if permisos_por_tipo %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const ctx = document.getElementById('chartTipos').getContext('2d');
+    const data = {
+        labels: {{ permisos_por_tipo.keys|safe }},
+        datasets: [{
+            data: {{ permisos_por_tipo.values|safe }},
+            backgroundColor: [
+                '#FF6384',
+                '#36A2EB',
+                '#FFCE56',
+                '#4BC0C0',
+                '#9966FF',
+                '#FF9F40',
+                '#FF6384'
+            ],
+            borderWidth: 2,
+            borderColor: '#fff'
+        }]
+    };
+    
+    new Chart(ctx, {
+        type: 'doughnut',
+        data: data,
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+});
+</script>
+{% endif %}
+{% endblock %} 

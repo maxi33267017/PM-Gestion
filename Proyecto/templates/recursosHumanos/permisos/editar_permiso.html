@@ -1,0 +1,177 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+    .form-card {
+        border-radius: 15px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    .form-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 15px 15px 0 0;
+        padding: 1.5rem;
+    }
+</style>
+
+<main class="container mt-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="mb-0">
+                <i class="fas fa-edit text-primary me-2"></i>
+                Editar Permiso
+            </h1>
+            <p class="text-muted mb-0">Modifica los datos de tu solicitud de permiso</p>
+        </div>
+        <a href="{% url 'recursosHumanos:detalle_permiso' permiso.id %}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i>
+            Volver
+        </a>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card form-card">
+                <div class="form-header">
+                    <h3 class="mb-1">Editar Permiso</h3>
+                    <p class="mb-0">{{ permiso.get_tipo_permiso_display }}</p>
+                </div>
+                <div class="card-body p-4">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.tipo_permiso.id_for_label }}" class="form-label">
+                                    <i class="fas fa-calendar-alt me-2"></i>
+                                    Tipo de Permiso
+                                </label>
+                                {{ form.tipo_permiso }}
+                                {% if form.tipo_permiso.errors %}
+                                <div class="text-danger small mt-1">
+                                    {{ form.tipo_permiso.errors }}
+                                </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.fecha_inicio.id_for_label }}" class="form-label">
+                                    <i class="fas fa-calendar-day me-2"></i>
+                                    Fecha de Inicio
+                                </label>
+                                {{ form.fecha_inicio }}
+                                {% if form.fecha_inicio.errors %}
+                                <div class="text-danger small mt-1">
+                                    {{ form.fecha_inicio.errors }}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.fecha_fin.id_for_label }}" class="form-label">
+                                    <i class="fas fa-calendar-day me-2"></i>
+                                    Fecha de Fin
+                                </label>
+                                {{ form.fecha_fin }}
+                                {% if form.fecha_fin.errors %}
+                                <div class="text-danger small mt-1">
+                                    {{ form.fecha_fin.errors }}
+                                </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">
+                                    <i class="fas fa-calculator me-2"></i>
+                                    Días Solicitados
+                                </label>
+                                <div class="form-control-plaintext">
+                                    <strong>{{ permiso.dias_solicitados }} días</strong>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.motivo.id_for_label }}" class="form-label">
+                                <i class="fas fa-comment me-2"></i>
+                                Motivo del Permiso
+                            </label>
+                            {{ form.motivo }}
+                            {% if form.motivo.errors %}
+                            <div class="text-danger small mt-1">
+                                {{ form.motivo.errors }}
+                            </div>
+                            {% endif %}
+                            <div class="form-text">
+                                Describe detalladamente el motivo de tu solicitud de permiso.
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.justificativo.id_for_label }}" class="form-label">
+                                    <i class="fas fa-file-upload me-2"></i>
+                                    Justificativo (Opcional)
+                                </label>
+                                {{ form.justificativo }}
+                                {% if form.justificativo.errors %}
+                                <div class="text-danger small mt-1">
+                                    {{ form.justificativo.errors }}
+                                </div>
+                                {% endif %}
+                                <div class="form-text">
+                                    Puedes subir un archivo PDF, imagen o documento como justificativo.
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.descripcion_justificativo.id_for_label }}" class="form-label">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    Descripción del Justificativo
+                                </label>
+                                {{ form.descripcion_justificativo }}
+                                {% if form.descripcion_justificativo.errors %}
+                                <div class="text-danger small mt-1">
+                                    {{ form.descripcion_justificativo.errors }}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        {% if permiso.justificativo %}
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Justificativo actual:</strong> 
+                            <a href="{{ permiso.justificativo.url }}" target="_blank">
+                                {{ permiso.descripcion_justificativo|default:"Ver archivo" }}
+                            </a>
+                        </div>
+                        {% endif %}
+                        
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            <strong>Importante:</strong> Solo puedes editar permisos que estén en estado "Pendiente". 
+                            Una vez aprobados o rechazados, no se pueden modificar.
+                        </div>
+                        
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'recursosHumanos:detalle_permiso' permiso.id %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-times me-2"></i>
+                                Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i>
+                                Guardar Cambios
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+{% endblock %} 
