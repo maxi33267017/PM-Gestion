@@ -42,7 +42,7 @@ from .models import (
     AnalisisTaller, Evidencia, ChecklistSalidaCampo, EncuestaServicio,
     RespuestaEncuesta, InsatisfaccionCliente, ObservacionServicio, Repuesto,
     HerramientaEspecial, ReservaHerramienta, LogHerramienta,
-    HerramientaPersonal, AsignacionHerramientaPersonal, AuditoriaHerramienta,
+    HerramientaPersonal, AsignacionHerramientaPersonal, AuditoriaHerramientaPersonal,
     DetalleAuditoriaHerramienta, ItemHerramientaPersonal, LogCambioItemHerramienta
 )
 from recursosHumanos.models import Usuario
@@ -145,8 +145,8 @@ def lista_servicios(request):
                 # Crear un buffer para el archivo Excel
                 output = io.BytesIO()
                 
-                        # Crear un Excel writer
-        with pd.ExcelWriter(output, engine='openpyxl') as writer:
+                # Crear un Excel writer
+                with pd.ExcelWriter(output, engine='openpyxl') as writer:
                     # Lista para almacenar los datos de todos los servicios
                     datos_servicios = []
                     
