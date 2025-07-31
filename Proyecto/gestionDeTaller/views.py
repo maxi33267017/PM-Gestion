@@ -1568,6 +1568,15 @@ def revisar_horas(request, tecnico_id, fecha):
     # Obtener los registros de horas del técnico en la fecha seleccionada
     registros = RegistroHorasTecnico.objects.filter(tecnico=tecnico, fecha=fecha).order_by('hora_inicio')
 
+    # Calcular horas totales
+    total_horas = 0
+    for registro in registros:
+        from datetime import datetime, timedelta
+        inicio = datetime.combine(fecha, registro.hora_inicio)
+        fin = datetime.combine(fecha, registro.hora_fin)
+        duracion = fin - inicio
+        total_horas += duracion.total_seconds() / 3600
+
     if request.method == "POST":
         form = AprobacionHorasForm(request.POST)
 
@@ -1587,6 +1596,7 @@ def revisar_horas(request, tecnico_id, fecha):
         'fecha': fecha,
         'registros': registros,
         'form': form,
+        'total_horas': total_horas,
     }
 
     return render(request, 'gestionDeTaller/tecnicos/revisar_horas.html', context)

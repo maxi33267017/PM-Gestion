@@ -2,64 +2,247 @@
 {% load static %}
 
 {% block content %}
-<main>
-    <div id="contenido_servicios">
-        <h1 class="mb-4">Revisión de Horas - {{ tecnico.get_nombre_completo }}</h1>
+<style>
+    .revision-card {
+        border-radius: 15px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    .revision-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 15px 15px 0 0;
+        padding: 1.5rem;
+    }
+    .table-responsive {
+        border-radius: 10px;
+        overflow: hidden;
+    }
+    .descripcion-cell {
+        max-width: 300px;
+        word-wrap: break-word;
+    }
+    .servicio-info {
+        font-size: 0.9rem;
+    }
+    .servicio-numero {
+        font-weight: bold;
+        color: #007bff;
+    }
+    .servicio-cliente {
+        color: #6c757d;
+    }
+</style>
 
-        <h3>Fecha: {{ fecha|date:"d M Y" }}</h3>
-
-        <!-- Mensajes de éxito o error -->
-        {% if messages %}
-            {% for message in messages %}
-                <div class="alert alert-{{ message.tags }}">{{ message }}</div>
-            {% endfor %}
-        {% endif %}
-
-        <!-- Tabla de horas registradas -->
-                <div class="table-responsive">
-                            <table class="table table-bordered">
-                                <thead class="table-light">
-                                    <tr>
-                                        <th>Hora Inicio</th>
-                                        <th>Hora Fin</th>
-                                        <th>Actividad</th>
-                                        <th>Servicio</th>
-                                        <th>Aprobado</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for registro in registros %}
-                                        <tr>
-                                            <td>{{ registro.hora_inicio }}</td>
-                                            <td>{{ registro.hora_fin }}</td>
-                                            <td>{{ registro.tipo_hora.nombre }}</td>
-                                            <td>
-                                                {% if registro.servicio %}
-                                                    {{ registro.servicio.numero_orden }}
-                                                {% else %}
-                                                    -
-                                                {% endif %}
-                                            </td>
-                                            <td>
-                                                {% if registro.aprobado %}
-                                                    <span class="badge bg-success">Aprobado</span>
-                                                {% else %}
-                                                    <span class="badge bg-danger">Pendiente</span>
-                                                {% endif %}
-                                            </td>
-                                        </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
+<main class="container mt-4">
+    <div class="card revision-card">
+        <div class="revision-header">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="mb-1">Revisión de Horas</h1>
+                    <h3 class="mb-0">{{ tecnico.get_nombre_completo }}</h3>
                 </div>
+                <div class="text-end">
+                    <h4 class="mb-1">{{ fecha|date:"d M Y" }}</h4>
+                    <small>Sucursal: {{ tecnico.sucursal.nombre }}</small>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card-body p-4">
+            <!-- Mensajes de éxito o error -->
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
 
-        <!-- Botón para aprobar todas las horas -->
-        <form method="post">
-            {% csrf_token %}
-            {{ form.as_p }}
-            <button type="submit" class="btn btn-success">Aprobar Todas las Horas</button>
-            <a href="{% url 'gestionDeTaller:detalle_tecnico' tecnico_id=tecnico.id %}" class="btn btn-secondary">Volver</a>
-        </form>
+            <!-- Resumen de horas -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card bg-primary text-white">
+                        <div class="card-body text-center">
+                            <h4 class="mb-1">{{ registros.count }}</h4>
+                            <small>Registros</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-success text-white">
+                        <div class="card-body text-center">
+                            <h4 class="mb-1">{{ registros|length|add:"0" }}</h4>
+                            <small>Aprobados</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-warning text-white">
+                        <div class="card-body text-center">
+                            <h4 class="mb-1">{{ registros|length|add:"0" }}</h4>
+                            <small>Pendientes</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-info text-white">
+                        <div class="card-body text-center">
+                            <h4 class="mb-1">{{ total_horas|floatformat:1 }}</h4>
+                            <small>Horas Totales</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabla de horas registradas -->
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover">
+                    <thead class="table-dark">
+                        <tr>
+                            <th style="width: 10%">Hora Inicio</th>
+                            <th style="width: 10%">Hora Fin</th>
+                            <th style="width: 15%">Actividad</th>
+                            <th style="width: 20%">Servicio</th>
+                            <th style="width: 25%">Notas/Comentarios</th>
+                            <th style="width: 10%">Estado</th>
+                            <th style="width: 10%">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for registro in registros %}
+                            <tr>
+                                <td class="text-center">
+                                    <strong>{{ registro.hora_inicio|time:"H:i" }}</strong>
+                                </td>
+                                <td class="text-center">
+                                    <strong>{{ registro.hora_fin|time:"H:i" }}</strong>
+                                </td>
+                                <td>
+                                    <div>
+                                        <strong>{{ registro.tipo_hora.nombre }}</strong>
+                                        {% if registro.tipo_hora.disponibilidad == 'DISPONIBLE' %}
+                                            <span class="badge bg-success">Disponible</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">No Disponible</span>
+                                        {% endif %}
+                                    </div>
+                                    <small class="text-muted">
+                                        {% if registro.tipo_hora.genera_ingreso == 'INGRESO' %}
+                                            <i class="fas fa-dollar-sign text-success"></i> Genera Ingreso
+                                        {% else %}
+                                            <i class="fas fa-times text-muted"></i> No Genera Ingreso
+                                        {% endif %}
+                                    </small>
+                                </td>
+                                <td>
+                                    {% if registro.servicio %}
+                                        <div class="servicio-info">
+                                            <div class="servicio-numero">
+                                                <i class="fas fa-hashtag me-1"></i>
+                                                Servicio #{{ registro.servicio.id }}
+                                            </div>
+                                            <div class="servicio-cliente">
+                                                <i class="fas fa-user me-1"></i>
+                                                {{ registro.servicio.preorden.cliente.razon_social }}
+                                            </div>
+                                            <div class="servicio-cliente">
+                                                <i class="fas fa-tools me-1"></i>
+                                                {{ registro.servicio.preorden.equipo.modelo.nombre }}
+                                            </div>
+                                            <div class="servicio-cliente">
+                                                <i class="fas fa-map-marker-alt me-1"></i>
+                                                {{ registro.servicio.get_estado_display }}
+                                            </div>
+                                        </div>
+                                    {% else %}
+                                        <div class="text-muted">
+                                            <i class="fas fa-minus me-1"></i>
+                                            Sin servicio asociado
+                                        </div>
+                                    {% endif %}
+                                </td>
+                                <td class="descripcion-cell">
+                                    {% if registro.descripcion %}
+                                        <div class="alert alert-light p-2 mb-0">
+                                            <i class="fas fa-comment me-1 text-muted"></i>
+                                            {{ registro.descripcion|linebreaksbr }}
+                                        </div>
+                                    {% else %}
+                                        <span class="text-muted">
+                                            <i class="fas fa-minus me-1"></i>
+                                            Sin comentarios
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-center">
+                                    {% if registro.aprobado %}
+                                        <span class="badge bg-success">
+                                            <i class="fas fa-check me-1"></i>
+                                            Aprobado
+                                        </span>
+                                        {% if registro.aprobado_por %}
+                                            <br><small class="text-muted">
+                                                por {{ registro.aprobado_por.get_nombre_completo }}
+                                            </small>
+                                        {% endif %}
+                                    {% else %}
+                                        <span class="badge bg-warning">
+                                            <i class="fas fa-clock me-1"></i>
+                                            Pendiente
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-center">
+                                    {% if not registro.aprobado %}
+                                        <button class="btn btn-sm btn-success" title="Aprobar">
+                                            <i class="fas fa-check"></i>
+                                        </button>
+                                    {% else %}
+                                        <button class="btn btn-sm btn-secondary" disabled title="Ya aprobado">
+                                            <i class="fas fa-check"></i>
+                                        </button>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="7" class="text-center py-4">
+                                    <i class="fas fa-inbox fa-3x text-muted mb-3 d-block"></i>
+                                    <h5 class="text-muted">No hay registros de horas para esta fecha</h5>
+                                    <p class="text-muted">El técnico no ha registrado horas el {{ fecha|date:"d/m/Y" }}</p>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Botones de acción -->
+            <div class="d-flex justify-content-between align-items-center mt-4">
+                <div>
+                    <a href="{% url 'gestionDeTaller:detalle_tecnico' tecnico_id=tecnico.id %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>
+                        Volver al Detalle
+                    </a>
+                    <a href="{% url 'gestionDeTaller:registrar_horas' tecnico_id=tecnico.id %}?fecha={{ fecha|date:'Y-m-d' }}" class="btn btn-outline-primary">
+                        <i class="fas fa-plus me-2"></i>
+                        Registrar Horas
+                    </a>
+                </div>
+                
+                {% if registros %}
+                <form method="post" class="d-inline">
+                    {% csrf_token %}
+                    {{ form.as_p }}
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-check-double me-2"></i>
+                        Aprobar Todas las Horas
+                    </button>
+                </form>
+                {% endif %}
+            </div>
+        </div>
     </div>
 </main>
 {% endblock %}
