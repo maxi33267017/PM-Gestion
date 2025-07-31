@@ -1181,7 +1181,7 @@ def calcular_horas_contratadas(fecha_inicio, fecha_fin):
     Calcula las horas contratadas para un período específico.
     Horas contratadas: 8h L-V, 4h S = 44h semanales
     """
-    from datetime import timedelta
+    from datetime import timedelta, date
     
     # Convertir a date si son datetime
     if isinstance(fecha_inicio, datetime):
