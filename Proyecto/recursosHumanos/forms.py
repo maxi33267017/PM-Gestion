@@ -5,6 +5,7 @@ from gestionDeTaller.models import Servicio
 from recursosHumanos.models import RegistroHorasTecnico, ActividadTrabajo
 from django.db import models
 from recursosHumanos.models import PermisoAusencia
+from recursosHumanos.models import Usuario
 
 class RegistroHorasTecnicoForm(forms.ModelForm):
     numero_informe = forms.CharField(
@@ -115,12 +116,21 @@ class AprobacionHorasForm(forms.Form):
 
 class FiltroExportacionHorasForm(forms.Form):
     fecha_inicio = forms.DateField(
+        label='Fecha de Inicio',
         widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
-        label="Fecha Inicio"
+        required=True
     )
     fecha_fin = forms.DateField(
+        label='Fecha de Fin',
         widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
-        label="Fecha Fin"
+        required=True
+    )
+    tecnico = forms.ModelChoiceField(
+        queryset=Usuario.objects.filter(rol='TECNICO').order_by('apellido', 'nombre'),
+        label='Técnico (Opcional)',
+        required=False,
+        empty_label="Todos los técnicos",
+        widget=forms.Select(attrs={'class': 'form-select'})
     )
 
 class PermisoAusenciaForm(forms.ModelForm):

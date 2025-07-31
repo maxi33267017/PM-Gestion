@@ -48,6 +48,7 @@ from .models import (
 from recursosHumanos.models import Usuario
 from .models import EvidenciaPlanAccion5S
 from recursosHumanos.models import Usuario
+from recursosHumanos.forms import FiltroExportacionHorasForm
 
 @login_required
 def equipos_por_cliente(request, cliente_id):
@@ -1044,15 +1045,22 @@ def tecnicos(request):
     form_filtro = FiltroExportacionHorasForm(request.GET or None)
     fecha_inicio = None
     fecha_fin = None
+    tecnico_filtro = None
 
     if form_filtro.is_valid():
         fecha_inicio = form_filtro.cleaned_data['fecha_inicio']
         fecha_fin = form_filtro.cleaned_data['fecha_fin']
+        tecnico_filtro = form_filtro.cleaned_data['tecnico']
 
     # Si se solicita exportación
     if request.GET.get('exportar') and fecha_inicio and fecha_fin:
         try:
-            return exportar_registros_horas(tecnicos_visibles, fecha_inicio, fecha_fin)
+            # Aplicar filtro por técnico si se seleccionó uno
+            tecnicos_para_exportar = tecnicos_visibles
+            if tecnico_filtro:
+                tecnicos_para_exportar = tecnicos_visibles.filter(id=tecnico_filtro.id)
+            
+            return exportar_registros_horas(tecnicos_para_exportar, fecha_inicio, fecha_fin)
         except Exception as e:
             print(f"Error al exportar: {str(e)}")
             messages.error(request, "Error al exportar los datos. Por favor, intente nuevamente.")
@@ -1149,11 +1157,10 @@ def tecnicos(request):
 
     context = {
         'tecnicos_visibles': tecnicos_visibles,
-        'promedio_productividad_global': promedio_productividad_global,
-        'promedio_eficiencia_global': promedio_eficiencia_global,
-        'promedio_desempeno_global': promedio_desempeno_global,
-        'es_gerente': es_gerente,
-        'es_superuser': es_superuser,
+        'total_productividad': total_productividad,
+        'total_eficiencia': total_eficiencia,
+        'total_desempeno': total_desempeno,
+        'total_tecnicos_con_registros': total_tecnicos_con_registros,
         'form_filtro': form_filtro,
     }
     return render(request, 'gestionDeTaller/tecnicos/tecnicos.html', context)

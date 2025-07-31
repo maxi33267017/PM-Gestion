@@ -3,625 +3,263 @@
 
 {% block content %}
 <style>
-    /* Variables CSS para consistencia */
-    :root {
-        --primary-gradient: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
-        --secondary-gradient: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
-        --success-gradient: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
-        --warning-gradient: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
-        --danger-gradient: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
-        --info-gradient: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
-        --dark-gradient: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
-        --light-gradient: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-        --card-shadow: 0 10px 30px rgba(0,0,0,0.1);
-        --hover-shadow: 0 15px 40px rgba(0,0,0,0.15);
-        --border-radius: 20px;
-        --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-
-    /* Header mejorado */
     .tecnicos-header {
-        background: var(--dark-gradient);
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         color: white;
-        padding: 3rem 2rem;
-        border-radius: var(--border-radius);
-        margin-bottom: 2.5rem;
-        box-shadow: var(--card-shadow);
-        position: relative;
-        overflow: hidden;
-        text-align: center;
-    }
-    
-    .tecnicos-header::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="dots" width="20" height="20" patternUnits="userSpaceOnUse"><circle cx="10" cy="10" r="1" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23dots)"/></svg>');
-        pointer-events: none;
-    }
-    
-    .tecnicos-header h1 {
-        margin: 0;
-        font-weight: 800;
-        text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-        font-size: 3rem;
-        position: relative;
-        z-index: 1;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 1rem;
-    }
-    
-    .tecnicos-header .subtitle {
-        font-size: 1.2rem;
-        opacity: 0.9;
-        margin-top: 1rem;
-        position: relative;
-        z-index: 1;
-    }
-
-    /* Layout con Toolbar Horizontal */
-    .main-layout {
-        margin-top: 2rem;
-    }
-    
-    .toolbar {
-        background: white;
-        border-radius: var(--border-radius);
-        padding: 1.5rem;
-        box-shadow: var(--card-shadow);
-        border: 1px solid #e9ecef;
-        margin-bottom: 1.5rem;
-    }
-    
-    .toolbar-content {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        flex-wrap: wrap;
-        gap: 1rem;
-    }
-    
-    .toolbar-title {
-        font-size: 1.2rem;
-        font-weight: 700;
-        color: #2c3e50;
-        display: flex;
-        align-items: center;
-        gap: 0.8rem;
-    }
-    
-    .export-form {
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-        flex-wrap: wrap;
-    }
-    
-    .form-group {
-        display: flex;
-        flex-direction: column;
-        gap: 0.5rem;
-    }
-    
-    .form-label {
-        font-weight: 600;
-        color: #2c3e50;
-        font-size: 0.9rem;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        margin: 0;
-    }
-    
-    .form-control {
-        border-radius: 12px;
-        border: 2px solid #e9ecef;
-        padding: 0.7rem 1rem;
-        transition: var(--transition);
-        font-size: 0.9rem;
-        background: white;
-        min-width: 150px;
-    }
-    
-    .form-control:focus {
-        border-color: #2c3e50;
-        box-shadow: 0 0 0 0.2rem rgba(44, 62, 80, 0.25);
-        outline: none;
-    }
-    
-    /* Estilos para campos de fecha específicos */
-    input[type="date"] {
-        border-radius: 12px;
-        border: 2px solid #e9ecef;
-        padding: 0.7rem 1rem;
-        transition: var(--transition);
-        font-size: 0.9rem;
-        background: white;
-        min-width: 150px;
-    }
-    
-    input[type="date"]:focus {
-        border-color: #2c3e50;
-        box-shadow: 0 0 0 0.2rem rgba(44, 62, 80, 0.25);
-        outline: none;
-    }
-    
-    .export-btn {
-        background: var(--success-gradient);
-        color: white;
-        border: none;
-        border-radius: 25px;
-        padding: 0.8rem 1.5rem;
-        font-weight: 600;
-        transition: var(--transition);
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        font-size: 0.9rem;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-    }
-    
-    .export-btn:hover {
-        background: var(--success-gradient);
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(39, 174, 96, 0.4);
-        color: white;
-    }
-
-    /* Tabla mejorada */
-    .table-container {
-        background: white;
-        border-radius: var(--border-radius);
-        box-shadow: var(--card-shadow);
-        overflow: hidden;
-        border: 1px solid #e9ecef;
+        border-radius: 15px;
+        padding: 2rem;
         margin-bottom: 2rem;
     }
-    
-    .table-header {
-        background: var(--dark-gradient);
-        color: white;
-        padding: 1.2rem 1.5rem;
-        position: relative;
-        overflow: hidden;
-    }
-    
-    .table-header::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="table-dots" width="20" height="20" patternUnits="userSpaceOnUse"><circle cx="10" cy="10" r="1" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23table-dots)"/></svg>');
-        pointer-events: none;
-    }
-    
-    .table-header h5 {
-        margin: 0;
-        font-weight: 700;
-        font-size: 1.2rem;
-        position: relative;
-        z-index: 1;
-        display: flex;
-        align-items: center;
-        gap: 0.8rem;
-    }
-
-    /* Mejoras en la tabla */
-    .table-responsive {
-        border-radius: 0 0 var(--border-radius) var(--border-radius);
-        overflow-x: auto;
-        overflow-y: hidden;
-    }
-    
-    .table {
-        margin-bottom: 0;
-        border: none;
-        border-radius: 0 0 var(--border-radius) var(--border-radius);
-        overflow: hidden;
-        width: 100%;
-    }
-    
-    .table th {
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        padding: 1rem 0.8rem;
-        border: none;
-        font-size: 0.8rem;
-        background: var(--dark-gradient) !important;
-        color: white !important;
-        white-space: nowrap;
-    }
-    
-    .table td {
-        padding: 1rem 0.8rem;
-        vertical-align: middle;
-        border: none;
-        border-bottom: 1px solid #f0f0f0;
-        font-weight: 500;
-        font-size: 0.9rem;
-    }
-    
-    .table tbody tr {
-        transition: var(--transition);
-    }
-    
-    .table tbody tr:hover {
-        background: rgba(44, 62, 80, 0.05);
-        transform: scale(1.005);
-    }
-    
-    .table tbody tr:last-child td {
-        border-bottom: none;
-    }
-
-    /* Información del técnico */
-    .tecnico-info {
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-    }
-    
-    .tecnico-avatar {
-        width: 50px;
-        height: 50px;
-        border-radius: 50%;
-        background: var(--dark-gradient);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        font-weight: 700;
-        font-size: 1.2rem;
-        box-shadow: 0 4px 15px rgba(44, 62, 80, 0.3);
-    }
-    
-    .tecnico-details h6 {
-        margin: 0;
-        font-weight: 700;
-        color: #2c3e50;
-        font-size: 1rem;
-    }
-    
-    .tecnico-details p {
-        margin: 0;
-        color: #6c757d;
-        font-size: 0.85rem;
-        font-weight: 500;
-    }
-
-    /* Barras de progreso mejoradas */
-    .progress-container {
-        display: flex;
-        flex-direction: column;
-        gap: 0.5rem;
-    }
-    
-    .progress-value {
-        font-weight: 700;
-        color: #2c3e50;
-        font-size: 0.9rem;
-        text-align: center;
-    }
-    
-    .progress {
-        height: 8px;
-        background: #e9ecef;
-        border-radius: 10px;
-        overflow: hidden;
-        box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
-    }
-    
-    .progress-bar {
-        border-radius: 10px;
-        transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-        position: relative;
-        overflow: hidden;
-        min-width: 2px; /* Asegurar visibilidad mínima */
-        box-shadow: 0 1px 3px rgba(0,0,0,0.2); /* Sombra para mejor visibilidad */
-    }
-    
-    .progress-bar::after {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: -100%;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-        animation: shimmer 2s infinite;
-    }
-    
-    @keyframes shimmer {
-        0% { left: -100%; }
-        100% { left: 100%; }
-    }
-    
-    .progress-bar.productividad {
-        background: var(--success-gradient);
-        background-color: #27ae60; /* Fallback sólido */
-        min-width: 2px; /* Asegurar visibilidad mínima */
-    }
-    
-    .progress-bar.eficiencia {
-        background: var(--info-gradient);
-        background-color: #3498db; /* Fallback sólido */
-        min-width: 2px; /* Asegurar visibilidad mínima */
-    }
-    
-    .progress-bar.desempeno {
-        background: var(--warning-gradient);
-        background-color: #f39c12; /* Fallback sólido */
-        min-width: 2px; /* Asegurar visibilidad mínima */
-    }
-
-    /* Botones de acciones */
-    .actions-container {
-        display: flex;
-        gap: 0.5rem;
-        flex-wrap: wrap;
-    }
-    
-    .action-btn {
-        border-radius: 20px;
-        padding: 0.6rem 1rem;
-        font-weight: 600;
-        transition: var(--transition);
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        font-size: 0.8rem;
-        border: none;
+    .stats-card {
+        border-radius: 15px;
         box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        display: flex;
-        align-items: center;
-        gap: 0.4rem;
-        text-decoration: none;
-        white-space: nowrap;
+        transition: transform 0.3s ease;
     }
-    
-    .action-btn.detail {
-        background: var(--info-gradient);
-        color: white;
-    }
-    
-    .action-btn.detail:hover {
-        background: var(--info-gradient);
+    .stats-card:hover {
         transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4);
-        color: white;
     }
-    
-    .action-btn.hours {
-        background: var(--success-gradient);
-        color: white;
+    .tecnico-card {
+        border-radius: 15px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        transition: transform 0.3s ease;
     }
-    
-    .action-btn.hours:hover {
-        background: var(--success-gradient);
+    .tecnico-card:hover {
         transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(39, 174, 96, 0.4);
-        color: white;
     }
-
-    /* Animaciones */
-    @keyframes fadeInUp {
-        from {
-            opacity: 0;
-            transform: translateY(30px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-    
-    .tecnicos-header, .toolbar, .table-container {
-        animation: fadeInUp 0.6s ease-out;
-    }
-    
-    .toolbar { animation-delay: 0.1s; }
-    .table-container { animation-delay: 0.2s; }
-
-    /* Responsive */
-    @media (max-width: 768px) {
-        .tecnicos-header {
-            padding: 2rem 1.5rem;
-        }
-        
-        .tecnicos-header h1 {
-            font-size: 2rem;
-            flex-direction: column;
-            gap: 0.5rem;
-        }
-        
-        .toolbar-content {
-            flex-direction: column;
-            align-items: stretch;
-        }
-        
-        .export-form {
-            flex-direction: column;
-            align-items: stretch;
-        }
-        
-        .form-control {
-            min-width: auto;
-        }
-        
-        .table th, .table td {
-            padding: 0.5rem 0.4rem;
-            font-size: 0.75rem;
-        }
-        
-        .tecnico-info {
-            flex-direction: column;
-            text-align: center;
-            gap: 0.5rem;
-        }
-        
-        .tecnico-avatar {
-            width: 40px;
-            height: 40px;
-            font-size: 1rem;
-        }
-        
-        .actions-container {
-            flex-direction: column;
-        }
-        
-        .action-btn {
-            justify-content: center;
-        }
+    .export-section {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-radius: 15px;
+        padding: 2rem;
+        margin-bottom: 2rem;
     }
 </style>
 
-<main class="container-fluid mt-4">
-    <!-- Header mejorado -->
+<main class="container mt-4">
+    <!-- Header -->
     <div class="tecnicos-header">
-        <h1>
-            <i class="bi bi-people-fill"></i>
-            Gestión de Técnicos
-        </h1>
-        <div class="subtitle">
-            Monitoreo y administración del rendimiento técnico
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h1 class="mb-1">
+                    <i class="fas fa-users me-2"></i>
+                    Gestión de Técnicos
+                </h1>
+                <p class="mb-0">Administración y seguimiento del personal técnico</p>
+            </div>
+            <div class="text-end">
+                <h4 class="mb-1">{{ tecnicos_visibles.count }} Técnicos</h4>
+                <small>Total registrados</small>
+            </div>
         </div>
     </div>
 
-    <!-- Layout Principal con Toolbar Horizontal -->
-    <div class="main-layout">
-        <!-- Toolbar Horizontal -->
-        <div class="toolbar">
-            <div class="toolbar-content">
-                <div class="toolbar-title">
-                    <i class="bi bi-graph-up"></i>
-                    Panel de Control
+    <!-- Estadísticas Globales -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card stats-card bg-primary text-white">
+                <div class="card-body text-center">
+                    <h3 class="mb-1">{{ total_productividad|floatformat:1 }}%</h3>
+                    <p class="mb-0">Productividad Promedio</p>
                 </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stats-card bg-success text-white">
+                <div class="card-body text-center">
+                    <h3 class="mb-1">{{ total_eficiencia|floatformat:1 }}%</h3>
+                    <p class="mb-0">Eficiencia Promedio</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stats-card bg-info text-white">
+                <div class="card-body text-center">
+                    <h3 class="mb-1">{{ total_desempeno|floatformat:1 }}%</h3>
+                    <p class="mb-0">Desempeño Promedio</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stats-card bg-warning text-white">
+                <div class="card-body text-center">
+                    <h3 class="mb-1">{{ total_tecnicos_con_registros }}</h3>
+                    <p class="mb-0">Con Registros Activos</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sección de Exportación -->
+    <div class="export-section">
+        <div class="row">
+            <div class="col-lg-8">
+                <h3 class="mb-3">
+                    <i class="fas fa-download me-2"></i>
+                    Exportar Registros de Horas
+                </h3>
+                <p class="text-muted mb-4">
+                    Selecciona el período y opcionalmente un técnico específico para exportar los registros de horas.
+                </p>
                 
-                <form method="get" class="export-form" id="exportForm">
-                    <div class="form-group">
+                <form method="get" class="row g-3">
+                    <div class="col-md-3">
                         <label for="{{ form_filtro.fecha_inicio.id_for_label }}" class="form-label">
-                            <i class="bi bi-calendar"></i>Fecha Inicio
+                            <i class="fas fa-calendar-day me-1"></i>
+                            Fecha de Inicio
                         </label>
                         {{ form_filtro.fecha_inicio }}
+                        {% if form_filtro.fecha_inicio.errors %}
+                        <div class="text-danger small">
+                            {{ form_filtro.fecha_inicio.errors }}
+                        </div>
+                        {% endif %}
                     </div>
-                    <div class="form-group">
+                    
+                    <div class="col-md-3">
                         <label for="{{ form_filtro.fecha_fin.id_for_label }}" class="form-label">
-                            <i class="bi bi-calendar-check"></i>Fecha Fin
+                            <i class="fas fa-calendar-day me-1"></i>
+                            Fecha de Fin
                         </label>
                         {{ form_filtro.fecha_fin }}
+                        {% if form_filtro.fecha_fin.errors %}
+                        <div class="text-danger small">
+                            {{ form_filtro.fecha_fin.errors }}
+                        </div>
+                        {% endif %}
                     </div>
-                    <button type="submit" name="exportar" value="1" class="export-btn">
-                        <i class="bi bi-file-earmark-excel"></i>
-                        Exportar Excel
-                    </button>
+                    
+                    <div class="col-md-4">
+                        <label for="{{ form_filtro.tecnico.id_for_label }}" class="form-label">
+                            <i class="fas fa-user me-1"></i>
+                            Técnico (Opcional)
+                        </label>
+                        {{ form_filtro.tecnico }}
+                        {% if form_filtro.tecnico.errors %}
+                        <div class="text-danger small">
+                            {{ form_filtro.tecnico.errors }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="col-md-2 d-flex align-items-end">
+                        <button type="submit" name="exportar" value="1" class="btn btn-success w-100">
+                            <i class="fas fa-download me-2"></i>
+                            Exportar
+                        </button>
+                    </div>
                 </form>
+                
+                <div class="alert alert-info mt-3">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <strong>Nota:</strong> Si no seleccionas un técnico específico, se exportarán los registros de todos los técnicos visibles.
+                </div>
+            </div>
+            
+            <div class="col-lg-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-info-circle me-2"></i>
+                            Información de Exportación
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-unstyled mb-0">
+                            <li class="mb-2">
+                                <i class="fas fa-check text-success me-2"></i>
+                                <strong>Formato:</strong> Excel (.xlsx)
+                            </li>
+                            <li class="mb-2">
+                                <i class="fas fa-check text-success me-2"></i>
+                                <strong>Datos incluidos:</strong> Horas registradas, actividades, servicios
+                            </li>
+                            <li class="mb-2">
+                                <i class="fas fa-check text-success me-2"></i>
+                                <strong>Filtros:</strong> Por fecha y técnico opcional
+                            </li>
+                            <li class="mb-0">
+                                <i class="fas fa-check text-success me-2"></i>
+                                <strong>Acceso:</strong> Solo gerentes y administradores
+                            </li>
+                        </ul>
+                    </div>
+                </div>
             </div>
         </div>
+    </div>
 
-        <!-- Tabla de Técnicos -->
-        <div class="table-container">
-            <div class="table-header">
-                <h5>
-                    <i class="bi bi-table"></i>
-                    Listado de Técnicos
-                </h5>
-            </div>
-            <div class="table-responsive">
-                <table class="table table-hover">
-                    <thead>
-                        <tr>
-                            <th><i class="bi bi-person me-2"></i>Técnico</th>
-                            <th><i class="bi bi-speedometer2 me-2"></i>Productividad</th>
-                            <th><i class="bi bi-lightning me-2"></i>Eficiencia</th>
-                            <th><i class="bi bi-star me-2"></i>Desempeño</th>
-                            <th><i class="bi bi-gear me-2"></i>Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for tecnico in tecnicos_visibles %}
-                        <tr>
-                            <td>
-                                <div class="tecnico-info">
-                                    <div class="tecnico-avatar">
-                                        {{ tecnico.get_nombre_completo|first|upper }}
-                                    </div>
-                                    <div class="tecnico-details">
-                                        <h6>{{ tecnico.get_nombre_completo }}</h6>
-                                        <p><i class="bi bi-envelope"></i> {{ tecnico.email }}</p>
-                                    </div>
-                                </div>
-                            </td>
-                            <td>
-                                <div class="progress-container">
-                                    <div class="progress-value">{{ tecnico.productividad|floatformat:2 }}%</div>
-                                    <div class="progress">
-                                        <div class="progress-bar productividad" role="progressbar" 
-                                             style="width: {{ tecnico.productividad|floatformat:2|cut:',' }}%" 
-                                             aria-valuenow="{{ tecnico.productividad|floatformat:2|cut:',' }}" 
-                                             aria-valuemin="0" 
-                                             aria-valuemax="100"></div>
-                                    </div>
-                                </div>
-                            </td>
-                            <td>
-                                <div class="progress-container">
-                                    <div class="progress-value">{{ tecnico.eficiencia|floatformat:2 }}%</div>
-                                    <div class="progress">
-                                        <div class="progress-bar eficiencia" role="progressbar" 
-                                             style="width: {{ tecnico.eficiencia|floatformat:2|cut:',' }}%" 
-                                             aria-valuenow="{{ tecnico.eficiencia|floatformat:2|cut:',' }}" 
-                                             aria-valuemin="0" 
-                                             aria-valuemax="100"></div>
-                                    </div>
-                                </div>
-                            </td>
-                            <td>
-                                <div class="progress-container">
-                                    <div class="progress-value">{{ tecnico.desempeno|floatformat:2 }}%</div>
-                                    <div class="progress">
-                                        <div class="progress-bar desempeno" role="progressbar" 
-                                             style="width: {{ tecnico.desempeno|floatformat:2|cut:',' }}%" 
-                                             aria-valuenow="{{ tecnico.desempeno|floatformat:2|cut:',' }}" 
-                                             aria-valuemin="0" 
-                                             aria-valuemax="100"></div>
-                                    </div>
-                                </div>
-                            </td>
-                            <td>
-                                <div class="actions-container">
-                                    <a href="{% url 'gestionDeTaller:detalle_tecnico' tecnico_id=tecnico.id %}" 
-                                       class="action-btn detail" title="Ver Detalle">
-                                        <i class="bi bi-eye"></i>
-                                        Detalle
-                                    </a>
-                                    <a href="{% url 'gestionDeTaller:registrar_horas' tecnico_id=tecnico.id %}" 
-                                       class="action-btn hours" title="Registrar Horas">
-                                        <i class="bi bi-clock"></i>
-                                        Horas
-                                    </a>
-                                </div>
-                            </td>
-                        </tr>
-                        {% empty %}
-                        <tr>
-                            <td colspan="5" class="text-center py-4">
-                                <i class="bi bi-inbox fa-3x text-muted mb-3 d-block"></i>
-                                <p class="text-muted">No hay técnicos disponibles</p>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+    <!-- Lista de Técnicos -->
+    <div class="row">
+        <div class="col-12">
+            <h3 class="mb-3">
+                <i class="fas fa-list me-2"></i>
+                Lista de Técnicos
+            </h3>
+        </div>
+    </div>
+
+    <div class="row">
+        {% for tecnico in tecnicos_visibles %}
+        <div class="col-lg-6 col-xl-4 mb-4">
+            <div class="card tecnico-card h-100">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="fas fa-user me-2"></i>
+                        {{ tecnico.get_nombre_completo }}
+                    </h5>
+                    <span class="badge bg-primary">{{ tecnico.sucursal.nombre }}</span>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-6">
+                            <small class="text-muted">Email:</small>
+                            <div>{{ tecnico.email }}</div>
+                        </div>
+                        <div class="col-6">
+                            <small class="text-muted">Rol:</small>
+                            <div>{{ tecnico.get_rol_display }}</div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-6">
+                            <small class="text-muted">Sucursal:</small>
+                            <div>{{ tecnico.sucursal.nombre }}</div>
+                        </div>
+                        <div class="col-6">
+                            <small class="text-muted">Estado:</small>
+                            <div>
+                                {% if tecnico.is_active %}
+                                <span class="badge bg-success">Activo</span>
+                                {% else %}
+                                <span class="badge bg-danger">Inactivo</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'gestionDeTaller:detalle_tecnico' tecnico.id %}" class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-eye me-1"></i>
+                            Ver Detalle
+                        </a>
+                        <a href="{% url 'gestionDeTaller:registrar_horas' tecnico.id %}" class="btn btn-outline-success btn-sm">
+                            <i class="fas fa-clock me-1"></i>
+                            Registrar Horas
+                        </a>
+                    </div>
+                </div>
             </div>
         </div>
+        {% empty %}
+        <div class="col-12">
+            <div class="text-center py-5">
+                <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                <h4 class="text-muted">No hay técnicos disponibles</h4>
+                <p class="text-muted">No se encontraron técnicos con los filtros aplicados.</p>
+            </div>
+        </div>
+        {% endfor %}
     </div>
 </main>
 {% endblock %}
