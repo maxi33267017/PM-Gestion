@@ -1571,7 +1571,6 @@ def revisar_horas(request, tecnico_id, fecha):
     # Calcular horas totales
     total_horas = 0
     for registro in registros:
-        from datetime import datetime, timedelta
         inicio = datetime.combine(fecha, registro.hora_inicio)
         fin = datetime.combine(fecha, registro.hora_fin)
         duracion = fin - inicio
