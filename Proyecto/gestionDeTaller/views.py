@@ -1054,6 +1054,13 @@ def tecnicos(request):
 
     # Si se solicita exportación
     if request.GET.get('exportar') and fecha_inicio and fecha_fin:
+        # Verificar permisos para exportación
+        puede_exportar = es_superuser or es_gerente or request.user.rol == 'ADMINISTRACION'
+        
+        if not puede_exportar:
+            messages.error(request, "No tienes permisos para exportar datos. Solo gerentes y administradores pueden realizar esta acción.")
+            return redirect('gestionDeTaller:tecnicos')
+        
         try:
             # Aplicar filtro por técnico si se seleccionó uno
             tecnicos_para_exportar = tecnicos_visibles

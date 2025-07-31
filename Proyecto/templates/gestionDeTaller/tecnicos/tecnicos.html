@@ -89,6 +89,7 @@
     </div>
 
     <!-- Sección de Exportación -->
+    {% if user.rol == 'GERENTE' or user.rol == 'ADMINISTRACION' or user.is_superuser %}
     <div class="export-section">
         <div class="row">
             <div class="col-lg-8">
@@ -186,6 +187,7 @@
             </div>
         </div>
     </div>
+    {% endif %}
 
     <!-- Lista de Técnicos -->
     <div class="row">
