@@ -846,3 +846,150 @@ class AlertaCronometro(models.Model):
 
 
 
+
+class PermisoAusencia(models.Model):
+    """
+    Modelo para gestionar permisos y ausencias del personal
+    """
+    TIPO_PERMISO_CHOICES = [
+        ('VACACIONES', 'Vacaciones'),
+        ('ENFERMEDAD', 'Enfermedad'),
+        ('PERSONAL', 'Personal'),
+        ('MATERNIDAD', 'Maternidad'),
+        ('PATERNIDAD', 'Paternidad'),
+        ('CAPACITACION', 'Capacitación'),
+        ('OTRO', 'Otro'),
+    ]
+    
+    ESTADO_CHOICES = [
+        ('PENDIENTE', 'Pendiente'),
+        ('APROBADO', 'Aprobado'),
+        ('RECHAZADO', 'Rechazado'),
+        ('CANCELADO', 'Cancelado'),
+    ]
+    
+    # Información básica
+    usuario = models.ForeignKey('Usuario', on_delete=models.CASCADE, related_name='permisos_ausencia')
+    tipo_permiso = models.CharField(max_length=20, choices=TIPO_PERMISO_CHOICES, verbose_name="Tipo de Permiso")
+    motivo = models.TextField(verbose_name="Motivo del Permiso")
+    
+    # Fechas
+    fecha_solicitud = models.DateTimeField(auto_now_add=True, verbose_name="Fecha de Solicitud")
+    fecha_inicio = models.DateField(verbose_name="Fecha de Inicio")
+    fecha_fin = models.DateField(verbose_name="Fecha de Fin")
+    
+    # Estado y aprobación
+    estado = models.CharField(max_length=20, choices=ESTADO_CHOICES, default='PENDIENTE', verbose_name="Estado")
+    aprobado_por = models.ForeignKey(
+        'Usuario', 
+        on_delete=models.SET_NULL, 
+        null=True, 
+        blank=True, 
+        related_name='permisos_aprobados',
+        verbose_name="Aprobado por"
+    )
+    fecha_aprobacion = models.DateTimeField(null=True, blank=True, verbose_name="Fecha de Aprobación")
+    observaciones_aprobacion = models.TextField(blank=True, verbose_name="Observaciones de Aprobación")
+    
+    # Documentación
+    justificativo = models.FileField(
+        upload_to='permisos/justificativos/', 
+        blank=True, 
+        null=True, 
+        verbose_name="Justificativo"
+    )
+    descripcion_justificativo = models.CharField(
+        max_length=200, 
+        blank=True, 
+        verbose_name="Descripción del Justificativo"
+    )
+    
+    # Campos de auditoría
+    fecha_creacion = models.DateTimeField(auto_now_add=True, verbose_name="Fecha de Creación")
+    fecha_modificacion = models.DateTimeField(auto_now=True, verbose_name="Última Modificación")
+    
+    class Meta:
+        verbose_name = "Permiso de Ausencia"
+        verbose_name_plural = "Permisos de Ausencia"
+        ordering = ['-fecha_solicitud']
+        indexes = [
+            models.Index(fields=['usuario', 'estado']),
+            models.Index(fields=['fecha_inicio', 'fecha_fin']),
+            models.Index(fields=['estado', 'fecha_solicitud']),
+        ]
+    
+    def __str__(self):
+        return f"{self.usuario.get_nombre_completo()} - {self.get_tipo_permiso_display()} ({self.fecha_inicio} a {self.fecha_fin})"
+    
+    def save(self, *args, **kwargs):
+        # Si el estado cambia a APROBADO, establecer fecha_aprobacion
+        if self.estado == 'APROBADO' and not self.fecha_aprobacion:
+            from django.utils import timezone
+            self.fecha_aprobacion = timezone.now()
+        super().save(*args, **kwargs)
+    
+    @property
+    def dias_solicitados(self):
+        """Calcula los días solicitados (excluyendo fines de semana)"""
+        from datetime import timedelta
+        dias = 0
+        fecha_actual = self.fecha_inicio
+        while fecha_actual <= self.fecha_fin:
+            if fecha_actual.weekday() < 5:  # 0-4 = Lunes a Viernes
+                dias += 1
+            fecha_actual += timedelta(days=1)
+        return dias
+    
+    @property
+    def esta_activo(self):
+        """Verifica si el permiso está activo (fechas actuales)"""
+        from django.utils import timezone
+        hoy = timezone.now().date()
+        return self.fecha_inicio <= hoy <= self.fecha_fin and self.estado == 'APROBADO'
+    
+    @property
+    def esta_vencido(self):
+        """Verifica si el permiso ya pasó"""
+        from django.utils import timezone
+        hoy = timezone.now().date()
+        return self.fecha_fin < hoy
+    
+    @property
+    def puede_ser_aprobado(self):
+        """Verifica si el permiso puede ser aprobado"""
+        return self.estado == 'PENDIENTE'
+    
+    @property
+    def puede_ser_rechazado(self):
+        """Verifica si el permiso puede ser rechazado"""
+        return self.estado in ['PENDIENTE', 'APROBADO']
+    
+    def aprobar(self, aprobado_por, observaciones=""):
+        """Aprueba el permiso"""
+        from django.utils import timezone
+        self.estado = 'APROBADO'
+        self.aprobado_por = aprobado_por
+        self.fecha_aprobacion = timezone.now()
+        self.observaciones_aprobacion = observaciones
+        self.save()
+    
+    def rechazar(self, rechazado_por, observaciones=""):
+        """Rechaza el permiso"""
+        from django.utils import timezone
+        self.estado = 'RECHAZADO'
+        self.aprobado_por = rechazado_por
+        self.fecha_aprobacion = timezone.now()
+        self.observaciones_aprobacion = observaciones
+        self.save()
+    
+    def cancelar(self, cancelado_por, observaciones=""):
+        """Cancela el permiso"""
+        from django.utils import timezone
+        self.estado = 'CANCELADO'
+        self.aprobado_por = cancelado_por
+        self.fecha_aprobacion = timezone.now()
+        self.observaciones_aprobacion = observaciones
+        self.save()
+
+
+

@@ -1,0 +1,306 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+    .form-card {
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    }
+    .form-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 20px 20px 0 0;
+        padding: 2rem;
+    }
+    .form-body {
+        padding: 2rem;
+    }
+    .tipo-permiso-card {
+        border: 2px solid #e9ecef;
+        border-radius: 15px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    .tipo-permiso-card:hover {
+        border-color: #667eea;
+        background-color: #f8f9ff;
+    }
+    .tipo-permiso-card.selected {
+        border-color: #667eea;
+        background-color: #667eea;
+        color: white;
+    }
+    .file-upload-area {
+        border: 2px dashed #dee2e6;
+        border-radius: 15px;
+        padding: 2rem;
+        text-align: center;
+        transition: all 0.3s ease;
+    }
+    .file-upload-area:hover {
+        border-color: #667eea;
+        background-color: #f8f9ff;
+    }
+    .file-upload-area.dragover {
+        border-color: #667eea;
+        background-color: #e3f2fd;
+    }
+</style>
+
+<main class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card form-card">
+                <div class="form-header text-center">
+                    <h1 class="mb-2">
+                        <i class="fas fa-calendar-plus me-3"></i>
+                        Solicitar Permiso
+                    </h1>
+                    <p class="mb-0">Completa el formulario para solicitar tu permiso de ausencia</p>
+                </div>
+                
+                <div class="form-body">
+                    <form method="post" enctype="multipart/form-data" id="form-permiso">
+                        {% csrf_token %}
+                        
+                        <!-- Tipo de Permiso -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">
+                                <i class="fas fa-tag me-2"></i>
+                                Tipo de Permiso *
+                            </label>
+                            <div class="row">
+                                {% for value, label in tipos_permiso %}
+                                <div class="col-md-6 mb-2">
+                                    <div class="tipo-permiso-card" data-tipo="{{ value }}">
+                                        <div class="d-flex align-items-center">
+                                            <input type="radio" name="tipo_permiso" value="{{ value }}" 
+                                                   id="tipo_{{ value }}" class="form-check-input me-3" required>
+                                            <label for="tipo_{{ value }}" class="mb-0 fw-bold">
+                                                {{ label }}
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        
+                        <!-- Fechas -->
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <label for="{{ form.fecha_inicio.id_for_label }}" class="form-label fw-bold">
+                                    <i class="fas fa-calendar-day me-2"></i>
+                                    Fecha de Inicio *
+                                </label>
+                                {{ form.fecha_inicio }}
+                                {% if form.fecha_inicio.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.fecha_inicio.errors.0 }}
+                                </div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <label for="{{ form.fecha_fin.id_for_label }}" class="form-label fw-bold">
+                                    <i class="fas fa-calendar-day me-2"></i>
+                                    Fecha de Fin *
+                                </label>
+                                {{ form.fecha_fin }}
+                                {% if form.fecha_fin.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.fecha_fin.errors.0 }}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <!-- Motivo -->
+                        <div class="mb-4">
+                            <label for="{{ form.motivo.id_for_label }}" class="form-label fw-bold">
+                                <i class="fas fa-comment me-2"></i>
+                                Motivo del Permiso *
+                            </label>
+                            {{ form.motivo }}
+                            {% if form.motivo.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.motivo.errors.0 }}
+                            </div>
+                            {% endif %}
+                            <div class="form-text">
+                                Describe detalladamente el motivo de tu solicitud de permiso.
+                            </div>
+                        </div>
+                        
+                        <!-- Justificativo -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">
+                                <i class="fas fa-file-upload me-2"></i>
+                                Justificativo (Opcional)
+                            </label>
+                            <div class="file-upload-area" id="file-upload-area">
+                                <div id="file-upload-content">
+                                    <i class="fas fa-cloud-upload-alt fa-3x text-muted mb-3"></i>
+                                    <h5 class="text-muted">Arrastra tu archivo aquí o haz clic para seleccionar</h5>
+                                    <p class="text-muted mb-0">Formatos aceptados: PDF, DOC, DOCX, imágenes</p>
+                                    {{ form.justificativo }}
+                                </div>
+                                <div id="file-preview" style="display: none;">
+                                    <i class="fas fa-file-alt fa-3x text-primary mb-3"></i>
+                                    <h5 id="file-name"></h5>
+                                    <p class="text-muted mb-0">Archivo seleccionado</p>
+                                    <button type="button" class="btn btn-sm btn-outline-danger mt-2" id="remove-file">
+                                        <i class="fas fa-times me-1"></i>
+                                        Remover archivo
+                                    </button>
+                                </div>
+                            </div>
+                            {% if form.justificativo.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.justificativo.errors.0 }}
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Descripción del justificativo -->
+                        <div class="mb-4">
+                            <label for="{{ form.descripcion_justificativo.id_for_label }}" class="form-label fw-bold">
+                                <i class="fas fa-info-circle me-2"></i>
+                                Descripción del Justificativo
+                            </label>
+                            {{ form.descripcion_justificativo }}
+                            {% if form.descripcion_justificativo.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.descripcion_justificativo.errors.0 }}
+                            </div>
+                            {% endif %}
+                            <div class="form-text">
+                                Breve descripción del archivo adjunto (ej: "Certificado médico", "Comprobante de viaje").
+                            </div>
+                        </div>
+                        
+                        <!-- Información adicional -->
+                        <div class="alert alert-info">
+                            <h6 class="alert-heading">
+                                <i class="fas fa-info-circle me-2"></i>
+                                Información importante
+                            </h6>
+                            <ul class="mb-0">
+                                <li>Tu solicitud será revisada por tu gerente</li>
+                                <li>Los permisos se calculan excluyendo fines de semana</li>
+                                <li>Puedes adjuntar justificativos médicos o documentación adicional</li>
+                                <li>Recibirás una notificación cuando tu permiso sea aprobado o rechazado</li>
+                            </ul>
+                        </div>
+                        
+                        <!-- Botones -->
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{% url 'recursosHumanos:lista_permisos' %}" class="btn btn-secondary me-md-2">
+                                <i class="fas fa-arrow-left me-2"></i>
+                                Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-paper-plane me-2"></i>
+                                Enviar Solicitud
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Selección de tipo de permiso
+    document.querySelectorAll('.tipo-permiso-card').forEach(card => {
+        card.addEventListener('click', function() {
+            const radio = this.querySelector('input[type="radio"]');
+            radio.checked = true;
+            
+            // Remover selección anterior
+            document.querySelectorAll('.tipo-permiso-card').forEach(c => {
+                c.classList.remove('selected');
+            });
+            
+            // Marcar como seleccionado
+            this.classList.add('selected');
+        });
+    });
+    
+    // File upload
+    const fileInput = document.querySelector('input[type="file"]');
+    const fileUploadArea = document.getElementById('file-upload-area');
+    const fileUploadContent = document.getElementById('file-upload-content');
+    const filePreview = document.getElementById('file-preview');
+    const fileName = document.getElementById('file-name');
+    const removeFileBtn = document.getElementById('remove-file');
+    
+    fileUploadArea.addEventListener('click', () => fileInput.click());
+    
+    fileUploadArea.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        fileUploadArea.classList.add('dragover');
+    });
+    
+    fileUploadArea.addEventListener('dragleave', () => {
+        fileUploadArea.classList.remove('dragover');
+    });
+    
+    fileUploadArea.addEventListener('drop', (e) => {
+        e.preventDefault();
+        fileUploadArea.classList.remove('dragover');
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            fileInput.files = files;
+            showFilePreview(files[0]);
+        }
+    });
+    
+    fileInput.addEventListener('change', (e) => {
+        if (e.target.files.length > 0) {
+            showFilePreview(e.target.files[0]);
+        }
+    });
+    
+    removeFileBtn.addEventListener('click', () => {
+        fileInput.value = '';
+        fileUploadContent.style.display = 'block';
+        filePreview.style.display = 'none';
+    });
+    
+    function showFilePreview(file) {
+        fileName.textContent = file.name;
+        fileUploadContent.style.display = 'none';
+        filePreview.style.display = 'block';
+    }
+    
+    // Validación de fechas
+    const fechaInicio = document.getElementById('{{ form.fecha_inicio.id_for_label }}');
+    const fechaFin = document.getElementById('{{ form.fecha_fin.id_for_label }}');
+    
+    fechaInicio.addEventListener('change', function() {
+        fechaFin.min = this.value;
+        if (fechaFin.value && fechaFin.value < this.value) {
+            fechaFin.value = this.value;
+        }
+    });
+    
+    fechaFin.addEventListener('change', function() {
+        if (fechaInicio.value && this.value < fechaInicio.value) {
+            alert('La fecha de fin no puede ser anterior a la fecha de inicio');
+            this.value = fechaInicio.value;
+        }
+    });
+    
+    // Establecer fecha mínima como hoy
+    const today = new Date().toISOString().split('T')[0];
+    fechaInicio.min = today;
+    fechaFin.min = today;
+});
+</script>
+{% endblock %} 

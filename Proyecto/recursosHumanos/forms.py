@@ -4,6 +4,7 @@ from datetime import timedelta
 from gestionDeTaller.models import Servicio
 from recursosHumanos.models import RegistroHorasTecnico, ActividadTrabajo
 from django.db import models
+from recursosHumanos.models import PermisoAusencia
 
 class RegistroHorasTecnicoForm(forms.ModelForm):
     numero_informe = forms.CharField(
@@ -121,3 +122,96 @@ class FiltroExportacionHorasForm(forms.Form):
         widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
         label="Fecha Fin"
     )
+
+class PermisoAusenciaForm(forms.ModelForm):
+    """
+    Formulario para solicitar permisos de ausencia
+    """
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        
+        # Configurar widgets con clases Bootstrap
+        self.fields['tipo_permiso'].widget.attrs.update({
+            'class': 'form-select',
+            'required': 'required'
+        })
+        
+        self.fields['motivo'].widget.attrs.update({
+            'class': 'form-control',
+            'rows': '4',
+            'placeholder': 'Describe el motivo de tu solicitud de permiso...',
+            'required': 'required'
+        })
+        
+        self.fields['fecha_inicio'].widget.attrs.update({
+            'class': 'form-control',
+            'type': 'date',
+            'required': 'required'
+        })
+        
+        self.fields['fecha_fin'].widget.attrs.update({
+            'class': 'form-control',
+            'type': 'date',
+            'required': 'required'
+        })
+        
+        self.fields['justificativo'].widget.attrs.update({
+            'class': 'form-control',
+            'accept': 'image/*,.pdf,.doc,.docx'
+        })
+        
+        self.fields['descripcion_justificativo'].widget.attrs.update({
+            'class': 'form-control',
+            'placeholder': 'Descripción del justificativo (opcional)'
+        })
+    
+    class Meta:
+        model = PermisoAusencia
+        fields = [
+            'tipo_permiso', 'motivo', 'fecha_inicio', 'fecha_fin',
+            'justificativo', 'descripcion_justificativo'
+        ]
+        widgets = {
+            'fecha_inicio': forms.DateInput(attrs={'type': 'date'}),
+            'fecha_fin': forms.DateInput(attrs={'type': 'date'}),
+        }
+    
+    def clean(self):
+        cleaned_data = super().clean()
+        fecha_inicio = cleaned_data.get('fecha_inicio')
+        fecha_fin = cleaned_data.get('fecha_fin')
+        
+        if fecha_inicio and fecha_fin:
+            if fecha_inicio > fecha_fin:
+                raise forms.ValidationError(
+                    "La fecha de inicio no puede ser posterior a la fecha de fin."
+                )
+            
+            # Verificar que no sea en el pasado
+            from django.utils import timezone
+            hoy = timezone.now().date()
+            if fecha_inicio < hoy:
+                raise forms.ValidationError(
+                    "No se pueden solicitar permisos para fechas pasadas."
+                )
+        
+        return cleaned_data
+
+class AprobarPermisoForm(forms.ModelForm):
+    """
+    Formulario para aprobar/rechazar permisos (solo para gerentes)
+    """
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        
+        self.fields['observaciones_aprobacion'].widget.attrs.update({
+            'class': 'form-control',
+            'rows': '3',
+            'placeholder': 'Observaciones sobre la aprobación/rechazo...'
+        })
+    
+    class Meta:
+        model = PermisoAusencia
+        fields = ['observaciones_aprobacion']

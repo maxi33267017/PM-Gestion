@@ -553,6 +553,33 @@
             </div>
         </div>
 
+        <!-- Gestión de Permisos y Ausencias -->
+        <div class="module-card permisos">
+            <div class="module-header">
+                <div class="module-icon">
+                    <i class="bi bi-calendar-check"></i>
+                </div>
+                <div class="module-title">Permisos y Ausencias</div>
+                <div class="module-description">
+                    Gestión de solicitudes de permisos, ausencias y aprobaciones del personal.
+                </div>
+            </div>
+            <div class="module-body">
+                <a href="{% url 'recursosHumanos:lista_permisos_gerente' %}" class="module-btn">
+                    <i class="bi bi-list-check"></i>
+                    Ver Permisos Pendientes
+                </a>
+                <a href="{% url 'recursosHumanos:dashboard_permisos' %}" class="btn-secondary-module">
+                    <i class="bi bi-graph-up"></i>
+                    Dashboard de Permisos
+                </a>
+                <a href="{% url 'admin:recursosHumanos_permisoausencia_changelist' %}" class="btn-secondary-module">
+                    <i class="bi bi-gear"></i>
+                    Administración Avanzada
+                </a>
+            </div>
+        </div>
+
         <!-- Configuración del Sistema -->
         <div class="module-card configuracion">
             <div class="module-header">

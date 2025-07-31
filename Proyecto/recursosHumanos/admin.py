@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .models import Usuario, Provincia, Ciudad, Sucursal, TarifaManoObra, RegistroHorasTecnico, Competencia, CompetenciaTecnico, CertificacionJD, CertificacionTecnico, EvaluacionSistema, RevisionHerramientas, HerramientaEspecial, PrestamoHerramienta, SesionCronometro, AlertaCronometro
+from .models import Usuario, Provincia, Ciudad, Sucursal, TarifaManoObra, RegistroHorasTecnico, Competencia, CompetenciaTecnico, CertificacionJD, CertificacionTecnico, EvaluacionSistema, RevisionHerramientas, HerramientaEspecial, PrestamoHerramienta, SesionCronometro, AlertaCronometro, PermisoAusencia
 
 
 @admin.register(Usuario)
@@ -144,6 +144,43 @@ class AlertaCronometroAdmin(admin.ModelAdmin):
     
     def get_queryset(self, request):
         return super().get_queryset(request).select_related('sesion__tecnico', 'sesion__actividad')
+
+
+@admin.register(PermisoAusencia)
+class PermisoAusenciaAdmin(admin.ModelAdmin):
+    list_display = [
+        'usuario', 'tipo_permiso', 'fecha_inicio', 'fecha_fin', 'estado', 'aprobado_por', 'fecha_aprobacion'
+    ]
+    list_filter = ['estado', 'tipo_permiso', 'fecha_inicio', 'fecha_fin', 'usuario__sucursal']
+    search_fields = ['usuario__nombre', 'usuario__apellido', 'motivo', 'aprobado_por__nombre', 'aprobado_por__apellido']
+    date_hierarchy = 'fecha_inicio'
+    readonly_fields = ['fecha_solicitud', 'fecha_aprobacion', 'usuario', 'aprobado_por']
+    ordering = ['-fecha_solicitud']
+    fieldsets = (
+        ('Información del Permiso', {
+            'fields': ('usuario', 'tipo_permiso', 'motivo', 'fecha_inicio', 'fecha_fin', 'justificativo', 'descripcion_justificativo')
+        }),
+        ('Estado y Aprobación', {
+            'fields': ('estado', 'aprobado_por', 'fecha_aprobacion', 'observaciones_aprobacion')
+        }),
+        ('Auditoría', {
+            'fields': ('fecha_solicitud', 'fecha_creacion', 'fecha_modificacion'),
+            'classes': ('collapse',)
+        }),
+    )
+    list_per_page = 25
+    
+    def has_add_permission(self, request):
+        # Solo agregar desde el frontend, no desde el admin
+        return False
+    
+    def has_change_permission(self, request, obj=None):
+        # Solo gerentes y admin pueden cambiar
+        return request.user.is_superuser or getattr(request.user, 'rol', None) in ['GERENTE', 'ADMINISTRATIVO']
+    
+    def has_delete_permission(self, request, obj=None):
+        # Solo superuser puede borrar
+        return request.user.is_superuser
 
 
 

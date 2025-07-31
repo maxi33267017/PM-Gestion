@@ -1,15 +1,31 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from django.http import JsonResponse
 from django.contrib import messages
+from django.http import JsonResponse, HttpResponse
+from django.db.models import Q, Sum, Count, Avg
 from django.utils import timezone
-from django.views.decorators.csrf import csrf_exempt
+from django.core.paginator import Paginator
+from django.template.loader import render_to_string
+from django.core.mail import send_mail
+from django.conf import settings
 from django.views.decorators.http import require_http_methods
+from django.views.decorators.csrf import csrf_exempt
 import json
-from datetime import datetime, time, timedelta
-from .models import SesionCronometro, ActividadTrabajo, Usuario, AlertaCronometro
-from gestionDeTaller.models import Servicio, LogCambioServicio
-from django.db import models
+import csv
+from datetime import datetime, timedelta, date
+from decimal import Decimal
+import io
+import base64
+
+from .models import (
+    Usuario, Sucursal, Provincia, Ciudad, ActividadTrabajo, 
+    RegistroHorasTecnico, PermisoAusencia
+)
+from .forms import (
+    RegistroHorasTecnicoForm, PermisoAusenciaForm, AprobarPermisoForm
+)
+from gestionDeTaller.models import Servicio
+from clientes.models import Cliente, Equipo
 
 @login_required
 def cronometro(request):
@@ -299,3 +315,286 @@ def dashboard_alertas_cronometro(request):
     }
     
     return render(request, 'recursosHumanos/dashboard_alertas_cronometro.html', context)
+
+# =============================================================================
+# VISTAS PARA SISTEMA DE PERMISOS Y AUSENCIAS
+# =============================================================================
+
+@login_required
+def lista_permisos(request):
+    """
+    Vista para listar permisos del usuario logueado
+    """
+    permisos = PermisoAusencia.objects.filter(usuario=request.user).order_by('-fecha_solicitud')
+    
+    context = {
+        'permisos': permisos,
+        'permisos_pendientes': permisos.filter(estado='PENDIENTE'),
+        'permisos_aprobados': permisos.filter(estado='APROBADO'),
+        'permisos_rechazados': permisos.filter(estado='RECHAZADO'),
+        'permisos_activos': permisos.filter(estado='APROBADO', fecha_inicio__lte=timezone.now().date(), fecha_fin__gte=timezone.now().date()),
+    }
+    
+    return render(request, 'recursosHumanos/permisos/lista_permisos.html', context)
+
+@login_required
+def solicitar_permiso(request):
+    """
+    Vista para solicitar un nuevo permiso
+    """
+    if request.method == 'POST':
+        form = PermisoAusenciaForm(request.POST, request.FILES)
+        if form.is_valid():
+            permiso = form.save(commit=False)
+            permiso.usuario = request.user
+            permiso.save()
+            
+            messages.success(request, 'Permiso solicitado exitosamente. Será revisado por tu gerente.')
+            return redirect('recursosHumanos:lista_permisos')
+    else:
+        form = PermisoAusenciaForm()
+    
+    context = {
+        'form': form,
+        'tipos_permiso': PermisoAusencia.TIPO_PERMISO_CHOICES,
+    }
+    
+    return render(request, 'recursosHumanos/permisos/solicitar_permiso.html', context)
+
+@login_required
+def detalle_permiso(request, permiso_id):
+    """
+    Vista para ver el detalle de un permiso
+    """
+    permiso = get_object_or_404(PermisoAusencia, id=permiso_id)
+    
+    # Verificar que el usuario pueda ver este permiso
+    if not request.user.is_superuser and request.user.rol not in ['GERENTE', 'ADMINISTRATIVO']:
+        if permiso.usuario != request.user:
+            messages.error(request, 'No tienes permiso para ver este permiso.')
+            return redirect('recursosHumanos:lista_permisos')
+    
+    context = {
+        'permiso': permiso,
+    }
+    
+    return render(request, 'recursosHumanos/permisos/detalle_permiso.html', context)
+
+@login_required
+def editar_permiso(request, permiso_id):
+    """
+    Vista para editar un permiso (solo si está pendiente)
+    """
+    permiso = get_object_or_404(PermisoAusencia, id=permiso_id)
+    
+    # Verificar que el usuario pueda editar este permiso
+    if permiso.usuario != request.user:
+        messages.error(request, 'No puedes editar permisos de otros usuarios.')
+        return redirect('recursosHumanos:lista_permisos')
+    
+    if permiso.estado != 'PENDIENTE':
+        messages.error(request, 'Solo se pueden editar permisos pendientes.')
+        return redirect('recursosHumanos:detalle_permiso', permiso_id=permiso.id)
+    
+    if request.method == 'POST':
+        form = PermisoAusenciaForm(request.POST, request.FILES, instance=permiso)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Permiso actualizado exitosamente.')
+            return redirect('recursosHumanos:detalle_permiso', permiso_id=permiso.id)
+    else:
+        form = PermisoAusenciaForm(instance=permiso)
+    
+    context = {
+        'form': form,
+        'permiso': permiso,
+    }
+    
+    return render(request, 'recursosHumanos/permisos/editar_permiso.html', context)
+
+@login_required
+def cancelar_permiso(request, permiso_id):
+    """
+    Vista para cancelar un permiso
+    """
+    permiso = get_object_or_404(PermisoAusencia, id=permiso_id)
+    
+    # Verificar que el usuario pueda cancelar este permiso
+    if permiso.usuario != request.user and request.user.rol not in ['GERENTE', 'ADMINISTRATIVO']:
+        messages.error(request, 'No tienes permiso para cancelar este permiso.')
+        return redirect('recursosHumanos:lista_permisos')
+    
+    if permiso.estado not in ['PENDIENTE', 'APROBADO']:
+        messages.error(request, 'Solo se pueden cancelar permisos pendientes o aprobados.')
+        return redirect('recursosHumanos:detalle_permiso', permiso_id=permiso.id)
+    
+    if request.method == 'POST':
+        observaciones = request.POST.get('observaciones', '')
+        permiso.cancelar(request.user, observaciones)
+        messages.success(request, 'Permiso cancelado exitosamente.')
+        return redirect('recursosHumanos:lista_permisos')
+    
+    context = {
+        'permiso': permiso,
+    }
+    
+    return render(request, 'recursosHumanos/permisos/cancelar_permiso.html', context)
+
+# =============================================================================
+# VISTAS PARA GERENTES - APROBACIÓN DE PERMISOS
+# =============================================================================
+
+@login_required
+def lista_permisos_gerente(request):
+    """
+    Vista para que los gerentes vean todos los permisos pendientes
+    """
+    # Verificar que el usuario sea gerente
+    if request.user.rol not in ['GERENTE', 'ADMINISTRATIVO']:
+        messages.error(request, 'No tienes permiso para acceder a esta página.')
+        return redirect('recursosHumanos:lista_permisos')
+    
+    # Filtrar permisos según el rol
+    if request.user.rol == 'GERENTE':
+        # Gerentes ven permisos de su sucursal
+        permisos = PermisoAusencia.objects.filter(
+            usuario__sucursal=request.user.sucursal
+        ).select_related('usuario', 'aprobado_por').order_by('-fecha_solicitud')
+    else:
+        # Administrativos ven todos los permisos
+        permisos = PermisoAusencia.objects.all().select_related('usuario', 'aprobado_por').order_by('-fecha_solicitud')
+    
+    context = {
+        'permisos': permisos,
+        'permisos_pendientes': permisos.filter(estado='PENDIENTE'),
+        'permisos_aprobados': permisos.filter(estado='APROBADO'),
+        'permisos_rechazados': permisos.filter(estado='RECHAZADO'),
+        'permisos_activos': permisos.filter(estado='APROBADO', fecha_inicio__lte=timezone.now().date(), fecha_fin__gte=timezone.now().date()),
+    }
+    
+    return render(request, 'recursosHumanos/permisos/lista_permisos_gerente.html', context)
+
+@login_required
+def aprobar_permiso(request, permiso_id):
+    """
+    Vista para aprobar un permiso
+    """
+    # Verificar que el usuario sea gerente
+    if request.user.rol not in ['GERENTE', 'ADMINISTRATIVO']:
+        messages.error(request, 'No tienes permiso para aprobar permisos.')
+        return redirect('recursosHumanos:lista_permisos')
+    
+    permiso = get_object_or_404(PermisoAusencia, id=permiso_id)
+    
+    # Verificar que el gerente pueda aprobar este permiso
+    if request.user.rol == 'GERENTE' and permiso.usuario.sucursal != request.user.sucursal:
+        messages.error(request, 'Solo puedes aprobar permisos de tu sucursal.')
+        return redirect('recursosHumanos:lista_permisos_gerente')
+    
+    if not permiso.puede_ser_aprobado:
+        messages.error(request, 'Este permiso no puede ser aprobado.')
+        return redirect('recursosHumanos:detalle_permiso', permiso_id=permiso.id)
+    
+    if request.method == 'POST':
+        form = AprobarPermisoForm(request.POST, instance=permiso)
+        if form.is_valid():
+            observaciones = form.cleaned_data['observaciones_aprobacion']
+            permiso.aprobar(request.user, observaciones)
+            messages.success(request, 'Permiso aprobado exitosamente.')
+            return redirect('recursosHumanos:lista_permisos_gerente')
+    else:
+        form = AprobarPermisoForm(instance=permiso)
+    
+    context = {
+        'form': form,
+        'permiso': permiso,
+    }
+    
+    return render(request, 'recursosHumanos/permisos/aprobar_permiso.html', context)
+
+@login_required
+def rechazar_permiso(request, permiso_id):
+    """
+    Vista para rechazar un permiso
+    """
+    # Verificar que el usuario sea gerente
+    if request.user.rol not in ['GERENTE', 'ADMINISTRATIVO']:
+        messages.error(request, 'No tienes permiso para rechazar permisos.')
+        return redirect('recursosHumanos:lista_permisos')
+    
+    permiso = get_object_or_404(PermisoAusencia, id=permiso_id)
+    
+    # Verificar que el gerente pueda rechazar este permiso
+    if request.user.rol == 'GERENTE' and permiso.usuario.sucursal != request.user.sucursal:
+        messages.error(request, 'Solo puedes rechazar permisos de tu sucursal.')
+        return redirect('recursosHumanos:lista_permisos_gerente')
+    
+    if not permiso.puede_ser_rechazado:
+        messages.error(request, 'Este permiso no puede ser rechazado.')
+        return redirect('recursosHumanos:detalle_permiso', permiso_id=permiso.id)
+    
+    if request.method == 'POST':
+        form = AprobarPermisoForm(request.POST, instance=permiso)
+        if form.is_valid():
+            observaciones = form.cleaned_data['observaciones_aprobacion']
+            permiso.rechazar(request.user, observaciones)
+            messages.success(request, 'Permiso rechazado exitosamente.')
+            return redirect('recursosHumanos:lista_permisos_gerente')
+    else:
+        form = AprobarPermisoForm(instance=permiso)
+    
+    context = {
+        'form': form,
+        'permiso': permiso,
+    }
+    
+    return render(request, 'recursosHumanos/permisos/rechazar_permiso.html', context)
+
+@login_required
+def dashboard_permisos(request):
+    """
+    Dashboard con estadísticas de permisos
+    """
+    # Verificar que el usuario sea gerente
+    if request.user.rol not in ['GERENTE', 'ADMINISTRATIVO']:
+        messages.error(request, 'No tienes permiso para acceder a esta página.')
+        return redirect('recursosHumanos:lista_permisos')
+    
+    # Filtrar permisos según el rol
+    if request.user.rol == 'GERENTE':
+        permisos = PermisoAusencia.objects.filter(usuario__sucursal=request.user.sucursal)
+    else:
+        permisos = PermisoAusencia.objects.all()
+    
+    # Estadísticas
+    total_permisos = permisos.count()
+    permisos_pendientes = permisos.filter(estado='PENDIENTE').count()
+    permisos_aprobados = permisos.filter(estado='APROBADO').count()
+    permisos_rechazados = permisos.filter(estado='RECHAZADO').count()
+    permisos_activos = permisos.filter(
+        estado='APROBADO',
+        fecha_inicio__lte=timezone.now().date(),
+        fecha_fin__gte=timezone.now().date()
+    ).count()
+    
+    # Permisos por tipo
+    permisos_por_tipo = {}
+    for tipo, nombre in PermisoAusencia.TIPO_PERMISO_CHOICES:
+        count = permisos.filter(tipo_permiso=tipo).count()
+        if count > 0:
+            permisos_por_tipo[nombre] = count
+    
+    # Permisos recientes
+    permisos_recientes = permisos.order_by('-fecha_solicitud')[:10]
+    
+    context = {
+        'total_permisos': total_permisos,
+        'permisos_pendientes': permisos_pendientes,
+        'permisos_aprobados': permisos_aprobados,
+        'permisos_rechazados': permisos_rechazados,
+        'permisos_activos': permisos_activos,
+        'permisos_por_tipo': permisos_por_tipo,
+        'permisos_recientes': permisos_recientes,
+    }
+    
+    return render(request, 'recursosHumanos/permisos/dashboard_permisos.html', context)

@@ -1,0 +1,230 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+    .permiso-card {
+        border-radius: 15px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        transition: transform 0.3s ease;
+    }
+    .permiso-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 15px 15px 0 0;
+        padding: 1.5rem;
+    }
+    .estado-badge {
+        font-size: 0.9rem;
+        padding: 0.5rem 1rem;
+        border-radius: 25px;
+        font-weight: 600;
+    }
+    .estado-pendiente { background: linear-gradient(135deg, #ffc107, #ffb300); color: #000; }
+    .estado-aprobado { background: linear-gradient(135deg, #28a745, #20c997); color: white; }
+    .estado-rechazado { background: linear-gradient(135deg, #dc3545, #c82333); color: white; }
+    .estado-cancelado { background: linear-gradient(135deg, #6c757d, #495057); color: white; }
+    .info-row {
+        padding: 0.75rem 0;
+        border-bottom: 1px solid #e9ecef;
+    }
+    .info-row:last-child {
+        border-bottom: none;
+    }
+    .justificativo-preview {
+        max-width: 300px;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+</style>
+
+<main class="container mt-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="mb-0">
+                <i class="fas fa-calendar-alt text-primary me-2"></i>
+                Detalle del Permiso
+            </h1>
+            <p class="text-muted mb-0">Información completa de la solicitud</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{% url 'recursosHumanos:lista_permisos' %}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-2"></i>
+                Volver
+            </a>
+            {% if permiso.estado == 'PENDIENTE' and permiso.usuario == request.user %}
+            <a href="{% url 'recursosHumanos:editar_permiso' permiso.id %}" class="btn btn-warning">
+                <i class="fas fa-edit me-2"></i>
+                Editar
+            </a>
+            <a href="{% url 'recursosHumanos:cancelar_permiso' permiso.id %}" class="btn btn-danger">
+                <i class="fas fa-times me-2"></i>
+                Cancelar
+            </a>
+            {% endif %}
+            {% if request.user.rol in 'GERENTE,ADMINISTRATIVO' and permiso.estado == 'PENDIENTE' %}
+            <a href="{% url 'recursosHumanos:aprobar_permiso' permiso.id %}" class="btn btn-success">
+                <i class="fas fa-check me-2"></i>
+                Aprobar
+            </a>
+            <a href="{% url 'recursosHumanos:rechazar_permiso' permiso.id %}" class="btn btn-danger">
+                <i class="fas fa-times me-2"></i>
+                Rechazar
+            </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- Información Principal -->
+            <div class="card permiso-card mb-4">
+                <div class="permiso-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h3 class="mb-1">{{ permiso.get_tipo_permiso_display }}</h3>
+                            <p class="mb-0">{{ permiso.usuario.get_nombre_completo }}</p>
+                        </div>
+                        <span class="estado-badge estado-{{ permiso.estado|lower }}">
+                            {{ permiso.get_estado_display }}
+                        </span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="info-row">
+                                <strong>Fecha de Solicitud:</strong>
+                                <span>{{ permiso.fecha_solicitud|date:"d/m/Y H:i" }}</span>
+                            </div>
+                            <div class="info-row">
+                                <strong>Fecha de Inicio:</strong>
+                                <span>{{ permiso.fecha_inicio|date:"d/m/Y" }}</span>
+                            </div>
+                            <div class="info-row">
+                                <strong>Fecha de Fin:</strong>
+                                <span>{{ permiso.fecha_fin|date:"d/m/Y" }}</span>
+                            </div>
+                            <div class="info-row">
+                                <strong>Días Solicitados:</strong>
+                                <span>{{ permiso.dias_solicitados }} días</span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="info-row">
+                                <strong>Sucursal:</strong>
+                                <span>{{ permiso.usuario.sucursal.nombre }}</span>
+                            </div>
+                            <div class="info-row">
+                                <strong>Estado:</strong>
+                                <span class="estado-badge estado-{{ permiso.estado|lower }}">
+                                    {{ permiso.get_estado_display }}
+                                </span>
+                            </div>
+                            {% if permiso.aprobado_por %}
+                            <div class="info-row">
+                                <strong>Aprobado por:</strong>
+                                <span>{{ permiso.aprobado_por.get_nombre_completo }}</span>
+                            </div>
+                            <div class="info-row">
+                                <strong>Fecha de Aprobación:</strong>
+                                <span>{{ permiso.fecha_aprobacion|date:"d/m/Y H:i" }}</span>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Motivo -->
+            <div class="card permiso-card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-comment me-2"></i>
+                        Motivo del Permiso
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="mb-0">{{ permiso.motivo }}</p>
+                </div>
+            </div>
+
+            <!-- Observaciones de Aprobación -->
+            {% if permiso.observaciones_aprobacion %}
+            <div class="card permiso-card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-clipboard-list me-2"></i>
+                        Observaciones de Aprobación
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="mb-0">{{ permiso.observaciones_aprobacion }}</p>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="col-lg-4">
+            <!-- Justificativo -->
+            {% if permiso.justificativo %}
+            <div class="card permiso-card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-file-alt me-2"></i>
+                        Justificativo
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if permiso.descripcion_justificativo %}
+                    <p class="mb-3"><strong>Descripción:</strong> {{ permiso.descripcion_justificativo }}</p>
+                    {% endif %}
+                    
+                    {% if permiso.justificativo.name|lower|slice:"-4:" in '.jpg,.jpeg,.png,.gif' %}
+                    <img src="{{ permiso.justificativo.url }}" alt="Justificativo" class="img-fluid justificativo-preview mb-3">
+                    {% endif %}
+                    
+                    <a href="{{ permiso.justificativo.url }}" class="btn btn-primary btn-sm" target="_blank">
+                        <i class="fas fa-download me-2"></i>
+                        Descargar Justificativo
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Información Adicional -->
+            <div class="card permiso-card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Información Adicional
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="info-row">
+                        <strong>¿Está Activo?</strong>
+                        <span class="badge {% if permiso.esta_activo %}bg-success{% else %}bg-secondary{% endif %}">
+                            {% if permiso.esta_activo %}Sí{% else %}No{% endif %}
+                        </span>
+                    </div>
+                    <div class="info-row">
+                        <strong>¿Está Vencido?</strong>
+                        <span class="badge {% if permiso.esta_vencido %}bg-danger{% else %}bg-success{% endif %}">
+                            {% if permiso.esta_vencido %}Sí{% else %}No{% endif %}
+                        </span>
+                    </div>
+                    <div class="info-row">
+                        <strong>Fecha de Creación:</strong>
+                        <span>{{ permiso.fecha_creacion|date:"d/m/Y H:i" }}</span>
+                    </div>
+                    <div class="info-row">
+                        <strong>Última Modificación:</strong>
+                        <span>{{ permiso.fecha_modificacion|date:"d/m/Y H:i" }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+{% endblock %} 
