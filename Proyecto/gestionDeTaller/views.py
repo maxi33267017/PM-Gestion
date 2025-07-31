@@ -42,7 +42,7 @@ from .models import (
     AnalisisTaller, Evidencia, ChecklistSalidaCampo, EncuestaServicio,
     RespuestaEncuesta, InsatisfaccionCliente, ObservacionServicio, Repuesto,
     HerramientaEspecial, ReservaHerramienta, LogHerramienta,
-    HerramientaPersonal, AsignacionHerramientaPersonal, AuditoriaHerramientaPersonal,
+    HerramientaPersonal, AsignacionHerramientaPersonal, AuditoriaHerramienta,
     DetalleAuditoriaHerramienta, ItemHerramientaPersonal, LogCambioItemHerramienta
 )
 from recursosHumanos.models import Usuario
@@ -145,8 +145,8 @@ def lista_servicios(request):
                 # Crear un buffer para el archivo Excel
                 output = io.BytesIO()
                 
-                # Crear un Excel writer
-                with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+                        # Crear un Excel writer
+        with pd.ExcelWriter(output, engine='openpyxl') as writer:
                     # Lista para almacenar los datos de todos los servicios
                     datos_servicios = []
                     
@@ -1131,11 +1131,15 @@ def tecnicos(request):
                 horas_disponibles = registro['horas_disponibles'].total_seconds() / 3600 if registro['horas_disponibles'] else 0
                 horas_generan_ingreso = registro['horas_generan_ingreso'].total_seconds() / 3600 if registro['horas_generan_ingreso'] else 0
                 horas_facturadas = registro['horas_facturadas'].total_seconds() / 3600 if registro['horas_facturadas'] else 0
+                
+                # Calcular horas contratadas para este día específico
+                fecha_registro = registro['fecha']
+                horas_contratadas_dia = calcular_horas_contratadas(fecha_registro, fecha_registro)
 
-                # Calcular métricas para este día
-                productividad = (horas_generan_ingreso / horas_disponibles) * 100 if horas_disponibles > 0 else 0
-                eficiencia = (horas_facturadas / horas_generan_ingreso) * 100 if horas_generan_ingreso > 0 else 0
-                desempeno = (horas_facturadas / horas_disponibles) * 100 if horas_disponibles > 0 else 0
+                # Calcular métricas para este día usando horas contratadas
+                productividad = (horas_generan_ingreso / horas_contratadas_dia * 100) if horas_contratadas_dia > 0 else 0
+                eficiencia = (horas_facturadas / horas_generan_ingreso * 100) if horas_generan_ingreso > 0 else 0
+                desempeno = (horas_facturadas / horas_contratadas_dia * 100) if horas_contratadas_dia > 0 else 0
 
                 total_productividad_tecnico += productividad
                 total_eficiencia_tecnico += eficiencia
@@ -1165,13 +1169,59 @@ def tecnicos(request):
     }
     return render(request, 'gestionDeTaller/tecnicos/tecnicos.html', context)
 
+def calcular_horas_contratadas(fecha_inicio, fecha_fin):
+    """
+    Calcula las horas contratadas para un período específico.
+    Horas contratadas: 8h L-V, 4h S = 44h semanales
+    """
+    from datetime import timedelta
+    
+    # Convertir a date si son datetime
+    if isinstance(fecha_inicio, datetime):
+        fecha_inicio = fecha_inicio.date()
+    if isinstance(fecha_fin, datetime):
+        fecha_fin = fecha_fin.date()
+    
+    # Fecha límite para considerar días sin registro como no disponibles
+    fecha_limite = date(2025, 7, 1)
+    
+    total_horas = 0
+    fecha_actual = fecha_inicio
+    
+    while fecha_actual <= fecha_fin:
+        # Verificar si es día laboral (L-V o S)
+        dia_semana = fecha_actual.weekday()  # 0=Lunes, 6=Domingo
+        
+        if dia_semana < 5:  # Lunes a Viernes
+            horas_dia = 8
+        elif dia_semana == 5:  # Sábado
+            horas_dia = 4
+        else:  # Domingo
+            horas_dia = 0
+        
+        # Si es después del 1ro de Julio 2025, verificar si hay registros
+        if fecha_actual >= fecha_limite and horas_dia > 0:
+            # Verificar si hay registros para este día
+            registros_dia = RegistroHorasTecnico.objects.filter(
+                fecha=fecha_actual
+            ).exists()
+            
+            # Si no hay registros, no contar como horas contratadas
+            if not registros_dia:
+                horas_dia = 0
+        
+        total_horas += horas_dia
+        fecha_actual += timedelta(days=1)
+    
+    return total_horas
+
 def exportar_registros_horas(tecnicos, fecha_inicio, fecha_fin):
     try:
         # Crear un buffer para el archivo Excel
         output = io.BytesIO()
         
-        # Crear un Excel writer
-        with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+        # Crear un Excel writer con openpyxl
+        with pd.ExcelWriter(output, engine='openpyxl') as writer:
             # Lista para almacenar los datos de todos los técnicos
             datos_tecnicos = []
             
@@ -1182,8 +1232,11 @@ def exportar_registros_horas(tecnicos, fecha_inicio, fecha_fin):
                     fecha__range=[fecha_inicio, fecha_fin]
                 ).order_by('fecha', 'hora_inicio')
                 
+                # Calcular horas contratadas para el período
+                horas_contratadas = calcular_horas_contratadas(fecha_inicio, fecha_fin)
+                
                 # Calcular métricas
-                total_horas = 0
+                total_horas_registradas = 0
                 horas_disponibles = 0
                 horas_generan_ingreso = 0
                 horas_facturadas = 0
@@ -1198,7 +1251,7 @@ def exportar_registros_horas(tecnicos, fecha_inicio, fecha_fin):
                     
                     # Calcular duración en horas
                     duracion = (fin - inicio).total_seconds() / 3600
-                    total_horas += duracion
+                    total_horas_registradas += duracion
                     
                     if registro.tipo_hora.disponibilidad == 'DISPONIBLE':
                         horas_disponibles += duracion
@@ -1226,15 +1279,21 @@ def exportar_registros_horas(tecnicos, fecha_inicio, fecha_fin):
                         'Aprobado': 'Sí' if registro.aprobado else 'No'
                     })
                 
-                # Calcular KPIs
-                productividad = (horas_generan_ingreso / horas_disponibles * 100) if horas_disponibles > 0 else 0
+                # Calcular KPIs basados en horas contratadas
+                # Productividad = (Horas que generan ingreso / Horas contratadas) * 100
+                productividad = (horas_generan_ingreso / horas_contratadas * 100) if horas_contratadas > 0 else 0
+                
+                # Eficiencia = (Horas facturadas / Horas que generan ingreso) * 100
                 eficiencia = (horas_facturadas / horas_generan_ingreso * 100) if horas_generan_ingreso > 0 else 0
-                desempeno = (horas_facturadas / horas_disponibles * 100) if horas_disponibles > 0 else 0
+                
+                # Desempeño = (Horas facturadas / Horas contratadas) * 100
+                desempeno = (horas_facturadas / horas_contratadas * 100) if horas_contratadas > 0 else 0
                 
                 # Agregar datos del técnico al resumen
                 datos_tecnicos.append({
                     'Técnico': tecnico.get_nombre_completo(),
-                    'Total Horas': round(total_horas, 2),
+                    'Horas Contratadas': round(horas_contratadas, 2),
+                    'Total Horas Registradas': round(total_horas_registradas, 2),
                     'Horas Disponibles': round(horas_disponibles, 2),
                     'Horas que Generan Ingreso': round(horas_generan_ingreso, 2),
                     'Horas Facturadas': round(horas_facturadas, 2),
@@ -1249,59 +1308,27 @@ def exportar_registros_horas(tecnicos, fecha_inicio, fecha_fin):
                     # Escribir en una hoja separada para cada técnico
                     sheet_name = f"Detalle {tecnico.get_nombre_completo()}"[:31]  # Excel limita nombres de hojas a 31 caracteres
                     df_detalle.to_excel(writer, sheet_name=sheet_name, index=False)
-                    
-                    # Obtener la hoja y aplicar formatos
-                    worksheet = writer.sheets[sheet_name]
-                    worksheet.set_column('A:A', 12)  # Fecha
-                    worksheet.set_column('B:C', 10)  # Hora Inicio/Fin
-                    worksheet.set_column('D:D', 30)  # Actividad
-                    worksheet.set_column('E:E', 15)  # Servicio
-                    worksheet.set_column('F:F', 40)  # Descripción
-                    worksheet.set_column('G:G', 10)  # Aprobado
-                    
-                    # Agregar formato de fecha
-                    date_format = writer.book.add_format({'num_format': 'dd/mm/yyyy'})
-                    worksheet.set_column('A:A', 12, date_format)
-                    
-                    # Agregar formato de hora
-                    time_format = writer.book.add_format({'num_format': 'hh:mm'})
-                    worksheet.set_column('B:C', 10, time_format)
             
             # Crear DataFrame con los datos de los técnicos
             df_tecnicos = pd.DataFrame(datos_tecnicos)
             
             # Agregar fila de promedios
-            promedios = {
-                'Técnico': 'PROMEDIO',
-                'Total Horas': df_tecnicos['Total Horas'].mean(),
-                'Horas Disponibles': df_tecnicos['Horas Disponibles'].mean(),
-                'Horas que Generan Ingreso': df_tecnicos['Horas que Generan Ingreso'].mean(),
-                'Horas Facturadas': df_tecnicos['Horas Facturadas'].mean(),
-                'Productividad (%)': df_tecnicos['Productividad (%)'].mean(),
-                'Eficiencia (%)': df_tecnicos['Eficiencia (%)'].mean(),
-                'Desempeño (%)': df_tecnicos['Desempeño (%)'].mean()
-            }
-            df_tecnicos = pd.concat([df_tecnicos, pd.DataFrame([promedios])], ignore_index=True)
+            if not df_tecnicos.empty:
+                promedios = {
+                    'Técnico': 'PROMEDIO',
+                    'Horas Contratadas': df_tecnicos['Horas Contratadas'].mean(),
+                    'Total Horas Registradas': df_tecnicos['Total Horas Registradas'].mean(),
+                    'Horas Disponibles': df_tecnicos['Horas Disponibles'].mean(),
+                    'Horas que Generan Ingreso': df_tecnicos['Horas que Generan Ingreso'].mean(),
+                    'Horas Facturadas': df_tecnicos['Horas Facturadas'].mean(),
+                    'Productividad (%)': df_tecnicos['Productividad (%)'].mean(),
+                    'Eficiencia (%)': df_tecnicos['Eficiencia (%)'].mean(),
+                    'Desempeño (%)': df_tecnicos['Desempeño (%)'].mean()
+                }
+                df_tecnicos = pd.concat([df_tecnicos, pd.DataFrame([promedios])], ignore_index=True)
             
             # Escribir en Excel
             df_tecnicos.to_excel(writer, sheet_name='Resumen Técnicos', index=False)
-            
-            # Obtener el workbook y la hoja
-            workbook = writer.book
-            worksheet = writer.sheets['Resumen Técnicos']
-            
-            # Formato para porcentajes
-            percent_format = workbook.add_format({'num_format': '0.00%'})
-            number_format = workbook.add_format({'num_format': '0.00'})
-            
-            # Aplicar formatos
-            for col_num, value in enumerate(df_tecnicos.columns.values):
-                if '%' in value:
-                    worksheet.set_column(col_num, col_num, 15, percent_format)
-                elif 'Horas' in value:
-                    worksheet.set_column(col_num, col_num, 15, number_format)
-                else:
-                    worksheet.set_column(col_num, col_num, 20)
         
         # Preparar la respuesta HTTP
         output.seek(0)
@@ -1316,16 +1343,12 @@ def exportar_registros_horas(tecnicos, fecha_inicio, fecha_fin):
         # Configurar los encabezados de la respuesta
         filename = f'registro_horas_{fecha_inicio}_{fecha_fin}.xlsx'
         response['Content-Disposition'] = f'attachment; filename="{filename}"'
-        response['Content-Length'] = len(excel_data)
-        response['Cache-Control'] = 'no-cache, no-store, must-revalidate'
-        response['Pragma'] = 'no-cache'
-        response['Expires'] = '0'
         
         return response
         
     except Exception as e:
         print(f"Error en exportar_registros_horas: {str(e)}")
-        raise
+        raise e
 
 @login_required
 def detalle_tecnico(request, tecnico_id):
@@ -1414,10 +1437,14 @@ def detalle_tecnico(request, tecnico_id):
             horas_generan_ingreso = registro['horas_generan_ingreso'].total_seconds() / 3600 if registro['horas_generan_ingreso'] else 0
             horas_facturadas = registro['horas_facturadas'].total_seconds() / 3600 if registro['horas_facturadas'] else 0
             
-            # Calcular métricas para este día
-            productividad = (horas_generan_ingreso / horas_disponibles) * 100 if horas_disponibles > 0 else 0
-            eficiencia = (horas_facturadas / horas_generan_ingreso) * 100 if horas_generan_ingreso > 0 else 0
-            desempeno = (horas_facturadas / horas_disponibles) * 100 if horas_disponibles > 0 else 0
+            # Calcular horas contratadas para este día específico
+            fecha_registro = registro['fecha']
+            horas_contratadas_dia = calcular_horas_contratadas(fecha_registro, fecha_registro)
+            
+            # Calcular métricas para este día usando horas contratadas
+            productividad = (horas_generan_ingreso / horas_contratadas_dia * 100) if horas_contratadas_dia > 0 else 0
+            eficiencia = (horas_facturadas / horas_generan_ingreso * 100) if horas_generan_ingreso > 0 else 0
+            desempeno = (horas_facturadas / horas_contratadas_dia * 100) if horas_contratadas_dia > 0 else 0
             
             total_productividad += productividad
             total_eficiencia += eficiencia
