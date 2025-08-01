@@ -6,7 +6,7 @@ from .models import Usuario, Provincia, Ciudad, Sucursal, TarifaManoObra, Regist
 @admin.register(Usuario)
 class CustomUserAdmin(UserAdmin):
     model = Usuario
-    list_display = ('email', 'nombre', 'apellido', 'sucursal', 'rol', 'is_staff', 'is_active')
+    list_display = ('id','email', 'nombre', 'apellido', 'sucursal', 'rol', 'is_staff', 'is_active')
     list_filter = ('rol', 'is_staff', 'is_active')
     fieldsets = (
         (None, {'fields': ('email', 'password')}),
