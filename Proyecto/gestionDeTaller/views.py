@@ -47,7 +47,6 @@ from .models import (
 )
 from recursosHumanos.models import Usuario
 from .models import EvidenciaPlanAccion5S
-from recursosHumanos.models import Usuario
 from recursosHumanos.forms import FiltroExportacionHorasForm
 
 @login_required
