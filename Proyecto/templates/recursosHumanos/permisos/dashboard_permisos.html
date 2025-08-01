@@ -22,6 +22,23 @@
         height: 300px;
         margin: 20px 0;
     }
+    .permiso-pendiente {
+        border-left: 4px solid #ffc107;
+        background: #fff3cd;
+    }
+    .permiso-urgente {
+        border-left: 4px solid #dc3545;
+        background: #f8d7da;
+    }
+    .action-btn {
+        transition: all 0.3s;
+        border-radius: 8px;
+        font-weight: 500;
+    }
+    .action-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    }
 </style>
 
 <main class="container mt-4">
@@ -29,19 +46,15 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h1 class="mb-0">
-                <i class="fas fa-chart-bar text-primary me-2"></i>
+                <i class="fas fa-calendar-check text-primary me-2"></i>
                 Dashboard de Permisos
             </h1>
-            <p class="text-muted mb-0">Estadísticas y resumen de permisos y ausencias</p>
+            <p class="text-muted mb-0">Gestión y procesamiento de solicitudes de permisos</p>
         </div>
         <div class="d-flex gap-2">
             <a href="{% url 'recursosHumanos:lista_permisos_gerente' %}" class="btn btn-info">
                 <i class="fas fa-list me-2"></i>
-                Ver Todos
-            </a>
-            <a href="{% url 'admin:recursosHumanos_permisoausencia_changelist' %}" class="btn btn-secondary">
-                <i class="fas fa-cog me-2"></i>
-                Admin Avanzado
+                Ver Todos los Permisos
             </a>
         </div>
     </div>
@@ -90,6 +103,65 @@
         </div>
     </div>
 
+    <!-- Permisos Pendientes - Sección Principal -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-warning text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-clock me-2"></i>
+                        Permisos Pendientes de Revisión
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if permisos_pendientes > 0 %}
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            <strong>{{ permisos_pendientes }}</strong> permisos requieren tu atención
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <a href="{% url 'recursosHumanos:lista_permisos_gerente' %}?estado=PENDIENTE" 
+                                   class="btn btn-warning action-btn w-100">
+                                    <i class="fas fa-eye me-2"></i>
+                                    Ver Permisos Pendientes
+                                </a>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <a href="{% url 'recursosHumanos:lista_permisos_gerente' %}" 
+                                   class="btn btn-info action-btn w-100">
+                                    <i class="fas fa-list me-2"></i>
+                                    Gestionar Todos los Permisos
+                                </a>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-3">
+                            <h6 class="text-muted">¿Cómo procesar permisos?</h6>
+                            <ol class="text-muted">
+                                <li>Haz clic en "Ver Permisos Pendientes" para ver las solicitudes</li>
+                                <li>Revisa los detalles de cada permiso</li>
+                                <li>Usa los botones <i class="fas fa-check text-success"></i> para aprobar o <i class="fas fa-times text-danger"></i> para rechazar</li>
+                                <li>Agrega observaciones si es necesario</li>
+                            </ol>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                            <h5 class="text-success">¡Excelente!</h5>
+                            <p class="text-muted">No hay permisos pendientes de revisión</p>
+                            <a href="{% url 'recursosHumanos:lista_permisos_gerente' %}" class="btn btn-info">
+                                <i class="fas fa-list me-2"></i>
+                                Ver Todos los Permisos
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="row">
         <!-- Gráfico de Permisos por Tipo -->
         <div class="col-lg-6 mb-4">
@@ -128,7 +200,7 @@
                     {% if permisos_recientes %}
                     <div class="list-group list-group-flush">
                         {% for permiso in permisos_recientes %}
-                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <div class="list-group-item d-flex justify-content-between align-items-center {% if permiso.estado == 'PENDIENTE' %}permiso-pendiente{% endif %}">
                             <div>
                                 <h6 class="mb-1">{{ permiso.usuario.get_nombre_completo }}</h6>
                                 <small class="text-muted">
@@ -136,9 +208,17 @@
                                     {{ permiso.fecha_inicio|date:"d/m/Y" }} a {{ permiso.fecha_fin|date:"d/m/Y" }}
                                 </small>
                             </div>
-                            <span class="badge bg-{{ permiso.estado|lower }}">
-                                {{ permiso.get_estado_display }}
-                            </span>
+                            <div class="d-flex align-items-center">
+                                <span class="badge bg-{{ permiso.estado|lower }} me-2">
+                                    {{ permiso.get_estado_display }}
+                                </span>
+                                {% if permiso.estado == 'PENDIENTE' %}
+                                <a href="{% url 'recursosHumanos:detalle_permiso' permiso.id %}" 
+                                   class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                {% endif %}
+                            </div>
                         </div>
                         {% endfor %}
                     </div>
@@ -165,28 +245,22 @@
                 </div>
                 <div class="card-body">
                     <div class="row">
-                        <div class="col-md-3 mb-3">
-                            <a href="{% url 'recursosHumanos:lista_permisos_gerente' %}?estado=PENDIENTE" class="btn btn-warning btn-block">
+                        <div class="col-md-4 mb-3">
+                            <a href="{% url 'recursosHumanos:lista_permisos_gerente' %}?estado=PENDIENTE" class="btn btn-warning action-btn w-100">
                                 <i class="fas fa-clock me-2"></i>
                                 Ver Pendientes
                             </a>
                         </div>
-                        <div class="col-md-3 mb-3">
-                            <a href="{% url 'recursosHumanos:lista_permisos_gerente' %}?estado=APROBADO" class="btn btn-success btn-block">
+                        <div class="col-md-4 mb-3">
+                            <a href="{% url 'recursosHumanos:lista_permisos_gerente' %}?estado=APROBADO" class="btn btn-success action-btn w-100">
                                 <i class="fas fa-check me-2"></i>
                                 Ver Aprobados
                             </a>
                         </div>
-                        <div class="col-md-3 mb-3">
-                            <a href="{% url 'recursosHumanos:lista_permisos_gerente' %}?estado=RECHAZADO" class="btn btn-danger btn-block">
+                        <div class="col-md-4 mb-3">
+                            <a href="{% url 'recursosHumanos:lista_permisos_gerente' %}?estado=RECHAZADO" class="btn btn-danger action-btn w-100">
                                 <i class="fas fa-times me-2"></i>
                                 Ver Rechazados
-                            </a>
-                        </div>
-                        <div class="col-md-3 mb-3">
-                            <a href="{% url 'admin:recursosHumanos_permisoausencia_add' %}" class="btn btn-primary btn-block">
-                                <i class="fas fa-plus me-2"></i>
-                                Crear Permiso
                             </a>
                         </div>
                     </div>
