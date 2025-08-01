@@ -3819,17 +3819,24 @@ def dashboard_gerente(request):
     
     # === MÉTRICAS DE FACTURACIÓN ===
     servicios_facturados = servicios_mes.filter(estado='COMPLETADO')
-    facturacion_mes = servicios_facturados.aggregate(
-        total_mano_obra=Sum('valor_mano_obra'),
-        total_repuestos=Sum('total_repuestos'),
-        total_gastos=Sum('total_gastos_asistencia')
-    )
     
-    total_facturacion = (
-        (facturacion_mes['total_mano_obra'] or 0) +
-        (facturacion_mes['total_repuestos'] or 0) +
-        (facturacion_mes['total_gastos'] or 0)
-    )
+    # Calcular mano de obra
+    facturacion_mano_obra = servicios_facturados.aggregate(
+        total=Sum('valor_mano_obra')
+    )['total'] or 0
+    
+    # Calcular repuestos usando la relación
+    from django.db.models import F
+    facturacion_repuestos = servicios_facturados.aggregate(
+        total=Sum(F('repuestos__precio_unitario') * F('repuestos__cantidad'))
+    )['total'] or 0
+    
+    # Calcular gastos de asistencia usando la relación
+    facturacion_gastos = servicios_facturados.aggregate(
+        total=Sum('gastos__monto')
+    )['total'] or 0
+    
+    total_facturacion = facturacion_mano_obra + facturacion_repuestos + facturacion_gastos
     
     # === MÉTRICAS DE TÉCNICOS ===
     tecnicos_activos = Usuario.objects.filter(rol='TECNICO').count()
@@ -3910,9 +3917,9 @@ def dashboard_gerente(request):
         
         # Métricas de facturación
         'total_facturacion': total_facturacion,
-        'facturacion_mano_obra': facturacion_mes['total_mano_obra'] or 0,
-        'facturacion_repuestos': facturacion_mes['total_repuestos'] or 0,
-        'facturacion_gastos': facturacion_mes['total_gastos'] or 0,
+        'facturacion_mano_obra': facturacion_mano_obra,
+        'facturacion_repuestos': facturacion_repuestos,
+        'facturacion_gastos': facturacion_gastos,
         
         # Métricas de técnicos
         'tecnicos_activos': tecnicos_activos,
