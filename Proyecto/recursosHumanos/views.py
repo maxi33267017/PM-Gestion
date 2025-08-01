@@ -562,8 +562,13 @@ def dashboard_permisos(request):
     
     # Filtrar permisos según el rol
     if request.user.rol == 'GERENTE':
-        permisos = PermisoAusencia.objects.filter(usuario__sucursal=request.user.sucursal)
+        # Para gerentes: ver permisos de su sucursal y sucursales adicionales
+        sucursales_gerente = [request.user.sucursal]
+        if request.user.sucursales_adicionales.exists():
+            sucursales_gerente.extend(request.user.sucursales_adicionales.all())
+        permisos = PermisoAusencia.objects.filter(usuario__sucursal__in=sucursales_gerente)
     else:
+        # Para administrativos: ver todos los permisos
         permisos = PermisoAusencia.objects.all()
     
     # Estadísticas
@@ -577,12 +582,11 @@ def dashboard_permisos(request):
         fecha_fin__gte=timezone.now().date()
     ).count()
     
-    # Permisos por tipo
+    # Permisos por tipo - incluir todos los tipos aunque tengan 0
     permisos_por_tipo = {}
     for tipo, nombre in PermisoAusencia.TIPO_PERMISO_CHOICES:
         count = permisos.filter(tipo_permiso=tipo).count()
-        if count > 0:
-            permisos_por_tipo[nombre] = count
+        permisos_por_tipo[nombre] = count
     
     # Permisos recientes
     permisos_recientes = permisos.order_by('-fecha_solicitud')[:10]
@@ -595,6 +599,11 @@ def dashboard_permisos(request):
         'permisos_activos': permisos_activos,
         'permisos_por_tipo': permisos_por_tipo,
         'permisos_recientes': permisos_recientes,
+        'debug_info': {
+            'user_rol': request.user.rol,
+            'user_sucursal': request.user.sucursal.nombre if request.user.sucursal else 'Sin sucursal',
+            'total_permisos_found': total_permisos,
+        }
     }
     
     return render(request, 'recursosHumanos/permisos/dashboard_permisos.html', context)
