@@ -164,7 +164,7 @@ class PermisoAusenciaAdmin(admin.ModelAdmin):
             'fields': ('estado', 'aprobado_por', 'fecha_aprobacion', 'observaciones_aprobacion')
         }),
         ('Auditoría', {
-            'fields': ('fecha_solicitud', 'fecha_creacion', 'fecha_modificacion'),
+            'fields': ('fecha_solicitud', 'fecha_modificacion'),
             'classes': ('collapse',)
         }),
     )
