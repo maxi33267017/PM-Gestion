@@ -1072,21 +1072,24 @@ def tecnicos(request):
             messages.error(request, "Error al exportar los datos. Por favor, intente nuevamente.")
             return redirect('gestionDeTaller:tecnicos')
 
+    # Obtener el mes en curso para calcular métricas
+    from datetime import date
+    hoy = date.today()
+    inicio_mes = date(hoy.year, hoy.month, 1)
+    fin_mes = date(hoy.year, hoy.month + 1, 1) - timedelta(days=1) if hoy.month < 12 else date(hoy.year + 1, 1, 1) - timedelta(days=1)
+    
     total_productividad = 0
     total_eficiencia = 0
     total_desempeno = 0
     total_tecnicos_con_registros = 0
 
-    # Calcular métricas solo de los técnicos visibles
+    # Calcular métricas del mes en curso para los técnicos visibles
     for tecnico in tecnicos_visibles:
-        registros_por_dia = RegistroHorasTecnico.objects.filter(
-            tecnico=tecnico
-        )
-        
-        if fecha_inicio and fecha_fin:
-            registros_por_dia = registros_por_dia.filter(fecha__range=[fecha_inicio, fecha_fin])
-
-        registros_por_dia = registros_por_dia.values('fecha').annotate(
+        # Obtener registros del mes en curso
+        registros_mes = RegistroHorasTecnico.objects.filter(
+            tecnico=tecnico,
+            fecha__range=[inicio_mes, fin_mes]
+        ).values('fecha').annotate(
             total_horas_registradas=Sum(
                 ExpressionWrapper(
                     F('hora_fin') - F('hora_inicio'),
@@ -1125,53 +1128,48 @@ def tecnicos(request):
             )
         )
 
-        total_productividad_tecnico = 0
-        total_eficiencia_tecnico = 0
-        total_desempeno_tecnico = 0
-        total_dias = len(registros_por_dia)
-
-        if total_dias > 0:
+        if registros_mes.exists():
             total_tecnicos_con_registros += 1
-
-            for registro in registros_por_dia:
+            
+            # Calcular horas contratadas del mes
+            horas_contratadas_mes = calcular_horas_contratadas(inicio_mes, fin_mes)
+            
+            # Acumular horas del mes
+            total_horas_disponibles = 0
+            total_horas_generan_ingreso = 0
+            total_horas_facturadas = 0
+            
+            for registro in registros_mes:
                 horas_disponibles = registro['horas_disponibles'].total_seconds() / 3600 if registro['horas_disponibles'] else 0
                 horas_generan_ingreso = registro['horas_generan_ingreso'].total_seconds() / 3600 if registro['horas_generan_ingreso'] else 0
                 horas_facturadas = registro['horas_facturadas'].total_seconds() / 3600 if registro['horas_facturadas'] else 0
                 
-                # Calcular horas contratadas para este día específico
-                fecha_registro = registro['fecha']
-                horas_contratadas_dia = calcular_horas_contratadas(fecha_registro, fecha_registro)
+                total_horas_disponibles += horas_disponibles
+                total_horas_generan_ingreso += horas_generan_ingreso
+                total_horas_facturadas += horas_facturadas
 
-                # Calcular métricas para este día usando horas contratadas
-                productividad = (horas_generan_ingreso / horas_contratadas_dia * 100) if horas_contratadas_dia > 0 else 0
-                eficiencia = (horas_facturadas / horas_generan_ingreso * 100) if horas_generan_ingreso > 0 else 0
-                desempeno = (horas_facturadas / horas_contratadas_dia * 100) if horas_contratadas_dia > 0 else 0
+            # Calcular métricas del mes usando horas contratadas
+            productividad = (total_horas_generan_ingreso / horas_contratadas_mes * 100) if horas_contratadas_mes > 0 else 0
+            eficiencia = (total_horas_facturadas / total_horas_generan_ingreso * 100) if total_horas_generan_ingreso > 0 else 0
+            desempeno = (total_horas_facturadas / horas_contratadas_mes * 100) if horas_contratadas_mes > 0 else 0
 
-                total_productividad_tecnico += productividad
-                total_eficiencia_tecnico += eficiencia
-                total_desempeno_tecnico += desempeno
+            total_productividad += productividad
+            total_eficiencia += eficiencia
+            total_desempeno += desempeno
 
-            # Calcular promedios para el técnico
-            tecnico.productividad = total_productividad_tecnico / total_dias
-            tecnico.eficiencia = total_eficiencia_tecnico / total_dias
-            tecnico.desempeno = total_desempeno_tecnico / total_dias
-
-            total_productividad += tecnico.productividad
-            total_eficiencia += tecnico.eficiencia
-            total_desempeno += tecnico.desempeno
-
-    # Calcular promedios globales
-    promedio_productividad_global = total_productividad / total_tecnicos_con_registros if total_tecnicos_con_registros > 0 else 0
-    promedio_eficiencia_global = total_eficiencia / total_tecnicos_con_registros if total_tecnicos_con_registros > 0 else 0
-    promedio_desempeno_global = total_desempeno / total_tecnicos_con_registros if total_tecnicos_con_registros > 0 else 0
+    # Calcular promedios globales del mes
+    promedio_productividad_mes = total_productividad / total_tecnicos_con_registros if total_tecnicos_con_registros > 0 else 0
+    promedio_eficiencia_mes = total_eficiencia / total_tecnicos_con_registros if total_tecnicos_con_registros > 0 else 0
+    promedio_desempeno_mes = total_desempeno / total_tecnicos_con_registros if total_tecnicos_con_registros > 0 else 0
 
     context = {
         'tecnicos_visibles': tecnicos_visibles,
-        'total_productividad': total_productividad,
-        'total_eficiencia': total_eficiencia,
-        'total_desempeno': total_desempeno,
+        'total_productividad': promedio_productividad_mes,
+        'total_eficiencia': promedio_eficiencia_mes,
+        'total_desempeno': promedio_desempeno_mes,
         'total_tecnicos_con_registros': total_tecnicos_con_registros,
         'form_filtro': form_filtro,
+        'mes_actual': inicio_mes.strftime('%B %Y'),
     }
     return render(request, 'gestionDeTaller/tecnicos/tecnicos.html', context)
 

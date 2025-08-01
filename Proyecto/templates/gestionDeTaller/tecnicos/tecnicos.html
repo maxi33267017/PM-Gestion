@@ -54,6 +54,17 @@
 
     <!-- Estadísticas Globales -->
     <div class="row mb-4">
+        <div class="col-12 mb-3">
+            <div class="alert alert-info">
+                <i class="fas fa-calendar me-2"></i>
+                <strong>Métricas del mes en curso:</strong> {{ mes_actual }}
+                {% if user.rol == 'TECNICO' %}
+                    <br><small>Mostrando solo tus resultados</small>
+                {% else %}
+                    <br><small>Promedio de todos los técnicos</small>
+                {% endif %}
+            </div>
+        </div>
         <div class="col-md-3">
             <div class="card stats-card bg-primary text-white">
                 <div class="card-body text-center">

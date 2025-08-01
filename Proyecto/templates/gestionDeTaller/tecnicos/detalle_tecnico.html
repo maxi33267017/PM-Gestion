@@ -592,59 +592,7 @@
         </div>
     </div>
 
-    <!-- Estadísticas del Técnico -->
-    <div class="stats-container">
-        <div class="row">
-            <div class="col-md-4 mb-3">
-                <div class="stat-card">
-                    <div class="stat-header">
-                        <h5 class="stat-title">
-                            <i class="bi bi-speedometer2"></i>
-                            Productividad
-                        </h5>
-                    </div>
-                    <div class="stat-body">
-                        <div class="stat-value">{{ promedio_productividad|floatformat:2 }}%</div>
-                        <div class="stat-description">
-                            Horas que generan ingreso / Horas disponibles
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4 mb-3">
-                <div class="stat-card">
-                    <div class="stat-header">
-                        <h5 class="stat-title">
-                            <i class="bi bi-lightning"></i>
-                            Eficiencia
-                        </h5>
-                    </div>
-                    <div class="stat-body">
-                        <div class="stat-value">{{ promedio_eficiencia|floatformat:2 }}%</div>
-                        <div class="stat-description">
-                            Horas facturadas / Horas que generan ingreso
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4 mb-3">
-                <div class="stat-card">
-                    <div class="stat-header">
-                        <h5 class="stat-title">
-                            <i class="bi bi-star"></i>
-                            Desempeño
-                        </h5>
-                    </div>
-                    <div class="stat-body">
-                        <div class="stat-value">{{ promedio_desempeno|floatformat:2 }}%</div>
-                        <div class="stat-description">
-                            Horas facturadas / Horas disponibles
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+
 
     <!-- ALERTA DE REGISTROS PENDIENTES -->
     {% if registros_pendientes %}
