@@ -146,7 +146,7 @@ def lista_servicios(request):
                 output = io.BytesIO()
                 
                 # Crear un Excel writer
-                with pd.ExcelWriter(output, engine='openpyxl') as writer:
+                with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
                     # Lista para almacenar los datos de todos los servicios
                     datos_servicios = []
                     
@@ -1228,7 +1228,7 @@ def exportar_registros_horas(tecnicos, fecha_inicio, fecha_fin):
         output = io.BytesIO()
         
         # Crear un Excel writer con openpyxl
-        with pd.ExcelWriter(output, engine='openpyxl') as writer:
+        with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
             # Lista para almacenar los datos de todos los técnicos
             datos_tecnicos = []
             
