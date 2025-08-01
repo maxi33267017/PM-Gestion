@@ -1018,7 +1018,7 @@ def actualizar_estado_pedido(request):
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
 from django.db.models import Sum, F, Case, When, ExpressionWrapper, DurationField
-from datetime import timedelta
+from datetime import timedelta, date
 from recursosHumanos.models import Usuario, RegistroHorasTecnico
 from recursosHumanos.forms import FiltroExportacionHorasForm, FiltroMetricasTecnicosForm
 
