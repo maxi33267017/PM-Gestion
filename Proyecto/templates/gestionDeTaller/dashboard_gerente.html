@@ -181,10 +181,9 @@
         </div>
     </div>
 
-    <!-- Estado de Servicios y Acciones Rápidas -->
+    <!-- Estado de Servicios -->
     <div class="row mb-4">
-        <!-- Estado de Servicios -->
-        <div class="col-lg-8 mb-3">
+        <div class="col-12">
             <div class="card">
                 <div class="card-header">
                     <h5 class="mb-0">
@@ -251,9 +250,11 @@
                 </div>
             </div>
         </div>
+    </div>
 
-        <!-- Acciones Rápidas -->
-        <div class="col-lg-4 mb-3">
+    <!-- Acciones Rápidas -->
+    <div class="row mb-4">
+        <div class="col-12">
             <div class="card">
                 <div class="card-header">
                     <h5 class="mb-0">
@@ -262,36 +263,48 @@
                     </h5>
                 </div>
                 <div class="card-body">
-                    <div class="d-grid gap-2">
-                        <a href="{% url 'gestionDeTaller:lista_servicios' %}" class="quick-action-btn bg-success">
-                            <i class="fas fa-tools me-2"></i>
-                            Gestionar Servicios
-                        </a>
+                    <div class="row">
+                        <div class="col-md-2 mb-2">
+                            <a href="{% url 'gestionDeTaller:lista_servicios' %}" class="quick-action-btn bg-success">
+                                <i class="fas fa-tools me-2"></i>
+                                Gestionar Servicios
+                            </a>
+                        </div>
                         
-                        <a href="{% url 'gestionDeTaller:tecnicos' %}" class="quick-action-btn bg-info">
-                            <i class="fas fa-users me-2"></i>
-                            Ver Técnicos
-                        </a>
+                        <div class="col-md-2 mb-2">
+                            <a href="{% url 'gestionDeTaller:tecnicos' %}" class="quick-action-btn bg-info">
+                                <i class="fas fa-users me-2"></i>
+                                Ver Técnicos
+                            </a>
+                        </div>
                         
-                        <a href="{% url 'gestionDeTaller:lista_revisiones_5s' %}" class="quick-action-btn bg-warning">
-                            <i class="fas fa-clipboard-check me-2"></i>
-                            Revisiones 5S
-                        </a>
+                        <div class="col-md-2 mb-2">
+                            <a href="{% url 'gestionDeTaller:lista_revisiones_5s' %}" class="quick-action-btn bg-warning">
+                                <i class="fas fa-clipboard-check me-2"></i>
+                                Revisiones 5S
+                            </a>
+                        </div>
                         
-                        <a href="{% url 'gestionDeTaller:lista_encuestas' %}" class="quick-action-btn bg-secondary">
-                            <i class="fas fa-poll me-2"></i>
-                            Encuestas
-                        </a>
+                        <div class="col-md-2 mb-2">
+                            <a href="{% url 'gestionDeTaller:lista_encuestas' %}" class="quick-action-btn bg-secondary">
+                                <i class="fas fa-poll me-2"></i>
+                                Encuestas
+                            </a>
+                        </div>
                         
-                        <a href="{% url 'reportes:dashboard_reportes' %}" class="quick-action-btn bg-primary">
-                            <i class="fas fa-chart-bar me-2"></i>
-                            Reportes
-                        </a>
+                        <div class="col-md-2 mb-2">
+                            <a href="{% url 'reportes:dashboard_reportes' %}" class="quick-action-btn bg-primary">
+                                <i class="fas fa-chart-bar me-2"></i>
+                                Reportes
+                            </a>
+                        </div>
                         
-                        <a href="{% url 'recursosHumanos:solicitar_permiso' %}" class="quick-action-btn bg-danger">
-                            <i class="fas fa-calendar-plus me-2"></i>
-                            Solicitar Permiso
-                        </a>
+                        <div class="col-md-2 mb-2">
+                            <a href="{% url 'recursosHumanos:solicitar_permiso' %}" class="quick-action-btn bg-danger">
+                                <i class="fas fa-calendar-plus me-2"></i>
+                                Solicitar Permiso
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>
