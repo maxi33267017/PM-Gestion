@@ -137,16 +137,48 @@ class FiltroMetricasTecnicosForm(forms.Form):
     """
     Formulario para filtrar métricas de técnicos por mes y técnico específico
     """
-    mes = forms.DateField(
+    MESES_CHOICES = [
+        (1, 'Enero'),
+        (2, 'Febrero'),
+        (3, 'Marzo'),
+        (4, 'Abril'),
+        (5, 'Mayo'),
+        (6, 'Junio'),
+        (7, 'Julio'),
+        (8, 'Agosto'),
+        (9, 'Septiembre'),
+        (10, 'Octubre'),
+        (11, 'Noviembre'),
+        (12, 'Diciembre'),
+    ]
+    
+    ANOS_CHOICES = []
+    # Generar años desde 2020 hasta el año actual + 1
+    from datetime import date
+    ano_actual = date.today().year
+    for ano in range(2020, ano_actual + 2):
+        ANOS_CHOICES.append((ano, str(ano)))
+    
+    mes = forms.ChoiceField(
+        choices=MESES_CHOICES,
         label='Mes',
-        widget=forms.DateInput(attrs={
-            'type': 'month', 
-            'class': 'form-control',
-            'onchange': 'this.form.submit()'
-        }),
         required=False,
-        help_text="Selecciona el mes para ver las métricas"
+        widget=forms.Select(attrs={
+            'class': 'form-select',
+            'onchange': 'this.form.submit()'
+        })
     )
+    
+    ano = forms.ChoiceField(
+        choices=ANOS_CHOICES,
+        label='Año',
+        required=False,
+        widget=forms.Select(attrs={
+            'class': 'form-select',
+            'onchange': 'this.form.submit()'
+        })
+    )
+    
     tecnico = forms.ModelChoiceField(
         queryset=Usuario.objects.filter(rol='TECNICO').order_by('apellido', 'nombre'),
         label='Técnico',

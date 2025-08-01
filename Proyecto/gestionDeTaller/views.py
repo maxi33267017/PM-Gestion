@@ -1077,11 +1077,12 @@ def tecnicos(request):
     if es_superuser or es_gerente:
         form_metricas = FiltroMetricasTecnicosForm(request.GET or None)
         
-        # Obtener mes seleccionado o usar mes actual
-        if form_metricas.is_valid() and form_metricas.cleaned_data.get('mes'):
-            mes_seleccionado = form_metricas.cleaned_data['mes']
-            inicio_mes = date(mes_seleccionado.year, mes_seleccionado.month, 1)
-            fin_mes = date(mes_seleccionado.year, mes_seleccionado.month + 1, 1) - timedelta(days=1) if mes_seleccionado.month < 12 else date(mes_seleccionado.year + 1, 1, 1) - timedelta(days=1)
+        # Obtener mes y año seleccionados o usar mes actual
+        if form_metricas.is_valid() and form_metricas.cleaned_data.get('mes') and form_metricas.cleaned_data.get('ano'):
+            mes_seleccionado = int(form_metricas.cleaned_data['mes'])
+            ano_seleccionado = int(form_metricas.cleaned_data['ano'])
+            inicio_mes = date(ano_seleccionado, mes_seleccionado, 1)
+            fin_mes = date(ano_seleccionado, mes_seleccionado + 1, 1) - timedelta(days=1) if mes_seleccionado < 12 else date(ano_seleccionado + 1, 1, 1) - timedelta(days=1)
         else:
             # Mes actual por defecto
             hoy = date.today()
