@@ -1258,13 +1258,21 @@ def exportar_registros_horas(tecnicos, fecha_inicio, fecha_fin):
                             if registro.tipo_hora.categoria_facturacion == 'FACTURABLE':
                                 horas_facturadas += duracion
                     
-                    # Obtener el número de servicio de manera segura
-                    numero_servicio = ''
+                    # Obtener información detallada del servicio
+                    info_servicio = ''
                     if registro.servicio:
                         try:
-                            numero_servicio = f"Servicio #{registro.servicio.id}"
-                        except:
-                            numero_servicio = ''
+                            servicio = registro.servicio
+                            preorden = servicio.preorden
+                            cliente = preorden.cliente
+                            equipo = preorden.equipo
+                            
+                            # Construir información detallada: Cliente-PIN-Solicitud-Servicio
+                            info_servicio = f"{cliente.razon_social}-{equipo.numero_serie}-{preorden.solicitud_cliente[:50]}-Serv#{servicio.id}"
+                        except Exception as e:
+                            info_servicio = f"Servicio #{registro.servicio.id}"
+                    else:
+                        info_servicio = ''
                     
                     # Datos detallados del registro
                     registro_detalle = {
@@ -1273,7 +1281,7 @@ def exportar_registros_horas(tecnicos, fecha_inicio, fecha_fin):
                         'Hora Inicio': registro.hora_inicio,
                         'Hora Fin': registro.hora_fin,
                         'Actividad': registro.tipo_hora.nombre,
-                        'Servicio': numero_servicio,
+                        'Servicio': info_servicio,
                         'Descripción': registro.descripcion,
                         'Aprobado': 'Sí' if registro.aprobado else 'No',
                         'Duración (horas)': round(duracion, 2)
