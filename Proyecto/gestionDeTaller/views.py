@@ -3779,3 +3779,162 @@ def editar_item_plan_accion_5s(request, item_id):
         'revision': item.plan_accion.revision,
     }
     return render(request, 'gestionDeTaller/5s/editar_item_plan_accion.html', context)
+
+@login_required
+def dashboard_gerente(request):
+    """
+    Dashboard específico para gerentes con métricas relevantes y acceso rápido
+    """
+    # Verificar que el usuario sea gerente
+    if request.user.rol not in ['GERENTE', 'SUPERUSER']:
+        messages.error(request, "No tienes permisos para acceder al dashboard de gerentes.")
+        return redirect('home')
+    
+    from datetime import date, timedelta
+    from django.db.models import Sum, Count, Q
+    from django.utils import timezone
+    
+    # Obtener fecha actual y rangos
+    hoy = date.today()
+    inicio_mes = date(hoy.year, hoy.month, 1)
+    fin_mes = date(hoy.year, hoy.month + 1, 1) - timedelta(days=1) if hoy.month < 12 else date(hoy.year + 1, 1, 1) - timedelta(days=1)
+    
+    # Fecha de hace 30 días
+    hace_30_dias = hoy - timedelta(days=30)
+    
+    # Importar modelos necesarios
+    from gestionDeTaller.models import Servicio, PreOrden
+    from recursosHumanos.models import Usuario, RegistroHorasTecnico, PermisoAusencia
+    
+    # === MÉTRICAS DE SERVICIOS ===
+    servicios_mes = Servicio.objects.filter(
+        fecha_servicio__range=[inicio_mes, fin_mes]
+    )
+    
+    total_servicios_mes = servicios_mes.count()
+    servicios_completados = servicios_mes.filter(estado='COMPLETADO').count()
+    servicios_en_proceso = servicios_mes.filter(estado='EN_PROCESO').count()
+    servicios_espera_repuestos = servicios_mes.filter(estado='ESPERA_REPUESTOS').count()
+    servicios_a_facturar = servicios_mes.filter(estado='A_FACTURAR').count()
+    
+    # === MÉTRICAS DE FACTURACIÓN ===
+    servicios_facturados = servicios_mes.filter(estado='COMPLETADO')
+    facturacion_mes = servicios_facturados.aggregate(
+        total_mano_obra=Sum('valor_mano_obra'),
+        total_repuestos=Sum('total_repuestos'),
+        total_gastos=Sum('total_gastos_asistencia')
+    )
+    
+    total_facturacion = (
+        (facturacion_mes['total_mano_obra'] or 0) +
+        (facturacion_mes['total_repuestos'] or 0) +
+        (facturacion_mes['total_gastos'] or 0)
+    )
+    
+    # === MÉTRICAS DE TÉCNICOS ===
+    tecnicos_activos = Usuario.objects.filter(rol='TECNICO').count()
+    tecnicos_con_registros_mes = RegistroHorasTecnico.objects.filter(
+        fecha__range=[inicio_mes, fin_mes]
+    ).values('tecnico').distinct().count()
+    
+    # Calcular productividad promedio de técnicos
+    total_horas_contratadas_mes = calcular_horas_contratadas(inicio_mes, fin_mes) * tecnicos_activos
+    total_horas_generan_ingreso = RegistroHorasTecnico.objects.filter(
+        fecha__range=[inicio_mes, fin_mes],
+        tipo_hora__disponibilidad='DISPONIBLE',
+        tipo_hora__genera_ingreso='INGRESO'
+    ).aggregate(
+        total=Sum(
+            ExpressionWrapper(
+                F('hora_fin') - F('hora_inicio'),
+                output_field=DurationField()
+            )
+        )
+    )['total']
+    
+    if total_horas_contratadas_mes > 0 and total_horas_generan_ingreso:
+        productividad_promedio = (total_horas_generan_ingreso.total_seconds() / 3600 / total_horas_contratadas_mes) * 100
+    else:
+        productividad_promedio = 0
+    
+    # === MÉTRICAS DE PERMISOS ===
+    permisos_pendientes = PermisoAusencia.objects.filter(
+        estado='PENDIENTE'
+    ).count()
+    
+    permisos_mes = PermisoAusencia.objects.filter(
+        fecha_inicio__range=[inicio_mes, fin_mes]
+    ).count()
+    
+    # === SERVICIOS RECIENTES ===
+    servicios_recientes = servicios_mes.order_by('-fecha_servicio')[:5]
+    
+    # === TÉCNICOS CON MÁS ACTIVIDAD ===
+    tecnicos_actividad = RegistroHorasTecnico.objects.filter(
+        fecha__range=[inicio_mes, fin_mes]
+    ).values('tecnico__nombre', 'tecnico__apellido').annotate(
+        total_horas=Sum(
+            ExpressionWrapper(
+                F('hora_fin') - F('hora_inicio'),
+                output_field=DurationField()
+            )
+        )
+    ).order_by('-total_horas')[:5]
+    
+    # === ESTADÍSTICAS DE ESTADOS ===
+    estados_servicios = servicios_mes.values('estado').annotate(
+        count=Count('id')
+    ).order_by('-count')
+    
+    # === MÉTRICAS DE CRECIMIENTO (comparación con mes anterior) ===
+    mes_anterior_inicio = date(hoy.year, hoy.month - 1, 1) if hoy.month > 1 else date(hoy.year - 1, 12, 1)
+    mes_anterior_fin = date(hoy.year, hoy.month, 1) - timedelta(days=1)
+    
+    servicios_mes_anterior = Servicio.objects.filter(
+        fecha_servicio__range=[mes_anterior_inicio, mes_anterior_fin]
+    ).count()
+    
+    crecimiento_servicios = ((total_servicios_mes - servicios_mes_anterior) / servicios_mes_anterior * 100) if servicios_mes_anterior > 0 else 0
+    
+    context = {
+        'inicio_mes': inicio_mes,
+        'fin_mes': fin_mes,
+        'mes_actual': inicio_mes.strftime('%B %Y'),
+        
+        # Métricas de servicios
+        'total_servicios_mes': total_servicios_mes,
+        'servicios_completados': servicios_completados,
+        'servicios_en_proceso': servicios_en_proceso,
+        'servicios_espera_repuestos': servicios_espera_repuestos,
+        'servicios_a_facturar': servicios_a_facturar,
+        
+        # Métricas de facturación
+        'total_facturacion': total_facturacion,
+        'facturacion_mano_obra': facturacion_mes['total_mano_obra'] or 0,
+        'facturacion_repuestos': facturacion_mes['total_repuestos'] or 0,
+        'facturacion_gastos': facturacion_mes['total_gastos'] or 0,
+        
+        # Métricas de técnicos
+        'tecnicos_activos': tecnicos_activos,
+        'tecnicos_con_registros_mes': tecnicos_con_registros_mes,
+        'productividad_promedio': round(productividad_promedio, 1),
+        
+        # Métricas de permisos
+        'permisos_pendientes': permisos_pendientes,
+        'permisos_mes': permisos_mes,
+        
+        # Datos para gráficos
+        'servicios_recientes': servicios_recientes,
+        'tecnicos_actividad': tecnicos_actividad,
+        'estados_servicios': estados_servicios,
+        
+        # Crecimiento
+        'crecimiento_servicios': round(crecimiento_servicios, 1),
+        
+        # Porcentajes
+        'porcentaje_completados': round((servicios_completados / total_servicios_mes * 100) if total_servicios_mes > 0 else 0, 1),
+        'porcentaje_en_proceso': round((servicios_en_proceso / total_servicios_mes * 100) if total_servicios_mes > 0 else 0, 1),
+        'porcentaje_espera': round((servicios_espera_repuestos / total_servicios_mes * 100) if total_servicios_mes > 0 else 0, 1),
+    }
+    
+    return render(request, 'gestionDeTaller/dashboard_gerente.html', context)
