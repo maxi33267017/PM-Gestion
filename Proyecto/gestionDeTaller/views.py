@@ -1188,9 +1188,6 @@ def calcular_horas_contratadas(fecha_inicio, fecha_fin):
     if isinstance(fecha_fin, datetime):
         fecha_fin = fecha_fin.date()
     
-    # Fecha límite para considerar días sin registro como no disponibles
-    fecha_limite = date(2025, 7, 1)
-    
     total_horas = 0
     fecha_actual = fecha_inicio
     
@@ -1204,17 +1201,6 @@ def calcular_horas_contratadas(fecha_inicio, fecha_fin):
             horas_dia = 4
         else:  # Domingo
             horas_dia = 0
-        
-        # Si es después del 1ro de Julio 2025, verificar si hay registros
-        if fecha_actual >= fecha_limite and horas_dia > 0:
-            # Verificar si hay registros para este día
-            registros_dia = RegistroHorasTecnico.objects.filter(
-                fecha=fecha_actual
-            ).exists()
-            
-            # Si no hay registros, no contar como horas contratadas
-            if not registros_dia:
-                horas_dia = 0
         
         total_horas += horas_dia
         fecha_actual += timedelta(days=1)
@@ -1230,6 +1216,9 @@ def exportar_registros_horas(tecnicos, fecha_inicio, fecha_fin):
         with pd.ExcelWriter(output, engine='openpyxl') as writer:
             # Lista para almacenar los datos de todos los técnicos
             datos_tecnicos = []
+            
+            # Lista para almacenar todos los registros detallados
+            todos_los_registros = []
             
             # Procesar cada técnico
             for tecnico in tecnicos:
@@ -1274,16 +1263,24 @@ def exportar_registros_horas(tecnicos, fecha_inicio, fecha_fin):
                         except:
                             numero_servicio = ''
                     
-                    # Agregar datos detallados del registro
-                    datos_detalle.append({
+                    # Datos detallados del registro
+                    registro_detalle = {
+                        'Técnico': tecnico.get_nombre_completo(),
                         'Fecha': registro.fecha,
                         'Hora Inicio': registro.hora_inicio,
                         'Hora Fin': registro.hora_fin,
                         'Actividad': registro.tipo_hora.nombre,
                         'Servicio': numero_servicio,
                         'Descripción': registro.descripcion,
-                        'Aprobado': 'Sí' if registro.aprobado else 'No'
-                    })
+                        'Aprobado': 'Sí' if registro.aprobado else 'No',
+                        'Duración (horas)': round(duracion, 2)
+                    }
+                    
+                    # Agregar a la lista de datos detallados del técnico
+                    datos_detalle.append(registro_detalle)
+                    
+                    # Agregar a la lista de todos los registros
+                    todos_los_registros.append(registro_detalle)
                 
                 # Calcular KPIs basados en horas contratadas
                 # Productividad = (Horas que generan ingreso / Horas contratadas) * 100
@@ -1295,7 +1292,7 @@ def exportar_registros_horas(tecnicos, fecha_inicio, fecha_fin):
                 # Desempeño = (Horas facturadas / Horas contratadas) * 100
                 desempeno = (horas_facturadas / horas_contratadas * 100) if horas_contratadas > 0 else 0
                 
-                # Agregar datos del técnico al resumen
+                # Agregar datos del técnico al resumen (siempre, aunque no tenga registros)
                 datos_tecnicos.append({
                     'Técnico': tecnico.get_nombre_completo(),
                     'Horas Contratadas': round(horas_contratadas, 2),
@@ -1335,6 +1332,11 @@ def exportar_registros_horas(tecnicos, fecha_inicio, fecha_fin):
             
             # Escribir en Excel
             df_tecnicos.to_excel(writer, sheet_name='Resumen Técnicos', index=False)
+            
+            # Crear hoja con todos los registros detallados
+            if todos_los_registros:
+                df_todos_registros = pd.DataFrame(todos_los_registros)
+                df_todos_registros.to_excel(writer, sheet_name='Todos los Registros', index=False)
         
         # Preparar la respuesta HTTP
         output.seek(0)
