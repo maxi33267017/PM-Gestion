@@ -241,7 +241,7 @@
                             </div>
                             <div class="text-muted small">
                                 {% if total_servicios_mes > 0 %}
-                                    {{ servicios_a_facturar|floatformat:0|add:0|div:total_servicios_mes|mul:100|floatformat:1 }}%
+                                    {% widthratio servicios_a_facturar total_servicios_mes 100 %}%
                                 {% else %}
                                     0%
                                 {% endif %}
