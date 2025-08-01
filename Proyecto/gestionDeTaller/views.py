@@ -3786,7 +3786,7 @@ def dashboard_gerente(request):
     Dashboard específico para gerentes con métricas relevantes y acceso rápido
     """
     # Verificar que el usuario sea gerente
-    if request.user.rol not in ['GERENTE', 'SUPERUSER']:
+    if request.user.rol != 'GERENTE':
         messages.error(request, "No tienes permisos para acceder al dashboard de gerentes.")
         return redirect('home')
     
@@ -3952,7 +3952,7 @@ def dashboard_administrador(request):
     Dashboard específico para administradores con información operativa del taller
     """
     # Verificar que el usuario sea administrador
-    if request.user.rol not in ['ADMINISTRATIVO', 'GERENTE', 'SUPERUSER']:
+    if request.user.rol != 'ADMINISTRATIVO':
         messages.error(request, "No tienes permisos para acceder al dashboard de administradores.")
         return redirect('home')
     

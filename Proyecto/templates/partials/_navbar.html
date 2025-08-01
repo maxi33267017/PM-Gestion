@@ -43,7 +43,7 @@
                     </li>
                     {% endif %}
                     
-                    {% if user.rol == 'GERENTE' or user.is_superuser %}
+                    {% if user.rol == 'GERENTE' %}
                     <li class="nav-item">
                         <a class="nav-link {% if 'dashboard-gerente' in request.path %}active{% endif %}" href="{% url 'gestionDeTaller:dashboard_gerente' %}">
                             <i class="bi bi-speedometer2 me-1"></i>Dashboard Gerente
@@ -51,7 +51,7 @@
                     </li>
                     {% endif %}
                     
-                    {% if user.rol == 'ADMINISTRATIVO' or user.rol == 'GERENTE' or user.is_superuser %}
+                    {% if user.rol == 'ADMINISTRATIVO' %}
                     <li class="nav-item">
                         <a class="nav-link {% if 'dashboard-administrador' in request.path %}active{% endif %}" href="{% url 'gestionDeTaller:dashboard_administrador' %}">
                             <i class="fas fa-cogs me-1"></i>Dashboard Administrador
