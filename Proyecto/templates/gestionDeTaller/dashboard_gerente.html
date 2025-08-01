@@ -263,11 +263,6 @@
                 </div>
                 <div class="card-body">
                     <div class="d-grid gap-2">
-                        <a href="{% url 'gestionDeTaller:crear_preorden' %}" class="quick-action-btn bg-primary">
-                            <i class="fas fa-plus me-2"></i>
-                            Crear Pre-Orden
-                        </a>
-                        
                         <a href="{% url 'gestionDeTaller:lista_servicios' %}" class="quick-action-btn bg-success">
                             <i class="fas fa-tools me-2"></i>
                             Gestionar Servicios
@@ -288,9 +283,9 @@
                             Encuestas
                         </a>
                         
-                        <a href="{% url 'gestionDeTaller:gestionar_repuestos' %}" class="quick-action-btn bg-dark">
-                            <i class="fas fa-boxes me-2"></i>
-                            Repuestos
+                        <a href="{% url 'reportes:dashboard_reportes' %}" class="quick-action-btn bg-primary">
+                            <i class="fas fa-chart-bar me-2"></i>
+                            Reportes
                         </a>
                         
                         <a href="{% url 'recursosHumanos:solicitar_permiso' %}" class="quick-action-btn bg-danger">
