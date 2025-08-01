@@ -1179,6 +1179,11 @@ def calcular_horas_contratadas(fecha_inicio, fecha_fin):
     """
     Calcula las horas contratadas para un período específico.
     Horas contratadas: 8h L-V, 4h S = 44h semanales
+    
+    Las horas contratadas son fijas según el calendario laboral,
+    independientemente de si hay registros de horas o no.
+    Los registros solo determinan cómo se clasifican esas horas
+    (disponibles, no disponibles, con ingresos, etc.).
     """
     from datetime import timedelta, date
     
