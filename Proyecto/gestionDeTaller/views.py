@@ -3945,3 +3945,161 @@ def dashboard_gerente(request):
     }
     
     return render(request, 'gestionDeTaller/dashboard_gerente.html', context)
+
+@login_required
+def dashboard_administrador(request):
+    """
+    Dashboard específico para administradores con información operativa del taller
+    """
+    # Verificar que el usuario sea administrador
+    if request.user.rol not in ['ADMINISTRATIVO', 'GERENTE', 'SUPERUSER']:
+        messages.error(request, "No tienes permisos para acceder al dashboard de administradores.")
+        return redirect('home')
+    
+    from datetime import date, timedelta
+    from django.db.models import Sum, Count, Q
+    from django.utils import timezone
+    
+    # Obtener fecha actual y rangos
+    hoy = date.today()
+    inicio_mes = date(hoy.year, hoy.month, 1)
+    fin_mes = date(hoy.year, hoy.month + 1, 1) - timedelta(days=1) if hoy.month < 12 else date(hoy.year + 1, 1, 1) - timedelta(days=1)
+    
+    # Importar modelos necesarios
+    from gestionDeTaller.models import Servicio, PreOrden, HerramientaEspecial, HerramientaPersonal, Revision5S, PlanAccion5S
+    from recursosHumanos.models import Usuario, RegistroHorasTecnico, PermisoAusencia
+    
+    # === MÉTRICAS DE PRE-ÓRDENES ===
+    preordenes_mes = PreOrden.objects.filter(
+        fecha_creacion__date__range=[inicio_mes, fin_mes]
+    )
+    
+    total_preordenes_mes = preordenes_mes.count()
+    preordenes_spot = preordenes_mes.filter(clasificacion='SPOT').count()
+    preordenes_programadas = preordenes_mes.filter(clasificacion='PROGRAMADO').count()
+    preordenes_campania = preordenes_mes.filter(clasificacion='CAMPAÑA').count()
+    
+    # === MÉTRICAS DE SERVICIOS ===
+    servicios_mes = Servicio.objects.filter(
+        fecha_servicio__range=[inicio_mes, fin_mes]
+    )
+    
+    total_servicios_mes = servicios_mes.count()
+    servicios_en_proceso = servicios_mes.filter(estado='EN_PROCESO').count()
+    servicios_espera_repuestos = servicios_mes.filter(estado='ESPERA_REPUESTOS').count()
+    servicios_a_facturar = servicios_mes.filter(estado='A_FACTURAR').count()
+    servicios_completados = servicios_mes.filter(estado='COMPLETADO').count()
+    
+    # === MÉTRICAS DE HERRAMIENTAS ===
+    herramientas_especiales = HerramientaEspecial.objects.count()
+    herramientas_disponibles = HerramientaEspecial.objects.filter(
+        reservas__estado__in=['RESERVADA', 'RETIRADA']
+    ).distinct().count()
+    herramientas_retiradas = HerramientaEspecial.objects.filter(
+        reservas__estado='RETIRADA'
+    ).distinct().count()
+    
+    herramientas_personales = HerramientaPersonal.objects.count()
+    herramientas_asignadas = HerramientaPersonal.objects.filter(
+        asignaciones__estado_asignacion='ENTREGADA'
+    ).distinct().count()
+    
+    # === MÉTRICAS DE 5S ===
+    revisiones_5s_mes = Revision5S.objects.filter(
+        fecha_revision__range=[inicio_mes, fin_mes]
+    )
+    
+    total_revisiones_5s = revisiones_5s_mes.count()
+    revisiones_conformes = revisiones_5s_mes.filter(porcentaje_conformidad__gte=80).count()
+    revisiones_no_conformes = revisiones_5s_mes.filter(porcentaje_conformidad__lt=80).count()
+    
+    planes_accion_pendientes = PlanAccion5S.objects.filter(
+        estado='PENDIENTE'
+    ).count()
+    
+    # === MÉTRICAS DE TÉCNICOS ===
+    tecnicos_activos = Usuario.objects.filter(rol='TECNICO').count()
+    tecnicos_con_registros_mes = RegistroHorasTecnico.objects.filter(
+        fecha__range=[inicio_mes, fin_mes]
+    ).values('tecnico').distinct().count()
+    
+    # === MÉTRICAS DE PERMISOS ===
+    permisos_pendientes = PermisoAusencia.objects.filter(
+        estado='PENDIENTE'
+    ).count()
+    
+    permisos_mes = PermisoAusencia.objects.filter(
+        fecha_inicio__range=[inicio_mes, fin_mes]
+    ).count()
+    
+    # === DATOS RECIENTES ===
+    preordenes_recientes = preordenes_mes.order_by('-fecha_creacion')[:5]
+    servicios_recientes = servicios_mes.order_by('-fecha_servicio')[:5]
+    herramientas_retiradas_recientes = HerramientaEspecial.objects.filter(
+        reservas__estado='RETIRADA'
+    ).distinct()[:5]
+    
+    # === ESTADÍSTICAS POR SUCURSAL ===
+    if request.user.sucursal:
+        servicios_sucursal = servicios_mes.filter(preorden__sucursal=request.user.sucursal).count()
+        preordenes_sucursal = preordenes_mes.filter(sucursal=request.user.sucursal).count()
+    else:
+        servicios_sucursal = total_servicios_mes
+        preordenes_sucursal = total_preordenes_mes
+    
+    context = {
+        'inicio_mes': inicio_mes,
+        'fin_mes': fin_mes,
+        'mes_actual': inicio_mes.strftime('%B %Y'),
+        
+        # Métricas de pre-órdenes
+        'total_preordenes_mes': total_preordenes_mes,
+        'preordenes_spot': preordenes_spot,
+        'preordenes_programadas': preordenes_programadas,
+        'preordenes_campania': preordenes_campania,
+        
+        # Métricas de servicios
+        'total_servicios_mes': total_servicios_mes,
+        'servicios_en_proceso': servicios_en_proceso,
+        'servicios_espera_repuestos': servicios_espera_repuestos,
+        'servicios_a_facturar': servicios_a_facturar,
+        'servicios_completados': servicios_completados,
+        
+        # Métricas de herramientas
+        'herramientas_especiales': herramientas_especiales,
+        'herramientas_disponibles': herramientas_disponibles,
+        'herramientas_retiradas': herramientas_retiradas,
+        'herramientas_personales': herramientas_personales,
+        'herramientas_asignadas': herramientas_asignadas,
+        
+        # Métricas de 5S
+        'total_revisiones_5s': total_revisiones_5s,
+        'revisiones_conformes': revisiones_conformes,
+        'revisiones_no_conformes': revisiones_no_conformes,
+        'planes_accion_pendientes': planes_accion_pendientes,
+        
+        # Métricas de técnicos
+        'tecnicos_activos': tecnicos_activos,
+        'tecnicos_con_registros_mes': tecnicos_con_registros_mes,
+        
+        # Métricas de permisos
+        'permisos_pendientes': permisos_pendientes,
+        'permisos_mes': permisos_mes,
+        
+        # Datos recientes
+        'preordenes_recientes': preordenes_recientes,
+        'servicios_recientes': servicios_recientes,
+        'herramientas_retiradas_recientes': herramientas_retiradas_recientes,
+        
+        # Estadísticas por sucursal
+        'servicios_sucursal': servicios_sucursal,
+        'preordenes_sucursal': preordenes_sucursal,
+        
+        # Porcentajes
+        'porcentaje_servicios_proceso': round((servicios_en_proceso / total_servicios_mes * 100) if total_servicios_mes > 0 else 0, 1),
+        'porcentaje_servicios_espera': round((servicios_espera_repuestos / total_servicios_mes * 100) if total_servicios_mes > 0 else 0, 1),
+        'porcentaje_servicios_facturar': round((servicios_a_facturar / total_servicios_mes * 100) if total_servicios_mes > 0 else 0, 1),
+        'porcentaje_servicios_completados': round((servicios_completados / total_servicios_mes * 100) if total_servicios_mes > 0 else 0, 1),
+    }
+    
+    return render(request, 'gestionDeTaller/dashboard_administrador.html', context)

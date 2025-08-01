@@ -1,0 +1,503 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Dashboard Administrador - Patagonia Maquinarias{% endblock %}
+
+{% block extra_css %}
+<style>
+    .metric-card {
+        transition: transform 0.2s;
+        border-left: 4px solid #007bff;
+    }
+    .metric-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    .metric-card.success { border-left-color: #28a745; }
+    .metric-card.warning { border-left-color: #ffc107; }
+    .metric-card.danger { border-left-color: #dc3545; }
+    .metric-card.info { border-left-color: #17a2b8; }
+    .metric-card.primary { border-left-color: #007bff; }
+    .metric-card.secondary { border-left-color: #6c757d; }
+    
+    .metric-value {
+        font-size: 2rem;
+        font-weight: bold;
+        color: #2c3e50;
+    }
+    
+    .metric-label {
+        color: #6c757d;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .quick-action-btn {
+        transition: all 0.3s;
+        border-radius: 10px;
+        border: none;
+        padding: 15px;
+        text-align: center;
+        text-decoration: none;
+        display: block;
+        color: white;
+        font-weight: 500;
+    }
+    
+    .quick-action-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        color: white;
+        text-decoration: none;
+    }
+    
+    .progress-ring {
+        width: 80px;
+        height: 80px;
+    }
+    
+    .recent-item {
+        border-left: 3px solid #007bff;
+        padding: 10px;
+        margin-bottom: 10px;
+        background: #f8f9fa;
+        border-radius: 5px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header del Dashboard -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h3 mb-0">
+                        <i class="fas fa-cogs me-2 text-primary"></i>
+                        Dashboard Administrador
+                    </h1>
+                    <p class="text-muted mb-0">Gestión operativa del taller - {{ mes_actual }}</p>
+                </div>
+                <div class="d-flex gap-2">
+                    <a href="{% url 'gestionDeTaller:lista_servicios' %}" class="btn btn-outline-primary">
+                        <i class="fas fa-tools me-1"></i>
+                        Ver Servicios
+                    </a>
+                    <a href="{% url 'gestionDeTaller:lista_preordenes' %}" class="btn btn-outline-info">
+                        <i class="fas fa-clipboard-list me-1"></i>
+                        Ver Pre-Órdenes
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Métricas Principales -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card metric-card success h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <div class="metric-value">{{ total_preordenes_mes }}</div>
+                            <div class="metric-label">Pre-Órdenes del Mes</div>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-clipboard-list fa-2x text-success"></i>
+                        </div>
+                    </div>
+                    <small class="text-muted">
+                        Spot: {{ preordenes_spot }} | Programadas: {{ preordenes_programadas }}
+                    </small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card metric-card info h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <div class="metric-value">{{ total_servicios_mes }}</div>
+                            <div class="metric-label">Servicios del Mes</div>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-tools fa-2x text-info"></i>
+                        </div>
+                    </div>
+                    <small class="text-muted">
+                        En proceso: {{ servicios_en_proceso }} | Completados: {{ servicios_completados }}
+                    </small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card metric-card warning h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <div class="metric-value">{{ herramientas_especiales }}</div>
+                            <div class="metric-label">Herramientas Especiales</div>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-wrench fa-2x text-warning"></i>
+                        </div>
+                    </div>
+                    <small class="text-muted">
+                        Disponibles: {{ herramientas_disponibles }} | Retiradas: {{ herramientas_retiradas }}
+                    </small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card metric-card danger h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <div class="metric-value">{{ permisos_pendientes }}</div>
+                            <div class="metric-label">Permisos Pendientes</div>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-calendar-times fa-2x text-danger"></i>
+                        </div>
+                    </div>
+                    <small class="text-muted">
+                        {{ permisos_mes }} permisos este mes
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Estado de Servicios -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-chart-pie me-2"></i>
+                        Estado de Servicios del Mes
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 text-center mb-3">
+                            <div class="progress-ring mx-auto mb-2">
+                                <div class="d-flex align-items-center justify-content-center bg-success text-white rounded-circle" style="width: 80px; height: 80px;">
+                                    <div class="text-center">
+                                        <div class="h4 mb-0">{{ servicios_completados }}</div>
+                                        <small>Completados</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="text-muted small">{{ porcentaje_servicios_completados }}%</div>
+                        </div>
+                        
+                        <div class="col-md-3 text-center mb-3">
+                            <div class="progress-ring mx-auto mb-2">
+                                <div class="d-flex align-items-center justify-content-center bg-warning text-white rounded-circle" style="width: 80px; height: 80px;">
+                                    <div class="text-center">
+                                        <div class="h4 mb-0">{{ servicios_en_proceso }}</div>
+                                        <small>En Proceso</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="text-muted small">{{ porcentaje_servicios_proceso }}%</div>
+                        </div>
+                        
+                        <div class="col-md-3 text-center mb-3">
+                            <div class="progress-ring mx-auto mb-2">
+                                <div class="d-flex align-items-center justify-content-center bg-info text-white rounded-circle" style="width: 80px; height: 80px;">
+                                    <div class="text-center">
+                                        <div class="h4 mb-0">{{ servicios_espera_repuestos }}</div>
+                                        <small>Espera Repuestos</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="text-muted small">{{ porcentaje_servicios_espera }}%</div>
+                        </div>
+                        
+                        <div class="col-md-3 text-center mb-3">
+                            <div class="progress-ring mx-auto mb-2">
+                                <div class="d-flex align-items-center justify-content-center bg-primary text-white rounded-circle" style="width: 80px; height: 80px;">
+                                    <div class="text-center">
+                                        <div class="h4 mb-0">{{ servicios_a_facturar }}</div>
+                                        <small>A Facturar</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="text-muted small">
+                                {% if total_servicios_mes > 0 %}
+                                    {% widthratio servicios_a_facturar total_servicios_mes 100 %}%
+                                {% else %}
+                                    0%
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Acciones Rápidas -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-bolt me-2"></i>
+                        Acciones Rápidas
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-2 mb-2">
+                            <a href="{% url 'gestionDeTaller:crear_preorden' %}" class="quick-action-btn bg-primary">
+                                <i class="fas fa-plus me-2"></i>
+                                Crear Pre-Orden
+                            </a>
+                        </div>
+                        
+                        <div class="col-md-2 mb-2">
+                            <a href="{% url 'gestionDeTaller:lista_servicios' %}" class="quick-action-btn bg-success">
+                                <i class="fas fa-tools me-2"></i>
+                                Gestionar Servicios
+                            </a>
+                        </div>
+                        
+                        <div class="col-md-2 mb-2">
+                            <a href="{% url 'gestionDeTaller:herramientas_especiales_list' %}" class="quick-action-btn bg-warning">
+                                <i class="fas fa-wrench me-2"></i>
+                                Herramientas Especiales
+                            </a>
+                        </div>
+                        
+                        <div class="col-md-2 mb-2">
+                            <a href="{% url 'gestionDeTaller:personal_tools_list' %}" class="quick-action-btn bg-info">
+                                <i class="fas fa-toolbox me-2"></i>
+                                Herramientas Personales
+                            </a>
+                        </div>
+                        
+                        <div class="col-md-2 mb-2">
+                            <a href="{% url 'gestionDeTaller:lista_revisiones_5s' %}" class="quick-action-btn bg-secondary">
+                                <i class="fas fa-clipboard-check me-2"></i>
+                                Revisiones 5S
+                            </a>
+                        </div>
+                        
+                        <div class="col-md-2 mb-2">
+                            <a href="{% url 'recursosHumanos:solicitar_permiso' %}" class="quick-action-btn bg-danger">
+                                <i class="fas fa-calendar-plus me-2"></i>
+                                Solicitar Permiso
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Información Detallada -->
+    <div class="row mb-4">
+        <!-- Pre-Órdenes Recientes -->
+        <div class="col-lg-4 mb-3">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-clock me-2"></i>
+                        Pre-Órdenes Recientes
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if preordenes_recientes %}
+                        {% for preorden in preordenes_recientes %}
+                        <div class="recent-item">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <strong>Pre-Orden #{{ preorden.numero }}</strong>
+                                    <br>
+                                    <small class="text-muted">
+                                        {{ preorden.cliente.razon_social }} - {{ preorden.equipo.numero_serie }}
+                                    </small>
+                                </div>
+                                <div class="text-end">
+                                    <span class="badge bg-{% if preorden.clasificacion == 'SPOT' %}danger{% elif preorden.clasificacion == 'PROGRAMADO' %}success{% else %}warning{% endif %}">
+                                        {{ preorden.get_clasificacion_display }}
+                                    </span>
+                                    <br>
+                                    <small class="text-muted">{{ preorden.fecha_creacion|date:"d/m/Y" }}</small>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted text-center">No hay pre-órdenes recientes</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Servicios Recientes -->
+        <div class="col-lg-4 mb-3">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-tools me-2"></i>
+                        Servicios Recientes
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if servicios_recientes %}
+                        {% for servicio in servicios_recientes %}
+                        <div class="recent-item">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <strong>Servicio #{{ servicio.id }}</strong>
+                                    <br>
+                                    <small class="text-muted">
+                                        {{ servicio.preorden.cliente.razon_social }} - {{ servicio.preorden.equipo.numero_serie }}
+                                    </small>
+                                </div>
+                                <div class="text-end">
+                                    <span class="badge bg-{% if servicio.estado == 'COMPLETADO' %}success{% elif servicio.estado == 'EN_PROCESO' %}warning{% elif servicio.estado == 'ESPERA_REPUESTOS' %}info{% else %}secondary{% endif %}">
+                                        {{ servicio.get_estado_display }}
+                                    </span>
+                                    <br>
+                                    <small class="text-muted">{{ servicio.fecha_servicio|date:"d/m/Y" }}</small>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted text-center">No hay servicios recientes</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Herramientas Retiradas -->
+        <div class="col-lg-4 mb-3">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-wrench me-2"></i>
+                        Herramientas Retiradas
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if herramientas_retiradas_recientes %}
+                        {% for herramienta in herramientas_retiradas_recientes %}
+                        <div class="recent-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>{{ herramienta.nombre }}</strong>
+                                    <br>
+                                    <small class="text-muted">{{ herramienta.codigo }}</small>
+                                </div>
+                                <div class="text-end">
+                                    <span class="badge bg-warning">
+                                        Retirada
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted text-center">No hay herramientas retiradas</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Métricas Adicionales -->
+    <div class="row mb-4">
+        <div class="col-md-6 mb-3">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-clipboard-check me-2"></i>
+                        Sistema 5S
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-4">
+                            <h4 class="text-primary">{{ total_revisiones_5s }}</h4>
+                            <small class="text-muted">Revisiones del Mes</small>
+                        </div>
+                        <div class="col-4">
+                            <h4 class="text-success">{{ revisiones_conformes }}</h4>
+                            <small class="text-muted">Conformes</small>
+                        </div>
+                        <div class="col-4">
+                            <h4 class="text-warning">{{ planes_accion_pendientes }}</h4>
+                            <small class="text-muted">Planes Pendientes</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 mb-3">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-users me-2"></i>
+                        Personal
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-4">
+                            <h4 class="text-info">{{ tecnicos_activos }}</h4>
+                            <small class="text-muted">Técnicos Activos</small>
+                        </div>
+                        <div class="col-4">
+                            <h4 class="text-success">{{ herramientas_personales }}</h4>
+                            <small class="text-muted">Herramientas Personales</small>
+                        </div>
+                        <div class="col-4">
+                            <h4 class="text-warning">{{ herramientas_asignadas }}</h4>
+                            <small class="text-muted">Asignadas</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Animaciones para las métricas
+    document.addEventListener('DOMContentLoaded', function() {
+        // Animar contadores
+        const counters = document.querySelectorAll('.metric-value');
+        counters.forEach(counter => {
+            const target = parseInt(counter.textContent.replace(/[^\d]/g, ''));
+            const increment = target / 50;
+            let current = 0;
+            
+            const updateCounter = () => {
+                if (current < target) {
+                    current += increment;
+                    counter.textContent = Math.ceil(current).toLocaleString();
+                    requestAnimationFrame(updateCounter);
+                } else {
+                    counter.textContent = target.toLocaleString();
+                }
+            };
+            
+            updateCounter();
+        });
+    });
+</script>
+{% endblock %} 
