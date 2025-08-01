@@ -52,14 +52,78 @@
         </div>
     </div>
 
+    <!-- Filtros de Métricas (Solo para Gerentes) -->
+    {% if es_gerente %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-filter me-2"></i>
+                        Filtros de Métricas
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="get" class="row g-3">
+                        <div class="col-md-4">
+                            <label for="{{ form_metricas.mes.id_for_label }}" class="form-label">
+                                <i class="fas fa-calendar me-1"></i>
+                                Mes
+                            </label>
+                            {{ form_metricas.mes }}
+                            {% if form_metricas.mes.errors %}
+                            <div class="text-danger small">
+                                {{ form_metricas.mes.errors }}
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <label for="{{ form_metricas.tecnico.id_for_label }}" class="form-label">
+                                <i class="fas fa-user me-1"></i>
+                                Técnico
+                            </label>
+                            {{ form_metricas.tecnico }}
+                            {% if form_metricas.tecnico.errors %}
+                            <div class="text-danger small">
+                                {{ form_metricas.tecnico.errors }}
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-4 d-flex align-items-end">
+                            <button type="submit" class="btn btn-primary me-2">
+                                <i class="fas fa-search me-1"></i>
+                                Filtrar
+                            </button>
+                            <a href="{% url 'gestionDeTaller:tecnicos' %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-times me-1"></i>
+                                Limpiar
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
     <!-- Estadísticas Globales -->
     <div class="row mb-4">
         <div class="col-12 mb-3">
             <div class="alert alert-info">
                 <i class="fas fa-calendar me-2"></i>
-                <strong>Métricas del mes en curso:</strong> {{ mes_actual }}
+                <strong>Métricas del mes:</strong> {{ mes_actual }}
                 {% if user.rol == 'TECNICO' %}
                     <br><small>Mostrando solo tus resultados</small>
+                {% elif es_gerente %}
+                    <br><small>
+                        {% if form_metricas.tecnico.value %}
+                            Resultados de {{ form_metricas.tecnico.value.get_nombre_completo }}
+                        {% else %}
+                            Promedio de todos los técnicos
+                        {% endif %}
+                    </small>
                 {% else %}
                     <br><small>Promedio de todos los técnicos</small>
                 {% endif %}

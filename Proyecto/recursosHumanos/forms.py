@@ -133,6 +133,31 @@ class FiltroExportacionHorasForm(forms.Form):
         widget=forms.Select(attrs={'class': 'form-select'})
     )
 
+class FiltroMetricasTecnicosForm(forms.Form):
+    """
+    Formulario para filtrar métricas de técnicos por mes y técnico específico
+    """
+    mes = forms.DateField(
+        label='Mes',
+        widget=forms.DateInput(attrs={
+            'type': 'month', 
+            'class': 'form-control',
+            'onchange': 'this.form.submit()'
+        }),
+        required=False,
+        help_text="Selecciona el mes para ver las métricas"
+    )
+    tecnico = forms.ModelChoiceField(
+        queryset=Usuario.objects.filter(rol='TECNICO').order_by('apellido', 'nombre'),
+        label='Técnico',
+        required=False,
+        empty_label="Todos los técnicos",
+        widget=forms.Select(attrs={
+            'class': 'form-select',
+            'onchange': 'this.form.submit()'
+        })
+    )
+
 class PermisoAusenciaForm(forms.ModelForm):
     """
     Formulario para solicitar permisos de ausencia

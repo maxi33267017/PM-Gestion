@@ -1020,7 +1020,7 @@ from django.shortcuts import render
 from django.db.models import Sum, F, Case, When, ExpressionWrapper, DurationField
 from datetime import timedelta
 from recursosHumanos.models import Usuario, RegistroHorasTecnico
-from recursosHumanos.forms import FiltroExportacionHorasForm
+from recursosHumanos.forms import FiltroExportacionHorasForm, FiltroMetricasTecnicosForm
 
 @login_required
 def tecnicos(request):
@@ -1072,19 +1072,42 @@ def tecnicos(request):
             messages.error(request, "Error al exportar los datos. Por favor, intente nuevamente.")
             return redirect('gestionDeTaller:tecnicos')
 
-    # Obtener el mes en curso para calcular métricas
-    from datetime import date
-    hoy = date.today()
-    inicio_mes = date(hoy.year, hoy.month, 1)
-    fin_mes = date(hoy.year, hoy.month + 1, 1) - timedelta(days=1) if hoy.month < 12 else date(hoy.year + 1, 1, 1) - timedelta(days=1)
+    # Procesar filtros de métricas (solo para gerentes)
+    form_metricas = None
+    if es_superuser or es_gerente:
+        form_metricas = FiltroMetricasTecnicosForm(request.GET or None)
+        
+        # Obtener mes seleccionado o usar mes actual
+        if form_metricas.is_valid() and form_metricas.cleaned_data.get('mes'):
+            mes_seleccionado = form_metricas.cleaned_data['mes']
+            inicio_mes = date(mes_seleccionado.year, mes_seleccionado.month, 1)
+            fin_mes = date(mes_seleccionado.year, mes_seleccionado.month + 1, 1) - timedelta(days=1) if mes_seleccionado.month < 12 else date(mes_seleccionado.year + 1, 1, 1) - timedelta(days=1)
+        else:
+            # Mes actual por defecto
+            hoy = date.today()
+            inicio_mes = date(hoy.year, hoy.month, 1)
+            fin_mes = date(hoy.year, hoy.month + 1, 1) - timedelta(days=1) if hoy.month < 12 else date(hoy.year + 1, 1, 1) - timedelta(days=1)
+        
+        # Filtrar técnicos si se seleccionó uno específico
+        tecnico_metricas = form_metricas.cleaned_data.get('tecnico') if form_metricas.is_valid() else None
+        if tecnico_metricas:
+            tecnicos_para_metricas = [tecnico_metricas]
+        else:
+            tecnicos_para_metricas = tecnicos_visibles
+    else:
+        # Para técnicos, siempre usar mes actual y solo su propio usuario
+        hoy = date.today()
+        inicio_mes = date(hoy.year, hoy.month, 1)
+        fin_mes = date(hoy.year, hoy.month + 1, 1) - timedelta(days=1) if hoy.month < 12 else date(hoy.year + 1, 1, 1) - timedelta(days=1)
+        tecnicos_para_metricas = tecnicos_visibles
     
     total_productividad = 0
     total_eficiencia = 0
     total_desempeno = 0
     total_tecnicos_con_registros = 0
 
-    # Calcular métricas del mes en curso para los técnicos visibles
-    for tecnico in tecnicos_visibles:
+    # Calcular métricas para los técnicos filtrados
+    for tecnico in tecnicos_para_metricas:
         # Obtener registros del mes en curso
         registros_mes = RegistroHorasTecnico.objects.filter(
             tecnico=tecnico,
@@ -1169,7 +1192,9 @@ def tecnicos(request):
         'total_desempeno': promedio_desempeno_mes,
         'total_tecnicos_con_registros': total_tecnicos_con_registros,
         'form_filtro': form_filtro,
+        'form_metricas': form_metricas,
         'mes_actual': inicio_mes.strftime('%B %Y'),
+        'es_gerente': es_superuser or es_gerente,
     }
     return render(request, 'gestionDeTaller/tecnicos/tecnicos.html', context)
 
