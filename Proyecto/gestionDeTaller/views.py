@@ -3841,12 +3841,9 @@ def dashboard_gerente(request):
         total=Sum('valor_mano_obra')
     )['total'] or 0
     
-    # Calcular repuestos usando la relación
-    from django.db.models import F
-    facturacion_repuestos = calcular_repuestos_servicios(servicios_facturados)
-    
-    # Calcular gastos de asistencia incluyendo modelos antiguos y nuevos
+    # Calcular repuestos y gastos usando las funciones helper
     from reportes.views import calcular_gastos_servicios, calcular_repuestos_servicios
+    facturacion_repuestos = calcular_repuestos_servicios(servicios_facturados)
     facturacion_gastos = calcular_gastos_servicios(servicios_facturados)
     
     total_facturacion = facturacion_mano_obra + facturacion_repuestos + facturacion_gastos

@@ -343,16 +343,16 @@ def facturacion_por_sucursal(request):
         )['total'] or 0
         
         # GASTOS: Incluir modelos antiguos y nuevos
-        total_gastos = servicios_sucursal.aggregate(
+        total_gastos_antiguos = servicios_sucursal.aggregate(
             total=Sum('gastos__monto')
         )['total'] or 0
         
         total_gastos_simplificados = servicios_sucursal.aggregate(
-            total=Sum('gastos_asistencia_simplificados__monto')
+            total=Sum('gastos_asistencia_simplificados__monto_usd')
         )['total'] or 0
         
         total_gastos_terceros = servicios_sucursal.aggregate(
-            total=Sum('gastos_insumos_terceros__monto')
+            total=Sum('gastos_insumos_terceros__monto_usd')
         )['total'] or 0
         
         total_gastos = total_gastos_antiguos + total_gastos_simplificados + total_gastos_terceros
@@ -363,7 +363,7 @@ def facturacion_por_sucursal(request):
         )['total'] or 0
         
         total_repuestos_simplificados = servicios_sucursal.aggregate(
-            total=Sum('venta_repuestos_simplificada__monto_total')
+            total=Sum('venta_repuestos_simplificada__monto_total_usd')
         )['total'] or 0
         
         total_repuestos = total_repuestos_antiguos + total_repuestos_simplificados
