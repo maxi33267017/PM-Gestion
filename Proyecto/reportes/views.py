@@ -17,7 +17,7 @@ from gestionDeTaller.models import (
     GastoAsistenciaSimplificado, VentaRepuestosSimplificada, GastoInsumosTerceros
 )
 from clientes.models import Cliente
-from crm.models import Embudo, AnalisisCliente
+from crm.models import AnalisisCliente
 
 def calcular_gastos_servicios(servicios_query):
     """
