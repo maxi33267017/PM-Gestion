@@ -561,16 +561,16 @@ def facturacion_trimestral(request):
                 total=Sum('valor_mano_obra')
             )['total'] or 0
             
-            total_gastos = calcular_gastos_servicios(servicios_mes)
-            total_repuestos = calcular_repuestos_servicios(servicios_mes)
+        total_gastos = calcular_gastos_servicios(servicios_mes)
+        total_repuestos = calcular_repuestos_servicios(servicios_mes)
             
-            total_mes = total_mano_obra + total_gastos + total_repuestos
-            total_trimestre += total_mes
-            servicios_trimestre += servicios_mes.count()
+        total_mes = total_mano_obra + total_gastos + total_repuestos
+        total_trimestre += total_mes
+        servicios_trimestre += servicios_mes.count()
             
             # Agregar clientes únicos
-            clientes_mes = servicios_mes.values_list('preorden__cliente', flat=True)
-            clientes_unicos.update(clientes_mes)
+        clientes_mes = servicios_mes.values_list('preorden__cliente', flat=True)
+        clientes_unicos.update(clientes_mes)
         
         total_anual += total_trimestre
         
@@ -816,13 +816,13 @@ def facturacion_anual(request):
             fecha_servicio__lte=fecha_fin
         )
         
-                    # Calcular facturación del mes (incluyendo modelos antiguos y nuevos)
-            total_mano_obra = servicios_mes.aggregate(
-                total=Sum('valor_mano_obra')
-            )['total'] or 0
-            
-            total_gastos = calcular_gastos_servicios(servicios_mes)
-            total_repuestos = calcular_repuestos_servicios(servicios_mes)
+        # Calcular facturación del mes (incluyendo modelos antiguos y nuevos)
+        total_mano_obra = servicios_mes.aggregate(
+            total=Sum('valor_mano_obra')
+        )['total'] or 0
+        
+        total_gastos = calcular_gastos_servicios(servicios_mes)
+        total_repuestos = calcular_repuestos_servicios(servicios_mes)
         
         total_mes = total_mano_obra + total_gastos + total_repuestos
         total_anual += total_mes
@@ -2583,8 +2583,8 @@ def servicios_completados(request):
     # Calcular estadísticas
     total_servicios = servicios.count()
     total_mano_obra = servicios.aggregate(total=Sum('valor_mano_obra'))['total'] or Decimal('0.00')
-            total_gastos = calcular_gastos_servicios(servicios)
-        total_repuestos = calcular_repuestos_servicios(servicios)
+    total_gastos = calcular_gastos_servicios(servicios)
+    total_repuestos = calcular_repuestos_servicios(servicios)
     valor_total = total_mano_obra + total_gastos + total_repuestos
     
     # Obtener lista de sucursales para el filtro
