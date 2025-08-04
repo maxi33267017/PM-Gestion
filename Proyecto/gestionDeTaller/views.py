@@ -1953,7 +1953,7 @@ def enviar_encuesta(request, servicio_id):
                     })
                 else:
                     messages.success(request, "Encuesta enviada exitosamente.")
-                    return redirect('gestionDeTaller:detalle_servicio', servicio_id=servicio_id)
+                    return redirect('gestionDeTaller:lista_encuestas')
 
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
             return JsonResponse({
