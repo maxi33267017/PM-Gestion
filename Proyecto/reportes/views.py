@@ -337,36 +337,13 @@ def facturacion_por_sucursal(request):
             preorden__cliente__sucursal=sucursal
         )
         
-        # Calcular facturación
+        # Calcular facturación usando las funciones helper
         total_mano_obra = servicios_sucursal.aggregate(
             total=Sum('valor_mano_obra')
         )['total'] or 0
         
-        # GASTOS: Incluir modelos antiguos y nuevos
-        total_gastos_antiguos = servicios_sucursal.aggregate(
-            total=Sum('gastos__monto')
-        )['total'] or 0
-        
-        total_gastos_simplificados = servicios_sucursal.aggregate(
-            total=Sum('gastos_asistencia_simplificados__monto_usd')
-        )['total'] or 0
-        
-        total_gastos_terceros = servicios_sucursal.aggregate(
-            total=Sum('gastos_insumos_terceros__monto_usd')
-        )['total'] or 0
-        
-        total_gastos = total_gastos_antiguos + total_gastos_simplificados + total_gastos_terceros
-        
-        # REPUESTOS: Incluir modelos antiguos y nuevos
-        total_repuestos_antiguos = servicios_sucursal.aggregate(
-            total=Sum(F('repuestos__precio_unitario') * F('repuestos__cantidad'))
-        )['total'] or 0
-        
-        total_repuestos_simplificados = servicios_sucursal.aggregate(
-            total=Sum('venta_repuestos_simplificada__monto_total_usd')
-        )['total'] or 0
-        
-        total_repuestos = total_repuestos_antiguos + total_repuestos_simplificados
+        total_gastos = calcular_gastos_servicios(servicios_sucursal)
+        total_repuestos = calcular_repuestos_servicios(servicios_sucursal)
         
         total_facturacion = total_mano_obra + total_gastos + total_repuestos
         
