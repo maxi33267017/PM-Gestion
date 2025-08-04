@@ -334,6 +334,15 @@
         background: rgba(13, 202, 240, 0.15);
     }
     
+    .table tbody tr.servicio-espera-confirmacion-cliente {
+        background: rgba(13, 202, 240, 0.1);
+        border-left: 4px solid #0dcaf0;
+    }
+    
+    .table tbody tr.servicio-espera-confirmacion-cliente:hover {
+        background: rgba(13, 202, 240, 0.15);
+    }
+    
     .table tbody tr.servicio-programado {
         background: rgba(13, 110, 253, 0.1);
         border-left: 4px solid #0d6efd;
@@ -795,6 +804,10 @@
                                 <span class="small">En Espera de Repuestos</span>
                             </div>
                             <div class="d-flex align-items-center gap-2">
+                                <div style="width: 20px; height: 20px; background: #0dcaf0; border-radius: 4px;"></div>
+                                <span class="small">En Espera Confirmación Cliente</span>
+                            </div>
+                            <div class="d-flex align-items-center gap-2">
                                 <div style="width: 20px; height: 20px; background: #0d6efd; border-radius: 4px;"></div>
                                 <span class="small">Programado</span>
                             </div>
@@ -842,6 +855,7 @@
                                 <tr data-url="{% url 'gestionDeTaller:detalle_servicio' servicio.id %}" 
                                     class="cursor-pointer {% if servicio.estado == 'EN_PROCESO' %}servicio-en-proceso
                                                          {% elif servicio.estado == 'ESPERA_REPUESTOS' %}servicio-espera-repuestos
+                                                         {% elif servicio.estado == 'ESPERA_CONFIRMACION_CLIENTE' %}servicio-espera-confirmacion-cliente
                                                          {% elif servicio.estado == 'PROGRAMADO' %}servicio-programado
                                                          {% elif servicio.estado == 'A_FACTURAR' %}servicio-a-facturar
                                                          {% elif servicio.estado == 'COMPLETADO' %}servicio-completado{% endif %}">
@@ -853,12 +867,14 @@
                                     <td>
                                         <span class="badge {% if servicio.estado == 'EN_PROCESO' %}bg-warning text-dark
                                                           {% elif servicio.estado == 'ESPERA_REPUESTOS' %}bg-info text-dark
+                                                          {% elif servicio.estado == 'ESPERA_CONFIRMACION_CLIENTE' %}bg-info text-dark
                                                           {% elif servicio.estado == 'PROGRAMADO' %}bg-primary
                                                           {% elif servicio.estado == 'A_FACTURAR' %}bg-success
                                                           {% elif servicio.estado == 'COMPLETADO' %}bg-secondary
                                                           {% else %}bg-secondary{% endif %} fw-bold">
                                             <i class="bi {% if servicio.estado == 'EN_PROCESO' %}bi-gear-fill
                                                         {% elif servicio.estado == 'ESPERA_REPUESTOS' %}bi-clock-fill
+                                                        {% elif servicio.estado == 'ESPERA_CONFIRMACION_CLIENTE' %}bi-clock-fill
                                                         {% elif servicio.estado == 'PROGRAMADO' %}bi-calendar-check-fill
                                                         {% elif servicio.estado == 'A_FACTURAR' %}bi-receipt-fill
                                                         {% elif servicio.estado == 'COMPLETADO' %}bi-check-circle-fill

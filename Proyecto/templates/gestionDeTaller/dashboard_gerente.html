@@ -335,7 +335,7 @@
                                     </small>
                                 </div>
                                 <div class="text-end">
-                                    <span class="badge bg-{% if servicio.estado == 'COMPLETADO' %}success{% elif servicio.estado == 'EN_PROCESO' %}warning{% elif servicio.estado == 'ESPERA_REPUESTOS' %}info{% else %}secondary{% endif %}">
+                                    <span class="badge bg-{% if servicio.estado == 'COMPLETADO' %}success{% elif servicio.estado == 'EN_PROCESO' %}warning{% elif servicio.estado == 'ESPERA_REPUESTOS' %}info{% elif servicio.estado == 'ESPERA_CONFIRMACION_CLIENTE' %}info{% else %}secondary{% endif %}">
                                         {{ servicio.get_estado_display }}
                                     </span>
                                     <br>
