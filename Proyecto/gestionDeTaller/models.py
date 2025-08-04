@@ -412,6 +412,54 @@ class VentaRepuesto(models.Model):
         return ((self.precio_unitario - self.costo_unitario) / self.costo_unitario) * 100
 
 
+class VentaRepuestosSimplificada(models.Model):
+    """Modelo simplificado para venta de repuestos con solo total en USD"""
+    servicio = models.ForeignKey(Servicio, on_delete=models.PROTECT, related_name='venta_repuestos_simplificada')
+    descripcion = models.TextField(verbose_name="Descripción de Repuestos")
+    monto_total_usd = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Monto Total (USD)")
+    fecha_venta = models.DateField(auto_now_add=True, verbose_name="Fecha de Venta")
+    
+    class Meta:
+        verbose_name = "Venta de Repuestos Simplificada"
+        verbose_name_plural = "Ventas de Repuestos Simplificadas"
+        ordering = ['-fecha_venta']
+    
+    def __str__(self):
+        return f"Repuestos - ${self.monto_total_usd} USD - {self.servicio.id}"
+
+
+class GastoAsistenciaSimplificado(models.Model):
+    """Modelo simplificado para gastos de asistencia con solo monto en USD"""
+    servicio = models.ForeignKey(Servicio, on_delete=models.PROTECT, related_name='gastos_asistencia_simplificados')
+    descripcion = models.TextField(verbose_name="Descripción del Gasto")
+    monto_usd = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Monto (USD)")
+    fecha_gasto = models.DateField(auto_now_add=True, verbose_name="Fecha del Gasto")
+    
+    class Meta:
+        verbose_name = "Gasto de Asistencia Simplificado"
+        verbose_name_plural = "Gastos de Asistencia Simplificados"
+        ordering = ['-fecha_gasto']
+    
+    def __str__(self):
+        return f"Gasto Asistencia - ${self.monto_usd} USD - {self.servicio.id}"
+
+
+class GastoInsumosTerceros(models.Model):
+    """Modelo para gastos de insumos o trabajos de terceros"""
+    servicio = models.ForeignKey(Servicio, on_delete=models.PROTECT, related_name='gastos_insumos_terceros')
+    descripcion = models.TextField(verbose_name="Descripción del Gasto")
+    monto_usd = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Monto (USD)")
+    fecha_gasto = models.DateField(auto_now_add=True, verbose_name="Fecha del Gasto")
+    
+    class Meta:
+        verbose_name = "Gasto de Insumos/Terceros"
+        verbose_name_plural = "Gastos de Insumos/Terceros"
+        ordering = ['-fecha_gasto']
+    
+    def __str__(self):
+        return f"Insumos/Terceros - ${self.monto_usd} USD - {self.servicio.id}"
+
+
 
 class Revision5S(models.Model):
     ESTADO_CHOICES = [

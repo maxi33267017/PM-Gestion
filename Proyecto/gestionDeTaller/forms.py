@@ -1,5 +1,5 @@
 from django import forms
-from .models import PreOrden, Servicio, PedidoRepuestosTerceros, GastoAsistencia, VentaRepuesto, ChecklistSalidaCampo, Revision5S, PlanAccion5S, ItemPlanAccion5S, RespuestaEncuesta, InsatisfaccionCliente
+from .models import PreOrden, Servicio, PedidoRepuestosTerceros, GastoAsistencia, VentaRepuesto, VentaRepuestosSimplificada, GastoAsistenciaSimplificado, GastoInsumosTerceros, ChecklistSalidaCampo, Revision5S, PlanAccion5S, ItemPlanAccion5S, RespuestaEncuesta, InsatisfaccionCliente
 from clientes.models import Cliente
 from recursosHumanos.models import Usuario
 from django import forms
@@ -255,6 +255,36 @@ class GastoAsistenciaForm(forms.ModelForm):
             'descripcion': forms.Textarea(attrs={'rows': 3, 'class': 'form-control'}),
             'monto': forms.NumberInput(attrs={'class': 'form-control'}),
             'comprobante': forms.ClearableFileInput(attrs={'class': 'form-control'}),
+        }
+
+
+class VentaRepuestosSimplificadaForm(forms.ModelForm):
+    class Meta:
+        model = VentaRepuestosSimplificada
+        fields = ['descripcion', 'monto_total_usd']
+        widgets = {
+            'descripcion': forms.Textarea(attrs={'rows': 3, 'class': 'form-control', 'placeholder': 'Descripción de los repuestos vendidos...'}),
+            'monto_total_usd': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'min': '0', 'placeholder': '0.00'}),
+        }
+
+
+class GastoAsistenciaSimplificadoForm(forms.ModelForm):
+    class Meta:
+        model = GastoAsistenciaSimplificado
+        fields = ['descripcion', 'monto_usd']
+        widgets = {
+            'descripcion': forms.Textarea(attrs={'rows': 3, 'class': 'form-control', 'placeholder': 'Descripción del gasto de asistencia...'}),
+            'monto_usd': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'min': '0', 'placeholder': '0.00'}),
+        }
+
+
+class GastoInsumosTercerosForm(forms.ModelForm):
+    class Meta:
+        model = GastoInsumosTerceros
+        fields = ['descripcion', 'monto_usd']
+        widgets = {
+            'descripcion': forms.Textarea(attrs={'rows': 3, 'class': 'form-control', 'placeholder': 'Descripción de insumos o trabajos de terceros...'}),
+            'monto_usd': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'min': '0', 'placeholder': '0.00'}),
         }
 
 class VentaRepuestoForm(forms.ModelForm):

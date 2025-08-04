@@ -5,7 +5,8 @@ from recursosHumanos.models import TarifaManoObra, RegistroHorasTecnico, Sucursa
 from gestionDeTaller.forms import (
     PreordenForm, ServicioForm, ServicioEditarForm, ServicioDocumentosForm,
     ServicioManoObraForm, PedidoRepuestosTercerosForm, GastoAsistenciaForm,
-    VentaRepuestoForm, EditarInformeForm, EvidenciaForm, ChecklistSalidaCampoForm,
+    VentaRepuestoForm, VentaRepuestosSimplificadaForm, GastoAsistenciaSimplificadoForm,
+    GastoInsumosTercerosForm, EditarInformeForm, EvidenciaForm, ChecklistSalidaCampoForm,
     FiltroExportacionServiciosForm, Revision5SForm, PlanAccion5SForm, ItemPlanAccion5SForm,
     RespuestaEncuestaForm, InsatisfaccionClienteForm
 )
@@ -38,7 +39,8 @@ import json
 from datetime import datetime, timedelta
 from .models import (
     PreOrden, Servicio, PedidoRepuestosTerceros, GastoAsistencia,
-    VentaRepuesto, Revision5S, PlanAccion5S, ItemPlanAccion5S, CostoPersonalTaller,
+    VentaRepuesto, VentaRepuestosSimplificada, GastoAsistenciaSimplificado, GastoInsumosTerceros,
+    Revision5S, PlanAccion5S, ItemPlanAccion5S, CostoPersonalTaller,
     AnalisisTaller, Evidencia, ChecklistSalidaCampo, EncuestaServicio,
     RespuestaEncuesta, InsatisfaccionCliente, ObservacionServicio, Repuesto,
     HerramientaEspecial, ReservaHerramienta, LogHerramienta,
@@ -439,6 +441,9 @@ def detalle_servicio(request, servicio_id):
     form_pedido = PedidoRepuestosTercerosForm()
     form_gasto = GastoAsistenciaForm()
     form_repuesto = VentaRepuestoForm()
+    form_gasto_asistencia_simplificado = GastoAsistenciaSimplificadoForm()
+    form_venta_repuestos_simplificada = VentaRepuestosSimplificadaForm()
+    form_gasto_insumos_terceros = GastoInsumosTercerosForm()
     checklist_existente = ChecklistSalidaCampo.objects.filter(servicio=servicio).first()
     
     if checklist_existente:
@@ -521,6 +526,9 @@ def detalle_servicio(request, servicio_id):
         'form_pedido': form_pedido,
         'form_gasto': form_gasto,
         'form_repuesto': form_repuesto,
+        'form_gasto_asistencia_simplificado': form_gasto_asistencia_simplificado,
+        'form_venta_repuestos_simplificada': form_venta_repuestos_simplificada,
+        'form_gasto_insumos_terceros': form_gasto_insumos_terceros,
         'form_checklist_campo': form_checklist_campo,
         'checklist_existente': checklist_existente,
         'pedidos_repuestos':pedidos_repuestos,
@@ -4103,3 +4111,63 @@ def dashboard_administrador(request):
     }
     
     return render(request, 'gestionDeTaller/dashboard_administrador.html', context)
+
+
+@login_required
+def agregar_gasto_asistencia_simplificado(request, servicio_id):
+    servicio = get_object_or_404(Servicio, id=servicio_id)
+    
+    if request.method == 'POST':
+        form = GastoAsistenciaSimplificadoForm(request.POST)
+        if form.is_valid():
+            gasto = form.save(commit=False)
+            gasto.servicio = servicio
+            gasto.save()
+            messages.success(request, 'Gasto de asistencia agregado exitosamente.')
+            return redirect('gestionDeTaller:detalle_servicio', servicio_id=servicio.id)
+        else:
+            messages.error(request, 'Por favor, corrija los errores en el formulario.')
+    else:
+        form = GastoAsistenciaSimplificadoForm()
+    
+    return redirect('gestionDeTaller:detalle_servicio', servicio_id=servicio.id)
+
+
+@login_required
+def agregar_venta_repuestos_simplificada(request, servicio_id):
+    servicio = get_object_or_404(Servicio, id=servicio_id)
+    
+    if request.method == 'POST':
+        form = VentaRepuestosSimplificadaForm(request.POST)
+        if form.is_valid():
+            venta = form.save(commit=False)
+            venta.servicio = servicio
+            venta.save()
+            messages.success(request, 'Venta de repuestos agregada exitosamente.')
+            return redirect('gestionDeTaller:detalle_servicio', servicio_id=servicio.id)
+        else:
+            messages.error(request, 'Por favor, corrija los errores en el formulario.')
+    else:
+        form = VentaRepuestosSimplificadaForm()
+    
+    return redirect('gestionDeTaller:detalle_servicio', servicio_id=servicio.id)
+
+
+@login_required
+def agregar_gasto_insumos_terceros(request, servicio_id):
+    servicio = get_object_or_404(Servicio, id=servicio_id)
+    
+    if request.method == 'POST':
+        form = GastoInsumosTercerosForm(request.POST)
+        if form.is_valid():
+            gasto = form.save(commit=False)
+            gasto.servicio = servicio
+            gasto.save()
+            messages.success(request, 'Gasto de insumos/terceros agregado exitosamente.')
+            return redirect('gestionDeTaller:detalle_servicio', servicio_id=servicio.id)
+        else:
+            messages.error(request, 'Por favor, corrija los errores en el formulario.')
+    else:
+        form = GastoInsumosTercerosForm()
+    
+    return redirect('gestionDeTaller:detalle_servicio', servicio_id=servicio.id)

@@ -665,7 +665,8 @@
                 </div>
             </div>
 
-            <!-- Documentos -->
+            <!-- Documentos (OCULTO TEMPORALMENTE) -->
+            <!-- 
             <div class="sidebar-section">
                 <div class="sidebar-title">
                     <i class="fas fa-file-alt"></i>
@@ -702,6 +703,7 @@
                     {% endif %}
                 </div>
             </div>
+            -->
 
             <!-- Historial -->
             {% if user.rol in 'GERENTE,ADMINISTRACION' %}
@@ -727,13 +729,17 @@
                     Facturación
                 </div>
                 <div class="sidebar-buttons">
-                    <button type="button" class="sidebar-btn" data-bs-toggle="modal" data-bs-target="#modalAgregarGasto">
+                    <button type="button" class="sidebar-btn" data-bs-toggle="modal" data-bs-target="#modalAgregarGastoAsistencia">
                         <i class="fas fa-plus"></i>
-                        Agregar Gasto
+                        Agregar Gasto Asistencia
                     </button>
-                    <button type="button" class="sidebar-btn" data-bs-toggle="modal" data-bs-target="#modalAgregarRepuesto">
+                    <button type="button" class="sidebar-btn" data-bs-toggle="modal" data-bs-target="#modalAgregarRepuestosSimplificados">
                         <i class="fas fa-plus"></i>
-                        Agregar Repuesto
+                        Agregar Venta Repuestos
+                    </button>
+                    <button type="button" class="sidebar-btn" data-bs-toggle="modal" data-bs-target="#modalAgregarInsumosTerceros">
+                        <i class="fas fa-plus"></i>
+                        Agregar Insumos/Terceros
                     </button>
                     <button type="button" class="sidebar-btn" data-bs-toggle="modal" data-bs-target="#modalManoObra">
                         <i class="fas fa-tools"></i>
@@ -1101,36 +1107,34 @@
     </div>
     {% endif %}
 
-    <!-- Gastos Asociados -->
+    <!-- Gastos de Asistencia Simplificados -->
     {% if user.rol != 'TECNICO' %}
     <div class="row">
         <div class="col-md-12">
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
-                    <h3><i class="fas fa-money-bill-wave me-2"></i>Gastos Asociados</h3>
-                    <button type="button" class="btn btn-dark btn-sm" data-bs-toggle="modal" data-bs-target="#modalAgregarGasto">
+                    <h3><i class="fas fa-money-bill-wave me-2"></i>Gastos de Asistencia</h3>
+                    <button type="button" class="btn btn-dark btn-sm" data-bs-toggle="modal" data-bs-target="#modalAgregarGastoAsistencia">
                         <i class="bi bi-plus-circle me-2"></i> Agregar
                     </button>
                 </div>
                 <div class="card-body">
-                    {% if servicio.gastos.exists %}
+                    {% if servicio.gastos_asistencia_simplificados.exists %}
                         <div class="table-responsive">
                             <table class="table table-hover">
                                 <thead class="table-dark">
                                     <tr>
-                                        <th><i class="fas fa-tag me-2"></i>Tipo</th>
                                         <th><i class="fas fa-file-alt me-2"></i>Descripción</th>
-                                        <th><i class="fas fa-dollar-sign me-2"></i>Monto</th>
+                                        <th><i class="fas fa-dollar-sign me-2"></i>Monto (USD)</th>
                                         <th><i class="fas fa-calendar me-2"></i>Fecha</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {% for gasto in servicio.gastos.all %}
+                                    {% for gasto in servicio.gastos_asistencia_simplificados.all %}
                                         <tr>
-                                            <td><span class="badge bg-info">{{ gasto.get_tipo_display }}</span></td>
                                             <td>{{ gasto.descripcion }}</td>
-                                            <td><strong>${{ gasto.monto }}</strong></td>
-                                            <td>{{ gasto.fecha|date:"d/m/Y" }}</td>
+                                            <td><strong>${{ gasto.monto_usd }} USD</strong></td>
+                                            <td>{{ gasto.fecha_gasto|date:"d/m/Y" }}</td>
                                         </tr>
                                     {% endfor %}
                                 </tbody>
@@ -1139,7 +1143,7 @@
                     {% else %}
                         <div class="text-center py-4">
                             <i class="fas fa-money-bill-wave fa-3x text-muted mb-3"></i>
-                            <p class="text-muted">No hay gastos asociados a este servicio.</p>
+                            <p class="text-muted">No hay gastos de asistencia registrados.</p>
                         </div>
                     {% endif %}
                 </div>
@@ -1148,38 +1152,34 @@
     </div>
     {% endif %}
 
-    <!-- Venta de Repuestos -->
+    <!-- Venta de Repuestos Simplificada -->
     {% if user.rol != 'TECNICO' %}
     <div class="row">
         <div class="col-md-12">
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h3><i class="fas fa-cogs me-2"></i>Venta de Repuestos</h3>
-                    <button type="button" class="btn btn-dark btn-sm" data-bs-toggle="modal" data-bs-target="#modalAgregarRepuesto">
+                    <button type="button" class="btn btn-dark btn-sm" data-bs-toggle="modal" data-bs-target="#modalAgregarRepuestosSimplificados">
                         <i class="bi bi-plus-circle me-2"></i> Agregar
                     </button>
                 </div>
                 <div class="card-body">
-                    {% if servicio.repuestos.exists %}
+                    {% if servicio.venta_repuestos_simplificada.exists %}
                         <div class="table-responsive">
                             <table class="table table-hover">
                                 <thead class="table-dark">
                                     <tr>
-                                        <th><i class="fas fa-barcode me-2"></i>Código</th>
                                         <th><i class="fas fa-file-alt me-2"></i>Descripción</th>
-                                        <th><i class="fas fa-hashtag me-2"></i>Cantidad</th>
-                                        <th><i class="fas fa-dollar-sign me-2"></i>Precio Unit.</th>
-                                        <th><i class="fas fa-calculator me-2"></i>Subtotal</th>
+                                        <th><i class="fas fa-dollar-sign me-2"></i>Monto Total (USD)</th>
+                                        <th><i class="fas fa-calendar me-2"></i>Fecha</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {% for repuesto in servicio.repuestos.all %}
+                                    {% for venta in servicio.venta_repuestos_simplificada.all %}
                                         <tr>
-                                            <td><code>{{ repuesto.codigo }}</code></td>
-                                            <td>{{ repuesto.descripcion }}</td>
-                                            <td><span class="badge bg-secondary">{{ repuesto.cantidad }}</span></td>
-                                            <td>${{ repuesto.precio_unitario }}</td>
-                                            <td><strong>${{ repuesto.get_subtotal }}</strong></td>
+                                            <td>{{ venta.descripcion }}</td>
+                                            <td><strong>${{ venta.monto_total_usd }} USD</strong></td>
+                                            <td>{{ venta.fecha_venta|date:"d/m/Y" }}</td>
                                         </tr>
                                     {% endfor %}
                                 </tbody>
@@ -1188,7 +1188,52 @@
                     {% else %}
                         <div class="text-center py-4">
                             <i class="fas fa-cogs fa-3x text-muted mb-3"></i>
-                            <p class="text-muted">No hay repuestos vendidos asociados.</p>
+                            <p class="text-muted">No hay ventas de repuestos registradas.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Gastos de Insumos/Terceros -->
+    {% if user.rol != 'TECNICO' %}
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3><i class="fas fa-tools me-2"></i>Insumos y Gastos de Terceros</h3>
+                    <button type="button" class="btn btn-dark btn-sm" data-bs-toggle="modal" data-bs-target="#modalAgregarInsumosTerceros">
+                        <i class="bi bi-plus-circle me-2"></i> Agregar
+                    </button>
+                </div>
+                <div class="card-body">
+                    {% if servicio.gastos_insumos_terceros.exists %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th><i class="fas fa-file-alt me-2"></i>Descripción</th>
+                                        <th><i class="fas fa-dollar-sign me-2"></i>Monto (USD)</th>
+                                        <th><i class="fas fa-calendar me-2"></i>Fecha</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for gasto in servicio.gastos_insumos_terceros.all %}
+                                        <tr>
+                                            <td>{{ gasto.descripcion }}</td>
+                                            <td><strong>${{ gasto.monto_usd }} USD</strong></td>
+                                            <td>{{ gasto.fecha_gasto|date:"d/m/Y" }}</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-tools fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">No hay gastos de insumos o terceros registrados.</p>
                         </div>
                     {% endif %}
                 </div>
@@ -1457,20 +1502,76 @@
         </div>
     </div>
 
-    <!-- Modal para agregar gasto de asistencia -->
-    <div class="modal fade" id="modalAgregarGasto" tabindex="-1" aria-labelledby="modalAgregarGastoLabel" aria-hidden="true">
+    <!-- Modal para agregar gasto de asistencia simplificado -->
+    <div class="modal fade" id="modalAgregarGastoAsistencia" tabindex="-1" aria-labelledby="modalAgregarGastoAsistenciaLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
-                <form method="POST" action="{% url 'gestionDeTaller:agregar_gasto' servicio.id %}" enctype="multipart/form-data">
+                <form method="POST" action="{% url 'gestionDeTaller:agregar_gasto_asistencia_simplificado' servicio.id %}">
                     {% csrf_token %}
                     <div class="modal-header">
-                        <h5 class="modal-title" id="modalAgregarGastoLabel">
+                        <h5 class="modal-title" id="modalAgregarGastoAsistenciaLabel">
                             <i class="fas fa-money-bill-wave me-2"></i>Agregar Gasto de Asistencia
                         </h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
-                        {{ form_gasto.as_p }}
+                        {{ form_gasto_asistencia_simplificado.as_p }}
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            <i class="fas fa-times me-2"></i>Cancelar
+                        </button>
+                        <button type="submit" class="btn btn-dark">
+                            <i class="fas fa-save me-2"></i>Guardar Gasto
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para agregar venta de repuestos simplificada -->
+    <div class="modal fade" id="modalAgregarRepuestosSimplificados" tabindex="-1" aria-labelledby="modalAgregarRepuestosSimplificadosLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form method="POST" action="{% url 'gestionDeTaller:agregar_venta_repuestos_simplificada' servicio.id %}">
+                    {% csrf_token %}
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="modalAgregarRepuestosSimplificadosLabel">
+                            <i class="fas fa-cogs me-2"></i>Agregar Venta de Repuestos
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        {{ form_venta_repuestos_simplificada.as_p }}
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            <i class="fas fa-times me-2"></i>Cancelar
+                        </button>
+                        <button type="submit" class="btn btn-dark">
+                            <i class="fas fa-save me-2"></i>Guardar Venta
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para agregar gastos de insumos/terceros -->
+    <div class="modal fade" id="modalAgregarInsumosTerceros" tabindex="-1" aria-labelledby="modalAgregarInsumosTercerosLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form method="POST" action="{% url 'gestionDeTaller:agregar_gasto_insumos_terceros' servicio.id %}">
+                    {% csrf_token %}
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="modalAgregarInsumosTercerosLabel">
+                            <i class="fas fa-tools me-2"></i>Agregar Gastos de Insumos/Terceros
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        {{ form_gasto_insumos_terceros.as_p }}
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
