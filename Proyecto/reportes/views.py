@@ -449,18 +449,13 @@ def facturacion_mensual(request):
             fecha_servicio__lte=fecha_fin
         )
         
-        # Calcular facturación
+        # Calcular facturación usando las funciones helper que incluyen modelos antiguos y nuevos
         total_mano_obra = servicios_mes.aggregate(
             total=Sum('valor_mano_obra')
         )['total'] or 0
         
-        total_gastos = servicios_mes.aggregate(
-            total=Sum('gastos__monto')
-        )['total'] or 0
-        
-        total_repuestos = servicios_mes.aggregate(
-            total=Sum(F('repuestos__precio_unitario') * F('repuestos__cantidad'))
-        )['total'] or 0
+        total_gastos = calcular_gastos_servicios(servicios_mes)
+        total_repuestos = calcular_repuestos_servicios(servicios_mes)
         
         total_facturacion = total_mano_obra + total_gastos + total_repuestos
         total_anual += total_facturacion
@@ -2804,10 +2799,10 @@ def servicios_por_sucursal(request):
         # Usar servicios_financieros para cálculos de dinero
         total_mano_obra=Sum('valor_mano_obra', filter=Q(estado__in=['COMPLETADO', 'A_FACTURAR'])),
         total_gastos=Sum('gastos__monto', filter=Q(estado__in=['COMPLETADO', 'A_FACTURAR'])) + 
-                     Sum('gastos_asistencia_simplificados__monto', filter=Q(estado__in=['COMPLETADO', 'A_FACTURAR'])) +
-                     Sum('gastos_insumos_terceros__monto', filter=Q(estado__in=['COMPLETADO', 'A_FACTURAR'])),
+                     Sum('gastos_asistencia_simplificados__monto_usd', filter=Q(estado__in=['COMPLETADO', 'A_FACTURAR'])) +
+                     Sum('gastos_insumos_terceros__monto_usd', filter=Q(estado__in=['COMPLETADO', 'A_FACTURAR'])),
         total_repuestos=Sum(F('repuestos__precio_unitario') * F('repuestos__cantidad'), filter=Q(estado__in=['COMPLETADO', 'A_FACTURAR'])) +
-                       Sum('venta_repuestos_simplificada__monto_total', filter=Q(estado__in=['COMPLETADO', 'A_FACTURAR']))
+                       Sum('venta_repuestos_simplificada__monto_total_usd', filter=Q(estado__in=['COMPLETADO', 'A_FACTURAR']))
     ).order_by('-total_servicios')
     
     # Calcular totales usando servicios (no servicios_financieros para contar)
