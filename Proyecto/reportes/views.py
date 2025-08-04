@@ -12,10 +12,11 @@ from datetime import datetime, timedelta, date
 
 from recursosHumanos.models import Usuario, RegistroHorasTecnico, ActividadTrabajo
 from gestionDeTaller.models import (
-    Servicio, PreOrden, Cliente, Sucursal, 
+    Servicio, PreOrden, Sucursal, 
     GastoAsistencia, VentaRepuesto, 
     GastoAsistenciaSimplificado, VentaRepuestosSimplificada, GastoInsumosTerceros
 )
+from clientes.models import Cliente
 from crm.models import Embudo, AnalisisCliente
 
 def calcular_gastos_servicios(servicios_query):
