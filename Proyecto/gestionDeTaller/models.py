@@ -111,6 +111,7 @@ class Servicio(models.Model):
         ('PROGRAMADO', 'Programado'),
         ('EN_PROCESO', 'En Proceso'),
         ('ESPERA_REPUESTOS', 'En Espera de Repuestos'),
+        ('ESPERA_CONFIRMACION_CLIENTE', 'En Espera Confirmación Cliente'),
         ('A_FACTURAR', 'Finalizado a Facturar'),
         ('COMPLETADO', 'Completado'),
     ]
@@ -132,7 +133,7 @@ class Servicio(models.Model):
 
     preorden = models.OneToOneField(PreOrden, on_delete=models.PROTECT, related_name='servicio')
     fecha_servicio = models.DateField(verbose_name="Fecha de Servicio")
-    estado = models.CharField(max_length=20, choices=ESTADO_CHOICES, default='PROGRAMADO')
+    estado = models.CharField(max_length=30, choices=ESTADO_CHOICES, default='PROGRAMADO')
     horometro_servicio = models.DecimalField(
         max_digits=10, 
         decimal_places=2, 

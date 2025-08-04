@@ -827,6 +827,7 @@
                                             {% if servicio.estado == 'PROGRAMADO' %}estado-programado
                                             {% elif servicio.estado == 'EN_PROCESO' %}estado-en-proceso
                                             {% elif servicio.estado == 'ESPERA_REPUESTOS' %}estado-en-espera
+                                            {% elif servicio.estado == 'ESPERA_CONFIRMACION_CLIENTE' %}estado-en-espera
                                             {% elif servicio.estado == 'A_FACTURAR' %}estado-finalizado
                                             {% elif servicio.estado == 'COMPLETADO' %}estado-completado
                                             {% endif %}">
