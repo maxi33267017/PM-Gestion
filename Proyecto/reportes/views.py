@@ -31,12 +31,12 @@ def calcular_gastos_servicios(servicios_query):
     
     # Gastos simplificados
     total_gastos_simplificados = servicios_query.aggregate(
-        total=Sum('gastos_asistencia_simplificados__monto')
+        total=Sum('gastos_asistencia_simplificados__monto_usd')
     )['total'] or 0
     
     # Gastos de terceros
     total_gastos_terceros = servicios_query.aggregate(
-        total=Sum('gastos_insumos_terceros__monto')
+        total=Sum('gastos_insumos_terceros__monto_usd')
     )['total'] or 0
     
     return total_gastos_antiguos + total_gastos_simplificados + total_gastos_terceros
@@ -53,7 +53,7 @@ def calcular_repuestos_servicios(servicios_query):
     
     # Repuestos simplificados
     total_repuestos_simplificados = servicios_query.aggregate(
-        total=Sum('venta_repuestos_simplificada__monto_total')
+        total=Sum('venta_repuestos_simplificada__monto_total_usd')
     )['total'] or 0
     
     return total_repuestos_antiguos + total_repuestos_simplificados
