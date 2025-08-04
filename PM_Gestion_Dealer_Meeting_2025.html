@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>PM_Gestion_Dealer_Meeting_2025</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    span.underline{text-decoration: underline;}
+    div.column{display: inline-block; vertical-align: top; width: 50%;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    ul.task-list{list-style: none;}
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+<h1 id="pm-gestión---sistema-integral-de-gestión-de-servicios">PM
+Gestión - Sistema Integral de Gestión de Servicios</h1>
+<h2 id="dealer-meeting-john-deere-2025">Dealer Meeting John Deere
+2025</h2>
+<hr />
+<h2 id="resumen-ejecutivo">📋 <strong>Resumen Ejecutivo</strong></h2>
+<p><strong>PM Gestión</strong> es una plataforma integral desarrollada
+para optimizar la gestión de servicios técnicos, alineada con los
+estándares de auditoría <strong>Power Service</strong> de John Deere. El
+sistema centraliza la administración de servicios, técnicos, inventario
+y reportes, proporcionando visibilidad completa y control
+operacional.</p>
+<hr />
+<h2 id="objetivos-principales">🎯 <strong>Objetivos
+Principales</strong></h2>
+<h3 id="alineación-con-power-service"><strong>Alineación con Power
+Service</strong></h3>
+<ul>
+<li>✅ <strong>Trazabilidad Completa</strong>: Registro detallado de
+cada servicio desde pre-orden hasta facturación</li>
+<li>✅ <strong>Control de Calidad</strong>: Sistema de aprobaciones y
+validaciones en cada etapa</li>
+<li>✅ <strong>Gestión de Técnicos</strong>: Seguimiento de horas,
+productividad y certificaciones</li>
+<li>✅ <strong>Inventario Inteligente</strong>: Control de repuestos y
+herramientas especiales</li>
+<li>✅ <strong>Reportes Estratégicos</strong>: Métricas de rendimiento y
+análisis de datos</li>
+</ul>
+<hr />
+<h2 id="arquitectura-del-sistema">🏗️ <strong>Arquitectura del
+Sistema</strong></h2>
+<h3 id="módulos-principales"><strong>Módulos Principales</strong></h3>
+<h4 id="gestión-de-taller-gestiondetaller"><strong>1. Gestión de Taller
+(<code>gestionDeTaller</code>)</strong></h4>
+<ul>
+<li><strong>Pre-órdenes</strong>: Captura inicial de solicitudes de
+servicio</li>
+<li><strong>Servicios</strong>: Gestión completa del ciclo de vida del
+servicio</li>
+<li><strong>Estados Automatizados</strong>: Transiciones controladas
+entre estados</li>
+<li><strong>Facturación Integrada</strong>: Cálculo automático de costos
+y facturación</li>
+</ul>
+<h4 id="recursos-humanos-recursoshumanos"><strong>2. Recursos Humanos
+(<code>recursosHumanos</code>)</strong></h4>
+<ul>
+<li><strong>Gestión de Técnicos</strong>: Perfiles, certificaciones y
+asignaciones</li>
+<li><strong>Registro de Horas</strong>: Sistema de tiempo real con
+validaciones</li>
+<li><strong>Métricas de Productividad</strong>: KPIs de eficiencia y
+desempeño</li>
+<li><strong>Gestión de Permisos</strong>: Control de ausencias y
+licencias</li>
+</ul>
+<h4 id="crm-crm"><strong>3. CRM (<code>crm</code>)</strong></h4>
+<ul>
+<li><strong>Análisis de Clientes</strong>: Categorización y
+segmentación</li>
+<li><strong>Embudos de Ventas</strong>: Seguimiento de
+oportunidades</li>
+<li><strong>Campañas</strong>: Gestión de marketing y promociones</li>
+</ul>
+<h4 id="reportes-reportes"><strong>4. Reportes
+(<code>reportes</code>)</strong></h4>
+<ul>
+<li><strong>Facturación</strong>: Reportes por sucursal, técnico y
+período</li>
+<li><strong>Productividad</strong>: Análisis de métricas de
+técnicos</li>
+<li><strong>Servicios</strong>: Estadísticas operacionales</li>
+<li><strong>Exportación</strong>: Generación de reportes en Excel</li>
+</ul>
+<hr />
+<h2 id="funcionalidades-clave">🔧 <strong>Funcionalidades
+Clave</strong></h2>
+<h3 id="gestión-de-servicios"><strong>Gestión de Servicios</strong></h3>
+<h4 id="ciclo-de-vida-completo"><strong>Ciclo de Vida
+Completo</strong></h4>
+<pre><code>Pre-Orden → Servicio → En Proceso → Completado → Facturado</code></pre>
+<h4 id="estados-automatizados"><strong>Estados
+Automatizados</strong></h4>
+<ul>
+<li><strong>PROGRAMADO</strong>: Servicio planificado</li>
+<li><strong>EN_PROCESO</strong>: Trabajo en curso</li>
+<li><strong>ESPERA_REPUESTOS</strong>: Pendiente de repuestos</li>
+<li><strong>ESPERA_CONFIRMACION_CLIENTE</strong>: Esperando
+confirmación</li>
+<li><strong>COMPLETADO</strong>: Servicio finalizado</li>
+<li><strong>A_FACTURAR</strong>: Listo para facturación</li>
+</ul>
+<h4 id="control-de-calidad"><strong>Control de Calidad</strong></h4>
+<ul>
+<li>✅ <strong>Aprobaciones por Etapa</strong>: Validaciones en cada
+transición</li>
+<li>✅ <strong>Documentación Digital</strong>: Informes técnicos y
+fotos</li>
+<li>✅ <strong>Historial de Cambios</strong>: Auditoría completa de
+modificaciones</li>
+<li>✅ <strong>Observaciones</strong>: Comentarios y seguimiento</li>
+</ul>
+<h3 id="gestión-de-técnicos"><strong>Gestión de Técnicos</strong></h3>
+<h4 id="registro-de-horas-inteligente"><strong>Registro de Horas
+Inteligente</strong></h4>
+<ul>
+<li><strong>Tiempo Real</strong>: Captura de inicio/fin de
+actividades</li>
+<li><strong>Clasificación Automática</strong>: Tipos de actividad
+(disponible, no disponible, ingreso)</li>
+<li><strong>Validaciones</strong>: Control de duplicados y
+superposiciones</li>
+<li><strong>Aprobación Gerencial</strong>: Revisión de registros por
+gerentes</li>
+</ul>
+<h4 id="métricas-de-productividad"><strong>Métricas de
+Productividad</strong></h4>
+<pre><code>Productividad = (Horas que Generan Ingreso / Horas Contratadas) × 100
+Eficiencia = (Horas Facturadas / Horas que Generan Ingreso) × 100
+Desempeño = (Horas Facturadas / Horas Contratadas) × 100</code></pre>
+<h4 id="gestión-de-herramientas"><strong>Gestión de
+Herramientas</strong></h4>
+<ul>
+<li><strong>Herramientas Especiales</strong>: Reservas y control de
+uso</li>
+<li><strong>Herramientas Personales</strong>: Asignación y
+seguimiento</li>
+<li><strong>Certificaciones</strong>: Control de capacitaciones y
+validaciones</li>
+</ul>
+<h3 id="inventario-y-repuestos"><strong>Inventario y
+Repuestos</strong></h3>
+<h4 id="control-de-repuestos"><strong>Control de Repuestos</strong></h4>
+<ul>
+<li><strong>Catálogo Digital</strong>: Base de datos completa de
+repuestos</li>
+<li><strong>Stock en Tiempo Real</strong>: Control de inventario</li>
+<li><strong>Venta Simplificada</strong>: Registro de ventas por monto
+total</li>
+<li><strong>Importación Masiva</strong>: Carga desde archivos Excel</li>
+</ul>
+<h4 id="herramientas-especiales"><strong>Herramientas
+Especiales</strong></h4>
+<ul>
+<li><strong>Sistema de Reservas</strong>: Calendario de
+disponibilidad</li>
+<li><strong>Control de Uso</strong>: Registro de retiros y
+devoluciones</li>
+<li><strong>Mantenimiento</strong>: Seguimiento de certificaciones y
+calibración</li>
+</ul>
+<h3 id="facturación-integrada"><strong>Facturación
+Integrada</strong></h3>
+<h4 id="cálculo-automático"><strong>Cálculo Automático</strong></h4>
+<ul>
+<li><strong>Mano de Obra</strong>: Valores predefinidos por tipo de
+trabajo</li>
+<li><strong>Gastos de Asistencia</strong>: Registro de costos
+adicionales</li>
+<li><strong>Repuestos</strong>: Cálculo automático de precios y
+cantidades</li>
+<li><strong>Gastos de Terceros</strong>: Control de servicios
+externos</li>
+</ul>
+<h4 id="modelos-flexibles"><strong>Modelos Flexibles</strong></h4>
+<ul>
+<li><strong>Modelo Detallado</strong>: Repuestos individuales con
+precios unitarios</li>
+<li><strong>Modelo Simplificado</strong>: Montos totales para agilidad
+operativa</li>
+</ul>
+<hr />
+<h2 id="reportes-estratégicos">📊 <strong>Reportes
+Estratégicos</strong></h2>
+<h3 id="reportes-de-facturación"><strong>Reportes de
+Facturación</strong></h3>
+<ul>
+<li><strong>Por Sucursal</strong>: Análisis de rendimiento por
+ubicación</li>
+<li><strong>Por Técnico</strong>: Productividad individual</li>
+<li><strong>Por Período</strong>: Mensual, trimestral, semestral,
+anual</li>
+<li><strong>Comparativas</strong>: Análisis año anterior vs actual</li>
+</ul>
+<h3 id="reportes-de-productividad"><strong>Reportes de
+Productividad</strong></h3>
+<ul>
+<li><strong>Métricas de Técnicos</strong>: Productividad, eficiencia,
+desempeño</li>
+<li><strong>Análisis de Horas</strong>: Desglose por tipo de
+actividad</li>
+<li><strong>Exportación Detallada</strong>: Registros completos en
+Excel</li>
+</ul>
+<h3 id="reportes-de-servicios"><strong>Reportes de
+Servicios</strong></h3>
+<ul>
+<li><strong>Estados</strong>: Distribución de servicios por estado</li>
+<li><strong>Tiempos Promedio</strong>: Análisis de duración de
+servicios</li>
+<li><strong>Servicios Sin Ingresos</strong>: Identificación de
+oportunidades</li>
+</ul>
+<hr />
+<h2 id="alineación-con-power-service-1">🎯 <strong>Alineación con Power
+Service</strong></h2>
+<h3 id="estándares-de-calidad"><strong>Estándares de
+Calidad</strong></h3>
+<ul>
+<li>✅ <strong>Trazabilidad</strong>: Registro completo de cada
+servicio</li>
+<li>✅ <strong>Documentación</strong>: Informes técnicos digitales</li>
+<li>✅ <strong>Aprobaciones</strong>: Sistema de validaciones por
+etapa</li>
+<li>✅ <strong>Auditoría</strong>: Historial completo de cambios</li>
+</ul>
+<h3 id="gestión-de-recursos"><strong>Gestión de Recursos</strong></h3>
+<ul>
+<li>✅ <strong>Técnicos Certificados</strong>: Control de
+capacitaciones</li>
+<li>✅ <strong>Herramientas Calibradas</strong>: Seguimiento de
+certificaciones</li>
+<li>✅ <strong>Inventario Controlado</strong>: Stock en tiempo real</li>
+<li>✅ <strong>Tiempo Productivo</strong>: Registro detallado de
+horas</li>
+</ul>
+<h3 id="métricas-de-rendimiento"><strong>Métricas de
+Rendimiento</strong></h3>
+<ul>
+<li>✅ <strong>KPIs Definidos</strong>: Productividad, eficiencia,
+desempeño</li>
+<li>✅ <strong>Reportes Estratégicos</strong>: Análisis de datos
+operacionales</li>
+<li>✅ <strong>Comparativas</strong>: Seguimiento de mejoras</li>
+<li>✅ <strong>Exportación</strong>: Datos para análisis externo</li>
+</ul>
+<hr />
+<h2 id="beneficios-implementados">💡 <strong>Beneficios
+Implementados</strong></h2>
+<h3 id="operacionales"><strong>Operacionales</strong></h3>
+<ul>
+<li><strong>Eficiencia</strong>: Reducción de tiempo en procesos
+administrativos</li>
+<li><strong>Precisión</strong>: Eliminación de errores manuales</li>
+<li><strong>Visibilidad</strong>: Control en tiempo real de
+operaciones</li>
+<li><strong>Trazabilidad</strong>: Seguimiento completo de cada
+servicio</li>
+</ul>
+<h3 id="estratégicos"><strong>Estratégicos</strong></h3>
+<ul>
+<li><strong>Toma de Decisiones</strong>: Datos precisos para
+análisis</li>
+<li><strong>Optimización</strong>: Identificación de oportunidades de
+mejora</li>
+<li><strong>Cumplimiento</strong>: Alineación con estándares Power
+Service</li>
+<li><strong>Escalabilidad</strong>: Sistema preparado para
+crecimiento</li>
+</ul>
+<h3 id="financieros"><strong>Financieros</strong></h3>
+<ul>
+<li><strong>Control de Costos</strong>: Seguimiento detallado de
+gastos</li>
+<li><strong>Facturación Precisa</strong>: Cálculo automático de
+valores</li>
+<li><strong>Análisis de Rentabilidad</strong>: Métricas por servicio y
+técnico</li>
+<li><strong>Reportes Regulatorios</strong>: Información para
+auditorías</li>
+</ul>
+<hr />
+<h2 id="roadmap-futuro">🔮 <strong>Roadmap Futuro</strong></h2>
+<h3 id="próximas-funcionalidades"><strong>Próximas
+Funcionalidades</strong></h3>
+<ul>
+<li><strong>App Móvil</strong>: Registro de horas desde dispositivos
+móviles</li>
+<li><strong>Integración GPS</strong>: Ubicación de técnicos en tiempo
+real</li>
+<li><strong>Notificaciones</strong>: Alertas automáticas por eventos
+críticos</li>
+<li><strong>Dashboard Avanzado</strong>: Métricas en tiempo real</li>
+<li><strong>Integración JD</strong>: Conexión directa con sistemas John
+Deere</li>
+</ul>
+<h3 id="mejoras-técnicas"><strong>Mejoras Técnicas</strong></h3>
+<ul>
+<li><strong>API REST</strong>: Interfaz para integraciones externas</li>
+<li><strong>Microservicios</strong>: Arquitectura escalable</li>
+<li><strong>Machine Learning</strong>: Predicción de demandas y
+optimización</li>
+<li><strong>Cloud Native</strong>: Despliegue en la nube</li>
+</ul>
+<hr />
+<h2 id="resultados-esperados">📈 <strong>Resultados
+Esperados</strong></h2>
+<h3 id="métricas-de-éxito"><strong>Métricas de Éxito</strong></h3>
+<ul>
+<li><strong>Reducción de Tiempo</strong>: 40% menos tiempo en procesos
+administrativos</li>
+<li><strong>Mejora de Productividad</strong>: 25% aumento en horas
+productivas</li>
+<li><strong>Precisión de Facturación</strong>: 99% de exactitud en
+cálculos</li>
+<li><strong>Cumplimiento</strong>: 100% alineación con estándares Power
+Service</li>
+</ul>
+<h3 id="impacto-en-el-negocio"><strong>Impacto en el
+Negocio</strong></h3>
+<ul>
+<li><strong>Satisfacción del Cliente</strong>: Servicios más rápidos y
+precisos</li>
+<li><strong>Rentabilidad</strong>: Mejor control de costos y
+facturación</li>
+<li><strong>Competitividad</strong>: Diferenciación en el mercado</li>
+<li><strong>Crecimiento</strong>: Base sólida para expansión</li>
+</ul>
+<hr />
+<h2 id="conclusión">🏆 <strong>Conclusión</strong></h2>
+<p><strong>PM Gestión</strong> representa una solución integral que
+transforma la gestión de servicios técnicos, alineándose perfectamente
+con los estándares de auditoría <strong>Power Service</strong> de John
+Deere.</p>
+<p>El sistema proporciona: - ✅ <strong>Control Total</strong> de
+operaciones - ✅ <strong>Visibilidad Completa</strong> de métricas - ✅
+<strong>Eficiencia Operacional</strong> mejorada - ✅
+<strong>Cumplimiento Regulatorio</strong> garantizado</p>
+<p><strong>Resultado</strong>: Una plataforma robusta que optimiza la
+gestión de servicios, mejora la productividad y asegura el cumplimiento
+de los más altos estándares de calidad en el sector de maquinaria
+agrícola.</p>
+<hr />
+<p><em>Desarrollado para Patagonia Maquinarias</em><br />
+<em>Dealer Meeting John Deere 2025</em></p>
+</body>
+</html>
