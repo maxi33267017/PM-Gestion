@@ -1,7 +1,8 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, JsonResponse
-from django.db.models import Sum, Count, Avg, Q, F
+from django.db.models import Sum, Count, Avg, Q, F, ExpressionWrapper
+from django.db.models.fields import DurationField
 from django.utils import timezone
 from django.core.paginator import Paginator
 from django.db.models.functions import TruncMonth, TruncYear
