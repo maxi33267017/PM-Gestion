@@ -1090,12 +1090,20 @@ def tecnicos(request):
             mes_seleccionado = int(form_metricas.cleaned_data['mes'])
             ano_seleccionado = int(form_metricas.cleaned_data['ano'])
             inicio_mes = date(ano_seleccionado, mes_seleccionado, 1)
-            fin_mes = date(ano_seleccionado, mes_seleccionado + 1, 1) - timedelta(days=1) if mes_seleccionado < 12 else date(ano_seleccionado + 1, 1, 1) - timedelta(days=1)
+            # Calcular correctamente el último día del mes
+            if mes_seleccionado == 12:
+                fin_mes = date(ano_seleccionado + 1, 1, 1) - timedelta(days=1)
+            else:
+                fin_mes = date(ano_seleccionado, mes_seleccionado + 1, 1) - timedelta(days=1)
         else:
             # Mes actual por defecto
             hoy = date.today()
             inicio_mes = date(hoy.year, hoy.month, 1)
-            fin_mes = date(hoy.year, hoy.month + 1, 1) - timedelta(days=1) if hoy.month < 12 else date(hoy.year + 1, 1, 1) - timedelta(days=1)
+            # Calcular correctamente el último día del mes
+            if hoy.month == 12:
+                fin_mes = date(hoy.year + 1, 1, 1) - timedelta(days=1)
+            else:
+                fin_mes = date(hoy.year, hoy.month + 1, 1) - timedelta(days=1)
         
         # Filtrar técnicos si se seleccionó uno específico
         tecnico_metricas = form_metricas.cleaned_data.get('tecnico') if form_metricas.is_valid() else None
