@@ -1,21 +1,61 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from django.http import JsonResponse, HttpResponse
-from django.db.models import Sum, Count, Avg, Q, F, ExpressionWrapper, DurationField, fields, Case, When, Value, FloatField, Max
+from django.http import HttpResponse, JsonResponse
+from django.db.models import Sum, Count, Avg, Q, F
 from django.utils import timezone
-from datetime import datetime, timedelta
-import json
-import pandas as pd
-from decimal import Decimal
 from django.core.paginator import Paginator
+from django.db.models.functions import TruncMonth, TruncYear
+from decimal import Decimal
+import pandas as pd
 import io
+from datetime import datetime, timedelta, date
 
-# Importar modelos necesarios
-from gestionDeTaller.models import Servicio, PreOrden
-from recursosHumanos.models import RegistroHorasTecnico, Usuario, Sucursal
-from crm.models import Campania
-from centroSoluciones.models import AlertaEquipo, LeadJohnDeere
-from clientes.models import Cliente
+from recursosHumanos.models import Usuario, RegistroHorasTecnico, ActividadTrabajo
+from gestionDeTaller.models import (
+    Servicio, PreOrden, Cliente, Sucursal, 
+    GastoAsistencia, VentaRepuesto, 
+    GastoAsistenciaSimplificado, VentaRepuestosSimplificada, GastoInsumosTerceros
+)
+from crm.models import Embudo, AnalisisCliente
+
+def calcular_gastos_servicios(servicios_query):
+    """
+    Calcula el total de gastos para un conjunto de servicios,
+    incluyendo modelos antiguos y nuevos simplificados
+    """
+    # Gastos antiguos
+    total_gastos_antiguos = servicios_query.aggregate(
+        total=Sum('gastos__monto')
+    )['total'] or 0
+    
+    # Gastos simplificados
+    total_gastos_simplificados = servicios_query.aggregate(
+        total=Sum('gastos_asistencia_simplificados__monto')
+    )['total'] or 0
+    
+    # Gastos de terceros
+    total_gastos_terceros = servicios_query.aggregate(
+        total=Sum('gastos_insumos_terceros__monto')
+    )['total'] or 0
+    
+    return total_gastos_antiguos + total_gastos_simplificados + total_gastos_terceros
+
+def calcular_repuestos_servicios(servicios_query):
+    """
+    Calcula el total de repuestos para un conjunto de servicios,
+    incluyendo modelos antiguos y nuevos simplificados
+    """
+    # Repuestos antiguos
+    total_repuestos_antiguos = servicios_query.aggregate(
+        total=Sum(F('repuestos__precio_unitario') * F('repuestos__cantidad'))
+    )['total'] or 0
+    
+    # Repuestos simplificados
+    total_repuestos_simplificados = servicios_query.aggregate(
+        total=Sum('venta_repuestos_simplificada__monto_total')
+    )['total'] or 0
+    
+    return total_repuestos_antiguos + total_repuestos_simplificados
 
 @login_required
 def dashboard_reportes(request):
@@ -51,19 +91,14 @@ def dashboard_reportes(request):
         total=Sum('valor_mano_obra')
     )['total'] or 0
     
-    # Agregar gastos y repuestos a la facturación
+    # Agregar gastos y repuestos a la facturación (incluyendo modelos antiguos y nuevos)
     servicios_mes = Servicio.objects.filter(
         estado='COMPLETADO',
         fecha_servicio__gte=inicio_mes
     )
     
-    total_gastos = servicios_mes.aggregate(
-        total=Sum('gastos__monto')
-    )['total'] or 0
-    
-    total_repuestos = servicios_mes.aggregate(
-        total=Sum(F('repuestos__precio_unitario') * F('repuestos__cantidad'))
-    )['total'] or 0
+    total_gastos = calcular_gastos_servicios(servicios_mes)
+    total_repuestos = calcular_repuestos_servicios(servicios_mes)
     
     facturacion_mensual += total_gastos + total_repuestos
     
@@ -144,14 +179,9 @@ def reportes_facturacion(request):
         total=Sum('valor_mano_obra')
     )['total'] or 0
     
-    # Agregar gastos y repuestos
-    total_gastos = servicios_completados.aggregate(
-        total=Sum('gastos__monto')
-    )['total'] or 0
-    
-    total_repuestos = servicios_completados.aggregate(
-        total=Sum(F('repuestos__precio_unitario') * F('repuestos__cantidad'))
-    )['total'] or 0
+    # Agregar gastos y repuestos (incluyendo modelos antiguos y nuevos)
+    total_gastos = calcular_gastos_servicios(servicios_completados)
+    total_repuestos = calcular_repuestos_servicios(servicios_completados)
     
     facturacion_total += total_gastos + total_repuestos
     
@@ -212,13 +242,8 @@ def facturacion_por_tecnico(request):
             total=Sum('valor_mano_obra')
         )['total'] or 0
         
-        total_gastos = servicios_tecnico.aggregate(
-            total=Sum('gastos__monto')
-        )['total'] or 0
-        
-        total_repuestos = servicios_tecnico.aggregate(
-            total=Sum(F('repuestos__precio_unitario') * F('repuestos__cantidad'))
-        )['total'] or 0
+        total_gastos = calcular_gastos_servicios(servicios_tecnico)
+        total_repuestos = calcular_repuestos_servicios(servicios_tecnico)
         
         total_facturacion = total_mano_obra + total_gastos + total_repuestos
         
@@ -316,13 +341,31 @@ def facturacion_por_sucursal(request):
             total=Sum('valor_mano_obra')
         )['total'] or 0
         
+        # GASTOS: Incluir modelos antiguos y nuevos
         total_gastos = servicios_sucursal.aggregate(
             total=Sum('gastos__monto')
         )['total'] or 0
         
-        total_repuestos = servicios_sucursal.aggregate(
+        total_gastos_simplificados = servicios_sucursal.aggregate(
+            total=Sum('gastos_asistencia_simplificados__monto')
+        )['total'] or 0
+        
+        total_gastos_terceros = servicios_sucursal.aggregate(
+            total=Sum('gastos_insumos_terceros__monto')
+        )['total'] or 0
+        
+        total_gastos = total_gastos_antiguos + total_gastos_simplificados + total_gastos_terceros
+        
+        # REPUESTOS: Incluir modelos antiguos y nuevos
+        total_repuestos_antiguos = servicios_sucursal.aggregate(
             total=Sum(F('repuestos__precio_unitario') * F('repuestos__cantidad'))
         )['total'] or 0
+        
+        total_repuestos_simplificados = servicios_sucursal.aggregate(
+            total=Sum('venta_repuestos_simplificada__monto_total')
+        )['total'] or 0
+        
+        total_repuestos = total_repuestos_antiguos + total_repuestos_simplificados
         
         total_facturacion = total_mano_obra + total_gastos + total_repuestos
         
@@ -513,18 +556,13 @@ def facturacion_trimestral(request):
                 fecha_servicio__lte=fecha_fin
             )
             
-            # Calcular facturación del mes
+            # Calcular facturación del mes (incluyendo modelos antiguos y nuevos)
             total_mano_obra = servicios_mes.aggregate(
                 total=Sum('valor_mano_obra')
             )['total'] or 0
             
-            total_gastos = servicios_mes.aggregate(
-                total=Sum('gastos__monto')
-            )['total'] or 0
-            
-            total_repuestos = servicios_mes.aggregate(
-                total=Sum(F('repuestos__precio_unitario') * F('repuestos__cantidad'))
-            )['total'] or 0
+            total_gastos = calcular_gastos_servicios(servicios_mes)
+            total_repuestos = calcular_repuestos_servicios(servicios_mes)
             
             total_mes = total_mano_obra + total_gastos + total_repuestos
             total_trimestre += total_mes
@@ -567,10 +605,8 @@ def facturacion_trimestral(request):
             )
             
             total_mano_obra = servicios_mes.aggregate(total=Sum('valor_mano_obra'))['total'] or 0
-            total_gastos = servicios_mes.aggregate(total=Sum('gastos__monto'))['total'] or 0
-            total_repuestos = servicios_mes.aggregate(
-                total=Sum(F('repuestos__precio_unitario') * F('repuestos__cantidad'))
-            )['total'] or 0
+            total_gastos = calcular_gastos_servicios(servicios_mes)
+            total_repuestos = calcular_repuestos_servicios(servicios_mes)
             
             total_trimestre_anterior += total_mano_obra + total_gastos + total_repuestos
         
@@ -657,18 +693,13 @@ def facturacion_semestral(request):
                 fecha_servicio__lte=fecha_fin
             )
             
-            # Calcular facturación del mes
+            # Calcular facturación del mes (incluyendo modelos antiguos y nuevos)
             total_mano_obra = servicios_mes.aggregate(
                 total=Sum('valor_mano_obra')
             )['total'] or 0
             
-            total_gastos = servicios_mes.aggregate(
-                total=Sum('gastos__monto')
-            )['total'] or 0
-            
-            total_repuestos = servicios_mes.aggregate(
-                total=Sum(F('repuestos__precio_unitario') * F('repuestos__cantidad'))
-            )['total'] or 0
+            total_gastos = calcular_gastos_servicios(servicios_mes)
+            total_repuestos = calcular_repuestos_servicios(servicios_mes)
             
             total_mes = total_mano_obra + total_gastos + total_repuestos
             total_semestre += total_mes
@@ -711,10 +742,8 @@ def facturacion_semestral(request):
             )
             
             total_mano_obra = servicios_mes.aggregate(total=Sum('valor_mano_obra'))['total'] or 0
-            total_gastos = servicios_mes.aggregate(total=Sum('gastos__monto'))['total'] or 0
-            total_repuestos = servicios_mes.aggregate(
-                total=Sum(F('repuestos__precio_unitario') * F('repuestos__cantidad'))
-            )['total'] or 0
+            total_gastos = calcular_gastos_servicios(servicios_mes)
+            total_repuestos = calcular_repuestos_servicios(servicios_mes)
             
             total_semestre_anterior += total_mano_obra + total_gastos + total_repuestos
         
@@ -787,18 +816,13 @@ def facturacion_anual(request):
             fecha_servicio__lte=fecha_fin
         )
         
-        # Calcular facturación del mes
-        total_mano_obra = servicios_mes.aggregate(
-            total=Sum('valor_mano_obra')
-        )['total'] or 0
-        
-        total_gastos = servicios_mes.aggregate(
-            total=Sum('gastos__monto')
-        )['total'] or 0
-        
-        total_repuestos = servicios_mes.aggregate(
-            total=Sum(F('repuestos__precio_unitario') * F('repuestos__cantidad'))
-        )['total'] or 0
+                    # Calcular facturación del mes (incluyendo modelos antiguos y nuevos)
+            total_mano_obra = servicios_mes.aggregate(
+                total=Sum('valor_mano_obra')
+            )['total'] or 0
+            
+            total_gastos = calcular_gastos_servicios(servicios_mes)
+            total_repuestos = calcular_repuestos_servicios(servicios_mes)
         
         total_mes = total_mano_obra + total_gastos + total_repuestos
         total_anual += total_mes
@@ -840,10 +864,8 @@ def facturacion_anual(request):
         )
         
         total_mano_obra = servicios_mes.aggregate(total=Sum('valor_mano_obra'))['total'] or 0
-        total_gastos = servicios_mes.aggregate(total=Sum('gastos__monto'))['total'] or 0
-        total_repuestos = servicios_mes.aggregate(
-            total=Sum(F('repuestos__precio_unitario') * F('repuestos__cantidad'))
-        )['total'] or 0
+        total_gastos = calcular_gastos_servicios(servicios_mes)
+        total_repuestos = calcular_repuestos_servicios(servicios_mes)
         
         total_mes_anterior = total_mano_obra + total_gastos + total_repuestos
         total_anterior += total_mes_anterior
@@ -2561,8 +2583,8 @@ def servicios_completados(request):
     # Calcular estadísticas
     total_servicios = servicios.count()
     total_mano_obra = servicios.aggregate(total=Sum('valor_mano_obra'))['total'] or Decimal('0.00')
-    total_gastos = servicios.aggregate(total=Sum('gastos__monto'))['total'] or Decimal('0.00')
-    total_repuestos = servicios.aggregate(total=Sum(F('repuestos__precio_unitario') * F('repuestos__cantidad')))['total'] or Decimal('0.00')
+            total_gastos = calcular_gastos_servicios(servicios)
+        total_repuestos = calcular_repuestos_servicios(servicios)
     valor_total = total_mano_obra + total_gastos + total_repuestos
     
     # Obtener lista de sucursales para el filtro
@@ -2780,8 +2802,11 @@ def servicios_por_sucursal(request):
         a_facturar=Count('id', filter=Q(estado='A_FACTURAR'), distinct=True),
         # Usar servicios_financieros para cálculos de dinero
         total_mano_obra=Sum('valor_mano_obra', filter=Q(estado__in=['COMPLETADO', 'A_FACTURAR'])),
-        total_gastos=Sum('gastos__monto', filter=Q(estado__in=['COMPLETADO', 'A_FACTURAR'])),
-        total_repuestos=Sum(F('repuestos__precio_unitario') * F('repuestos__cantidad'), filter=Q(estado__in=['COMPLETADO', 'A_FACTURAR']))
+        total_gastos=Sum('gastos__monto', filter=Q(estado__in=['COMPLETADO', 'A_FACTURAR'])) + 
+                     Sum('gastos_asistencia_simplificados__monto', filter=Q(estado__in=['COMPLETADO', 'A_FACTURAR'])) +
+                     Sum('gastos_insumos_terceros__monto', filter=Q(estado__in=['COMPLETADO', 'A_FACTURAR'])),
+        total_repuestos=Sum(F('repuestos__precio_unitario') * F('repuestos__cantidad'), filter=Q(estado__in=['COMPLETADO', 'A_FACTURAR'])) +
+                       Sum('venta_repuestos_simplificada__monto_total', filter=Q(estado__in=['COMPLETADO', 'A_FACTURAR']))
     ).order_by('-total_servicios')
     
     # Calcular totales usando servicios (no servicios_financieros para contar)
@@ -2799,8 +2824,8 @@ def servicios_por_sucursal(request):
     
     # Calcular totales financieros usando servicios_financieros
     total_mano_obra = servicios_financieros.aggregate(total=Sum('valor_mano_obra'))['total'] or Decimal('0.00')
-    total_gastos = servicios_financieros.aggregate(total=Sum('gastos__monto'))['total'] or Decimal('0.00')
-    total_repuestos = servicios_financieros.aggregate(total=Sum(F('repuestos__precio_unitario') * F('repuestos__cantidad')))['total'] or Decimal('0.00')
+    total_gastos = calcular_gastos_servicios(servicios_financieros)
+    total_repuestos = calcular_repuestos_servicios(servicios_financieros)
     valor_total = total_mano_obra + total_gastos + total_repuestos
     
     # Exportar a Excel si se solicita
@@ -2891,8 +2916,8 @@ def servicios_por_tecnico(request):
         
         # Usar servicios_financieros para cálculos de dinero
         total_mano_obra = tecnico_servicios_financieros.aggregate(total=Sum('valor_mano_obra'))['total'] or Decimal('0.00')
-        total_gastos = tecnico_servicios_financieros.aggregate(total=Sum('gastos__monto'))['total'] or Decimal('0.00')
-        total_repuestos = tecnico_servicios_financieros.aggregate(total=Sum(F('repuestos__precio_unitario') * F('repuestos__cantidad')))['total'] or Decimal('0.00')
+        total_gastos = calcular_gastos_servicios(tecnico_servicios_financieros)
+        total_repuestos = calcular_repuestos_servicios(tecnico_servicios_financieros)
         
         servicios_por_tecnico.append({
             'tecnico': tecnico,
@@ -2912,8 +2937,8 @@ def servicios_por_tecnico(request):
     # Calcular totales usando servicios_financieros
     total_servicios = servicios.count()
     total_mano_obra = servicios_financieros.aggregate(total=Sum('valor_mano_obra'))['total'] or Decimal('0.00')
-    total_gastos = servicios_financieros.aggregate(total=Sum('gastos__monto'))['total'] or Decimal('0.00')
-    total_repuestos = servicios_financieros.aggregate(total=Sum(F('repuestos__precio_unitario') * F('repuestos__cantidad')))['total'] or Decimal('0.00')
+    total_gastos = calcular_gastos_servicios(servicios_financieros)
+    total_repuestos = calcular_repuestos_servicios(servicios_financieros)
     valor_total = total_mano_obra + total_gastos + total_repuestos
     
     # Exportar a Excel si se solicita
@@ -2962,8 +2987,16 @@ def servicios_sin_ingresos(request):
     servicios_sin_ingresos = []
     for servicio in servicios:
         valor_mano_obra = servicio.valor_mano_obra or Decimal('0.00')
-        total_gastos = servicio.gastos.aggregate(total=Sum('monto'))['total'] or Decimal('0.00')
-        total_repuestos = servicio.repuestos.aggregate(total=Sum(F('precio_unitario') * F('cantidad')))['total'] or Decimal('0.00')
+        # Calcular gastos incluyendo modelos antiguos y nuevos
+        total_gastos_antiguos = servicio.gastos.aggregate(total=Sum('monto'))['total'] or Decimal('0.00')
+        total_gastos_simplificados = servicio.gastos_asistencia_simplificados.aggregate(total=Sum('monto'))['total'] or Decimal('0.00')
+        total_gastos_terceros = servicio.gastos_insumos_terceros.aggregate(total=Sum('monto'))['total'] or Decimal('0.00')
+        total_gastos = total_gastos_antiguos + total_gastos_simplificados + total_gastos_terceros
+        
+        # Calcular repuestos incluyendo modelos antiguos y nuevos
+        total_repuestos_antiguos = servicio.repuestos.aggregate(total=Sum(F('precio_unitario') * F('cantidad')))['total'] or Decimal('0.00')
+        total_repuestos_simplificados = servicio.venta_repuestos_simplificada.aggregate(total=Sum('monto_total'))['total'] or Decimal('0.00')
+        total_repuestos = total_repuestos_antiguos + total_repuestos_simplificados
         valor_total = valor_mano_obra + total_gastos + total_repuestos
         if valor_total == Decimal('0.00'):
             servicios_sin_ingresos.append({

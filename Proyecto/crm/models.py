@@ -87,14 +87,21 @@ class AnalisisCliente(models.Model):
         
         total_servicios = servicios.count()
         
-        total_facturacion = servicios.aggregate(
-            total=Sum(
-                F('valor_mano_obra') + 
-                F('gastos__monto') + 
-                F('repuestos__precio_unitario') * F('repuestos__cantidad'),
-                output_field=DecimalField()
-            )
-        )['total'] or 0
+        # Calcular facturación incluyendo modelos antiguos y nuevos
+        total_mano_obra = servicios.aggregate(total=Sum('valor_mano_obra'))['total'] or 0
+        
+        # Gastos (antiguos + simplificados + terceros)
+        total_gastos_antiguos = servicios.aggregate(total=Sum('gastos__monto'))['total'] or 0
+        total_gastos_simplificados = servicios.aggregate(total=Sum('gastos_asistencia_simplificados__monto'))['total'] or 0
+        total_gastos_terceros = servicios.aggregate(total=Sum('gastos_insumos_terceros__monto'))['total'] or 0
+        total_gastos = total_gastos_antiguos + total_gastos_simplificados + total_gastos_terceros
+        
+        # Repuestos (antiguos + simplificados)
+        total_repuestos_antiguos = servicios.aggregate(total=Sum(F('repuestos__precio_unitario') * F('repuestos__cantidad')))['total'] or 0
+        total_repuestos_simplificados = servicios.aggregate(total=Sum('venta_repuestos_simplificada__monto_total'))['total'] or 0
+        total_repuestos = total_repuestos_antiguos + total_repuestos_simplificados
+        
+        total_facturacion = total_mano_obra + total_gastos + total_repuestos
 
         # Define thresholds for categories
         if total_servicios >= 10 and total_facturacion >= 50000:
