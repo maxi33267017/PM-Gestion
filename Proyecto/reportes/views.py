@@ -10,9 +10,9 @@ import pandas as pd
 import io
 from datetime import datetime, timedelta, date
 
-from recursosHumanos.models import Usuario, RegistroHorasTecnico, ActividadTrabajo
+from recursosHumanos.models import Usuario, RegistroHorasTecnico, ActividadTrabajo, Sucursal
 from gestionDeTaller.models import (
-    Servicio, PreOrden, Sucursal, 
+    Servicio, PreOrden, 
     GastoAsistencia, VentaRepuesto, 
     GastoAsistenciaSimplificado, VentaRepuestosSimplificada, GastoInsumosTerceros
 )
