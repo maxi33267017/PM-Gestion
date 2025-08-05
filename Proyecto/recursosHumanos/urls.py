@@ -33,4 +33,24 @@ urlpatterns = [
     path('permisos/<int:permiso_id>/aprobar/', views.aprobar_permiso, name='aprobar_permiso'),
     path('permisos/<int:permiso_id>/rechazar/', views.rechazar_permiso, name='rechazar_permiso'),
     path('permisos/dashboard/', views.dashboard_permisos, name='dashboard_permisos'),
+    
+    # =============================================================================
+    # URLs PARA SISTEMA DE ESPECIALIZACIONES ADMINISTRATIVAS
+    # =============================================================================
+    
+    # Dashboard general administrativo
+    path('administrativo/dashboard/', views.dashboard_administrativo_general, name='dashboard_administrativo_general'),
+    
+    # Dashboards específicos por especialización
+    path('administrativo/rrhh/dashboard/', views.dashboard_administrativo_rrhh, name='dashboard_administrativo_rrhh'),
+    path('administrativo/contable/dashboard/', views.dashboard_administrativo_contable, name='dashboard_administrativo_contable'),
+    path('administrativo/cajero/dashboard/', views.dashboard_administrativo_cajero, name='dashboard_administrativo_cajero'),
+    path('administrativo/servicios/dashboard/', views.dashboard_administrativo_servicios, name='dashboard_administrativo_servicios'),
+    path('administrativo/repuestos/dashboard/', views.dashboard_administrativo_repuestos, name='dashboard_administrativo_repuestos'),
+    
+    # Gestión avanzada (solo RRHH o generales)
+    path('administrativo/permisos-avanzada/', views.gestion_permisos_avanzada, name='gestion_permisos_avanzada'),
+    
+    # Perfil de especialización
+    path('perfil-especializacion/', views.perfil_especializacion, name='perfil_especializacion'),
 ]

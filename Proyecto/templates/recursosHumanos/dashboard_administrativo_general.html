@@ -1,0 +1,212 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ titulo }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h3 mb-0">{{ titulo }}</h1>
+                    <p class="text-muted">{{ descripcion }}</p>
+                </div>
+                <div class="text-end">
+                    <span class="badge bg-primary">{{ especializacion }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Información de Especialización -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-person-badge me-2"></i>
+                        Información de Especialización
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Especialización:</strong> {{ especializacion }}</p>
+                            <p><strong>Módulos Disponibles:</strong></p>
+                            <ul class="list-unstyled">
+                                {% for modulo in modulos_disponibles %}
+                                    <li><i class="bi bi-check-circle text-success me-2"></i>{{ modulo|title }}</li>
+                                {% empty %}
+                                    <li><i class="bi bi-x-circle text-danger me-2"></i>No hay módulos disponibles</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="alert alert-info">
+                                <h6><i class="bi bi-info-circle me-2"></i>Variables de Contexto Disponibles</h6>
+                                <ul class="mb-0">
+                                    <li><code>user_es_administrativo</code>: {{ user_es_administrativo }}</li>
+                                    <li><code>user_tiene_especializacion</code>: {{ user_tiene_especializacion }}</li>
+                                    <li><code>user_especializacion</code>: {{ user_especializacion }}</li>
+                                    <li><code>user_especializacion_display</code>: {{ user_especializacion_display }}</li>
+                                    <li><code>user_puede_acceder_rrhh</code>: {{ user_puede_acceder_rrhh }}</li>
+                                    <li><code>user_puede_acceder_contable</code>: {{ user_puede_acceder_contable }}</li>
+                                    <li><code>user_puede_acceder_cajero</code>: {{ user_puede_acceder_cajero }}</li>
+                                    <li><code>user_puede_acceder_servicios</code>: {{ user_puede_acceder_servicios }}</li>
+                                    <li><code>user_puede_acceder_repuestos</code>: {{ user_puede_acceder_repuestos }}</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navegación por Especialización -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-grid me-2"></i>
+                        Dashboards por Especialización
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% if user_puede_acceder_rrhh %}
+                        <div class="col-md-4 mb-3">
+                            <div class="card h-100 border-primary">
+                                <div class="card-body text-center">
+                                    <i class="bi bi-people-fill text-primary mb-3" style="font-size: 2rem;"></i>
+                                    <h6 class="card-title">Recursos Humanos</h6>
+                                    <p class="card-text small">Gestión de personal, permisos y ausencias</p>
+                                    <a href="{% url 'recursosHumanos:dashboard_administrativo_rrhh' %}" class="btn btn-primary btn-sm">
+                                        Acceder
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        {% if user_puede_acceder_contable %}
+                        <div class="col-md-4 mb-3">
+                            <div class="card h-100 border-success">
+                                <div class="card-body text-center">
+                                    <i class="bi bi-calculator-fill text-success mb-3" style="font-size: 2rem;"></i>
+                                    <h6 class="card-title">Contable</h6>
+                                    <p class="card-text small">Gestión contable y financiera</p>
+                                    <a href="{% url 'recursosHumanos:dashboard_administrativo_contable' %}" class="btn btn-success btn-sm">
+                                        Acceder
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        {% if user_puede_acceder_cajero %}
+                        <div class="col-md-4 mb-3">
+                            <div class="card h-100 border-warning">
+                                <div class="card-body text-center">
+                                    <i class="bi bi-cash-coin text-warning mb-3" style="font-size: 2rem;"></i>
+                                    <h6 class="card-title">Cajero</h6>
+                                    <p class="card-text small">Gestión de caja y pagos</p>
+                                    <a href="{% url 'recursosHumanos:dashboard_administrativo_cajero' %}" class="btn btn-warning btn-sm">
+                                        Acceder
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        {% if user_puede_acceder_servicios %}
+                        <div class="col-md-4 mb-3">
+                            <div class="card h-100 border-info">
+                                <div class="card-body text-center">
+                                    <i class="bi bi-tools text-info mb-3" style="font-size: 2rem;"></i>
+                                    <h6 class="card-title">Servicios</h6>
+                                    <p class="card-text small">Gestión de servicios técnicos</p>
+                                    <a href="{% url 'recursosHumanos:dashboard_administrativo_servicios' %}" class="btn btn-info btn-sm">
+                                        Acceder
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        {% if user_puede_acceder_repuestos %}
+                        <div class="col-md-4 mb-3">
+                            <div class="card h-100 border-secondary">
+                                <div class="card-body text-center">
+                                    <i class="bi bi-box-seam text-secondary mb-3" style="font-size: 2rem;"></i>
+                                    <h6 class="card-title">Repuestos</h6>
+                                    <p class="card-text small">Gestión de inventario de repuestos</p>
+                                    <a href="{% url 'recursosHumanos:dashboard_administrativo_repuestos' %}" class="btn btn-secondary btn-sm">
+                                        Acceder
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Mensaje si no tiene acceso a ningún módulo -->
+                    {% if not user_puede_acceder_rrhh and not user_puede_acceder_contable and not user_puede_acceder_cajero and not user_puede_acceder_servicios and not user_puede_acceder_repuestos %}
+                    <div class="alert alert-warning text-center">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        No tienes acceso a ningún dashboard específico con tu especialización actual.
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Enlaces de Utilidad -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-gear me-2"></i>
+                        Configuración
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <a href="{% url 'recursosHumanos:perfil_especializacion' %}" class="btn btn-outline-primary">
+                                <i class="bi bi-person-badge me-2"></i>
+                                Mi Perfil de Especialización
+                            </a>
+                        </div>
+                        <div class="col-md-6">
+                            {% if user_puede_acceder_rrhh %}
+                            <a href="{% url 'recursosHumanos:gestion_permisos_avanzada' %}" class="btn btn-outline-success">
+                                <i class="bi bi-shield-check me-2"></i>
+                                Gestión Avanzada de Permisos
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Ejemplo de cómo usar las variables de contexto en JavaScript
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('Información de especialización del usuario:');
+        console.log('- Es administrativo:', '{{ user_es_administrativo|yesno:"true,false" }}');
+        console.log('- Tiene especialización:', '{{ user_tiene_especializacion|yesno:"true,false" }}');
+        console.log('- Especialización:', '{{ user_especializacion_display }}');
+        console.log('- Módulos disponibles:', '{{ user_modulos_disponibles|join:"," }}');
+    });
+</script>
+{% endblock %} 

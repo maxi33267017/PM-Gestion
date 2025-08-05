@@ -24,6 +24,11 @@ from .models import (
 from .forms import (
     RegistroHorasTecnicoForm, PermisoAusenciaForm, AprobarPermisoForm
 )
+from .decorators import (
+    requiere_especializacion_admin, 
+    requiere_administrativo, 
+    requiere_especializacion_o_general
+)
 from gestionDeTaller.models import Servicio
 from clientes.models import Cliente, Equipo
 
@@ -607,3 +612,138 @@ def dashboard_permisos(request):
     }
     
     return render(request, 'recursosHumanos/permisos/dashboard_permisos.html', context)
+
+# ============================================================================
+# VISTAS DE EJEMPLO PARA EL SISTEMA DE ESPECIALIZACIONES ADMINISTRATIVAS
+# ============================================================================
+
+@login_required
+@requiere_administrativo
+def dashboard_administrativo_general(request):
+    """
+    Dashboard general para usuarios administrativos
+    """
+    context = {
+        'titulo': 'Dashboard Administrativo General',
+        'descripcion': 'Vista general para usuarios administrativos',
+        'modulos_disponibles': request.user.get_modulos_disponibles(),
+        'especializacion': request.user.get_especializacion_display(),
+    }
+    return render(request, 'recursosHumanos/dashboard_administrativo_general.html', context)
+
+@login_required
+@requiere_especializacion_admin('rrhh')
+def dashboard_administrativo_rrhh(request):
+    """
+    Dashboard específico para administrativos de RRHH
+    """
+    # Obtener estadísticas específicas de RRHH
+    total_usuarios = Usuario.objects.count()
+    usuarios_activos = Usuario.objects.filter(is_active=True).count()
+    permisos_pendientes = PermisoAusencia.objects.filter(estado='PENDIENTE').count()
+    
+    context = {
+        'titulo': 'Dashboard RRHH',
+        'descripcion': 'Gestión de Recursos Humanos',
+        'total_usuarios': total_usuarios,
+        'usuarios_activos': usuarios_activos,
+        'permisos_pendientes': permisos_pendientes,
+        'especializacion': request.user.get_especializacion_display(),
+    }
+    return render(request, 'recursosHumanos/dashboard_administrativo_rrhh.html', context)
+
+@login_required
+@requiere_especializacion_admin('contable')
+def dashboard_administrativo_contable(request):
+    """
+    Dashboard específico para administrativos contables
+    """
+    context = {
+        'titulo': 'Dashboard Contable',
+        'descripcion': 'Gestión Contable y Financiera',
+        'especializacion': request.user.get_especializacion_display(),
+    }
+    return render(request, 'recursosHumanos/dashboard_administrativo_contable.html', context)
+
+@login_required
+@requiere_especializacion_admin('cajero')
+def dashboard_administrativo_cajero(request):
+    """
+    Dashboard específico para cajeros
+    """
+    context = {
+        'titulo': 'Dashboard Cajero',
+        'descripcion': 'Gestión de Caja y Pagos',
+        'especializacion': request.user.get_especializacion_display(),
+    }
+    return render(request, 'recursosHumanos/dashboard_administrativo_cajero.html', context)
+
+@login_required
+@requiere_especializacion_admin('servicios')
+def dashboard_administrativo_servicios(request):
+    """
+    Dashboard específico para administrativos de servicios
+    """
+    # Obtener estadísticas de servicios
+    servicios_totales = Servicio.objects.count()
+    servicios_pendientes = Servicio.objects.filter(estado='PROGRAMADO').count()
+    servicios_en_proceso = Servicio.objects.filter(estado='EN_PROCESO').count()
+    
+    context = {
+        'titulo': 'Dashboard Servicios',
+        'descripcion': 'Gestión de Servicios Técnicos',
+        'servicios_totales': servicios_totales,
+        'servicios_pendientes': servicios_pendientes,
+        'servicios_en_proceso': servicios_en_proceso,
+        'especializacion': request.user.get_especializacion_display(),
+    }
+    return render(request, 'recursosHumanos/dashboard_administrativo_servicios.html', context)
+
+@login_required
+@requiere_especializacion_admin('repuestos')
+def dashboard_administrativo_repuestos(request):
+    """
+    Dashboard específico para administrativos de repuestos
+    """
+    context = {
+        'titulo': 'Dashboard Repuestos',
+        'descripcion': 'Gestión de Inventario de Repuestos',
+        'especializacion': request.user.get_especializacion_display(),
+    }
+    return render(request, 'recursosHumanos/dashboard_administrativo_repuestos.html', context)
+
+@login_required
+@requiere_especializacion_o_general('rrhh')
+def gestion_permisos_avanzada(request):
+    """
+    Vista avanzada de gestión de permisos (solo RRHH o administrativos generales)
+    """
+    permisos = PermisoAusencia.objects.all().order_by('-fecha_solicitud')
+    
+    context = {
+        'titulo': 'Gestión Avanzada de Permisos',
+        'descripcion': 'Gestión completa de permisos y ausencias',
+        'permisos': permisos,
+        'especializacion': request.user.get_especializacion_display(),
+    }
+    return render(request, 'recursosHumanos/gestion_permisos_avanzada.html', context)
+
+@login_required
+def perfil_especializacion(request):
+    """
+    Vista para que los usuarios vean y gestionen su especialización
+    """
+    if request.method == 'POST':
+        # Aquí se podría implementar la lógica para cambiar especialización
+        # Por ahora solo mostramos información
+        pass
+    
+    context = {
+        'titulo': 'Mi Perfil de Especialización',
+        'descripcion': 'Información sobre tu especialización administrativa',
+        'especializacion': request.user.get_especializacion_display(),
+        'tiene_especializacion': request.user.tiene_especializacion(),
+        'modulos_disponibles': request.user.get_modulos_disponibles(),
+        'es_administrativo': request.user.es_administrativo(),
+    }
+    return render(request, 'recursosHumanos/perfil_especializacion.html', context)

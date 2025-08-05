@@ -98,6 +98,16 @@ class Usuario(AbstractUser):
         ('ADMINISTRATIVO', 'Administrativo'),
         ('GERENTE', 'Gerente'),
     ]
+    
+    # Especializaciones administrativas
+    ESPECIALIZACIONES_ADMIN = [
+        ('RRHH', 'Recursos Humanos'),
+        ('CONTABLE', 'Contable'),
+        ('CAJERO', 'Cajero'),
+        ('SERVICIOS', 'Servicios'),
+        ('REPUESTOS', 'Repuestos'),
+        ('GENERAL', 'General'),
+    ]
 
     username = None
     email = models.EmailField(unique=True, verbose_name="Email")
@@ -113,6 +123,22 @@ class Usuario(AbstractUser):
         help_text="Sucursales adicionales para gerentes (opcional)"
     )
     rol = models.CharField(max_length=15, choices=ROLES, verbose_name="Rol")
+    
+    # Nuevos campos para especialización administrativa
+    especializacion_admin = models.CharField(
+        max_length=20, 
+        choices=ESPECIALIZACIONES_ADMIN, 
+        verbose_name="Especialización Administrativa",
+        blank=True,
+        null=True,
+        help_text="Especialización para usuarios administrativos"
+    )
+    es_administrativo_especializado = models.BooleanField(
+        default=False,
+        verbose_name="¿Es administrativo especializado?",
+        help_text="Marcar si el usuario administrativo tiene una especialización específica"
+    )
+    
     fecha_creacion = models.DateTimeField(auto_now_add=True, verbose_name="Fecha de Creación")
     fecha_modificacion = models.DateTimeField(auto_now=True, verbose_name="Última Modificación")
     tarifa_individual = models.ForeignKey(
@@ -173,7 +199,70 @@ class Usuario(AbstractUser):
             return Sucursal.objects.filter(activo=True)
         else:
             return Sucursal.objects.filter(id=self.sucursal.id, activo=True)
-
+    
+    # Nuevos métodos para especialización administrativa
+    def es_administrativo(self):
+        """Verifica si el usuario es administrativo"""
+        return self.rol == 'ADMINISTRATIVO'
+    
+    def tiene_especializacion(self):
+        """Verifica si el usuario administrativo tiene una especialización"""
+        return self.es_administrativo() and self.es_administrativo_especializado and self.especializacion_admin
+    
+    def get_especializacion_display(self):
+        """Retorna el nombre de la especialización"""
+        if self.tiene_especializacion():
+            return dict(self.ESPECIALIZACIONES_ADMIN)[self.especializacion_admin]
+        return "General"
+    
+    def puede_acceder_modulo(self, modulo):
+        """
+        Verifica si el usuario puede acceder a un módulo específico
+        basado en su especialización administrativa
+        """
+        if not self.es_administrativo():
+            return False
+            
+        if not self.tiene_especializacion():
+            return True  # Administrativos sin especialización pueden acceder a todo
+            
+        # Mapeo de módulos a especializaciones
+        modulos_especializacion = {
+            'rrhh': ['RRHH'],
+            'contable': ['CONTABLE'],
+            'cajero': ['CAJERO'],
+            'servicios': ['SERVICIOS'],
+            'repuestos': ['REPUESTOS'],
+            'general': ['GENERAL', 'RRHH', 'CONTABLE', 'CAJERO', 'SERVICIOS', 'REPUESTOS'],
+        }
+        
+        modulo_lower = modulo.lower()
+        if modulo_lower in modulos_especializacion:
+            return self.especializacion_admin in modulos_especializacion[modulo_lower]
+        
+        return False
+    
+    def get_modulos_disponibles(self):
+        """
+        Retorna los módulos disponibles para el usuario administrativo
+        """
+        if not self.es_administrativo():
+            return []
+            
+        if not self.tiene_especializacion():
+            return ['rrhh', 'contable', 'cajero', 'servicios', 'repuestos', 'general']
+        
+        # Mapeo inverso de especialización a módulos
+        especializacion_modulos = {
+            'RRHH': ['rrhh'],
+            'CONTABLE': ['contable'],
+            'CAJERO': ['cajero'],
+            'SERVICIOS': ['servicios'],
+            'REPUESTOS': ['repuestos'],
+            'GENERAL': ['rrhh', 'contable', 'cajero', 'servicios', 'repuestos', 'general'],
+        }
+        
+        return especializacion_modulos.get(self.especializacion_admin, [])
 
 
 
