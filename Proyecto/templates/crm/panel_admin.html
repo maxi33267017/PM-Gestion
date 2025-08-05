@@ -391,13 +391,13 @@
                 </div>
             </div>
             <div class="module-body">
-                <a href="{% url 'gestionDeTaller:lista_repuestos' %}" class="module-btn">
+                <a href="{% url 'gestionDeTaller:gestionar_repuestos' %}" class="module-btn">
                     <i class="bi bi-boxes"></i>
-                    Ver Repuestos
+                    Gestionar Repuestos
                 </a>
-                <a href="{% url 'gestionDeTaller:agregar_repuesto' %}" class="btn-secondary-module">
+                <a href="{% url 'gestionDeTaller:crear_repuesto' %}" class="btn-secondary-module">
                     <i class="bi bi-plus-circle"></i>
-                    Agregar Repuesto
+                    Crear Repuesto
                 </a>
             </div>
         </div>
@@ -498,3 +498,4 @@
     <!-- Deshabilitar auto-reload en el panel de administración -->
     {% disable_auto_reload %}
 {% endblock %} 
+
