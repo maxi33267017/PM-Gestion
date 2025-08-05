@@ -19,7 +19,8 @@ import base64
 
 from .models import (
     Usuario, Sucursal, Provincia, Ciudad, ActividadTrabajo, 
-    RegistroHorasTecnico, PermisoAusencia
+    RegistroHorasTecnico, PermisoAusencia, PrestamoHerramienta,
+    SesionCronometro, AlertaCronometro
 )
 from .forms import (
     RegistroHorasTecnicoForm, PermisoAusenciaForm, AprobarPermisoForm,
