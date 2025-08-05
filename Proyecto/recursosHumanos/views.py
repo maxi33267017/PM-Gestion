@@ -638,20 +638,8 @@ def dashboard_administrativo_rrhh(request):
     """
     Dashboard específico para administrativos de RRHH
     """
-    # Obtener estadísticas específicas de RRHH
-    total_usuarios = Usuario.objects.count()
-    usuarios_activos = Usuario.objects.filter(is_active=True).count()
-    permisos_pendientes = PermisoAusencia.objects.filter(estado='PENDIENTE').count()
-    
-    context = {
-        'titulo': 'Dashboard RRHH',
-        'descripcion': 'Gestión de Recursos Humanos',
-        'total_usuarios': total_usuarios,
-        'usuarios_activos': usuarios_activos,
-        'permisos_pendientes': permisos_pendientes,
-        'especializacion': request.user.get_especializacion_display(),
-    }
-    return render(request, 'recursosHumanos/dashboard_administrativo_rrhh.html', context)
+    # Redirigir al dashboard RRHH específico
+    return redirect('recursosHumanos:dashboard_rrhh')
 
 @login_required
 @requiere_especializacion_admin('contable')
@@ -831,3 +819,35 @@ def configurar_especializacion_usuario(request, usuario_id):
     }
     
     return render(request, 'recursosHumanos/configurar_especializacion.html', context)
+
+@login_required
+@requiere_especializacion_admin('rrhh')
+def dashboard_rrhh(request):
+    """
+    Dashboard específico para usuarios administrativos de RRHH
+    """
+    # Estadísticas generales
+    total_empleados = Usuario.objects.filter(is_active=True).count()
+    tecnicos_activos = Usuario.objects.filter(rol='TECNICO', is_active=True).count()
+    permisos_pendientes = PermisoAusencia.objects.filter(estado='PENDIENTE').count()
+    herramientas_prestadas = PrestamoHerramienta.get_herramientas_prestadas().count()
+    
+    # Permisos recientes (últimos 10)
+    permisos_recientes = PermisoAusencia.objects.all().order_by('-fecha_solicitud')[:10]
+    
+    # Cronómetros activos
+    cronometros_activos = SesionCronometro.objects.filter(activa=True).select_related('tecnico', 'actividad')
+    
+    context = {
+        'titulo': 'Dashboard RRHH',
+        'descripcion': 'Gestión de Recursos Humanos',
+        'total_empleados': total_empleados,
+        'tecnicos_activos': tecnicos_activos,
+        'permisos_pendientes': permisos_pendientes,
+        'herramientas_prestadas': herramientas_prestadas,
+        'permisos_recientes': permisos_recientes,
+        'cronometros_activos': cronometros_activos,
+        'especializacion': request.user.get_especializacion_display(),
+    }
+    
+    return render(request, 'recursosHumanos/dashboard_rrhh.html', context)

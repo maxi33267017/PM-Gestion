@@ -48,6 +48,9 @@ urlpatterns = [
     path('administrativo/servicios/dashboard/', views.dashboard_administrativo_servicios, name='dashboard_administrativo_servicios'),
     path('administrativo/repuestos/dashboard/', views.dashboard_administrativo_repuestos, name='dashboard_administrativo_repuestos'),
     
+    # Dashboard RRHH específico
+    path('rrhh/dashboard/', views.dashboard_rrhh, name='dashboard_rrhh'),
+    
     # Gestión avanzada (solo RRHH o generales)
     path('administrativo/permisos-avanzada/', views.gestion_permisos_avanzada, name='gestion_permisos_avanzada'),
     

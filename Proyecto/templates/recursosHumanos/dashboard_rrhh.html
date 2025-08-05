@@ -1,0 +1,384 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Dashboard RRHH - Patagonia Maquinarias{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h3 mb-0">
+                        <i class="bi bi-people-fill text-primary me-2"></i>
+                        Dashboard RRHH
+                    </h1>
+                    <p class="text-muted">Gestión de Recursos Humanos - {{ user.get_nombre_completo }}</p>
+                </div>
+                <div class="text-end">
+                    <span class="badge bg-primary fs-6">{{ user.get_especializacion_display }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Estadísticas Generales -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                Total Empleados
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_empleados }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="bi bi-people-fill fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Técnicos Activos
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ tecnicos_activos }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="bi bi-tools fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                Permisos Pendientes
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ permisos_pendientes }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="bi bi-calendar-check fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                Herramientas Prestadas
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ herramientas_prestadas }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="bi bi-box-seam fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contenido Principal -->
+    <div class="row">
+        <!-- Gestión de Personal -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="bi bi-person-badge me-2"></i>
+                        Gestión de Personal
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <a href="{% url 'recursosHumanos:lista_permisos_gerente' %}" class="btn btn-primary btn-block">
+                                <i class="bi bi-calendar-check me-2"></i>
+                                Permisos y Ausencias
+                            </a>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <a href="{% url 'recursosHumanos:dashboard_permisos' %}" class="btn btn-info btn-block">
+                                <i class="bi bi-graph-up me-2"></i>
+                                Dashboard de Permisos
+                            </a>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <a href="{% url 'recursosHumanos:lista_permisos' %}" class="btn btn-success btn-block">
+                                <i class="bi bi-list-check me-2"></i>
+                                Ver Todos los Permisos
+                            </a>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <a href="{% url 'recursosHumanos:solicitar_permiso' %}" class="btn btn-warning btn-block">
+                                <i class="bi bi-plus-circle me-2"></i>
+                                Solicitar Permiso
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Gestión de Técnicos -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-success">
+                        <i class="bi bi-tools me-2"></i>
+                        Gestión de Técnicos
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <a href="{% url 'recursosHumanos:cronometro' %}" class="btn btn-success btn-block">
+                                <i class="bi bi-stopwatch me-2"></i>
+                                Cronómetro Técnicos
+                            </a>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <a href="{% url 'recursosHumanos:dashboard_alertas_cronometro' %}" class="btn btn-warning btn-block">
+                                <i class="bi bi-bell me-2"></i>
+                                Alertas Cronómetro
+                            </a>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <a href="{% url 'gestionDeTaller:gestion_de_taller' %}" class="btn btn-info btn-block">
+                                <i class="bi bi-gear me-2"></i>
+                                Gestión de Taller
+                            </a>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <a href="{% url 'recursosHumanos:lista_permisos_gerente' %}" class="btn btn-primary btn-block">
+                                <i class="bi bi-people me-2"></i>
+                                Gestión de Personal
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Herramientas y Equipamiento -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-info">
+                        <i class="bi bi-box-seam me-2"></i>
+                        Herramientas y Equipamiento
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <a href="#" class="btn btn-info btn-block">
+                                <i class="bi bi-tools me-2"></i>
+                                Herramientas Especiales
+                            </a>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <a href="#" class="btn btn-warning btn-block">
+                                <i class="bi bi-box-arrow-up me-2"></i>
+                                Préstamos Activos
+                            </a>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <a href="#" class="btn btn-success btn-block">
+                                <i class="bi bi-clipboard-check me-2"></i>
+                                Revisiones Herramientas
+                            </a>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <a href="#" class="btn btn-primary btn-block">
+                                <i class="bi bi-gear me-2"></i>
+                                Gestión de Inventario
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Evaluaciones y Competencias -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-warning">
+                        <i class="bi bi-award me-2"></i>
+                        Evaluaciones y Competencias
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <a href="#" class="btn btn-warning btn-block">
+                                <i class="bi bi-person-check me-2"></i>
+                                Competencias Técnicos
+                            </a>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <a href="#" class="btn btn-info btn-block">
+                                <i class="bi bi-certificate me-2"></i>
+                                Certificaciones JD
+                            </a>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <a href="#" class="btn btn-success btn-block">
+                                <i class="bi bi-laptop me-2"></i>
+                                Evaluaciones Sistema
+                            </a>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <a href="#" class="btn btn-primary btn-block">
+                                <i class="bi bi-graph-up me-2"></i>
+                                Reportes RRHH
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Información Reciente -->
+    <div class="row">
+        <!-- Permisos Recientes -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="bi bi-clock-history me-2"></i>
+                        Permisos Recientes
+                    </h6>
+                </div>
+                <div class="card-body">
+                    {% if permisos_recientes %}
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Empleado</th>
+                                        <th>Tipo</th>
+                                        <th>Estado</th>
+                                        <th>Fecha</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for permiso in permisos_recientes %}
+                                    <tr>
+                                        <td>{{ permiso.usuario.get_nombre_completo }}</td>
+                                        <td>
+                                            <span class="badge bg-secondary">{{ permiso.get_tipo_permiso_display }}</span>
+                                        </td>
+                                        <td>
+                                            {% if permiso.estado == 'PENDIENTE' %}
+                                                <span class="badge bg-warning">Pendiente</span>
+                                            {% elif permiso.estado == 'APROBADO' %}
+                                                <span class="badge bg-success">Aprobado</span>
+                                            {% elif permiso.estado == 'RECHAZADO' %}
+                                                <span class="badge bg-danger">Rechazado</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ permiso.fecha_inicio|date:"d/m/Y" }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <p class="text-muted text-center">No hay permisos recientes</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Técnicos con Cronómetros Activos -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-success">
+                        <i class="bi bi-stopwatch-fill me-2"></i>
+                        Cronómetros Activos
+                    </h6>
+                </div>
+                <div class="card-body">
+                    {% if cronometros_activos %}
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Técnico</th>
+                                        <th>Actividad</th>
+                                        <th>Duración</th>
+                                        <th>Estado</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for sesion in cronometros_activos %}
+                                    <tr>
+                                        <td>{{ sesion.tecnico.get_nombre_completo }}</td>
+                                        <td>{{ sesion.actividad.nombre }}</td>
+                                        <td>{{ sesion.get_duracion }}</td>
+                                        <td>
+                                            <span class="badge bg-success">Activo</span>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <p class="text-muted text-center">No hay cronómetros activos</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Información del Sistema -->
+    <div class="row">
+        <div class="col-12">
+            <div class="alert alert-info">
+                <h6><i class="bi bi-info-circle me-2"></i>Información del Sistema RRHH</h6>
+                <p class="mb-2">Este dashboard está diseñado específicamente para usuarios administrativos de Recursos Humanos.</p>
+                <ul class="mb-0">
+                    <li><strong>Gestión de Personal:</strong> Permisos, ausencias y solicitudes</li>
+                    <li><strong>Gestión de Técnicos:</strong> Cronómetros, alertas y actividades</li>
+                    <li><strong>Herramientas:</strong> Inventario, préstamos y revisiones</li>
+                    <li><strong>Evaluaciones:</strong> Competencias, certificaciones y evaluaciones</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Auto-refresh cada 5 minutos para mantener información actualizada
+    setTimeout(function() {
+        location.reload();
+    }, 300000); // 5 minutos
+</script>
+{% endblock %} 
