@@ -392,6 +392,10 @@
         <h1>
             <i class="bi bi-graph-up"></i>
             Segmentación ABC de Clientes
+            <button type="button" class="btn btn-outline-light btn-sm ms-3" data-bs-toggle="modal" data-bs-target="#explicacionModal">
+                <i class="bi bi-question-circle"></i>
+                ¿Cómo funciona?
+            </button>
         </h1>
         <p class="subtitle">Análisis automático de clientes por facturación, comportamiento y potencial</p>
     </div>
@@ -680,6 +684,154 @@
         <a href="{% url 'crm:segmentacion_clientes' %}" class="btn btn-outline-secondary">
             <i class="fas fa-arrow-left me-2"></i>Volver a Segmentación
         </a>
+    </div>
+</div>
+
+<!-- Modal de Explicación -->
+<div class="modal fade" id="explicacionModal" tabindex="-1" aria-labelledby="explicacionModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="explicacionModalLabel">
+                    <i class="bi bi-info-circle me-2"></i>
+                    ¿Cómo funciona la Segmentación ABC?
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-12">
+                        <h6 class="text-primary mb-3">
+                            <i class="bi bi-graph-up me-2"></i>
+                            Proceso de Segmentación
+                        </h6>
+                        <ol class="list-group list-group-numbered mb-4">
+                            <li class="list-group-item">
+                                <strong>Filtrado inicial:</strong> Se analizan los clientes según el período seleccionado (por defecto 1 año)
+                            </li>
+                            <li class="list-group-item">
+                                <strong>Cálculo de facturación:</strong> Se suma la mano de obra, gastos y repuestos de todos los servicios completados
+                            </li>
+                            <li class="list-group-item">
+                                <strong>Ordenamiento:</strong> Los clientes se ordenan por facturación total (de mayor a menor)
+                            </li>
+                            <li class="list-group-item">
+                                <strong>Segmentación ABC:</strong> Se aplica el principio de Pareto (80/20)
+                            </li>
+                        </ol>
+
+                        <h6 class="text-success mb-3">
+                            <i class="bi bi-tags me-2"></i>
+                            Segmentos ABC
+                        </h6>
+                        <div class="row mb-4">
+                            <div class="col-md-4">
+                                <div class="card border-success">
+                                    <div class="card-header bg-success text-white">
+                                        <h6 class="mb-0"><i class="bi bi-star me-2"></i>Segmento A</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <p class="mb-1"><strong>Top 20%</strong> de facturación</p>
+                                        <p class="mb-1"><strong>80%</strong> del total facturado</p>
+                                        <p class="mb-0 text-muted">Clientes más valiosos</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card border-warning">
+                                    <div class="card-header bg-warning text-dark">
+                                        <h6 class="mb-0"><i class="bi bi-star me-2"></i>Segmento B</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <p class="mb-1"><strong>Siguiente 15%</strong> de facturación</p>
+                                        <p class="mb-1"><strong>15%</strong> del total facturado</p>
+                                        <p class="mb-0 text-muted">Clientes con potencial</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card border-secondary">
+                                    <div class="card-header bg-secondary text-white">
+                                        <h6 class="mb-0"><i class="bi bi-star me-2"></i>Segmento C</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <p class="mb-1"><strong>Resto 5%</strong> de facturación</p>
+                                        <p class="mb-1"><strong>5%</strong> del total facturado</p>
+                                        <p class="mb-0 text-muted">Clientes de menor valor</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <h6 class="text-info mb-3">
+                            <i class="bi bi-activity me-2"></i>
+                            Comportamiento de Clientes
+                        </h6>
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <div class="card border-success">
+                                    <div class="card-body">
+                                        <h6 class="text-success"><i class="bi bi-check-circle me-2"></i>ACTIVO</h6>
+                                        <p class="mb-0">Último servicio ≤ 90 días</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card border-info">
+                                    <div class="card-body">
+                                        <h6 class="text-info"><i class="bi bi-graph-up me-2"></i>CRECIMIENTO</h6>
+                                        <p class="mb-0">Último servicio 90-365 días</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card border-warning">
+                                    <div class="card-body">
+                                        <h6 class="text-warning"><i class="bi bi-graph-down me-2"></i>COMPORTAMIENTO_BAJISTA</h6>
+                                        <p class="mb-0">Último servicio 1-2 años</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card border-danger">
+                                    <div class="card-body">
+                                        <h6 class="text-danger"><i class="bi bi-x-circle me-2"></i>INACTIVO</h6>
+                                        <p class="mb-0">Último servicio > 2 años</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <h6 class="text-primary mb-3">
+                            <i class="bi bi-calculator me-2"></i>
+                            Cálculo de Facturación
+                        </h6>
+                        <div class="alert alert-info">
+                            <p class="mb-2"><strong>La facturación incluye:</strong></p>
+                            <ul class="mb-0">
+                                <li><strong>Mano de obra:</strong> Valor de trabajo técnico</li>
+                                <li><strong>Gastos:</strong> Gastos de asistencia (antiguos y nuevos modelos)</li>
+                                <li><strong>Gastos de terceros:</strong> Insumos y gastos de terceros</li>
+                                <li><strong>Repuestos:</strong> Ventas de repuestos (antiguos y nuevos modelos)</li>
+                            </ul>
+                        </div>
+
+                        <h6 class="text-warning mb-3">
+                            <i class="bi bi-lightbulb me-2"></i>
+                            Potencial Estimado
+                        </h6>
+                        <div class="alert alert-warning">
+                            <p class="mb-0">
+                                <strong>Fórmula:</strong> Número de equipos activos × $5,000 USD por equipo por año
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
     </div>
 </div>
 
