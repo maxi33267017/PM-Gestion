@@ -3962,10 +3962,14 @@ def dashboard_administrador(request):
     """
     Dashboard específico para administradores con información operativa del taller
     """
-    # Verificar que el usuario sea administrador
+    # Verificar que el usuario sea administrativo
     if request.user.rol != 'ADMINISTRATIVO':
         messages.error(request, "No tienes permisos para acceder al dashboard de administradores.")
         return redirect('home')
+    
+    # Si el usuario es RRHH, redirigir al dashboard RRHH específico
+    if request.user.especializacion_admin == 'RRHH':
+        return redirect('recursosHumanos:dashboard_rrhh')
     
     from datetime import date, timedelta
     from django.db.models import Sum, Count, Q

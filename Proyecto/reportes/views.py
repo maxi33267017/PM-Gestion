@@ -62,10 +62,6 @@ def calcular_repuestos_servicios(servicios_query):
 @login_required
 def dashboard_reportes(request):
     """Dashboard principal de reportes"""
-    # Verificar que el usuario sea gerente
-    if request.user.rol != 'GERENTE':
-        messages.error(request, 'Solo los gerentes pueden acceder a los reportes.')
-        return redirect('home')
     
     # Calcular estadísticas
     from datetime import datetime, timedelta
@@ -166,10 +162,6 @@ def dashboard_reportes(request):
 @login_required
 def reportes_facturacion(request):
     """Dashboard de reportes de facturación"""
-    # Verificar que el usuario sea gerente
-    if request.user.rol != 'GERENTE':
-        messages.error(request, 'Solo los gerentes pueden acceder a los reportes.')
-        return redirect('home')
     
     # Calcular estadísticas de facturación
     from datetime import datetime, timedelta
@@ -931,10 +923,6 @@ def facturacion_anual(request):
 @login_required
 def reportes_horas(request):
     """Dashboard de reportes de horas"""
-    # Verificar que el usuario sea gerente
-    if request.user.rol != 'GERENTE':
-        messages.error(request, 'Solo los gerentes pueden acceder a los reportes.')
-        return redirect('home')
     from recursosHumanos.models import RegistroHorasTecnico, Usuario
     from django.db.models import Sum, Count, Avg, F, ExpressionWrapper, fields, Q
     from datetime import datetime, timedelta
@@ -2212,10 +2200,6 @@ def desempeno_tecnicos(request):
 @login_required
 def reportes_servicios(request):
     """Dashboard de reportes de servicios"""
-    # Verificar que el usuario sea gerente
-    if request.user.rol != 'GERENTE':
-        messages.error(request, 'Solo los gerentes pueden acceder a los reportes.')
-        return redirect('home')
     return render(request, 'reportes/servicios/dashboard.html')
 
 @login_required
@@ -3026,10 +3010,6 @@ def servicios_sin_ingresos(request):
 @login_required
 def reportes_embudos(request):
     """Dashboard de reportes de embudos"""
-    # Verificar que el usuario sea gerente
-    if request.user.rol != 'GERENTE':
-        messages.error(request, 'Solo los gerentes pueden acceder a los reportes.')
-        return redirect('home')
     return render(request, 'reportes/embudos/dashboard.html')
 
 @login_required
@@ -3062,10 +3042,6 @@ def embudos_estadisticas(request):
 @login_required
 def reportes_csc(request):
     """Dashboard de reportes de CSC"""
-    # Verificar que el usuario sea gerente
-    if request.user.rol != 'GERENTE':
-        messages.error(request, 'Solo los gerentes pueden acceder a los reportes.')
-        return redirect('home')
     return render(request, 'reportes/csc/dashboard.html')
 
 @login_required
@@ -3103,10 +3079,6 @@ def csc_por_sucursal(request):
 @login_required
 def reportes_encuestas(request):
     """Dashboard de reportes de encuestas"""
-    # Verificar que el usuario sea gerente
-    if request.user.rol != 'GERENTE':
-        messages.error(request, 'Solo los gerentes pueden acceder a los reportes.')
-        return redirect('home')
     
     # Importar modelos de encuestas
     from gestionDeTaller.models import EncuestaServicio, RespuestaEncuesta

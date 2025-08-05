@@ -81,7 +81,7 @@
                     </li>
                     {% endif %}
                     
-                    {% if user.rol == 'GERENTE' or user.rol == 'ADMINISTRATIVO' %}
+                    {% if user.rol == 'GERENTE' %}
                     <li class="nav-item">
                         <a class="nav-link {% if 'reportes' in request.path %}active{% endif %}" href="{% url 'reportes:dashboard_reportes' %}">
                             <i class="bi bi-graph-up me-1"></i>Reportes
