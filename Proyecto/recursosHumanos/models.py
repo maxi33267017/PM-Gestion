@@ -855,9 +855,9 @@ class PermisoAusencia(models.Model):
         ('VACACIONES', 'Vacaciones'),
         ('ENFERMEDAD', 'Enfermedad'),
         ('PERSONAL', 'Personal'),
-        ('MATERNIDAD', 'Maternidad'),
-        ('PATERNIDAD', 'Paternidad'),
+        ('LICENCIA_ESPECIAL', 'Licencia Especial'),
         ('CAPACITACION', 'Capacitación'),
+        ('COMPENSACION', 'Compensación'),
         ('OTRO', 'Otro'),
     ]
     
