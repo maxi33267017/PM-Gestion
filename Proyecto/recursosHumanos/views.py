@@ -821,11 +821,18 @@ def configurar_especializacion_usuario(request, usuario_id):
     return render(request, 'recursosHumanos/configurar_especializacion.html', context)
 
 @login_required
-@requiere_especializacion_admin('rrhh')
 def dashboard_rrhh(request):
     """
     Dashboard específico para usuarios administrativos de RRHH
     """
+    # Verificar que el usuario sea administrativo con especialización RRHH
+    if not request.user.es_administrativo():
+        messages.error(request, 'Esta sección es solo para usuarios administrativos.')
+        return redirect('home')
+    
+    if request.user.especializacion_admin != 'RRHH':
+        messages.error(request, f'Esta sección es solo para usuarios de RRHH. Tu especialización es: {request.user.get_especializacion_display()}')
+        return redirect('home')
     # Estadísticas generales
     total_empleados = Usuario.objects.filter(is_active=True).count()
     tecnicos_activos = Usuario.objects.filter(rol='TECNICO', is_active=True).count()
