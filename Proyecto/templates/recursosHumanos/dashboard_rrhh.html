@@ -285,10 +285,10 @@
                         <i class="bi bi-lightbulb me-2"></i>
                         Gestión de Sugerencias y Mejoras
                     </h6>
-                    <a href="#" class="btn btn-primary btn-sm">
-                        <i class="bi bi-gear me-2"></i>
-                        Gestionar Sugerencias
-                    </a>
+                                                        <a href="{% url 'crm:gestionar_sugerencias' %}" class="btn btn-primary btn-sm">
+                                        <i class="bi bi-gear me-2"></i>
+                                        Gestionar Sugerencias
+                                    </a>
                 </div>
                 <div class="card-body">
                     <!-- Estadísticas -->
@@ -356,7 +356,7 @@
                                             <tr>
                                                 <td>{{ sugerencia.titulo }}</td>
                                                 <td>
-                                                    <span class="badge bg-secondary">{{ sugerencia.tipo }}</span>
+                                                    <span class="badge bg-secondary">{{ sugerencia.get_categoria_display }}</span>
                                                 </td>
                                                 <td>
                                                     {% if sugerencia.prioridad == 'BAJA' %}
@@ -365,27 +365,25 @@
                                                         <span class="badge bg-warning">Media</span>
                                                     {% elif sugerencia.prioridad == 'ALTA' %}
                                                         <span class="badge bg-danger">Alta</span>
-                                                    {% elif sugerencia.prioridad == 'CRITICA' %}
-                                                        <span class="badge bg-dark">Crítica</span>
+                                                    {% elif sugerencia.prioridad == 'URGENTE' %}
+                                                        <span class="badge bg-dark">Urgente</span>
                                                     {% endif %}
                                                 </td>
                                                 <td>
                                                     {% if sugerencia.estado == 'PENDIENTE' %}
                                                         <span class="badge bg-warning">Pendiente</span>
-                                                    {% elif sugerencia.estado == 'EN_REVISION' %}
-                                                        <span class="badge bg-info">En Revisión</span>
+                                                    {% elif sugerencia.estado == 'EN_ANALISIS' %}
+                                                        <span class="badge bg-info">En Análisis</span>
                                                     {% elif sugerencia.estado == 'APROBADA' %}
                                                         <span class="badge bg-success">Aprobada</span>
-                                                    {% elif sugerencia.estado == 'EN_DESARROLLO' %}
-                                                        <span class="badge bg-primary">En Desarrollo</span>
                                                     {% elif sugerencia.estado == 'IMPLEMENTADA' %}
                                                         <span class="badge bg-success">Implementada</span>
                                                     {% elif sugerencia.estado == 'RECHAZADA' %}
                                                         <span class="badge bg-danger">Rechazada</span>
                                                     {% endif %}
                                                 </td>
-                                                <td>{{ sugerencia.solicitante }}</td>
-                                                <td>{{ sugerencia.fecha_creacion }}</td>
+                                                <td>Anónimo</td>
+                                                <td>{{ sugerencia.fecha_sugerencia|date:"d/m/Y" }}</td>
                                             </tr>
                                             {% endfor %}
                                         </tbody>

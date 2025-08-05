@@ -1052,7 +1052,7 @@ def gestionar_sugerencias(request):
     # Verificar permisos (solo gerentes y administradores)
     if not request.user.is_staff and request.user.rol not in ['GERENTE', 'ADMINISTRADOR']:
         messages.error(request, 'No tienes permisos para acceder a esta sección.')
-        return redirect('panel_admin')
+        return redirect('crm:panel_admin')
     
     # Filtros
     estado = request.GET.get('estado', '')
@@ -1094,7 +1094,7 @@ def revisar_sugerencia(request, sugerencia_id):
     # Verificar permisos
     if not request.user.is_staff and request.user.rol not in ['GERENTE', 'ADMINISTRADOR']:
         messages.error(request, 'No tienes permisos para acceder a esta sección.')
-        return redirect('panel_admin')
+        return redirect('crm:panel_admin')
     
     sugerencia = get_object_or_404(SugerenciaMejora, id=sugerencia_id)
     
