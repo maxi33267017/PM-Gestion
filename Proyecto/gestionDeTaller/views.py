@@ -111,6 +111,7 @@ def lista_servicios(request):
         orden_estado=Case(
             When(estado='EN_PROCESO', then=1),
             When(estado='ESPERA_REPUESTOS', then=2),
+            When(estado='ESPERA_CONFIRMACION_CLIENTE', then=2),  # Misma prioridad que espera repuestos
             When(estado='PROGRAMADO', then=3),
             When(estado='A_FACTURAR', then=4),
             When(estado='COMPLETADO', then=5),
