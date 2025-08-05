@@ -140,46 +140,6 @@
             </div>
         </div>
 
-        <!-- Gestión de Técnicos -->
-        <div class="col-lg-6 mb-4">
-            <div class="card shadow">
-                <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-success">
-                        <i class="bi bi-tools me-2"></i>
-                        Gestión de Técnicos
-                    </h6>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <a href="{% url 'recursosHumanos:cronometro' %}" class="btn btn-success btn-block">
-                                <i class="bi bi-stopwatch me-2"></i>
-                                Cronómetro Técnicos
-                            </a>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <a href="{% url 'recursosHumanos:dashboard_alertas_cronometro' %}" class="btn btn-warning btn-block">
-                                <i class="bi bi-bell me-2"></i>
-                                Alertas Cronómetro
-                            </a>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <a href="{% url 'gestionDeTaller:gestion_de_taller' %}" class="btn btn-info btn-block">
-                                <i class="bi bi-gear me-2"></i>
-                                Gestión de Taller
-                            </a>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <a href="{% url 'recursosHumanos:lista_permisos_gerente' %}" class="btn btn-primary btn-block">
-                                <i class="bi bi-people me-2"></i>
-                                Gestión de Personal
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
         <!-- Herramientas y Equipamiento -->
         <div class="col-lg-6 mb-4">
             <div class="card shadow">
@@ -213,46 +173,6 @@
                             <a href="#" class="btn btn-primary btn-block">
                                 <i class="bi bi-gear me-2"></i>
                                 Gestión de Inventario
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Evaluaciones y Competencias -->
-        <div class="col-lg-6 mb-4">
-            <div class="card shadow">
-                <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-warning">
-                        <i class="bi bi-award me-2"></i>
-                        Evaluaciones y Competencias
-                    </h6>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <a href="#" class="btn btn-warning btn-block">
-                                <i class="bi bi-person-check me-2"></i>
-                                Competencias Técnicos
-                            </a>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <a href="#" class="btn btn-info btn-block">
-                                <i class="bi bi-certificate me-2"></i>
-                                Certificaciones JD
-                            </a>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <a href="#" class="btn btn-success btn-block">
-                                <i class="bi bi-laptop me-2"></i>
-                                Evaluaciones Sistema
-                            </a>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <a href="#" class="btn btn-primary btn-block">
-                                <i class="bi bi-graph-up me-2"></i>
-                                Reportes RRHH
                             </a>
                         </div>
                     </div>
@@ -364,9 +284,8 @@
                 <p class="mb-2">Este dashboard está diseñado específicamente para usuarios administrativos de Recursos Humanos.</p>
                 <ul class="mb-0">
                     <li><strong>Gestión de Personal:</strong> Permisos, ausencias y solicitudes</li>
-                    <li><strong>Gestión de Técnicos:</strong> Cronómetros, alertas y actividades</li>
                     <li><strong>Herramientas:</strong> Inventario, préstamos y revisiones</li>
-                    <li><strong>Evaluaciones:</strong> Competencias, certificaciones y evaluaciones</li>
+                    <li><strong>Monitoreo:</strong> Seguimiento de permisos y cronómetros activos</li>
                 </ul>
             </div>
         </div>
