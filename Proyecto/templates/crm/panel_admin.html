@@ -98,34 +98,12 @@
         background: var(--info-gradient);
         color: white;
     }
-    
-    .stat-card.purple {
-        background: var(--purple-gradient);
-        color: white;
-    }
-    
-    .stat-icon {
-        font-size: 1.8rem;
-        margin-bottom: 0.8rem;
-        opacity: 0.8;
-    }
-    
-    .stat-number {
-        font-size: 2rem;
-        font-weight: 700;
-        margin-bottom: 0.3rem;
-    }
-    
-    .stat-label {
-        font-size: 0.9rem;
-        opacity: 0.9;
-    }
 
     .modules-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
         gap: 2rem;
-        margin-bottom: 2.5rem;
+        margin-top: 2rem;
     }
     
     .module-card {
@@ -133,9 +111,8 @@
         border-radius: var(--border-radius);
         box-shadow: var(--card-shadow);
         overflow: hidden;
-        border: 1px solid #e9ecef;
         transition: var(--transition);
-        height: 100%;
+        border: 1px solid #e9ecef;
     }
     
     .module-card:hover {
@@ -145,55 +122,26 @@
     
     .module-header {
         padding: 2rem;
-        position: relative;
-        overflow: hidden;
-    }
-    
-    .module-card.sugerencias .module-header {
-        background: var(--info-gradient);
-        color: white;
-    }
-    
-    .module-card.repuestos .module-header {
-        background: var(--success-gradient);
-        color: white;
-    }
-    
-    .module-card.alertas .module-header {
-        background: var(--warning-gradient);
-        color: white;
-    }
-    
-    .module-card.reportes .module-header {
-        background: var(--danger-gradient);
-        color: white;
-    }
-    
-    .module-card.usuarios .module-header {
-        background: var(--purple-gradient);
-        color: white;
-    }
-    
-    .module-card.configuracion .module-header {
-        background: var(--dark-gradient);
-        color: white;
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-bottom: 1px solid #dee2e6;
     }
     
     .module-icon {
-        font-size: 3rem;
+        font-size: 2.5rem;
         margin-bottom: 1rem;
-        opacity: 0.8;
+        color: #6c757d;
     }
     
     .module-title {
         font-size: 1.5rem;
         font-weight: 700;
         margin-bottom: 0.5rem;
+        color: #2c3e50;
     }
     
     .module-description {
-        font-size: 1rem;
-        opacity: 0.9;
+        color: #6c757d;
+        font-size: 0.95rem;
         line-height: 1.5;
     }
     
@@ -282,18 +230,6 @@
         text-decoration: none;
     }
     
-    .module-card.configuracion .module-btn {
-        background: var(--dark-gradient);
-    }
-    
-    .module-card.configuracion .module-btn:hover {
-        background: var(--dark-gradient);
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(44, 62, 80, 0.4);
-        color: white;
-        text-decoration: none;
-    }
-    
     .module-card.permisos .module-btn {
         background: var(--success-gradient);
     }
@@ -363,138 +299,105 @@
     .module-card:nth-child(6) { animation-delay: 1.1s; }
     
     @media (max-width: 768px) {
-        .admin-header {
-            padding: 2rem 1.5rem;
-            text-align: center;
-        }
-        
         .admin-header h1 {
             font-size: 2rem;
-            flex-direction: column;
-            gap: 0.5rem;
-        }
-        
-        .stats-grid {
-            grid-template-columns: 1fr;
-            gap: 1rem;
         }
         
         .modules-grid {
             grid-template-columns: 1fr;
-            gap: 1.5rem;
         }
         
-        .module-header {
-            padding: 1.5rem;
-        }
-        
-        .module-body {
-            padding: 1.5rem;
+        .stats-grid {
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
         }
     }
 </style>
 
-<main class="container-fluid mt-4">
-    <!-- Header mejorado -->
+<main class="container-fluid">
+    <!-- Header -->
     <div class="admin-header">
         <h1>
             <i class="bi bi-gear-fill"></i>
             Panel de Administración
         </h1>
         <div class="admin-subtitle">
-            Centro de control y gestión integral del sistema
+            Gestión centralizada del sistema Patagonia Maquinarias
         </div>
     </div>
 
-    <!-- Estadísticas Rápidas -->
+    <!-- Estadísticas Generales -->
     <div class="stats-grid">
         <div class="stat-card primary">
-            <div class="stat-icon">
-                <i class="bi bi-chat-dots"></i>
-            </div>
-            <div class="stat-number">{{ total_sugerencias }}</div>
-            <div class="stat-label">Total Sugerencias</div>
-                </div>
-        
+            <h6 class="card-title">Total Sugerencias</h6>
+            <h3 class="mb-0">{{ total_sugerencias }}</h3>
+            <small>Recibidas</small>
+        </div>
         <div class="stat-card warning">
-            <div class="stat-icon">
-                <i class="bi bi-clock"></i>
-            </div>
-            <div class="stat-number">{{ sugerencias_pendientes }}</div>
-            <div class="stat-label">Pendientes</div>
+            <h6 class="card-title">Sugerencias Pendientes</h6>
+            <h3 class="mb-0">{{ sugerencias_pendientes }}</h3>
+            <small>Por revisar</small>
         </div>
-        
         <div class="stat-card success">
-            <div class="stat-icon">
-                <i class="bi bi-check-circle"></i>
-            </div>
-            <div class="stat-number">{{ sugerencias_implementadas }}</div>
-            <div class="stat-label">Implementadas</div>
+            <h6 class="card-title">Sugerencias Implementadas</h6>
+            <h3 class="mb-0">{{ sugerencias_implementadas }}</h3>
+            <small>Aplicadas</small>
         </div>
-        
         <div class="stat-card info">
-            <div class="stat-icon">
-                <i class="bi bi-bell"></i>
-            </div>
-            <div class="stat-number">{{ alertas_activas|default:"0" }}</div>
-            <div class="stat-label">Alertas Activas</div>
+            <h6 class="card-title">Alertas Activas</h6>
+            <h3 class="mb-0">{{ alertas_activas }}</h3>
+            <small>Últimos 7 días</small>
         </div>
-        
-        <div class="stat-card purple">
-            <div class="stat-icon">
-                <i class="bi bi-people"></i>
-            </div>
-            <div class="stat-number">{{ total_usuarios|default:"0" }}</div>
-            <div class="stat-label">Usuarios Activos</div>
+        <div class="stat-card">
+            <h6 class="card-title">Usuarios Activos</h6>
+            <h3 class="mb-0">{{ total_usuarios }}</h3>
+            <small>En el sistema</small>
         </div>
     </div>
 
-    <!-- Módulos Principales -->
+    <!-- Módulos de Gestión -->
     <div class="modules-grid">
-        <!-- Buzón de Sugerencias -->
+        <!-- Sugerencias y Mejoras -->
         <div class="module-card sugerencias">
             <div class="module-header">
                 <div class="module-icon">
-                    <i class="bi bi-chat-dots"></i>
+                    <i class="bi bi-lightbulb"></i>
                 </div>
-                <div class="module-title">Buzón de Sugerencias</div>
+                <div class="module-title">Sugerencias y Mejoras</div>
                 <div class="module-description">
-                        Sistema anónimo para que todos los usuarios puedan sugerir mejoras para el taller.
+                    Gestión de sugerencias del personal para mejorar procesos y sistemas.
                 </div>
             </div>
             <div class="module-body">
                 <a href="{% url 'crm:buzon_sugerencias' %}" class="module-btn">
-                    <i class="bi bi-inbox"></i>
-                    Buzón de Sugerencias
-                        </a>
-                        {% if user.is_staff or user.rol in 'GERENTE,ADMINISTRADOR' %}
+                    <i class="bi bi-plus-circle"></i>
+                    Enviar Sugerencia
+                </a>
                 <a href="{% url 'crm:gestionar_sugerencias' %}" class="btn-secondary-module">
                     <i class="bi bi-list-check"></i>
                     Gestionar Sugerencias
-                        </a>
-                        {% endif %}
-                    </div>
+                </a>
+            </div>
         </div>
 
-        <!-- Base de Repuestos -->
+        <!-- Gestión de Repuestos -->
         <div class="module-card repuestos">
             <div class="module-header">
                 <div class="module-icon">
-                    <i class="bi bi-gear"></i>
+                    <i class="bi bi-box-seam"></i>
                 </div>
-                <div class="module-title">Base de Repuestos</div>
+                <div class="module-title">Gestión de Repuestos</div>
                 <div class="module-description">
-                    Gestión completa de la base de datos de repuestos, catálogos y referencias técnicas.
+                    Control de inventario, stock mínimo y alertas de repuestos.
                 </div>
             </div>
             <div class="module-body">
-                <a href="{% url 'gestionDeTaller:gestionar_repuestos' %}" class="module-btn">
-                    <i class="bi bi-database"></i>
-                    Gestionar Repuestos
+                <a href="{% url 'gestionDeTaller:lista_repuestos' %}" class="module-btn">
+                    <i class="bi bi-boxes"></i>
+                    Ver Repuestos
                 </a>
-                <a href="{% url 'gestionDeTaller:obtener_lista_repuestos' %}" class="btn-secondary-module">
-                    <i class="bi bi-list"></i>
-                    Ver Catálogo
+                <a href="{% url 'gestionDeTaller:agregar_repuesto' %}" class="btn-secondary-module">
+                    <i class="bi bi-plus-circle"></i>
+                    Agregar Repuesto
                 </a>
             </div>
         </div>
@@ -594,5 +497,4 @@
 {% block extra_js %}
     <!-- Deshabilitar auto-reload en el panel de administración -->
     {% disable_auto_reload %}
-{% endblock %} 
 {% endblock %} 
