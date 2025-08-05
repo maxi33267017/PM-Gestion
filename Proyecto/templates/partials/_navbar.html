@@ -20,6 +20,7 @@
                             <i class="bi bi-people me-1"></i>Clientes
                         </a>
                     </li>
+                    {% if user.rol != 'ADMINISTRATIVO' or user.especializacion_admin != 'RRHH' %}
                     <li class="nav-item">
                         <a class="nav-link {% if request.path == '/dashboard/parque/' %}active{% endif %}" href="{% url 'parque' %}">
                             <i class="bi bi-truck me-1"></i>Parque
@@ -30,6 +31,7 @@
                             <i class="bi bi-tools me-1"></i>Taller
                         </a>
                     </li>
+                    {% endif %}
                     {% if user.rol == 'TECNICO' %}
                     <li class="nav-item">
                         <a class="nav-link {% if 'dashboard-tecnico' in request.path %}active{% endif %}" href="{% url 'gestionDeTaller:dashboard_tecnico' %}">
@@ -66,19 +68,23 @@
                         </a>
                     </li>
                     {% endif %}
+                    {% if user.rol != 'ADMINISTRATIVO' or user.especializacion_admin != 'RRHH' %}
                     <li class="nav-item">
                         <a class="nav-link {% if 'centro-soluciones' in request.path %}active{% endif %}" href="{% url 'centroSoluciones:centro_soluciones_dashboard' %}">
                             <i class="bi bi-broadcast me-1"></i>CSC
                         </a>
                     </li>
+                    {% endif %}
                     
                     {% if user.rol == 'GERENTE' or user.rol == 'ADMINISTRATIVO' %}
+                    {% if user.rol != 'ADMINISTRATIVO' or user.especializacion_admin != 'RRHH' %}
                     <li class="nav-item">
                         <a class="nav-link {% if request.path == '/crm/' %}active{% endif %}" href="{% url 'crm:crm' %}">
                             <i class="fas fa-users"></i>
                             <span>CRM</span>
                         </a>
                     </li>
+                    {% endif %}
                     {% endif %}
                     
                     {% if user.rol == 'GERENTE' %}
