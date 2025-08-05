@@ -1047,10 +1047,14 @@ def buzon_sugerencias(request):
     return render(request, 'crm/buzon_sugerencias.html', context)
 
 @login_required
+@login_required
 def gestionar_sugerencias(request):
     """Vista para que gerentes y administradores gestionen las sugerencias"""
-    # Verificar permisos (solo gerentes y administradores)
-    if not request.user.is_staff and request.user.rol not in ['GERENTE', 'ADMINISTRADOR']:
+    # Debug: imprimir información del usuario
+    print(f"Usuario: {request.user.email}, Rol: {request.user.rol}, Staff: {request.user.is_staff}")
+    
+    # Verificar permisos (solo gerentes y administrativos)
+    if not request.user.is_staff and request.user.rol not in ['GERENTE', 'ADMINISTRATIVO']:
         messages.error(request, 'No tienes permisos para acceder a esta sección.')
         return redirect('crm:panel_admin')
     
@@ -1092,7 +1096,7 @@ def gestionar_sugerencias(request):
 def revisar_sugerencia(request, sugerencia_id):
     """Vista para revisar y responder una sugerencia específica"""
     # Verificar permisos
-    if not request.user.is_staff and request.user.rol not in ['GERENTE', 'ADMINISTRADOR']:
+    if not request.user.is_staff and request.user.rol not in ['GERENTE', 'ADMINISTRATIVO']:
         messages.error(request, 'No tienes permisos para acceder a esta sección.')
         return redirect('crm:panel_admin')
     
@@ -1119,7 +1123,7 @@ def revisar_sugerencia(request, sugerencia_id):
             sugerencia.save()
             
             messages.success(request, f'Sugerencia "{sugerencia.titulo}" actualizada exitosamente.')
-            return redirect('gestionar_sugerencias')
+            return redirect('crm:gestionar_sugerencias')
         except Exception as e:
             messages.error(request, f'Error al actualizar la sugerencia: {str(e)}')
     
