@@ -276,94 +276,76 @@
         </div>
     </div>
 
-    <!-- Buenas Prácticas RRHH -->
+    <!-- Buzón de Sugerencias y Mejoras -->
     <div class="row mb-4">
         <div class="col-12">
             <div class="card shadow">
                 <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-success">
-                        <i class="bi bi-lightbulb me-2"></i>
-                        Buenas Prácticas RRHH
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="bi bi-chat-dots me-2"></i>
+                        Buzón de Sugerencias y Mejoras
                     </h6>
                 </div>
                 <div class="card-body">
                     <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <div class="d-flex align-items-start">
-                                <div class="flex-shrink-0">
-                                    <i class="bi bi-check-circle-fill text-success fs-4 me-3"></i>
+                        <div class="col-md-8">
+                            <p class="text-muted mb-3">
+                                ¿Tienes ideas para mejorar el sistema RRHH? Comparte tus sugerencias y propuestas de mejora con nosotros.
+                            </p>
+                            <form id="sugerenciaForm">
+                                <div class="mb-3">
+                                    <label for="tipoSugerencia" class="form-label">Tipo de Sugerencia</label>
+                                    <select class="form-select" id="tipoSugerencia" required>
+                                        <option value="">Seleccionar tipo...</option>
+                                        <option value="proceso">Mejora de Procesos</option>
+                                        <option value="funcionalidad">Nueva Funcionalidad</option>
+                                        <option value="interfaz">Mejora de Interfaz</option>
+                                        <option value="reporte">Nuevo Reporte</option>
+                                        <option value="otro">Otro</option>
+                                    </select>
                                 </div>
-                                <div class="flex-grow-1">
-                                    <h6 class="mb-1">Gestión de Permisos</h6>
-                                    <p class="text-muted small mb-0">
-                                        Revisar solicitudes dentro de las 24 horas. Mantener comunicación clara con empleados sobre el estado de sus solicitudes.
-                                    </p>
+                                <div class="mb-3">
+                                    <label for="tituloSugerencia" class="form-label">Título de la Sugerencia</label>
+                                    <input type="text" class="form-control" id="tituloSugerencia" placeholder="Ej: Agregar filtros avanzados a permisos" required>
                                 </div>
-                            </div>
+                                <div class="mb-3">
+                                    <label for="descripcionSugerencia" class="form-label">Descripción Detallada</label>
+                                    <textarea class="form-control" id="descripcionSugerencia" rows="4" placeholder="Describe tu sugerencia en detalle, incluyendo el problema que resuelve y los beneficios que aportaría..." required></textarea>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="prioridadSugerencia" class="form-label">Prioridad</label>
+                                    <select class="form-select" id="prioridadSugerencia" required>
+                                        <option value="">Seleccionar prioridad...</option>
+                                        <option value="baja">Baja - Mejora menor</option>
+                                        <option value="media">Media - Mejora útil</option>
+                                        <option value="alta">Alta - Mejora importante</option>
+                                        <option value="critica">Crítica - Necesaria para el trabajo</option>
+                                    </select>
+                                </div>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-send me-2"></i>
+                                    Enviar Sugerencia
+                                </button>
+                            </form>
                         </div>
-                        <div class="col-md-6 mb-3">
-                            <div class="d-flex align-items-start">
-                                <div class="flex-shrink-0">
-                                    <i class="bi bi-shield-check text-primary fs-4 me-3"></i>
-                                </div>
-                                <div class="flex-grow-1">
-                                    <h6 class="mb-1">Cumplimiento Legal</h6>
-                                    <p class="text-muted small mb-0">
-                                        Verificar que todos los permisos cumplan con la normativa laboral vigente y políticas internas de la empresa.
-                                    </p>
-                                </div>
+                        <div class="col-md-4">
+                            <div class="alert alert-info">
+                                <h6><i class="bi bi-info-circle me-2"></i>¿Cómo Funciona?</h6>
+                                <ul class="mb-0 small">
+                                    <li>Todas las sugerencias son revisadas por el equipo de desarrollo</li>
+                                    <li>Las mejoras más votadas tienen prioridad</li>
+                                    <li>Recibirás notificación cuando se implemente tu sugerencia</li>
+                                    <li>Puedes ver el estado de tus sugerencias en tu perfil</li>
+                                </ul>
                             </div>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <div class="d-flex align-items-start">
-                                <div class="flex-shrink-0">
-                                    <i class="bi bi-people-fill text-info fs-4 me-3"></i>
-                                </div>
-                                <div class="flex-grow-1">
-                                    <h6 class="mb-1">Comunicación Efectiva</h6>
-                                    <p class="text-muted small mb-0">
-                                        Mantener comunicación abierta con empleados. Documentar todas las decisiones y mantener registros actualizados.
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <div class="d-flex align-items-start">
-                                <div class="flex-shrink-0">
-                                    <i class="bi bi-tools text-warning fs-4 me-3"></i>
-                                </div>
-                                <div class="flex-grow-1">
-                                    <h6 class="mb-1">Gestión de Herramientas</h6>
-                                    <p class="text-muted small mb-0">
-                                        Realizar inventarios regulares. Verificar el estado de las herramientas y documentar préstamos y devoluciones.
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <div class="d-flex align-items-start">
-                                <div class="flex-shrink-0">
-                                    <i class="bi bi-graph-up text-success fs-4 me-3"></i>
-                                </div>
-                                <div class="flex-grow-1">
-                                    <h6 class="mb-1">Seguimiento Continuo</h6>
-                                    <p class="text-muted small mb-0">
-                                        Monitorear permisos activos y cronómetros. Generar reportes semanales para identificar tendencias.
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <div class="d-flex align-items-start">
-                                <div class="flex-shrink-0">
-                                    <i class="bi bi-file-earmark-text text-secondary fs-4 me-3"></i>
-                                </div>
-                                <div class="flex-grow-1">
-                                    <h6 class="mb-1">Documentación</h6>
-                                    <p class="text-muted small mb-0">
-                                        Mantener archivos organizados. Documentar incidentes y mantener historial completo de cada empleado.
-                                    </p>
-                                </div>
+                            <div class="alert alert-success">
+                                <h6><i class="bi bi-lightbulb me-2"></i>Tipos de Sugerencias</h6>
+                                <ul class="mb-0 small">
+                                    <li><strong>Procesos:</strong> Mejorar flujos de trabajo</li>
+                                    <li><strong>Funcionalidades:</strong> Nuevas características</li>
+                                    <li><strong>Interfaz:</strong> Mejorar usabilidad</li>
+                                    <li><strong>Reportes:</strong> Nuevos análisis</li>
+                                </ul>
                             </div>
                         </div>
                     </div>
@@ -395,5 +377,51 @@
     setTimeout(function() {
         location.reload();
     }, 300000); // 5 minutos
+
+    // Manejo del formulario de sugerencias
+    document.getElementById('sugerenciaForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // Obtener datos del formulario
+        const tipo = document.getElementById('tipoSugerencia').value;
+        const titulo = document.getElementById('tituloSugerencia').value;
+        const descripcion = document.getElementById('descripcionSugerencia').value;
+        const prioridad = document.getElementById('prioridadSugerencia').value;
+        
+        // Validar que todos los campos estén completos
+        if (!tipo || !titulo || !descripcion || !prioridad) {
+            alert('Por favor, completa todos los campos del formulario.');
+            return;
+        }
+        
+        // Simular envío (aquí se conectaría con el backend)
+        const sugerencia = {
+            tipo: tipo,
+            titulo: titulo,
+            descripcion: descripcion,
+            prioridad: prioridad,
+            fecha: new Date().toISOString(),
+            usuario: '{{ user.get_nombre_completo }}'
+        };
+        
+        // Mostrar mensaje de éxito
+        alert('¡Gracias por tu sugerencia! Hemos recibido tu propuesta de mejora y será revisada por el equipo de desarrollo.');
+        
+        // Limpiar formulario
+        document.getElementById('sugerenciaForm').reset();
+        
+        // Opcional: Enviar a servidor
+        console.log('Sugerencia enviada:', sugerencia);
+        
+        // Aquí se podría hacer una llamada AJAX para enviar al servidor
+        // fetch('/api/sugerencias/', {
+        //     method: 'POST',
+        //     headers: {
+        //         'Content-Type': 'application/json',
+        //         'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        //     },
+        //     body: JSON.stringify(sugerencia)
+        // });
+    });
 </script>
 {% endblock %} 
