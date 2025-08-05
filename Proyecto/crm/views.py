@@ -13,6 +13,246 @@ from django.http import JsonResponse, HttpResponse
 from recursosHumanos.models import Sucursal
 import csv
 
+# ===== FUNCIONES HELPER PARA ANÁLISIS DE CLIENTES =====
+
+def calcular_comportamiento_cliente(ultimo_servicio):
+    """
+    Calcula el comportamiento de un cliente basado en su último servicio
+    """
+    if not ultimo_servicio:
+        return 'INACTIVO'
+    
+    dias_desde_ultimo = (timezone.now().date() - ultimo_servicio).days
+    
+    if dias_desde_ultimo <= 90:
+        return 'ACTIVO'
+    elif dias_desde_ultimo <= 365:
+        return 'CRECIMIENTO'
+    elif dias_desde_ultimo <= 730:
+        return 'COMPORTAMIENTO_BAJISTA'
+    else:
+        return 'INACTIVO'
+
+def calcular_facturacion_cliente(servicios):
+    """
+    Calcula la facturación total de un cliente usando las funciones helper
+    """
+    from reportes.views import calcular_gastos_servicios, calcular_repuestos_servicios
+    
+    facturacion_total = 0
+    
+    # Calcular mano de obra
+    for servicio in servicios:
+        valor_mano_obra = servicio.valor_mano_obra or 0
+        facturacion_total += valor_mano_obra
+    
+    # Calcular gastos y repuestos usando las funciones helper
+    total_gastos = calcular_gastos_servicios(servicios)
+    total_repuestos = calcular_repuestos_servicios(servicios)
+    
+    return facturacion_total + total_gastos + total_repuestos
+
+def obtener_clientes_analizados(periodo_dias=365, sucursal_id=None, comportamiento=None, solo_activos=True):
+    """
+    Función helper que obtiene y analiza clientes con comportamiento y facturación
+    Retorna: lista de diccionarios con datos de clientes analizados
+    """
+    fecha_limite = timezone.now().date() - timedelta(days=periodo_dias)
+    
+    # Base queryset de clientes
+    clientes_queryset = Cliente.objects.all()
+    
+    # Aplicar filtros
+    if solo_activos:
+        clientes_queryset = clientes_queryset.filter(activo=True)
+    
+    if sucursal_id:
+        clientes_queryset = clientes_queryset.filter(sucursal_id=sucursal_id)
+    
+    # Anotar con datos básicos
+    clientes_con_datos = clientes_queryset.annotate(
+        total_servicios=Count(
+            'preorden__servicio',
+            filter=Q(
+                preorden__servicio__fecha_servicio__gte=fecha_limite,
+                preorden__servicio__estado='COMPLETADO'
+            ),
+            distinct=True
+        ),
+        ultimo_servicio=Max('preorden__servicio__fecha_servicio'),
+        equipos_activos=Count('equipos', filter=Q(equipos__activo=True), distinct=True),
+        paquetes_activos=Count('paquetes', filter=Q(paquetes__estado='ACTIVO'), distinct=True)
+    )
+    
+    # Analizar cada cliente
+    clientes_analizados = []
+    for cliente in clientes_con_datos:
+        # Calcular comportamiento
+        comportamiento_cliente = calcular_comportamiento_cliente(cliente.ultimo_servicio)
+        
+        # Aplicar filtro de comportamiento si se especifica
+        if comportamiento and comportamiento_cliente != comportamiento:
+            continue
+        
+        # Obtener servicios del cliente
+        servicios = Servicio.objects.filter(
+            preorden__cliente=cliente,
+            fecha_servicio__gte=fecha_limite,
+            estado='COMPLETADO'
+        )
+        
+        # Calcular facturación
+        facturacion_total = calcular_facturacion_cliente(servicios)
+        
+        # Calcular días desde último servicio
+        dias_desde_ultimo = None
+        if cliente.ultimo_servicio:
+            dias_desde_ultimo = (timezone.now().date() - cliente.ultimo_servicio).days
+        
+        clientes_analizados.append({
+            'cliente': cliente,
+            'comportamiento': comportamiento_cliente,
+            'dias_desde_ultimo': dias_desde_ultimo,
+            'facturacion_total': facturacion_total,
+            'total_servicios': cliente.total_servicios,
+            'equipos_activos': cliente.equipos_activos,
+            'paquetes_activos': cliente.paquetes_activos,
+            'ultimo_servicio': cliente.ultimo_servicio
+        })
+    
+    return clientes_analizados
+
+def segmentar_clientes_abc(clientes_analizados):
+    """
+    Segmenta clientes en ABC basado en su facturación
+    Retorna: lista de clientes segmentados con información adicional
+    """
+    # Filtrar solo clientes con facturación
+    clientes_con_facturacion = [c for c in clientes_analizados if c['facturacion_total'] > 0]
+    total_facturacion = sum(cliente['facturacion_total'] for cliente in clientes_con_facturacion)
+    
+    # Segmentar clientes
+    clientes_segmentados = []
+    acumulado = 0
+    
+    for cliente_data in clientes_con_facturacion:
+        cliente = cliente_data['cliente']
+        porcentaje_acumulado = (acumulado / total_facturacion * 100) if total_facturacion > 0 else 0
+        
+        # Determinar segmento ABC
+        if porcentaje_acumulado < 80:
+            segmento = 'A'
+        elif porcentaje_acumulado < 95:
+            segmento = 'B'
+        else:
+            segmento = 'C'
+        
+        # Calcular potencial estimado
+        potencial_estimado = cliente.equipos_activos * 5000  # USD promedio por equipo por año
+        
+        clientes_segmentados.append({
+            'cliente': cliente,
+            'segmento': segmento,
+            'comportamiento': cliente_data['comportamiento'],
+            'total_facturacion': cliente_data['facturacion_total'],
+            'total_servicios': cliente_data['total_servicios'],
+            'equipos_activos': cliente_data['equipos_activos'],
+            'potencial_estimado': potencial_estimado,
+            'porcentaje_acumulado': porcentaje_acumulado,
+            'ultimo_servicio': cliente_data['ultimo_servicio'],
+            'dias_desde_ultimo': cliente_data['dias_desde_ultimo']
+        })
+        
+        acumulado += cliente_data['facturacion_total']
+    
+    # Agregar clientes sin facturación como "NUEVO"
+    for cliente_data in clientes_analizados:
+        if cliente_data['facturacion_total'] == 0:
+            clientes_segmentados.append({
+                'cliente': cliente_data['cliente'],
+                'segmento': 'NUEVO',
+                'comportamiento': cliente_data['comportamiento'],
+                'total_facturacion': 0,
+                'total_servicios': cliente_data['total_servicios'],
+                'equipos_activos': cliente_data['equipos_activos'],
+                'potencial_estimado': cliente_data['equipos_activos'] * 5000,
+                'porcentaje_acumulado': 0,
+                'ultimo_servicio': cliente_data['ultimo_servicio'],
+                'dias_desde_ultimo': cliente_data['dias_desde_ultimo']
+            })
+    
+    return clientes_segmentados, total_facturacion
+
+def calcular_estadisticas_generales(clientes_analizados):
+    """
+    Calcula estadísticas generales para los clientes analizados
+    """
+    total_clientes = len(clientes_analizados)
+    clientes_activos = len([c for c in clientes_analizados if c['comportamiento'] == 'ACTIVO'])
+    clientes_inactivos = len([c for c in clientes_analizados if c['comportamiento'] == 'INACTIVO'])
+    facturacion_total = sum(c['facturacion_total'] for c in clientes_analizados)
+    
+    # Distribución por comportamiento
+    distribucion_comportamiento = {}
+    for comportamiento in ['ACTIVO', 'CRECIMIENTO', 'COMPORTAMIENTO_BAJISTA', 'INACTIVO']:
+        count = len([c for c in clientes_analizados if c['comportamiento'] == comportamiento])
+        distribucion_comportamiento[comportamiento] = count
+    
+    return {
+        'total_clientes': total_clientes,
+        'clientes_activos': clientes_activos,
+        'clientes_inactivos': clientes_inactivos,
+        'facturacion_total': facturacion_total,
+        'distribucion_comportamiento': distribucion_comportamiento,
+    }
+
+def identificar_oportunidades_venta(clientes_analizados):
+    """
+    Identifica oportunidades de venta basadas en el análisis de clientes
+    """
+    oportunidades = []
+    
+    for cliente_data in clientes_analizados:
+        cliente = cliente_data['cliente']
+        comportamiento = cliente_data['comportamiento']
+        equipos_activos = cliente_data['equipos_activos']
+        
+        # Oportunidades por comportamiento
+        if comportamiento == 'INACTIVO':
+            oportunidades.append({
+                'cliente': cliente,
+                'tipo': 'REACTIVACION',
+                'descripcion': 'Cliente inactivo - oportunidad de reactivación',
+                'prioridad': 'ALTA',
+                'valor_potencial': equipos_activos * 3000,  # USD estimado por reactivación
+                'comportamiento': comportamiento
+            })
+        elif comportamiento == 'COMPORTAMIENTO_BAJISTA':
+            oportunidades.append({
+                'cliente': cliente,
+                'tipo': 'RETENCION',
+                'descripcion': 'Cliente con comportamiento bajista - estrategia de retención',
+                'prioridad': 'MEDIA',
+                'valor_potencial': equipos_activos * 2000,  # USD estimado por retención
+                'comportamiento': comportamiento
+            })
+        
+        # Oportunidades por equipos activos
+        if equipos_activos > 0 and cliente_data['facturacion_total'] < (equipos_activos * 2000):
+            oportunidades.append({
+                'cliente': cliente,
+                'tipo': 'CRECIMIENTO',
+                'descripcion': f'Cliente con {equipos_activos} equipos activos pero baja facturación',
+                'prioridad': 'MEDIA',
+                'valor_potencial': equipos_activos * 1500,  # USD estimado por crecimiento
+                'comportamiento': comportamiento
+            })
+    
+    # Ordenar por prioridad y valor potencial
+    oportunidades.sort(key=lambda x: (x['prioridad'] == 'ALTA', x['valor_potencial']), reverse=True)
+    
+    return oportunidades
+
 # Create your views here.
 @login_required
 def crm(request):
@@ -35,146 +275,22 @@ def segmentacion_clientes(request):
     segmento_filtro = request.GET.get('segmento', '')
     solo_activos = request.GET.get('solo_activos', 'true') == 'true'
     
-    # Calcular fecha límite
-    fecha_limite = timezone.now().date() - timedelta(days=periodo_dias)
-    
-    # Base queryset de clientes - incluir todos los clientes (activos e inactivos)
-    clientes_queryset = Cliente.objects.all()
-    
-    # Aplicar filtros
-    if solo_activos:
-        clientes_queryset = clientes_queryset.filter(activo=True)
-    
-    # Filtrar por sucursal si se especifica
-    if sucursal_id:
-        clientes_queryset = clientes_queryset.filter(sucursal_id=sucursal_id)
-    
-    # Anotar con datos básicos primero
-    clientes_con_datos = clientes_queryset.annotate(
-        total_servicios=Count(
-            'preorden__servicio',
-            filter=Q(
-                preorden__servicio__fecha_servicio__gte=fecha_limite,
-                preorden__servicio__estado='COMPLETADO'
-            ),
-            distinct=True
-        ),
-        ultimo_servicio=Max('preorden__servicio__fecha_servicio'),
-        equipos_activos=Count('equipos', filter=Q(equipos__activo=True), distinct=True),
-        paquetes_activos=Count('paquetes', filter=Q(paquetes__estado='ACTIVO'), distinct=True)
+    # Usar la función helper para obtener clientes analizados
+    clientes_analizados = obtener_clientes_analizados(
+        periodo_dias=periodo_dias,
+        sucursal_id=sucursal_id,
+        comportamiento=comportamiento,
+        solo_activos=solo_activos
     )
     
-    # Calcular comportamiento y facturación real para cada cliente
-    clientes_analizados = []
-    for cliente in clientes_con_datos:
-        if cliente.ultimo_servicio:
-            dias_desde_ultimo = (timezone.now().date() - cliente.ultimo_servicio).days
-            if dias_desde_ultimo <= 90:
-                comportamiento_cliente = 'ACTIVO'
-            elif dias_desde_ultimo <= 365:
-                comportamiento_cliente = 'CRECIMIENTO'
-            elif dias_desde_ultimo <= 730:
-                comportamiento_cliente = 'COMPORTAMIENTO_BAJISTA'
-            else:
-                comportamiento_cliente = 'INACTIVO'
-        else:
-            comportamiento_cliente = 'INACTIVO'
-        
-        # Aplicar filtro de comportamiento si se especifica
-        if comportamiento and comportamiento_cliente != comportamiento:
-            continue
-        
-        # Calcular facturación real sumando mano de obra, gastos y repuestos de cada servicio
-        servicios = Servicio.objects.filter(
-            preorden__cliente=cliente,
-            fecha_servicio__gte=fecha_limite,
-            estado='COMPLETADO'
-        )
-        
-        # Usar las funciones helper para incluir todos los modelos (antiguos y nuevos)
-        from reportes.views import calcular_gastos_servicios, calcular_repuestos_servicios
-        
-        facturacion_total = 0
-        for servicio in servicios:
-            # Mano de obra
-            valor_mano_obra = servicio.valor_mano_obra or 0
-            facturacion_total += valor_mano_obra
-        
-        # Calcular gastos y repuestos usando las funciones helper
-        total_gastos = calcular_gastos_servicios(servicios)
-        total_repuestos = calcular_repuestos_servicios(servicios)
-        
-        facturacion_total += total_gastos + total_repuestos
-        
-        clientes_analizados.append({
-            'cliente': cliente,
-            'comportamiento': comportamiento_cliente,
-            'dias_desde_ultimo': dias_desde_ultimo if cliente.ultimo_servicio else None,
-            'facturacion_total': facturacion_total
-        })
+    # Usar la función helper para segmentar clientes
+    clientes_segmentados, total_facturacion = segmentar_clientes_abc(clientes_analizados)
     
-    # Calcular totales para segmentación ABC (solo clientes con facturación)
-    clientes_con_facturacion = [c for c in clientes_analizados if c['facturacion_total'] > 0]
-    total_facturacion = sum(cliente['facturacion_total'] for cliente in clientes_con_facturacion)
-    
-    # Segmentar clientes (solo los que tienen facturación)
-    clientes_segmentados = []
-    acumulado = 0
-    
-    for cliente_data in clientes_con_facturacion:
-        cliente = cliente_data['cliente']
-        porcentaje_acumulado = (acumulado / total_facturacion * 100) if total_facturacion > 0 else 0
-        
-        # Determinar segmento ABC
-        if porcentaje_acumulado < 80:  # Top 20% de facturación
-            segmento = 'A'
-        elif porcentaje_acumulado < 95:  # Siguiente 15%
-            segmento = 'B'
-        else:  # Resto 5%
-            segmento = 'C'
-        
-        # Calcular potencial (estimación basada en equipos activos)
-        potencial_estimado = cliente.equipos_activos * 5000  # USD promedio por equipo por año
-        
-        clientes_segmentados.append({
-            'cliente': cliente,
-            'segmento': segmento,
-            'comportamiento': cliente_data['comportamiento'],
-            'total_facturacion': cliente_data['facturacion_total'],
-            'total_servicios': cliente.total_servicios,
-            'equipos_activos': cliente.equipos_activos,
-            'potencial_estimado': potencial_estimado,
-            'porcentaje_acumulado': porcentaje_acumulado,
-            'ultimo_servicio': cliente.ultimo_servicio,
-            'dias_desde_ultimo': cliente_data['dias_desde_ultimo']
-        })
-        
-        acumulado += cliente_data['facturacion_total']
-    
-    # Agregar clientes sin facturación como "Nuevos" o "Sin Segmentar"
-    for cliente_data in clientes_analizados:
-        cliente = cliente_data['cliente']
-        if cliente_data['facturacion_total'] == 0:
-            clientes_segmentados.append({
-                'cliente': cliente,
-                'segmento': 'NUEVO',
-                'comportamiento': cliente_data['comportamiento'],
-                'total_facturacion': 0,
-                'total_servicios': cliente.total_servicios,
-                'equipos_activos': cliente.equipos_activos,
-                'potencial_estimado': cliente.equipos_activos * 5000,
-                'porcentaje_acumulado': 0,
-                'ultimo_servicio': cliente.ultimo_servicio,
-                'dias_desde_ultimo': cliente_data['dias_desde_ultimo']
-            })
-    
-    # Ordenar por facturación y aplicar filtro de segmento si se especifica
-    clientes_segmentados.sort(key=lambda x: x['total_facturacion'], reverse=True)
-    
+    # Aplicar filtro de segmento si se especifica
     if segmento_filtro:
         clientes_segmentados = [c for c in clientes_segmentados if c['segmento'] == segmento_filtro]
     
-    # Estadísticas por segmento
+    # Calcular estadísticas por segmento
     estadisticas_segmentos = {}
     for segmento in ['A', 'B', 'C', 'NUEVO']:
         clientes_segmento = [c for c in clientes_segmentados if c['segmento'] == segmento]
@@ -201,10 +317,14 @@ def segmentacion_clientes(request):
             }
     
     # Calcular promedio por cliente
+    clientes_con_facturacion = [c for c in clientes_segmentados if c['total_facturacion'] > 0]
     promedio_por_cliente = total_facturacion / len(clientes_con_facturacion) if clientes_con_facturacion else 0
     
     # Obtener todas las sucursales para el filtro
     sucursales = Sucursal.objects.filter(activo=True).order_by('nombre')
+    
+    # Calcular fecha límite para el contexto
+    fecha_limite = timezone.now().date() - timedelta(days=periodo_dias)
     
     context = {
         'clientes_segmentados': clientes_segmentados,
@@ -219,7 +339,6 @@ def segmentacion_clientes(request):
         'solo_activos': solo_activos,
         'sucursales': sucursales,
     }
-    
     return render(request, 'crm/segmentacion_clientes.html', context)
 
 # Vistas para Portfolio de Paquetes
@@ -628,115 +747,42 @@ def analisis_clientes(request):
     except ValueError:
         periodo_dias = 365
     
-    fecha_limite = timezone.now() - timedelta(days=periodo_dias)
+    # Usar la función helper para obtener clientes analizados
+    clientes_analizados = obtener_clientes_analizados(
+        periodo_dias=periodo_dias,
+        comportamiento=comportamiento,
+        solo_activos=solo_activos
+    )
     
-    # Base queryset de clientes - incluir todos los clientes (activos e inactivos)
-    clientes_queryset = Cliente.objects.all()
-    
-    # Aplicar filtros
-    if solo_activos:
-        clientes_queryset = clientes_queryset.filter(activo=True)
-    
+    # Aplicar filtro de segmento si se especifica
     if segmento:
-        clientes_queryset = clientes_queryset.filter(analisiscliente__categoria=segmento)
+        # Obtener clientes segmentados para aplicar el filtro
+        clientes_segmentados, _ = segmentar_clientes_abc(clientes_analizados)
+        clientes_filtrados = [c for c in clientes_segmentados if c['segmento'] == segmento]
+        # Extraer solo los datos de cliente de los segmentados
+        clientes_analizados = [c for c in clientes_analizados if any(c['cliente'].id == seg['cliente'].id for seg in clientes_filtrados)]
     
-    # Anotar con datos básicos primero
-    clientes_con_datos = clientes_queryset.annotate(
-        total_servicios=Count(
-            'preorden__servicio',
-            filter=Q(
-                preorden__servicio__fecha_servicio__gte=fecha_limite,
-                preorden__servicio__estado='COMPLETADO'
-            ),
-            distinct=True
-        ),
-        total_mano_obra=Coalesce(
-            Sum(
-                'preorden__servicio__valor_mano_obra',
-                filter=Q(
-                    preorden__servicio__fecha_servicio__gte=fecha_limite,
-                    preorden__servicio__estado='COMPLETADO'
-                )
-            ),
-            Value(0),
-            output_field=DecimalField()
-        ),
-        ultimo_servicio=Max('preorden__servicio__fecha_servicio'),
-        equipos_activos=Count('equipos', filter=Q(equipos__activo=True), distinct=True),
-        paquetes_activos=Count('paquetes', filter=Q(paquetes__estado='ACTIVO'), distinct=True)
-    ).order_by('-total_mano_obra')
-
-    # Calcular comportamiento y facturación real para cada cliente
-    clientes_analizados = []
-    for cliente in clientes_con_datos:
-        if cliente.ultimo_servicio:
-            dias_desde_ultimo = (timezone.now().date() - cliente.ultimo_servicio).days
-            if dias_desde_ultimo <= 90:
-                comportamiento_cliente = 'ACTIVO'
-            elif dias_desde_ultimo <= 365:
-                comportamiento_cliente = 'CRECIMIENTO'
-            elif dias_desde_ultimo <= 730:
-                comportamiento_cliente = 'COMPORTAMIENTO_BAJISTA'
-            else:
-                comportamiento_cliente = 'INACTIVO'
-        else:
-            comportamiento_cliente = 'INACTIVO'
-        # Aplicar filtro de comportamiento si se especifica
-        if comportamiento and comportamiento_cliente != comportamiento:
-            continue
-        # Calcular facturación real sumando mano de obra, gastos y repuestos de cada servicio
-        servicios = Servicio.objects.filter(
-            preorden__cliente=cliente,
-            fecha_servicio__gte=fecha_limite,
-            estado='COMPLETADO'
-        )
-        
-        # Usar las funciones helper para incluir todos los modelos (antiguos y nuevos)
-        from reportes.views import calcular_gastos_servicios, calcular_repuestos_servicios
-        
-        facturacion_total = 0
-        for s in servicios:
-            valor_mano_obra = s.valor_mano_obra or 0
-            facturacion_total += valor_mano_obra
-        
-        # Calcular gastos y repuestos usando las funciones helper
-        total_gastos = calcular_gastos_servicios(servicios)
-        total_repuestos = calcular_repuestos_servicios(servicios)
-        
-        facturacion_total += total_gastos + total_repuestos
-        clientes_analizados.append({
-            'cliente': cliente,
-            'comportamiento': comportamiento_cliente,
-            'dias_desde_ultimo': dias_desde_ultimo if cliente.ultimo_servicio else None,
-            'facturacion_total': facturacion_total,
-            'total_servicios': servicios.count(),
-            'equipos_activos': cliente.equipos_activos,
-            'paquetes_activos': cliente.paquetes_activos,
-        })
-
-    # Estadísticas generales
-    total_clientes = len(clientes_analizados)
-    clientes_activos = len([c for c in clientes_analizados if c['comportamiento'] == 'ACTIVO'])
-    clientes_inactivos = len([c for c in clientes_analizados if c['comportamiento'] == 'INACTIVO'])
-    facturacion_total = sum(c['facturacion_total'] for c in clientes_analizados)
-
-    # Distribución por comportamiento
-    distribucion_comportamiento = {}
-    for comportamiento in ['ACTIVO', 'CRECIMIENTO', 'COMPORTAMIENTO_BAJISTA', 'INACTIVO']:
-        count = len([c for c in clientes_analizados if c['comportamiento'] == comportamiento])
-        distribucion_comportamiento[comportamiento] = count
+    # Usar la función helper para calcular estadísticas
+    estadisticas = calcular_estadisticas_generales(clientes_analizados)
 
     # Top 10 clientes por facturación
     top_clientes = sorted(clientes_analizados, key=lambda x: x['facturacion_total'], reverse=True)[:10]
 
+    # Identificar oportunidades de venta
+    oportunidades_venta = identificar_oportunidades_venta(clientes_analizados)
+
+    # Calcular fecha límite para el contexto
+    fecha_limite = timezone.now().date() - timedelta(days=periodo_dias)
+
     context = {
         'clientes_analizados': clientes_analizados,
-        'total_clientes': total_clientes,
-        'clientes_activos': clientes_activos,
-        'clientes_inactivos': clientes_inactivos,
-        'facturacion_total': facturacion_total,
-        'distribucion_comportamiento': distribucion_comportamiento,
+        'total_clientes': estadisticas['total_clientes'],
+        'clientes_activos': estadisticas['clientes_activos'],
+        'clientes_inactivos': estadisticas['clientes_inactivos'],
+        'facturacion_total': estadisticas['facturacion_total'],
+        'distribucion_comportamiento': estadisticas['distribucion_comportamiento'],
         'top_clientes': top_clientes,
+        'oportunidades_venta': oportunidades_venta,
         'periodo_dias': periodo_dias,
         'fecha_limite': fecha_limite,
         'segmento_filtro': segmento,

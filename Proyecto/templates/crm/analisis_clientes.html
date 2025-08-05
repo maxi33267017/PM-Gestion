@@ -196,6 +196,74 @@
         </div>
     </div>
 
+    <!-- Oportunidades de Venta -->
+    {% if oportunidades_venta %}
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-warning text-dark">
+            <h5 class="mb-0">
+                <i class="bi bi-lightbulb me-2"></i>Oportunidades de Venta Identificadas
+                <span class="badge bg-danger ms-2">{{ oportunidades_venta|length }}</span>
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead class="table-warning">
+                        <tr>
+                            <th>Cliente</th>
+                            <th>Tipo</th>
+                            <th>Descripción</th>
+                            <th>Prioridad</th>
+                            <th>Valor Potencial</th>
+                            <th>Comportamiento</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for oportunidad in oportunidades_venta %}
+                        <tr>
+                            <td>
+                                <strong>{{ oportunidad.cliente.razon_social }}</strong><br>
+                                <small class="text-muted">{{ oportunidad.cliente.email|default:"Sin email" }}</small>
+                            </td>
+                            <td>
+                                <span class="badge {% if oportunidad.tipo == 'REACTIVACION' %}bg-danger{% elif oportunidad.tipo == 'RETENCION' %}bg-warning{% else %}bg-info{% endif %}">
+                                    {{ oportunidad.tipo }}
+                                </span>
+                            </td>
+                            <td>{{ oportunidad.descripcion }}</td>
+                            <td>
+                                <span class="badge {% if oportunidad.prioridad == 'ALTA' %}bg-danger{% else %}bg-warning{% endif %}">
+                                    {{ oportunidad.prioridad }}
+                                </span>
+                            </td>
+                            <td>
+                                <strong>${{ oportunidad.valor_potencial|floatformat:0 }}</strong>
+                            </td>
+                            <td>
+                                <span class="badge {% if oportunidad.comportamiento == 'ACTIVO' %}bg-success{% elif oportunidad.comportamiento == 'CRECIMIENTO' %}bg-info{% elif oportunidad.comportamiento == 'COMPORTAMIENTO_BAJISTA' %}bg-warning{% else %}bg-danger{% endif %}">
+                                    {{ oportunidad.comportamiento }}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="btn-group" role="group">
+                                    <a href="{% url 'crm:dashboard_cliente' oportunidad.cliente.id %}" class="btn btn-outline-primary btn-sm" title="Ver Dashboard">
+                                        <i class="fas fa-chart-bar"></i>
+                                    </a>
+                                    <a href="{% url 'crm:oportunidades_venta' %}" class="btn btn-outline-success btn-sm" title="Crear Oportunidad">
+                                        <i class="fas fa-plus"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
     <!-- Tabla de Clientes -->
     <div class="card shadow-sm">
         <div class="card-header">
