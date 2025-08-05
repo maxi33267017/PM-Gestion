@@ -1051,11 +1051,16 @@ def buzon_sugerencias(request):
 def gestionar_sugerencias(request):
     """Vista para que gerentes y administradores gestionen las sugerencias"""
     # Debug: imprimir información del usuario
-    print(f"Usuario: {request.user.email}, Rol: {request.user.rol}, Staff: {request.user.is_staff}")
+    print(f"Usuario: {request.user.email}, Rol: {request.user.rol}, Staff: {request.user.is_staff}, Especialización: {getattr(request.user, 'especializacion_admin', 'N/A')}")
     
-    # Verificar permisos (solo gerentes y administrativos)
+    # Verificar permisos (gerentes y administrativos RRHH)
     if not request.user.is_staff and request.user.rol not in ['GERENTE', 'ADMINISTRATIVO']:
         messages.error(request, 'No tienes permisos para acceder a esta sección.')
+        return redirect('crm:panel_admin')
+    
+    # Si es administrativo, verificar que sea RRHH
+    if request.user.rol == 'ADMINISTRATIVO' and getattr(request.user, 'especializacion_admin', None) != 'RRHH':
+        messages.error(request, 'Solo los usuarios RRHH pueden gestionar sugerencias.')
         return redirect('crm:panel_admin')
     
     # Filtros
@@ -1095,9 +1100,14 @@ def gestionar_sugerencias(request):
 @login_required
 def revisar_sugerencia(request, sugerencia_id):
     """Vista para revisar y responder una sugerencia específica"""
-    # Verificar permisos
+    # Verificar permisos (gerentes y administrativos RRHH)
     if not request.user.is_staff and request.user.rol not in ['GERENTE', 'ADMINISTRATIVO']:
         messages.error(request, 'No tienes permisos para acceder a esta sección.')
+        return redirect('crm:panel_admin')
+    
+    # Si es administrativo, verificar que sea RRHH
+    if request.user.rol == 'ADMINISTRATIVO' and getattr(request.user, 'especializacion_admin', None) != 'RRHH':
+        messages.error(request, 'Solo los usuarios RRHH pueden gestionar sugerencias.')
         return redirect('crm:panel_admin')
     
     sugerencia = get_object_or_404(SugerenciaMejora, id=sugerencia_id)
