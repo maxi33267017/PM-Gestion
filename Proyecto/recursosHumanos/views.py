@@ -20,7 +20,7 @@ import base64
 from .models import (
     Usuario, Sucursal, Provincia, Ciudad, ActividadTrabajo, 
     RegistroHorasTecnico, PermisoAusencia, PrestamoHerramienta,
-    SesionCronometro, AlertaCronometro
+    SesionCronometro, AlertaCronometro, Sugerencia
 )
 from .forms import (
     RegistroHorasTecnicoForm, PermisoAusenciaForm, AprobarPermisoForm,
@@ -846,6 +846,10 @@ def dashboard_rrhh(request):
     # Cronómetros activos
     cronometros_activos = SesionCronometro.objects.filter(activa=True).select_related('tecnico', 'actividad')
     
+    # Sugerencias
+    sugerencias_stats = Sugerencia.get_estadisticas()
+    sugerencias_recientes = Sugerencia.get_sugerencias_recientes(5)
+    
     context = {
         'titulo': 'Dashboard RRHH',
         'descripcion': 'Gestión de Recursos Humanos',
@@ -855,6 +859,8 @@ def dashboard_rrhh(request):
         'herramientas_prestadas': herramientas_prestadas,
         'permisos_recientes': permisos_recientes,
         'cronometros_activos': cronometros_activos,
+        'sugerencias_stats': sugerencias_stats,
+        'sugerencias_recientes': sugerencias_recientes,
         'especializacion': request.user.get_especializacion_display(),
     }
     

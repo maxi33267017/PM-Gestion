@@ -276,77 +276,127 @@
         </div>
     </div>
 
-    <!-- Buzón de Sugerencias y Mejoras -->
+    <!-- Gestión de Sugerencias y Mejoras -->
     <div class="row mb-4">
         <div class="col-12">
             <div class="card shadow">
-                <div class="card-header py-3">
+                <div class="card-header py-3 d-flex justify-content-between align-items-center">
                     <h6 class="m-0 font-weight-bold text-primary">
-                        <i class="bi bi-chat-dots me-2"></i>
-                        Buzón de Sugerencias y Mejoras
+                        <i class="bi bi-lightbulb me-2"></i>
+                        Gestión de Sugerencias y Mejoras
                     </h6>
+                    <a href="#" class="btn btn-primary btn-sm">
+                        <i class="bi bi-gear me-2"></i>
+                        Gestionar Sugerencias
+                    </a>
                 </div>
                 <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-8">
-                            <p class="text-muted mb-3">
-                                ¿Tienes ideas para mejorar el sistema RRHH? Comparte tus sugerencias y propuestas de mejora con nosotros.
-                            </p>
-                            <form id="sugerenciaForm">
-                                <div class="mb-3">
-                                    <label for="tipoSugerencia" class="form-label">Tipo de Sugerencia</label>
-                                    <select class="form-select" id="tipoSugerencia" required>
-                                        <option value="">Seleccionar tipo...</option>
-                                        <option value="proceso">Mejora de Procesos</option>
-                                        <option value="funcionalidad">Nueva Funcionalidad</option>
-                                        <option value="interfaz">Mejora de Interfaz</option>
-                                        <option value="reporte">Nuevo Reporte</option>
-                                        <option value="otro">Otro</option>
-                                    </select>
-                                </div>
-                                <div class="mb-3">
-                                    <label for="tituloSugerencia" class="form-label">Título de la Sugerencia</label>
-                                    <input type="text" class="form-control" id="tituloSugerencia" placeholder="Ej: Agregar filtros avanzados a permisos" required>
-                                </div>
-                                <div class="mb-3">
-                                    <label for="descripcionSugerencia" class="form-label">Descripción Detallada</label>
-                                    <textarea class="form-control" id="descripcionSugerencia" rows="4" placeholder="Describe tu sugerencia en detalle, incluyendo el problema que resuelve y los beneficios que aportaría..." required></textarea>
-                                </div>
-                                <div class="mb-3">
-                                    <label for="prioridadSugerencia" class="form-label">Prioridad</label>
-                                    <select class="form-select" id="prioridadSugerencia" required>
-                                        <option value="">Seleccionar prioridad...</option>
-                                        <option value="baja">Baja - Mejora menor</option>
-                                        <option value="media">Media - Mejora útil</option>
-                                        <option value="alta">Alta - Mejora importante</option>
-                                        <option value="critica">Crítica - Necesaria para el trabajo</option>
-                                    </select>
-                                </div>
-                                <button type="submit" class="btn btn-primary">
-                                    <i class="bi bi-send me-2"></i>
-                                    Enviar Sugerencia
-                                </button>
-                            </form>
+                    <!-- Estadísticas -->
+                    <div class="row mb-4">
+                        <div class="col-md-2 col-6 mb-3">
+                            <div class="text-center">
+                                <div class="h4 text-primary mb-1">{{ sugerencias_stats.total|default:0 }}</div>
+                                <div class="small text-muted">Total</div>
+                            </div>
                         </div>
-                        <div class="col-md-4">
-                            <div class="alert alert-info">
-                                <h6><i class="bi bi-info-circle me-2"></i>¿Cómo Funciona?</h6>
-                                <ul class="mb-0 small">
-                                    <li>Todas las sugerencias son revisadas por el equipo de desarrollo</li>
-                                    <li>Las mejoras más votadas tienen prioridad</li>
-                                    <li>Recibirás notificación cuando se implemente tu sugerencia</li>
-                                    <li>Puedes ver el estado de tus sugerencias en tu perfil</li>
-                                </ul>
+                        <div class="col-md-2 col-6 mb-3">
+                            <div class="text-center">
+                                <div class="h4 text-warning mb-1">{{ sugerencias_stats.pendientes|default:0 }}</div>
+                                <div class="small text-muted">Pendientes</div>
                             </div>
-                            <div class="alert alert-success">
-                                <h6><i class="bi bi-lightbulb me-2"></i>Tipos de Sugerencias</h6>
-                                <ul class="mb-0 small">
-                                    <li><strong>Procesos:</strong> Mejorar flujos de trabajo</li>
-                                    <li><strong>Funcionalidades:</strong> Nuevas características</li>
-                                    <li><strong>Interfaz:</strong> Mejorar usabilidad</li>
-                                    <li><strong>Reportes:</strong> Nuevos análisis</li>
-                                </ul>
+                        </div>
+                        <div class="col-md-2 col-6 mb-3">
+                            <div class="text-center">
+                                <div class="h4 text-info mb-1">{{ sugerencias_stats.en_revision|default:0 }}</div>
+                                <div class="small text-muted">En Revisión</div>
                             </div>
+                        </div>
+                        <div class="col-md-2 col-6 mb-3">
+                            <div class="text-center">
+                                <div class="h4 text-success mb-1">{{ sugerencias_stats.aprobadas|default:0 }}</div>
+                                <div class="small text-muted">Aprobadas</div>
+                            </div>
+                        </div>
+                        <div class="col-md-2 col-6 mb-3">
+                            <div class="text-center">
+                                <div class="h4 text-success mb-1">{{ sugerencias_stats.implementadas|default:0 }}</div>
+                                <div class="small text-muted">Implementadas</div>
+                            </div>
+                        </div>
+                        <div class="col-md-2 col-6 mb-3">
+                            <div class="text-center">
+                                <div class="h4 text-danger mb-1">{{ sugerencias_stats.rechazadas|default:0 }}</div>
+                                <div class="small text-muted">Rechazadas</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Sugerencias Recientes -->
+                    <div class="row">
+                        <div class="col-12">
+                            <h6 class="mb-3">
+                                <i class="bi bi-clock-history me-2"></i>
+                                Sugerencias Recientes
+                            </h6>
+                            {% if sugerencias_recientes %}
+                                <div class="table-responsive">
+                                    <table class="table table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th>Título</th>
+                                                <th>Tipo</th>
+                                                <th>Prioridad</th>
+                                                <th>Estado</th>
+                                                <th>Solicitante</th>
+                                                <th>Fecha</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for sugerencia in sugerencias_recientes %}
+                                            <tr>
+                                                <td>{{ sugerencia.titulo }}</td>
+                                                <td>
+                                                    <span class="badge bg-secondary">{{ sugerencia.get_tipo_display }}</span>
+                                                </td>
+                                                <td>
+                                                    {% if sugerencia.prioridad == 'BAJA' %}
+                                                        <span class="badge bg-success">Baja</span>
+                                                    {% elif sugerencia.prioridad == 'MEDIA' %}
+                                                        <span class="badge bg-warning">Media</span>
+                                                    {% elif sugerencia.prioridad == 'ALTA' %}
+                                                        <span class="badge bg-danger">Alta</span>
+                                                    {% elif sugerencia.prioridad == 'CRITICA' %}
+                                                        <span class="badge bg-dark">Crítica</span>
+                                                    {% endif %}
+                                                </td>
+                                                <td>
+                                                    {% if sugerencia.estado == 'PENDIENTE' %}
+                                                        <span class="badge bg-warning">Pendiente</span>
+                                                    {% elif sugerencia.estado == 'EN_REVISION' %}
+                                                        <span class="badge bg-info">En Revisión</span>
+                                                    {% elif sugerencia.estado == 'APROBADA' %}
+                                                        <span class="badge bg-success">Aprobada</span>
+                                                    {% elif sugerencia.estado == 'EN_DESARROLLO' %}
+                                                        <span class="badge bg-primary">En Desarrollo</span>
+                                                    {% elif sugerencia.estado == 'IMPLEMENTADA' %}
+                                                        <span class="badge bg-success">Implementada</span>
+                                                    {% elif sugerencia.estado == 'RECHAZADA' %}
+                                                        <span class="badge bg-danger">Rechazada</span>
+                                                    {% endif %}
+                                                </td>
+                                                <td>{{ sugerencia.solicitante.get_nombre_completo }}</td>
+                                                <td>{{ sugerencia.fecha_creacion|date:"d/m/Y" }}</td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {% else %}
+                                <div class="text-center py-4">
+                                    <i class="bi bi-lightbulb text-muted" style="font-size: 3rem;"></i>
+                                    <p class="text-muted mt-2">No hay sugerencias registradas</p>
+                                </div>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
@@ -377,51 +427,5 @@
     setTimeout(function() {
         location.reload();
     }, 300000); // 5 minutos
-
-    // Manejo del formulario de sugerencias
-    document.getElementById('sugerenciaForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-        
-        // Obtener datos del formulario
-        const tipo = document.getElementById('tipoSugerencia').value;
-        const titulo = document.getElementById('tituloSugerencia').value;
-        const descripcion = document.getElementById('descripcionSugerencia').value;
-        const prioridad = document.getElementById('prioridadSugerencia').value;
-        
-        // Validar que todos los campos estén completos
-        if (!tipo || !titulo || !descripcion || !prioridad) {
-            alert('Por favor, completa todos los campos del formulario.');
-            return;
-        }
-        
-        // Simular envío (aquí se conectaría con el backend)
-        const sugerencia = {
-            tipo: tipo,
-            titulo: titulo,
-            descripcion: descripcion,
-            prioridad: prioridad,
-            fecha: new Date().toISOString(),
-            usuario: '{{ user.get_nombre_completo }}'
-        };
-        
-        // Mostrar mensaje de éxito
-        alert('¡Gracias por tu sugerencia! Hemos recibido tu propuesta de mejora y será revisada por el equipo de desarrollo.');
-        
-        // Limpiar formulario
-        document.getElementById('sugerenciaForm').reset();
-        
-        // Opcional: Enviar a servidor
-        console.log('Sugerencia enviada:', sugerencia);
-        
-        // Aquí se podría hacer una llamada AJAX para enviar al servidor
-        // fetch('/api/sugerencias/', {
-        //     method: 'POST',
-        //     headers: {
-        //         'Content-Type': 'application/json',
-        //         'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
-        //     },
-        //     body: JSON.stringify(sugerencia)
-        // });
-    });
 </script>
 {% endblock %} 
