@@ -1,0 +1,213 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ titulo }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h3 mb-0">{{ titulo }}</h1>
+                    <p class="text-muted">{{ descripcion }}</p>
+                </div>
+                <div>
+                    <a href="{% url 'recursosHumanos:gestionar_especializaciones' %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left me-2"></i>Volver
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Información del Usuario -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-person-badge me-2"></i>
+                        Información del Usuario
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Nombre:</strong> {{ usuario.get_nombre_completo }}</p>
+                            <p><strong>Email:</strong> {{ usuario.email }}</p>
+                            <p><strong>Rol:</strong> <span class="badge bg-primary">{{ usuario.get_rol_display }}</span></p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Sucursal:</strong> {{ usuario.sucursal.nombre }}</p>
+                            <p><strong>Estado:</strong> 
+                                {% if usuario.is_active %}
+                                    <span class="badge bg-success">Activo</span>
+                                {% else %}
+                                    <span class="badge bg-danger">Inactivo</span>
+                                {% endif %}
+                            </p>
+                            <p><strong>Fecha de Creación:</strong> {{ usuario.fecha_creacion|date:"d/m/Y H:i" }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Formulario de Especialización -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-gear me-2"></i>
+                        Configurar Especialización
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <!-- Campo Especializado -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <div class="form-check">
+                                    {{ form.es_administrativo_especializado }}
+                                    <label class="form-check-label" for="{{ form.es_administrativo_especializado.id_for_label }}">
+                                        <strong>¿Es administrativo especializado?</strong>
+                                    </label>
+                                    <div class="form-text">
+                                        Marcar si este usuario administrativo tiene una especialización específica.
+                                        Si no está marcado, tendrá acceso a todos los módulos.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Campo Especialización -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="{{ form.especializacion_admin.id_for_label }}" class="form-label">
+                                    <strong>Especialización</strong>
+                                </label>
+                                {{ form.especializacion_admin }}
+                                <div class="form-text">
+                                    Seleccionar la especialización del usuario administrativo.
+                                </div>
+                                {% if form.especializacion_admin.errors %}
+                                    <div class="alert alert-danger mt-2">
+                                        {{ form.especializacion_admin.errors }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Información de Especializaciones -->
+                        <div class="row mb-3">
+                            <div class="col-12">
+                                <div class="alert alert-info">
+                                    <h6><i class="bi bi-info-circle me-2"></i>Especializaciones Disponibles</h6>
+                                    <div class="row">
+                                        {% for codigo, nombre in especializaciones %}
+                                        <div class="col-md-4 mb-2">
+                                            <div class="d-flex align-items-center">
+                                                <i class="bi bi-check-circle text-success me-2"></i>
+                                                <strong>{{ nombre }}</strong>
+                                                <small class="text-muted ms-2">({{ codigo }})</small>
+                                            </div>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Botones -->
+                        <div class="row">
+                            <div class="col-12">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-save me-2"></i>Guardar Cambios
+                                </button>
+                                <a href="{% url 'recursosHumanos:gestionar_especializaciones' %}" class="btn btn-outline-secondary">
+                                    <i class="bi bi-x-circle me-2"></i>Cancelar
+                                </a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Vista Previa de Accesos -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-eye me-2"></i>
+                        Vista Previa de Accesos
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Módulos a los que tendrá acceso:</h6>
+                            <ul class="list-group">
+                                {% if usuario.tiene_especializacion %}
+                                    {% for modulo in usuario.get_modulos_disponibles %}
+                                        <li class="list-group-item">
+                                            <i class="bi bi-check-circle text-success me-2"></i>
+                                            {{ modulo|title }}
+                                        </li>
+                                    {% endfor %}
+                                {% else %}
+                                    <li class="list-group-item">
+                                        <i class="bi bi-check-circle text-success me-2"></i>
+                                        Todos los módulos (sin restricciones)
+                                    </li>
+                                {% endif %}
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Especialización actual:</h6>
+                            <div class="alert alert-primary">
+                                <strong>{{ usuario.get_especializacion_display }}</strong>
+                                {% if usuario.tiene_especializacion %}
+                                    <br><small>Especializado</small>
+                                {% else %}
+                                    <br><small>General (sin especialización)</small>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Mostrar/ocultar campo de especialización según checkbox
+    document.addEventListener('DOMContentLoaded', function() {
+        const especializadoCheckbox = document.getElementById('{{ form.es_administrativo_especializado.id_for_label }}');
+        const especializacionSelect = document.getElementById('{{ form.especializacion_admin.id_for_label }}');
+        
+        function toggleEspecializacion() {
+            if (especializadoCheckbox.checked) {
+                especializacionSelect.disabled = false;
+                especializacionSelect.parentElement.style.opacity = '1';
+            } else {
+                especializacionSelect.disabled = true;
+                especializacionSelect.parentElement.style.opacity = '0.5';
+            }
+        }
+        
+        especializadoCheckbox.addEventListener('change', toggleEspecializacion);
+        toggleEspecializacion(); // Ejecutar al cargar
+    });
+</script>
+{% endblock %} 

@@ -6,6 +6,8 @@ from recursosHumanos.models import RegistroHorasTecnico, ActividadTrabajo
 from django.db import models
 from recursosHumanos.models import PermisoAusencia
 from recursosHumanos.models import Usuario
+from django.contrib.auth.forms import UserCreationForm
+from .models import Usuario, PermisoAusencia
 
 class RegistroHorasTecnicoForm(forms.ModelForm):
     numero_informe = forms.CharField(
@@ -282,3 +284,44 @@ class AprobarPermisoForm(forms.ModelForm):
     class Meta:
         model = PermisoAusencia
         fields = ['observaciones_aprobacion']
+
+class UsuarioCreationForm(UserCreationForm):
+    class Meta:
+        model = Usuario
+        fields = ('email', 'nombre', 'apellido', 'sucursal', 'rol')
+
+class EspecializacionAdminForm(forms.ModelForm):
+    """
+    Formulario para gestionar la especialización administrativa de un usuario
+    """
+    class Meta:
+        model = Usuario
+        fields = ['es_administrativo_especializado', 'especializacion_admin']
+        widgets = {
+            'es_administrativo_especializado': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'especializacion_admin': forms.Select(attrs={'class': 'form-select'}),
+        }
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Solo mostrar opciones si el usuario es administrativo
+        if self.instance and self.instance.rol != 'ADMINISTRATIVO':
+            self.fields['es_administrativo_especializado'].widget.attrs['disabled'] = True
+            self.fields['especializacion_admin'].widget.attrs['disabled'] = True
+    
+    def clean(self):
+        cleaned_data = super().clean()
+        es_especializado = cleaned_data.get('es_administrativo_especializado')
+        especializacion = cleaned_data.get('especializacion_admin')
+        
+        # Si está marcado como especializado, debe tener una especialización
+        if es_especializado and not especializacion:
+            raise forms.ValidationError(
+                "Si el usuario es administrativo especializado, debe seleccionar una especialización."
+            )
+        
+        # Si no está marcado como especializado, no debe tener especialización
+        if not es_especializado and especializacion:
+            cleaned_data['especializacion_admin'] = None
+        
+        return cleaned_data

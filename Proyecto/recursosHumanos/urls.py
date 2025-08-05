@@ -53,4 +53,8 @@ urlpatterns = [
     
     # Perfil de especialización
     path('perfil-especializacion/', views.perfil_especializacion, name='perfil_especializacion'),
+    
+    # Gestión de especializaciones (solo gerentes)
+    path('gestionar-especializaciones/', views.gestionar_especializaciones, name='gestionar_especializaciones'),
+    path('configurar-especializacion/<int:usuario_id>/', views.configurar_especializacion_usuario, name='configurar_especializacion_usuario'),
 ]

@@ -467,6 +467,29 @@
             </div>
         </div>
 
+        <!-- Gestión de Especializaciones Administrativas -->
+        <div class="module-card especializaciones">
+            <div class="module-header">
+                <div class="module-icon">
+                    <i class="bi bi-person-badge"></i>
+                </div>
+                <div class="module-title">Especializaciones Administrativas</div>
+                <div class="module-description">
+                    Configurar especializaciones de usuarios administrativos (RRHH, Contable, Cajero, Servicios, Repuestos).
+                </div>
+            </div>
+            <div class="module-body">
+                <a href="{% url 'recursosHumanos:gestionar_especializaciones' %}" class="module-btn">
+                    <i class="bi bi-gear"></i>
+                    Gestionar Especializaciones
+                </a>
+                <a href="{% url 'recursosHumanos:dashboard_administrativo_general' %}" class="btn-secondary-module">
+                    <i class="bi bi-grid"></i>
+                    Dashboard Administrativo
+                </a>
+            </div>
+        </div>
+
         <!-- Gestión de Permisos y Ausencias -->
         <div class="module-card permisos">
             <div class="module-header">
@@ -498,4 +521,5 @@
     <!-- Deshabilitar auto-reload en el panel de administración -->
     {% disable_auto_reload %}
 {% endblock %} 
+
 

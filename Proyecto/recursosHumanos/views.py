@@ -22,7 +22,8 @@ from .models import (
     RegistroHorasTecnico, PermisoAusencia
 )
 from .forms import (
-    RegistroHorasTecnicoForm, PermisoAusenciaForm, AprobarPermisoForm
+    RegistroHorasTecnicoForm, PermisoAusenciaForm, AprobarPermisoForm,
+    EspecializacionAdminForm
 )
 from .decorators import (
     requiere_especializacion_admin, 
@@ -747,3 +748,86 @@ def perfil_especializacion(request):
         'es_administrativo': request.user.es_administrativo(),
     }
     return render(request, 'recursosHumanos/perfil_especializacion.html', context)
+
+@login_required
+def gestionar_especializaciones(request):
+    """
+    Vista para que los gerentes gestionen las especializaciones de usuarios administrativos
+    """
+    # Verificar que el usuario sea gerente
+    if request.user.rol != 'GERENTE':
+        messages.error(request, 'Solo los gerentes pueden gestionar especializaciones.')
+        return redirect('home')
+    
+    # Obtener usuarios administrativos
+    usuarios_admin = Usuario.objects.filter(rol='ADMINISTRATIVO').order_by('apellido', 'nombre')
+    
+    if request.method == 'POST':
+        # Procesar formularios de especialización
+        for usuario in usuarios_admin:
+            form_key = f'form_{usuario.id}'
+            if form_key in request.POST:
+                form = EspecializacionAdminForm(request.POST, instance=usuario, prefix=f'user_{usuario.id}')
+                if form.is_valid():
+                    form.save()
+                    messages.success(
+                        request, 
+                        f'Especialización actualizada para {usuario.get_nombre_completo()}'
+                    )
+                else:
+                    messages.error(
+                        request, 
+                        f'Error al actualizar especialización para {usuario.get_nombre_completo()}: {form.errors}'
+                    )
+    
+    # Crear formularios para cada usuario administrativo
+    formularios = {}
+    for usuario in usuarios_admin:
+        formularios[usuario.id] = EspecializacionAdminForm(
+            instance=usuario, 
+            prefix=f'user_{usuario.id}'
+        )
+    
+    context = {
+        'titulo': 'Gestión de Especializaciones Administrativas',
+        'descripcion': 'Configurar especializaciones de usuarios administrativos',
+        'usuarios_admin': usuarios_admin,
+        'formularios': formularios,
+        'especializaciones': Usuario.ESPECIALIZACIONES_ADMIN,
+    }
+    
+    return render(request, 'recursosHumanos/gestionar_especializaciones.html', context)
+
+@login_required
+def configurar_especializacion_usuario(request, usuario_id):
+    """
+    Vista para configurar la especialización de un usuario específico
+    """
+    # Verificar que el usuario sea gerente
+    if request.user.rol != 'GERENTE':
+        messages.error(request, 'Solo los gerentes pueden configurar especializaciones.')
+        return redirect('home')
+    
+    usuario = get_object_or_404(Usuario, id=usuario_id)
+    
+    if request.method == 'POST':
+        form = EspecializacionAdminForm(request.POST, instance=usuario)
+        if form.is_valid():
+            form.save()
+            messages.success(
+                request, 
+                f'Especialización actualizada para {usuario.get_nombre_completo()}'
+            )
+            return redirect('recursosHumanos:gestionar_especializaciones')
+    else:
+        form = EspecializacionAdminForm(instance=usuario)
+    
+    context = {
+        'titulo': f'Configurar Especialización - {usuario.get_nombre_completo()}',
+        'descripcion': 'Configurar especialización administrativa',
+        'usuario': usuario,
+        'form': form,
+        'especializaciones': Usuario.ESPECIALIZACIONES_ADMIN,
+    }
+    
+    return render(request, 'recursosHumanos/configurar_especializacion.html', context)

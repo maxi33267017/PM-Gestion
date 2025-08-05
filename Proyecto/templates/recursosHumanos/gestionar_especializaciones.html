@@ -1,0 +1,177 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ titulo }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h3 mb-0">{{ titulo }}</h1>
+                    <p class="text-muted">{{ descripcion }}</p>
+                </div>
+                <div>
+                    <a href="{% url 'home' %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left me-2"></i>Volver
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Información del Sistema -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="alert alert-info">
+                <h6><i class="bi bi-info-circle me-2"></i>Información del Sistema de Especializaciones</h6>
+                <p class="mb-2">Las especializaciones permiten controlar el acceso de los usuarios administrativos a diferentes módulos del sistema:</p>
+                <ul class="mb-0">
+                    <li><strong>RRHH:</strong> Acceso a gestión de personal, permisos y ausencias</li>
+                    <li><strong>Contable:</strong> Acceso a reportes financieros y contables</li>
+                    <li><strong>Cajero:</strong> Acceso a gestión de caja y pagos</li>
+                    <li><strong>Servicios:</strong> Acceso a gestión de servicios técnicos</li>
+                    <li><strong>Repuestos:</strong> Acceso a gestión de inventario de repuestos</li>
+                    <li><strong>General:</strong> Acceso a todos los módulos (sin restricciones)</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lista de Usuarios Administrativos -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-people-fill me-2"></i>
+                        Usuarios Administrativos
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if usuarios_admin %}
+                        <form method="post">
+                            {% csrf_token %}
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Usuario</th>
+                                            <th>Sucursal</th>
+                                            <th>Especializado</th>
+                                            <th>Especialización</th>
+                                            <th>Módulos Disponibles</th>
+                                            <th>Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for usuario in usuarios_admin %}
+                                        <tr>
+                                            <td>
+                                                <div>
+                                                    <strong>{{ usuario.get_nombre_completo }}</strong>
+                                                    <br>
+                                                    <small class="text-muted">{{ usuario.email }}</small>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-secondary">{{ usuario.sucursal.nombre }}</span>
+                                            </td>
+                                            <td>
+                                                <div class="form-check">
+                                                    {{ formularios|get_item:usuario.id.es_administrativo_especializado }}
+                                                    <label class="form-check-label" for="{{ formularios|get_item:usuario.id.es_administrativo_especializado.id_for_label }}">
+                                                        Especializado
+                                                    </label>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                {{ formularios|get_item:usuario.id.especializacion_admin }}
+                                            </td>
+                                            <td>
+                                                {% if usuario.tiene_especializacion %}
+                                                    {% for modulo in usuario.get_modulos_disponibles %}
+                                                        <span class="badge bg-primary me-1">{{ modulo|title }}</span>
+                                                    {% endfor %}
+                                                {% else %}
+                                                    <span class="badge bg-success">Todos los módulos</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <button type="submit" name="form_{{ usuario.id }}" class="btn btn-primary btn-sm">
+                                                    <i class="bi bi-save me-1"></i>Guardar
+                                                </button>
+                                                <a href="{% url 'recursosHumanos:configurar_especializacion_usuario' usuario.id %}" class="btn btn-outline-secondary btn-sm">
+                                                    <i class="bi bi-gear me-1"></i>Configurar
+                                                </a>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </form>
+                    {% else %}
+                        <div class="alert alert-warning text-center">
+                            <i class="bi bi-exclamation-triangle me-2"></i>
+                            No hay usuarios administrativos en el sistema.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Estadísticas -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-graph-up me-2"></i>
+                        Estadísticas de Especializaciones
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for codigo, nombre in especializaciones %}
+                        <div class="col-md-4 mb-3">
+                            <div class="card border-primary">
+                                <div class="card-body text-center">
+                                    <h6 class="card-title">{{ nombre }}</h6>
+                                    <p class="card-text">
+                                        {% with count=usuarios_admin|filter_especializacion:codigo|length %}
+                                            <span class="badge bg-primary fs-6">{{ count }} usuario{{ count|pluralize }}</span>
+                                        {% endwith %}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Auto-guardar cuando cambie la especialización
+    document.addEventListener('DOMContentLoaded', function() {
+        const especializacionSelects = document.querySelectorAll('select[name*="especializacion_admin"]');
+        especializacionSelects.forEach(select => {
+            select.addEventListener('change', function() {
+                // Encontrar el botón de guardar correspondiente
+                const row = this.closest('tr');
+                const saveButton = row.querySelector('button[type="submit"]');
+                if (saveButton) {
+                    saveButton.click();
+                }
+            });
+        });
+    });
+</script>
+{% endblock %} 
