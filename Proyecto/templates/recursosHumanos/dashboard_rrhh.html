@@ -356,7 +356,7 @@
                                             <tr>
                                                 <td>{{ sugerencia.titulo }}</td>
                                                 <td>
-                                                    <span class="badge bg-secondary">{{ sugerencia.get_tipo_display }}</span>
+                                                    <span class="badge bg-secondary">{{ sugerencia.tipo }}</span>
                                                 </td>
                                                 <td>
                                                     {% if sugerencia.prioridad == 'BAJA' %}
@@ -384,8 +384,8 @@
                                                         <span class="badge bg-danger">Rechazada</span>
                                                     {% endif %}
                                                 </td>
-                                                <td>{{ sugerencia.solicitante.get_nombre_completo }}</td>
-                                                <td>{{ sugerencia.fecha_creacion|date:"d/m/Y" }}</td>
+                                                <td>{{ sugerencia.solicitante }}</td>
+                                                <td>{{ sugerencia.fecha_creacion }}</td>
                                             </tr>
                                             {% endfor %}
                                         </tbody>

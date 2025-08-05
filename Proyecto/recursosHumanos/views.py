@@ -20,7 +20,7 @@ import base64
 from .models import (
     Usuario, Sucursal, Provincia, Ciudad, ActividadTrabajo, 
     RegistroHorasTecnico, PermisoAusencia, PrestamoHerramienta,
-    SesionCronometro, AlertaCronometro, Sugerencia
+    SesionCronometro, AlertaCronometro
 )
 from .forms import (
     RegistroHorasTecnicoForm, PermisoAusenciaForm, AprobarPermisoForm,
@@ -847,8 +847,41 @@ def dashboard_rrhh(request):
     cronometros_activos = SesionCronometro.objects.filter(activa=True).select_related('tecnico', 'actividad')
     
     # Sugerencias
-    sugerencias_stats = Sugerencia.get_estadisticas()
-    sugerencias_recientes = Sugerencia.get_sugerencias_recientes(5)
+    # Datos para el panel de sugerencias (simulado por ahora)
+    sugerencias_stats = {
+        'total': 12,
+        'pendientes': 3,
+        'en_revision': 2,
+        'aprobadas': 4,
+        'implementadas': 2,
+        'rechazadas': 1,
+    }
+    sugerencias_recientes = [
+        {
+            'titulo': 'Mejora en el sistema de reportes',
+            'tipo': 'FUNCIONALIDAD',
+            'prioridad': 'ALTA',
+            'estado': 'EN_REVISION',
+            'solicitante': 'Juan Pérez',
+            'fecha_creacion': '2025-01-15'
+        },
+        {
+            'titulo': 'Optimización de la interfaz de usuario',
+            'tipo': 'INTERFAZ',
+            'prioridad': 'MEDIA',
+            'estado': 'PENDIENTE',
+            'solicitante': 'María García',
+            'fecha_creacion': '2025-01-14'
+        },
+        {
+            'titulo': 'Nuevo reporte de productividad',
+            'tipo': 'REPORTE',
+            'prioridad': 'ALTA',
+            'estado': 'APROBADA',
+            'solicitante': 'Carlos López',
+            'fecha_creacion': '2025-01-13'
+        }
+    ]
     
     context = {
         'titulo': 'Dashboard RRHH',

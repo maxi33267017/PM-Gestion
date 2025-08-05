@@ -139,8 +139,8 @@ class CiudadAdmin(admin.ModelAdmin):
 
 @admin.register(ActividadTrabajo)
 class ActividadTrabajoAdmin(admin.ModelAdmin):
-    list_display = ['nombre', 'disponibilidad', 'genera_ingreso', 'categoria_facturacion', 'activo']
-    list_filter = ['disponibilidad', 'genera_ingreso', 'categoria_facturacion', 'activo']
+    list_display = ['nombre', 'disponibilidad', 'genera_ingreso', 'categoria_facturacion']
+    list_filter = ['disponibilidad', 'genera_ingreso', 'categoria_facturacion']
     search_fields = ['nombre', 'descripcion']
     ordering = ['nombre']
 
@@ -251,6 +251,9 @@ class AlertaCronometroAdmin(admin.ModelAdmin):
     search_fields = ['sesion__tecnico__nombre', 'sesion__tecnico__apellido']
     ordering = ['-fecha_envio']
     date_hierarchy = 'fecha_envio'
+
+
+
 
 
 
