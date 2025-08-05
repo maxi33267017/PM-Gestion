@@ -91,19 +91,20 @@ def segmentacion_clientes(request):
             estado='COMPLETADO'
         )
         
+        # Usar las funciones helper para incluir todos los modelos (antiguos y nuevos)
+        from reportes.views import calcular_gastos_servicios, calcular_repuestos_servicios
+        
         facturacion_total = 0
         for servicio in servicios:
             # Mano de obra
             valor_mano_obra = servicio.valor_mano_obra or 0
             facturacion_total += valor_mano_obra
-            
-            # Gastos
-            total_gastos = sum(g.monto for g in servicio.gastos.all())
-            facturacion_total += total_gastos
-            
-            # Repuestos
-            total_repuestos = sum(r.precio_unitario * r.cantidad for r in servicio.repuestos.all())
-            facturacion_total += total_repuestos
+        
+        # Calcular gastos y repuestos usando las funciones helper
+        total_gastos = calcular_gastos_servicios(servicios)
+        total_repuestos = calcular_repuestos_servicios(servicios)
+        
+        facturacion_total += total_gastos + total_repuestos
         
         clientes_analizados.append({
             'cliente': cliente,
@@ -689,12 +690,20 @@ def analisis_clientes(request):
             fecha_servicio__gte=fecha_limite,
             estado='COMPLETADO'
         )
+        
+        # Usar las funciones helper para incluir todos los modelos (antiguos y nuevos)
+        from reportes.views import calcular_gastos_servicios, calcular_repuestos_servicios
+        
         facturacion_total = 0
         for s in servicios:
-            total_gastos = sum(g.monto for g in s.gastos.all())
-            total_repuestos = sum(r.precio_unitario * r.cantidad for r in s.repuestos.all())
             valor_mano_obra = s.valor_mano_obra or 0
-            facturacion_total += valor_mano_obra + total_gastos + total_repuestos
+            facturacion_total += valor_mano_obra
+        
+        # Calcular gastos y repuestos usando las funciones helper
+        total_gastos = calcular_gastos_servicios(servicios)
+        total_repuestos = calcular_repuestos_servicios(servicios)
+        
+        facturacion_total += total_gastos + total_repuestos
         clientes_analizados.append({
             'cliente': cliente,
             'comportamiento': comportamiento_cliente,
@@ -746,12 +755,18 @@ def dashboard_cliente(request, cliente_id):
         preorden__cliente=cliente
     ).select_related('preorden').prefetch_related('gastos', 'repuestos').order_by('-fecha_servicio')
     
-    # Calcular total de cada servicio
+    # Calcular total de cada servicio usando las funciones helper
+    from reportes.views import calcular_gastos_servicios, calcular_repuestos_servicios
+    
     servicios_con_total = []
     for servicio in servicios:
-        total_gastos = sum(gasto.monto for gasto in servicio.gastos.all())
-        total_repuestos = sum(repuesto.precio_unitario * repuesto.cantidad for repuesto in servicio.repuestos.all())
         valor_mano_obra = servicio.valor_mano_obra or 0  # Manejar None como 0
+        
+        # Calcular gastos y repuestos usando las funciones helper
+        servicios_individual = Servicio.objects.filter(id=servicio.id)
+        total_gastos = calcular_gastos_servicios(servicios_individual)
+        total_repuestos = calcular_repuestos_servicios(servicios_individual)
+        
         total_servicio = valor_mano_obra + total_gastos + total_repuestos
         servicios_con_total.append({
             'servicio': servicio,
