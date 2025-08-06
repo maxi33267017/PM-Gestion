@@ -232,15 +232,16 @@
     .status-item {
         background: white;
         border-radius: 10px;
-        padding: 20px;
+        padding: 25px 20px;
         box-shadow: var(--card-shadow);
         transition: var(--transition);
         border-left: 4px solid var(--accent-color);
         display: flex;
         align-items: center;
-        gap: 15px;
-        height: 120px;
-        min-height: 120px;
+        justify-content: center;
+        height: 100px;
+        min-height: 100px;
+        text-align: center;
     }
 
     .status-item:hover {
@@ -253,51 +254,36 @@
     .status-item.info { border-left-color: var(--info-color); }
     .status-item.primary { border-left-color: var(--accent-color); }
 
-    .status-icon {
-        width: 45px;
-        height: 45px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.3rem;
-        color: white;
-        flex-shrink: 0;
-    }
 
-    .status-item.success .status-icon { background: linear-gradient(135deg, var(--success-color), #2ecc71); }
-    .status-item.warning .status-icon { background: linear-gradient(135deg, var(--warning-color), #f1c40f); }
-    .status-item.info .status-icon { background: linear-gradient(135deg, var(--info-color), #3498db); }
-    .status-item.primary .status-icon { background: linear-gradient(135deg, var(--accent-color), #2980b9); }
 
     .status-content {
-        flex-grow: 1;
-        min-width: 0;
-        overflow: hidden;
+        width: 100%;
+        text-align: center;
     }
 
     .status-value {
-        font-size: 1.5rem;
+        font-size: 1.8rem;
         font-weight: 700;
         color: var(--primary-color);
-        margin-bottom: 5px;
-        line-height: 1.2;
+        margin-bottom: 8px;
+        line-height: 1.1;
     }
 
     .status-label {
-        font-size: 0.8rem;
+        font-size: 0.85rem;
         color: var(--secondary-color);
         text-transform: uppercase;
         letter-spacing: 0.5px;
         font-weight: 600;
-        margin-bottom: 3px;
-        line-height: 1.2;
+        margin-bottom: 5px;
+        line-height: 1.1;
     }
 
     .status-percentage {
-        font-size: 0.8rem;
+        font-size: 0.9rem;
         color: var(--secondary-color);
         opacity: 0.8;
+        font-weight: 500;
     }
 
     .recent-item {
@@ -619,9 +605,6 @@
                     <div class="row">
                         <div class="col-md-3 mb-3">
                             <div class="status-item success">
-                                <div class="status-icon">
-                                    <i class="fas fa-check-circle"></i>
-                                </div>
                                 <div class="status-content">
                                     <div class="status-value">{{ servicios_completados }}</div>
                                     <div class="status-label">Completados</div>
@@ -632,9 +615,6 @@
                         
                         <div class="col-md-3 mb-3">
                             <div class="status-item warning">
-                                <div class="status-icon">
-                                    <i class="fas fa-clock"></i>
-                                </div>
                                 <div class="status-content">
                                     <div class="status-value">{{ servicios_en_proceso }}</div>
                                     <div class="status-label">En Proceso</div>
@@ -645,9 +625,6 @@
                         
                         <div class="col-md-3 mb-3">
                             <div class="status-item info">
-                                <div class="status-icon">
-                                    <i class="fas fa-box"></i>
-                                </div>
                                 <div class="status-content">
                                     <div class="status-value">{{ servicios_espera_repuestos }}</div>
                                     <div class="status-label">Espera Repuestos</div>
@@ -658,9 +635,6 @@
                         
                         <div class="col-md-3 mb-3">
                             <div class="status-item primary">
-                                <div class="status-icon">
-                                    <i class="fas fa-file-invoice-dollar"></i>
-                                </div>
                                 <div class="status-content">
                                     <div class="status-value">{{ servicios_a_facturar }}</div>
                                     <div class="status-label">A Facturar</div>
