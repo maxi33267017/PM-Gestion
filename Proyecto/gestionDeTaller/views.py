@@ -3998,15 +3998,17 @@ def dashboard_gerente(request):
     for tecnico in tecnicos_actividad:
         tecnico_id = tecnico['tecnico__id']
         
-        # Horas contratadas para el mes completo
-        dias_en_mes = (fin_mes - inicio_mes).days + 1
-        horas_contratadas = dias_en_mes * 8  # 8 horas por día
+        # Horas contratadas para el mes completo usando la función correcta
+        horas_contratadas = calcular_horas_contratadas(inicio_mes, fin_mes)
         
         # Horas registradas
         horas_registradas = tecnico['total_horas'].total_seconds() / 3600 if tecnico['total_horas'] else 0
         
         # Calcular porcentaje de horas registradas
         tecnico['porcentaje_horas'] = round((horas_registradas / horas_contratadas) * 100, 1) if horas_contratadas > 0 else 0
+        
+        # Debug: mostrar cálculo de horas contratadas
+        print(f"DEBUG: {tecnico['tecnico__nombre']} - Horas contratadas: {horas_contratadas}, Registradas: {horas_registradas:.1f}, Porcentaje: {tecnico['porcentaje_horas']}%")
         
         # Calcular productividad, eficiencia y desempeño
         from recursosHumanos.models import ActividadTrabajo
