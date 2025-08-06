@@ -3977,16 +3977,45 @@ def dashboard_gerente(request):
         print(f"DEBUG: Servicio reciente - {servicio.fecha_servicio}: {servicio.estado}")
     
     # === TÉCNICOS CON MÁS ACTIVIDAD ===
-    tecnicos_actividad = RegistroHorasTecnico.objects.filter(
+    # Primero obtener todos los técnicos activos
+    tecnicos_activos_list = Usuario.objects.filter(rol='TECNICO')
+    
+    # Debug: mostrar todos los técnicos
+    print(f"DEBUG: Técnicos activos encontrados: {tecnicos_activos_list.count()}")
+    for tecnico in tecnicos_activos_list:
+        print(f"DEBUG: Técnico activo - {tecnico.nombre} {tecnico.apellido}")
+    
+    # Obtener registros de horas para el período
+    registros_horas = RegistroHorasTecnico.objects.filter(
         fecha__range=[inicio_mes, fin_mes]
-    ).values('tecnico__nombre', 'tecnico__apellido', 'tecnico__id').annotate(
-        total_horas=Sum(
-            ExpressionWrapper(
-                F('hora_fin') - F('hora_inicio'),
-                output_field=DurationField()
+    )
+    
+    print(f"DEBUG: Registros de horas encontrados en el período: {registros_horas.count()}")
+    for registro in registros_horas[:5]:  # Mostrar primeros 5 registros
+        print(f"DEBUG: Registro - {registro.tecnico.nombre} {registro.tecnico.apellido}: {registro.fecha} {registro.hora_inicio}-{registro.hora_fin}")
+    
+    # Obtener técnicos con actividad (incluyendo los que no tienen registros)
+    tecnicos_actividad = []
+    for tecnico in tecnicos_activos_list:
+        registros_tecnico = registros_horas.filter(tecnico=tecnico)
+        total_horas = registros_tecnico.aggregate(
+            total=Sum(
+                ExpressionWrapper(
+                    F('hora_fin') - F('hora_inicio'),
+                    output_field=DurationField()
+                )
             )
-        )
-    ).order_by('-total_horas')[:5]
+        )['total']
+        
+        tecnicos_actividad.append({
+            'tecnico__nombre': tecnico.nombre,
+            'tecnico__apellido': tecnico.apellido,
+            'tecnico__id': tecnico.id,
+            'total_horas': total_horas
+        })
+    
+    # Ordenar por horas y tomar los primeros 5
+    tecnicos_actividad = sorted(tecnicos_actividad, key=lambda x: x['total_horas'] or 0, reverse=True)[:5]
     
     # Debug: imprimir técnicos con actividad
     print(f"DEBUG: Técnicos con actividad encontrados: {len(tecnicos_actividad)}")
