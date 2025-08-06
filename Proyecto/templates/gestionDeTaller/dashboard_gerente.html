@@ -492,6 +492,9 @@
             updateCounter();
         });
 
+        // Debug: mostrar datos en consola
+        console.log('Datos de facturación:', {{ facturacion_anio_fiscal|safe }});
+        
         // Gráfico de facturación año fiscal
         const ctx = document.getElementById('facturacionChart');
         if (ctx) {
