@@ -3994,16 +3994,23 @@ def dashboard_gerente(request):
     
     # Facturación por mes del año fiscal
     facturacion_anio_fiscal = []
+    
+    # Determinar el año fiscal correcto
+    if hoy.month >= 11:  # Noviembre en adelante
+        año_fiscal = hoy.year
+    else:  # Enero a Octubre
+        año_fiscal = hoy.year - 1
+    
     for mes in range(1, 13):
-        if mes >= 11:
-            año = hoy.year if hoy.month >= 11 else hoy.year - 1
+        if mes >= 11:  # Noviembre a Diciembre
+            año = año_fiscal
             mes_inicio = date(año, mes, 1)
             if mes == 12:
                 mes_fin = date(año + 1, 1, 1) - timedelta(days=1)
             else:
                 mes_fin = date(año, mes + 1, 1) - timedelta(days=1)
-        else:
-            año = hoy.year if hoy.month >= 11 else hoy.year - 1
+        else:  # Enero a Octubre
+            año = año_fiscal + 1
             mes_inicio = date(año, mes, 1)
             mes_fin = date(año, mes + 1, 1) - timedelta(days=1)
         
@@ -4024,6 +4031,9 @@ def dashboard_gerente(request):
         facturacion_gastos_mes = calcular_gastos_servicios(servicios_mes)
         
         total_mes = facturacion_mes + facturacion_repuestos_mes + facturacion_gastos_mes
+        
+        # Debug: imprimir información del mes
+        print(f"Mes {mes}: {mes_inicio.strftime('%B %Y')} - Total: ${total_mes}")
         
         facturacion_anio_fiscal.append({
             'mes': mes,
@@ -4074,6 +4084,9 @@ def dashboard_gerente(request):
         
         # Facturación año fiscal
         'facturacion_anio_fiscal': json.dumps(facturacion_anio_fiscal),
+        
+        # Debug: imprimir el JSON final
+        'debug_json': json.dumps(facturacion_anio_fiscal, indent=2),
         'año_fiscal_inicio': año_fiscal_inicio,
         'año_fiscal_fin': año_fiscal_fin,
         
