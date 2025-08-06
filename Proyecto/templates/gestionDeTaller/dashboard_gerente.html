@@ -339,6 +339,15 @@
             font-size: 2rem;
         }
     }
+    
+    /* Corregir z-index de dropdowns */
+    .dropdown-menu {
+        z-index: 9999 !important;
+    }
+    
+    .filter-container .dropdown-menu {
+        z-index: 10000 !important;
+    }
 </style>
 {% endblock %}
 
@@ -570,14 +579,9 @@
                 </div>
                 <div class="card-body">
                     <div class="row">
-                        {% for mes_data in facturacion_anio_fiscal %}
-                        <div class="col-md-4 text-center mb-3">
-                            <div class="facturacion-item">
-                                <div class="facturacion-value">${{ mes_data.total|floatformat:0 }}</div>
-                                <div class="facturacion-label">{{ mes_data.mes }}</div>
-                            </div>
+                        <div class="col-12">
+                            <canvas id="facturacionChart" width="400" height="200"></canvas>
                         </div>
-                        {% endfor %}
                     </div>
                 </div>
             </div>

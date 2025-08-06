@@ -4176,7 +4176,7 @@ def dashboard_gerente(request):
         'porcentaje_terceros': porcentaje_terceros,
         
         # Facturación año fiscal
-        'facturacion_anio_fiscal': json.dumps(facturacion_anio_fiscal),
+        'facturacion_anio_fiscal': facturacion_anio_fiscal,
         
         # Debug: imprimir el JSON final
         'debug_json': json.dumps(facturacion_anio_fiscal, indent=2),
