@@ -3821,11 +3821,22 @@ def dashboard_gerente(request):
     print(f"DEBUG: Parámetros GET recibidos: {dict(request.GET)}")
     print(f"DEBUG: mes_filtro = '{mes_filtro}', año_filtro = '{año_filtro}'")
     
-    # Si no se especifican filtros, usar mes actual
-    if mes_filtro and año_filtro:
+    # Si se especifica al menos un filtro, usarlo
+    if mes_filtro or año_filtro:
         try:
-            mes_seleccionado = int(mes_filtro)
-            año_seleccionado = int(año_filtro)
+            # Si solo hay mes, usar año actual
+            if mes_filtro and not año_filtro:
+                mes_seleccionado = int(mes_filtro)
+                año_seleccionado = date.today().year
+            # Si solo hay año, usar mes actual
+            elif año_filtro and not mes_filtro:
+                año_seleccionado = int(año_filtro)
+                mes_seleccionado = date.today().month
+            # Si hay ambos
+            else:
+                mes_seleccionado = int(mes_filtro)
+                año_seleccionado = int(año_filtro)
+            
             inicio_mes = date(año_seleccionado, mes_seleccionado, 1)
             if mes_seleccionado == 12:
                 fin_mes = date(año_seleccionado + 1, 1, 1) - timedelta(days=1)
