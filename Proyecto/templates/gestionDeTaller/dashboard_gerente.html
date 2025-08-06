@@ -229,6 +229,70 @@
     .status-circle.info { background: linear-gradient(135deg, var(--info-color), #3498db); }
     .status-circle.primary { background: linear-gradient(135deg, var(--accent-color), #2980b9); }
 
+    .status-item {
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        box-shadow: var(--card-shadow);
+        transition: var(--transition);
+        border-left: 4px solid var(--accent-color);
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .status-item:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--card-shadow-hover);
+    }
+
+    .status-item.success { border-left-color: var(--success-color); }
+    .status-item.warning { border-left-color: var(--warning-color); }
+    .status-item.info { border-left-color: var(--info-color); }
+    .status-item.primary { border-left-color: var(--accent-color); }
+
+    .status-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        color: white;
+    }
+
+    .status-item.success .status-icon { background: linear-gradient(135deg, var(--success-color), #2ecc71); }
+    .status-item.warning .status-icon { background: linear-gradient(135deg, var(--warning-color), #f1c40f); }
+    .status-item.info .status-icon { background: linear-gradient(135deg, var(--info-color), #3498db); }
+    .status-item.primary .status-icon { background: linear-gradient(135deg, var(--accent-color), #2980b9); }
+
+    .status-content {
+        flex-grow: 1;
+    }
+
+    .status-value {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: var(--primary-color);
+        margin-bottom: 5px;
+    }
+
+    .status-label {
+        font-size: 0.9rem;
+        color: var(--secondary-color);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-weight: 600;
+        margin-bottom: 3px;
+    }
+
+    .status-percentage {
+        font-size: 0.8rem;
+        color: var(--secondary-color);
+        opacity: 0.8;
+    }
+
     .recent-item {
         background: linear-gradient(135deg, #f8f9fa, #ffffff);
         border-left: 4px solid var(--accent-color);
@@ -546,41 +610,61 @@
                 </div>
                 <div class="card-body">
                     <div class="row">
-                        <div class="col-md-6 text-center mb-4">
-                            <div class="status-circle success">
-                                <div class="h3 mb-0">{{ servicios_completados }}</div>
-                                <small>Completados</small>
+                        <div class="col-md-3 mb-3">
+                            <div class="status-item success">
+                                <div class="status-icon">
+                                    <i class="fas fa-check-circle"></i>
+                                </div>
+                                <div class="status-content">
+                                    <div class="status-value">{{ servicios_completados }}</div>
+                                    <div class="status-label">Completados</div>
+                                    <div class="status-percentage">{{ porcentaje_completados }}%</div>
+                                </div>
                             </div>
-                            <div class="text-muted small">{{ porcentaje_completados }}%</div>
                         </div>
                         
-                        <div class="col-md-6 text-center mb-4">
-                            <div class="status-circle warning">
-                                <div class="h3 mb-0">{{ servicios_en_proceso }}</div>
-                                <small>En Proceso</small>
+                        <div class="col-md-3 mb-3">
+                            <div class="status-item warning">
+                                <div class="status-icon">
+                                    <i class="fas fa-clock"></i>
+                                </div>
+                                <div class="status-content">
+                                    <div class="status-value">{{ servicios_en_proceso }}</div>
+                                    <div class="status-label">En Proceso</div>
+                                    <div class="status-percentage">{{ porcentaje_en_proceso }}%</div>
+                                </div>
                             </div>
-                            <div class="text-muted small">{{ porcentaje_en_proceso }}%</div>
                         </div>
                         
-                        <div class="col-md-6 text-center mb-4">
-                            <div class="status-circle info">
-                                <div class="h3 mb-0">{{ servicios_espera_repuestos }}</div>
-                                <small>Espera Repuestos</small>
+                        <div class="col-md-3 mb-3">
+                            <div class="status-item info">
+                                <div class="status-icon">
+                                    <i class="fas fa-box"></i>
+                                </div>
+                                <div class="status-content">
+                                    <div class="status-value">{{ servicios_espera_repuestos }}</div>
+                                    <div class="status-label">Espera Repuestos</div>
+                                    <div class="status-percentage">{{ porcentaje_espera }}%</div>
+                                </div>
                             </div>
-                            <div class="text-muted small">{{ porcentaje_espera }}%</div>
                         </div>
                         
-                        <div class="col-md-6 text-center mb-4">
-                            <div class="status-circle primary">
-                                <div class="h3 mb-0">{{ servicios_a_facturar }}</div>
-                                <small>A Facturar</small>
-                            </div>
-                            <div class="text-muted small">
-                                {% if total_servicios_mes > 0 %}
-                                    {% widthratio servicios_a_facturar total_servicios_mes 100 %}%
-                                {% else %}
-                                    0%
-                                {% endif %}
+                        <div class="col-md-3 mb-3">
+                            <div class="status-item primary">
+                                <div class="status-icon">
+                                    <i class="fas fa-file-invoice-dollar"></i>
+                                </div>
+                                <div class="status-content">
+                                    <div class="status-value">{{ servicios_a_facturar }}</div>
+                                    <div class="status-label">A Facturar</div>
+                                    <div class="status-percentage">
+                                        {% if total_servicios_mes > 0 %}
+                                            {% widthratio servicios_a_facturar total_servicios_mes 100 %}%
+                                        {% else %}
+                                            0%
+                                        {% endif %}
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -669,7 +753,7 @@
                                     <small class="text-muted">Técnico</small>
                                 </div>
                                 <div class="text-end">
-                                    <div class="h5 mb-0">{{ tecnico.total_horas|floatformat:1 }}h</div>
+                                    <div class="h5 mb-0">{{ tecnico.horas_registradas|floatformat:1 }}h</div>
                                     <small class="text-muted">Horas Registradas</small>
                                 </div>
                             </div>

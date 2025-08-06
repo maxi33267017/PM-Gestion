@@ -4007,11 +4007,15 @@ def dashboard_gerente(request):
             )
         )['total']
         
+        # Convertir timedelta a horas
+        horas_registradas = total_horas.total_seconds() / 3600 if total_horas else 0
+        
         tecnicos_actividad.append({
             'tecnico__nombre': tecnico.nombre,
             'tecnico__apellido': tecnico.apellido,
             'tecnico__id': tecnico.id,
-            'total_horas': total_horas
+            'total_horas': total_horas,
+            'horas_registradas': horas_registradas
         })
     
     # Ordenar por horas y tomar los primeros 5
