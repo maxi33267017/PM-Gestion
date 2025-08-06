@@ -32,12 +32,7 @@ from .decorators import (
     requiere_administrativo, 
     requiere_especializacion_o_general
 )
-from gestionDeTaller.models import (
-    Servicio, HerramientaEspecial, HerramientaPersonal, 
-    AsignacionHerramientaPersonal, AuditoriaHerramientaPersonal,
-    DetalleAuditoriaHerramienta, ItemHerramientaPersonal, 
-    LogCambioItemHerramienta, LogHerramienta, ReservaHerramienta
-)
+from gestionDeTaller.models import Servicio
 from clientes.models import Cliente, Equipo
 
 @login_required
@@ -879,95 +874,3 @@ def dashboard_rrhh(request):
     }
     
     return render(request, 'recursosHumanos/dashboard_rrhh.html', context)
-
-
-@login_required
-@requiere_especializacion_admin('rrhh')
-def herramientas_especiales_rrhh(request):
-    """Vista para que RRHH vea las herramientas especiales"""
-    herramientas = HerramientaEspecial.objects.all().order_by('codigo')
-    
-    # Filtros
-    ubicacion = request.GET.get('ubicacion', '')
-    disponible = request.GET.get('disponible', '')
-    
-    if ubicacion:
-        herramientas = herramientas.filter(ubicacion=ubicacion)
-    
-    # Filtrar por disponibilidad basada en reservas activas
-    if disponible:
-        if disponible == 'disponible':
-            # Herramientas sin reservas activas
-            herramientas = [h for h in herramientas if not h.reservas.filter(fecha_devolucion__isnull=True).exists()]
-        elif disponible == 'no_disponible':
-            # Herramientas con reservas activas
-            herramientas = [h for h in herramientas if h.reservas.filter(fecha_devolucion__isnull=True).exists()]
-    
-    # Calcular disponibilidad para cada herramienta
-    for herramienta in herramientas:
-        herramienta.esta_disponible = not herramienta.reservas.filter(fecha_devolucion__isnull=True).exists()
-    
-    context = {
-        'herramientas': herramientas,
-        'ubicacion_filtro': ubicacion,
-        'disponible_filtro': disponible,
-    }
-    return render(request, 'recursosHumanos/herramientas_especiales_rrhh.html', context)
-
-
-@login_required
-@requiere_especializacion_admin('rrhh')
-def prestamos_activos_rrhh(request):
-    """Vista para que RRHH vea los préstamos activos"""
-    # Usar reservas activas de herramientas especiales como préstamos
-    prestamos = ReservaHerramienta.objects.filter(
-        fecha_devolucion__isnull=True
-    ).order_by('-fecha_reserva')
-    
-    context = {
-        'prestamos': prestamos,
-    }
-    return render(request, 'recursosHumanos/prestamos_activos_rrhh.html', context)
-
-
-@login_required
-@requiere_especializacion_admin('rrhh')
-def revisiones_herramientas_rrhh(request):
-    """Vista para que RRHH vea las revisiones de herramientas"""
-    # Usar auditorías de herramientas personales como revisiones
-    revisiones = AuditoriaHerramientaPersonal.objects.all().order_by('-fecha_auditoria')
-    
-    context = {
-        'revisiones': revisiones,
-    }
-    return render(request, 'recursosHumanos/revisiones_herramientas_rrhh.html', context)
-
-
-@login_required
-@requiere_especializacion_admin('rrhh')
-def gestion_inventario_rrhh(request):
-    """Vista para que RRHH gestione el inventario de herramientas"""
-    herramientas = HerramientaEspecial.objects.all().order_by('codigo')
-    
-    # Estadísticas - calcular disponibilidad basada en reservas activas
-    total_herramientas = herramientas.count()
-    
-    # Contar herramientas con reservas activas (no disponibles)
-    herramientas_prestadas = 0
-    for herramienta in herramientas:
-        if herramienta.reservas.filter(fecha_devolucion__isnull=True).exists():
-            herramientas_prestadas += 1
-    
-    herramientas_disponibles = total_herramientas - herramientas_prestadas
-    
-    # Calcular disponibilidad para cada herramienta
-    for herramienta in herramientas:
-        herramienta.esta_disponible = not herramienta.reservas.filter(fecha_devolucion__isnull=True).exists()
-    
-    context = {
-        'herramientas': herramientas,
-        'total_herramientas': total_herramientas,
-        'herramientas_disponibles': herramientas_disponibles,
-        'herramientas_prestadas': herramientas_prestadas,
-    }
-    return render(request, 'recursosHumanos/gestion_inventario_rrhh.html', context)

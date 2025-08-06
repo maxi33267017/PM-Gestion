@@ -61,12 +61,5 @@ urlpatterns = [
     path('gestionar-especializaciones/', views.gestionar_especializaciones, name='gestionar_especializaciones'),
     path('configurar-especializacion/<int:usuario_id>/', views.configurar_especializacion_usuario, name='configurar_especializacion_usuario'),
     
-    # =============================================================================
-    # URLs PARA GESTIÓN DE HERRAMIENTAS (RRHH)
-    # =============================================================================
-    
-    path('herramientas/especiales/', views.herramientas_especiales_rrhh, name='herramientas_especiales_rrhh'),
-    path('herramientas/prestamos-activos/', views.prestamos_activos_rrhh, name='prestamos_activos_rrhh'),
-    path('herramientas/revisiones/', views.revisiones_herramientas_rrhh, name='revisiones_herramientas_rrhh'),
-    path('herramientas/inventario/', views.gestion_inventario_rrhh, name='gestion_inventario_rrhh'),
+
 ]
