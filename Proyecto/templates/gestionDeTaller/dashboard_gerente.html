@@ -239,6 +239,8 @@
         display: flex;
         align-items: center;
         gap: 15px;
+        height: 120px;
+        min-height: 120px;
     }
 
     .status-item:hover {
@@ -252,14 +254,15 @@
     .status-item.primary { border-left-color: var(--accent-color); }
 
     .status-icon {
-        width: 50px;
-        height: 50px;
+        width: 45px;
+        height: 45px;
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 1.5rem;
+        font-size: 1.3rem;
         color: white;
+        flex-shrink: 0;
     }
 
     .status-item.success .status-icon { background: linear-gradient(135deg, var(--success-color), #2ecc71); }
@@ -269,22 +272,26 @@
 
     .status-content {
         flex-grow: 1;
+        min-width: 0;
+        overflow: hidden;
     }
 
     .status-value {
-        font-size: 1.8rem;
+        font-size: 1.5rem;
         font-weight: 700;
         color: var(--primary-color);
         margin-bottom: 5px;
+        line-height: 1.2;
     }
 
     .status-label {
-        font-size: 0.9rem;
+        font-size: 0.8rem;
         color: var(--secondary-color);
         text-transform: uppercase;
         letter-spacing: 0.5px;
         font-weight: 600;
         margin-bottom: 3px;
+        line-height: 1.2;
     }
 
     .status-percentage {
