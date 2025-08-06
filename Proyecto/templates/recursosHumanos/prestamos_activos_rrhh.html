@@ -1,0 +1,94 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Préstamos Activos - RRHH{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">
+            <i class="bi bi-box-arrow-up me-2"></i>
+            Préstamos Activos
+        </h1>
+        <a href="{% url 'recursosHumanos:dashboard_rrhh' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-2"></i>
+            Volver al Dashboard
+        </a>
+    </div>
+
+    <!-- Estadísticas -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                Préstamos Activos
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ prestamos.count }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="bi bi-box-arrow-up fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lista de Préstamos -->
+    <div class="card shadow">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">
+                Préstamos Activos ({{ prestamos.count }})
+            </h6>
+        </div>
+        <div class="card-body">
+            {% if prestamos %}
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Herramienta</th>
+                                <th>Usuario</th>
+                                <th>Fecha de Retiro</th>
+                                <th>Días Prestada</th>
+                                <th>Estado al Retirar</th>
+                                <th>Observaciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for prestamo in prestamos %}
+                            <tr>
+                                <td>
+                                    <strong>{{ prestamo.herramienta.codigo }}</strong><br>
+                                    <small class="text-muted">{{ prestamo.herramienta.nombre }}</small>
+                                </td>
+                                <td>{{ prestamo.usuario.get_nombre_completo }}</td>
+                                <td>{{ prestamo.fecha_retiro|date:"d/m/Y H:i" }}</td>
+                                <td>
+                                    {% with dias=prestamo.fecha_retiro|timesince %}
+                                        <span class="badge {% if dias|add:'0' > 7 %}bg-danger{% elif dias|add:'0' > 3 %}bg-warning{% else %}bg-success{% endif %}">
+                                            {{ dias }}
+                                        </span>
+                                    {% endwith %}
+                                </td>
+                                <td>{{ prestamo.estado_salida|truncatewords:5 }}</td>
+                                <td>{{ prestamo.observaciones|truncatewords:5 }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="text-center py-4">
+                    <i class="bi bi-box-arrow-up text-muted" style="font-size: 3rem;"></i>
+                    <p class="text-muted mt-2">No hay préstamos activos en este momento</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %} 

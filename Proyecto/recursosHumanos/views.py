@@ -874,3 +874,73 @@ def dashboard_rrhh(request):
     }
     
     return render(request, 'recursosHumanos/dashboard_rrhh.html', context)
+
+
+@login_required
+@requiere_especializacion_admin('rrhh')
+def herramientas_especiales_rrhh(request):
+    """Vista para que RRHH vea las herramientas especiales"""
+    herramientas = HerramientaEspecial.objects.all().order_by('codigo')
+    
+    # Filtros
+    ubicacion = request.GET.get('ubicacion', '')
+    disponible = request.GET.get('disponible', '')
+    
+    if ubicacion:
+        herramientas = herramientas.filter(ubicacion=ubicacion)
+    if disponible:
+        if disponible == 'disponible':
+            herramientas = herramientas.filter(disponible=True)
+        elif disponible == 'no_disponible':
+            herramientas = herramientas.filter(disponible=False)
+    
+    context = {
+        'herramientas': herramientas,
+        'ubicacion_filtro': ubicacion,
+        'disponible_filtro': disponible,
+    }
+    return render(request, 'recursosHumanos/herramientas_especiales_rrhh.html', context)
+
+
+@login_required
+@requiere_especializacion_admin('rrhh')
+def prestamos_activos_rrhh(request):
+    """Vista para que RRHH vea los préstamos activos"""
+    prestamos = PrestamoHerramienta.objects.filter(fecha_devolucion__isnull=True).order_by('-fecha_retiro')
+    
+    context = {
+        'prestamos': prestamos,
+    }
+    return render(request, 'recursosHumanos/prestamos_activos_rrhh.html', context)
+
+
+@login_required
+@requiere_especializacion_admin('rrhh')
+def revisiones_herramientas_rrhh(request):
+    """Vista para que RRHH vea las revisiones de herramientas"""
+    revisiones = RevisionHerramientas.objects.all().order_by('-fecha_revision')
+    
+    context = {
+        'revisiones': revisiones,
+    }
+    return render(request, 'recursosHumanos/revisiones_herramientas_rrhh.html', context)
+
+
+@login_required
+@requiere_especializacion_admin('rrhh')
+def gestion_inventario_rrhh(request):
+    """Vista para que RRHH gestione el inventario de herramientas"""
+    herramientas = HerramientaEspecial.objects.all().order_by('codigo')
+    
+    # Estadísticas
+    total_herramientas = herramientas.count()
+    herramientas_disponibles = herramientas.filter(disponible=True).count()
+    herramientas_prestadas = herramientas.filter(disponible=False).count()
+    
+    context = {
+        'herramientas': herramientas,
+        'total_herramientas': total_herramientas,
+        'herramientas_disponibles': herramientas_disponibles,
+        'herramientas_prestadas': herramientas_prestadas,
+    }
+    return render(request, 'recursosHumanos/gestion_inventario_rrhh.html', context)
