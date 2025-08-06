@@ -53,9 +53,9 @@
                             <tr>
                                 <th>Herramienta</th>
                                 <th>Usuario</th>
-                                <th>Fecha de Retiro</th>
-                                <th>Días Prestada</th>
-                                <th>Estado al Retirar</th>
+                                <th>Fecha de Reserva</th>
+                                <th>Días Reservada</th>
+                                <th>Estado</th>
                                 <th>Observaciones</th>
                             </tr>
                         </thead>
@@ -67,15 +67,19 @@
                                     <small class="text-muted">{{ prestamo.herramienta.nombre }}</small>
                                 </td>
                                 <td>{{ prestamo.usuario.get_nombre_completo }}</td>
-                                <td>{{ prestamo.fecha_retiro|date:"d/m/Y H:i" }}</td>
+                                <td>{{ prestamo.fecha_reserva|date:"d/m/Y H:i" }}</td>
                                 <td>
-                                    {% with dias=prestamo.fecha_retiro|timesince %}
+                                    {% with dias=prestamo.fecha_reserva|timesince %}
                                         <span class="badge {% if dias|add:'0' > 7 %}bg-danger{% elif dias|add:'0' > 3 %}bg-warning{% else %}bg-success{% endif %}">
                                             {{ dias }}
                                         </span>
                                     {% endwith %}
                                 </td>
-                                <td>{{ prestamo.estado_salida|truncatewords:5 }}</td>
+                                <td>
+                                    <span class="badge {% if prestamo.estado == 'RESERVADA' %}bg-warning{% elif prestamo.estado == 'RETIRADA' %}bg-info{% else %}bg-success{% endif %}">
+                                        {{ prestamo.get_estado_display }}
+                                    </span>
+                                </td>
                                 <td>{{ prestamo.observaciones|truncatewords:5 }}</td>
                             </tr>
                             {% endfor %}

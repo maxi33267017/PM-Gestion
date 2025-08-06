@@ -53,26 +53,22 @@
                             <tr>
                                 <th>Fecha</th>
                                 <th>Técnico</th>
-                                <th>Revisor</th>
-                                <th>Caja Herramientas</th>
-                                <th>Estado General</th>
+                                <th>Auditor</th>
+                                <th>Herramienta</th>
+                                <th>Estado</th>
                                 <th>Observaciones</th>
                             </tr>
                         </thead>
                         <tbody>
                             {% for revision in revisiones %}
                             <tr>
-                                <td>{{ revision.fecha_revision|date:"d/m/Y" }}</td>
+                                <td>{{ revision.fecha_auditoria|date:"d/m/Y" }}</td>
                                 <td>{{ revision.tecnico.get_nombre_completo }}</td>
-                                <td>{{ revision.revisor.get_nombre_completo }}</td>
+                                <td>{{ revision.auditor.get_nombre_completo }}</td>
+                                <td>{{ revision.herramienta.nombre }}</td>
                                 <td>
-                                    <span class="badge {% if revision.caja_herramientas == 'BUENO' %}bg-success{% elif revision.caja_herramientas == 'REGULAR' %}bg-warning{% else %}bg-danger{% endif %}">
-                                        {{ revision.get_caja_herramientas_display }}
-                                    </span>
-                                </td>
-                                <td>
-                                    <span class="badge {% if revision.estado_general == 'BUENO' %}bg-success{% elif revision.estado_general == 'REGULAR' %}bg-warning{% else %}bg-danger{% endif %}">
-                                        {{ revision.get_estado_general_display }}
+                                    <span class="badge {% if revision.estado == 'BUENO' %}bg-success{% elif revision.estado == 'REGULAR' %}bg-warning{% else %}bg-danger{% endif %}">
+                                        {{ revision.get_estado_display }}
                                     </span>
                                 </td>
                                 <td>{{ revision.observaciones|truncatewords:10 }}</td>

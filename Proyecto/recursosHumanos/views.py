@@ -32,7 +32,12 @@ from .decorators import (
     requiere_administrativo, 
     requiere_especializacion_o_general
 )
-from gestionDeTaller.models import Servicio
+from gestionDeTaller.models import (
+    Servicio, HerramientaEspecial, HerramientaPersonal, 
+    AsignacionHerramientaPersonal, AuditoriaHerramientaPersonal,
+    DetalleAuditoriaHerramienta, ItemHerramientaPersonal, 
+    LogCambioItemHerramienta, LogHerramienta, ReservaHerramienta
+)
 from clientes.models import Cliente, Equipo
 
 @login_required
@@ -906,7 +911,10 @@ def herramientas_especiales_rrhh(request):
 @requiere_especializacion_admin('rrhh')
 def prestamos_activos_rrhh(request):
     """Vista para que RRHH vea los préstamos activos"""
-    prestamos = PrestamoHerramienta.objects.filter(fecha_devolucion__isnull=True).order_by('-fecha_retiro')
+    # Usar reservas activas de herramientas especiales como préstamos
+    prestamos = ReservaHerramienta.objects.filter(
+        fecha_devolucion__isnull=True
+    ).order_by('-fecha_reserva')
     
     context = {
         'prestamos': prestamos,
@@ -918,7 +926,8 @@ def prestamos_activos_rrhh(request):
 @requiere_especializacion_admin('rrhh')
 def revisiones_herramientas_rrhh(request):
     """Vista para que RRHH vea las revisiones de herramientas"""
-    revisiones = RevisionHerramientas.objects.all().order_by('-fecha_revision')
+    # Usar auditorías de herramientas personales como revisiones
+    revisiones = AuditoriaHerramientaPersonal.objects.all().order_by('-fecha_auditoria')
     
     context = {
         'revisiones': revisiones,
