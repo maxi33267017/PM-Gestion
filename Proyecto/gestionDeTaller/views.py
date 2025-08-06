@@ -3816,6 +3816,11 @@ def dashboard_gerente(request):
     mes_filtro = request.GET.get('mes', '')
     año_filtro = request.GET.get('año', '')
     
+    # Debug: imprimir todos los parámetros recibidos
+    print(f"DEBUG: URL completa: {request.get_full_path()}")
+    print(f"DEBUG: Parámetros GET recibidos: {dict(request.GET)}")
+    print(f"DEBUG: mes_filtro = '{mes_filtro}', año_filtro = '{año_filtro}'")
+    
     # Si no se especifican filtros, usar mes actual
     if mes_filtro and año_filtro:
         try:
