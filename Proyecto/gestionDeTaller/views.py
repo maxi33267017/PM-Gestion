@@ -4015,7 +4015,13 @@ def dashboard_gerente(request):
         })
     
     # Ordenar por horas y tomar los primeros 5
-    tecnicos_actividad = sorted(tecnicos_actividad, key=lambda x: x['total_horas'] or 0, reverse=True)[:5]
+    def get_horas_for_sort(tecnico):
+        total_horas = tecnico['total_horas']
+        if total_horas is None:
+            return 0
+        return total_horas.total_seconds() / 3600
+    
+    tecnicos_actividad = sorted(tecnicos_actividad, key=get_horas_for_sort, reverse=True)[:5]
     
     # Debug: imprimir técnicos con actividad
     print(f"DEBUG: Técnicos con actividad encontrados: {len(tecnicos_actividad)}")
