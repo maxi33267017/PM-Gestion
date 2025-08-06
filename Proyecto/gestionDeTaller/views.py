@@ -3811,10 +3811,31 @@ def dashboard_gerente(request):
     from django.db.models import Sum, Count, Q
     from django.utils import timezone
     
-    # Obtener fecha actual y rangos
-    hoy = date.today()
-    inicio_mes = date(hoy.year, hoy.month, 1)
-    fin_mes = date(hoy.year, hoy.month + 1, 1) - timedelta(days=1) if hoy.month < 12 else date(hoy.year + 1, 1, 1) - timedelta(days=1)
+    # === FILTROS DE FECHA ===
+    # Obtener parámetros de filtro de fecha
+    mes_filtro = request.GET.get('mes', '')
+    año_filtro = request.GET.get('año', '')
+    
+    # Si no se especifican filtros, usar mes actual
+    if mes_filtro and año_filtro:
+        try:
+            mes_seleccionado = int(mes_filtro)
+            año_seleccionado = int(año_filtro)
+            inicio_mes = date(año_seleccionado, mes_seleccionado, 1)
+            if mes_seleccionado == 12:
+                fin_mes = date(año_seleccionado + 1, 1, 1) - timedelta(days=1)
+            else:
+                fin_mes = date(año_seleccionado, mes_seleccionado + 1, 1) - timedelta(days=1)
+        except (ValueError, TypeError):
+            # Si hay error en los parámetros, usar mes actual
+            hoy = date.today()
+            inicio_mes = date(hoy.year, hoy.month, 1)
+            fin_mes = date(hoy.year, hoy.month + 1, 1) - timedelta(days=1) if hoy.month < 12 else date(hoy.year + 1, 1, 1) - timedelta(days=1)
+    else:
+        # Usar mes actual
+        hoy = date.today()
+        inicio_mes = date(hoy.year, hoy.month, 1)
+        fin_mes = date(hoy.year, hoy.month + 1, 1) - timedelta(days=1) if hoy.month < 12 else date(hoy.year + 1, 1, 1) - timedelta(days=1)
     
     # Fecha de hace 30 días
     hace_30_dias = hoy - timedelta(days=30)
@@ -4098,6 +4119,23 @@ def dashboard_gerente(request):
         # Filtros
         'sucursales': sucursales,
         'sucursal_filtro': sucursal_filtro,
+        'mes_filtro': mes_filtro,
+        'año_filtro': año_filtro,
+        'meses': [
+            {'valor': '1', 'nombre': 'Enero'},
+            {'valor': '2', 'nombre': 'Febrero'},
+            {'valor': '3', 'nombre': 'Marzo'},
+            {'valor': '4', 'nombre': 'Abril'},
+            {'valor': '5', 'nombre': 'Mayo'},
+            {'valor': '6', 'nombre': 'Junio'},
+            {'valor': '7', 'nombre': 'Julio'},
+            {'valor': '8', 'nombre': 'Agosto'},
+            {'valor': '9', 'nombre': 'Septiembre'},
+            {'valor': '10', 'nombre': 'Octubre'},
+            {'valor': '11', 'nombre': 'Noviembre'},
+            {'valor': '12', 'nombre': 'Diciembre'},
+        ],
+        'años': range(2020, date.today().year + 2),  # Desde 2020 hasta el año siguiente
     }
     
     return render(request, 'gestionDeTaller/dashboard_gerente.html', context)
