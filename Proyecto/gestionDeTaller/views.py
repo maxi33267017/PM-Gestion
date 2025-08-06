@@ -3960,6 +3960,11 @@ def dashboard_gerente(request):
     # === SERVICIOS RECIENTES ===
     servicios_recientes = servicios_mes.order_by('-fecha_servicio')[:5]
     
+    # Debug: imprimir servicios recientes
+    print(f"DEBUG: Servicios recientes encontrados: {servicios_recientes.count()}")
+    for servicio in servicios_recientes:
+        print(f"DEBUG: Servicio reciente - {servicio.fecha_servicio}: {servicio.estado}")
+    
     # === TÉCNICOS CON MÁS ACTIVIDAD ===
     tecnicos_actividad = RegistroHorasTecnico.objects.filter(
         fecha__range=[inicio_mes, fin_mes]
@@ -3971,6 +3976,12 @@ def dashboard_gerente(request):
             )
         )
     ).order_by('-total_horas')[:5]
+    
+    # Debug: imprimir técnicos con actividad
+    print(f"DEBUG: Técnicos con actividad encontrados: {len(tecnicos_actividad)}")
+    for tecnico in tecnicos_actividad:
+        horas = tecnico['total_horas'].total_seconds() / 3600 if tecnico['total_horas'] else 0
+        print(f"DEBUG: Técnico - {tecnico['tecnico__nombre']} {tecnico['tecnico__apellido']}: {horas:.1f} horas")
     
     # Calcular métricas de productividad para cada técnico
     for tecnico in tecnicos_actividad:
@@ -4018,6 +4029,11 @@ def dashboard_gerente(request):
     estados_servicios = servicios_mes.values('estado').annotate(
         count=Count('id')
     ).order_by('-count')
+    
+    # Debug: imprimir estados de servicios
+    print(f"DEBUG: Estados de servicios encontrados:")
+    for estado in estados_servicios:
+        print(f"DEBUG: Estado - {estado['estado']}: {estado['count']} servicios")
     
     # === MÉTRICAS DE CRECIMIENTO (comparación con mes anterior) ===
     # Calcular mes anterior basado en las fechas filtradas
