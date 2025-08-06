@@ -4030,6 +4030,11 @@ def dashboard_gerente(request):
         facturacion_repuestos_mes = calcular_repuestos_servicios(servicios_mes)
         facturacion_gastos_mes = calcular_gastos_servicios(servicios_mes)
         
+        # Convertir a float para evitar problemas de serialización JSON
+        facturacion_mes = float(facturacion_mes) if facturacion_mes else 0.0
+        facturacion_repuestos_mes = float(facturacion_repuestos_mes) if facturacion_repuestos_mes else 0.0
+        facturacion_gastos_mes = float(facturacion_gastos_mes) if facturacion_gastos_mes else 0.0
+        
         total_mes = facturacion_mes + facturacion_repuestos_mes + facturacion_gastos_mes
         
         # Debug: imprimir información del mes
@@ -4038,7 +4043,7 @@ def dashboard_gerente(request):
         facturacion_anio_fiscal.append({
             'mes': mes,
             'nombre_mes': mes_inicio.strftime('%B'),
-            'total': total_mes
+            'total': float(total_mes) if total_mes else 0.0
         })
     
     context = {
