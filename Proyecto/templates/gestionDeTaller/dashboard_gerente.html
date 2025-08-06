@@ -342,11 +342,31 @@
     
     /* Corregir z-index de dropdowns */
     .dropdown-menu {
-        z-index: 9999 !important;
+        z-index: 99999 !important;
+        position: absolute !important;
     }
     
     .filter-container .dropdown-menu {
-        z-index: 10000 !important;
+        z-index: 100000 !important;
+    }
+    
+    /* Asegurar que los dropdowns estén por encima de todo */
+    .dropdown {
+        position: relative !important;
+    }
+    
+    /* Forzar z-index alto para todos los dropdowns */
+    .btn.dropdown-toggle + .dropdown-menu {
+        z-index: 999999 !important;
+        position: absolute !important;
+        top: 100% !important;
+        left: 0 !important;
+    }
+    
+    /* Asegurar que las cards no interfieran */
+    .metric-card, .chart-card {
+        position: relative;
+        z-index: 1;
     }
 </style>
 {% endblock %}
@@ -367,15 +387,15 @@
                 </p>
             </div>
             <div class="col-lg-4">
-                <div class="filter-container">
+                <div class="filter-container" style="position: relative; z-index: 999999;">
                     <div class="d-flex flex-wrap gap-2 justify-content-end">
                         <!-- Filtro por Sucursal -->
-                        <div class="dropdown">
-                            <button class="filter-btn dropdown-toggle" type="button" id="sucursalDropdown" data-bs-toggle="dropdown">
+                        <div class="dropdown" style="position: relative;">
+                            <button class="filter-btn dropdown-toggle" type="button" id="sucursalDropdown" data-bs-toggle="dropdown" aria-expanded="false">
                                 <i class="fas fa-building me-1"></i>
                                 {% if sucursal_filtro %}{{ sucursal_filtro }}{% else %}Todas{% endif %}
                             </button>
-                            <ul class="dropdown-menu">
+                            <ul class="dropdown-menu" style="z-index: 999999 !important;">
                                 <li><a class="dropdown-item" href="?{% if mes_filtro %}mes={{ mes_filtro }}{% endif %}{% if año_filtro %}{% if mes_filtro %}&{% endif %}año={{ año_filtro }}{% endif %}">Todas las Sucursales</a></li>
                                 {% for sucursal in sucursales %}
                                 <li><a class="dropdown-item" href="?sucursal={{ sucursal.nombre }}{% if mes_filtro %}&mes={{ mes_filtro }}{% endif %}{% if año_filtro %}&año={{ año_filtro }}{% endif %}">{{ sucursal.nombre }}</a></li>
@@ -384,8 +404,8 @@
                         </div>
                         
                         <!-- Filtro por Mes -->
-                        <div class="dropdown">
-                            <button class="filter-btn dropdown-toggle" type="button" id="mesDropdown" data-bs-toggle="dropdown">
+                        <div class="dropdown" style="position: relative;">
+                            <button class="filter-btn dropdown-toggle" type="button" id="mesDropdown" data-bs-toggle="dropdown" aria-expanded="false">
                                 <i class="fas fa-calendar me-1"></i>
                                 {% if mes_filtro %}
                                     {% for mes in meses %}
@@ -395,7 +415,7 @@
                                     {{ mes_actual|slice:":-5" }}
                                 {% endif %}
                             </button>
-                            <ul class="dropdown-menu">
+                            <ul class="dropdown-menu" style="z-index: 999999 !important;">
                                 {% for mes in meses %}
                                 <li><a class="dropdown-item" href="?{% if sucursal_filtro %}sucursal={{ sucursal_filtro }}{% endif %}{% if sucursal_filtro or año_filtro %}&{% endif %}{% if año_filtro %}año={{ año_filtro }}{% endif %}{% if año_filtro %}&{% endif %}mes={{ mes.valor }}">{{ mes.nombre }}</a></li>
                                 {% endfor %}
@@ -403,12 +423,12 @@
                         </div>
                         
                         <!-- Filtro por Año -->
-                        <div class="dropdown">
-                            <button class="filter-btn dropdown-toggle" type="button" id="añoDropdown" data-bs-toggle="dropdown">
+                        <div class="dropdown" style="position: relative;">
+                            <button class="filter-btn dropdown-toggle" type="button" id="añoDropdown" data-bs-toggle="dropdown" aria-expanded="false">
                                 <i class="fas fa-calendar-alt me-1"></i>
                                 {% if año_filtro %}{{ año_filtro }}{% else %}{{ inicio_mes.year }}{% endif %}
                             </button>
-                            <ul class="dropdown-menu">
+                            <ul class="dropdown-menu" style="z-index: 999999 !important;">
                                 {% for año in años %}
                                 <li><a class="dropdown-item" href="?{% if sucursal_filtro %}sucursal={{ sucursal_filtro }}{% endif %}{% if sucursal_filtro or mes_filtro %}&{% endif %}{% if mes_filtro %}mes={{ mes_filtro }}{% endif %}{% if mes_filtro %}&{% endif %}año={{ año }}">{{ año }}</a></li>
                                 {% endfor %}
