@@ -893,11 +893,15 @@ def herramientas_especiales_rrhh(request):
     
     if ubicacion:
         herramientas = herramientas.filter(ubicacion=ubicacion)
+    
+    # Filtrar por disponibilidad basada en reservas activas
     if disponible:
         if disponible == 'disponible':
-            herramientas = herramientas.filter(disponible=True)
+            # Herramientas sin reservas activas
+            herramientas = [h for h in herramientas if not h.reservas.filter(fecha_devolucion__isnull=True).exists()]
         elif disponible == 'no_disponible':
-            herramientas = herramientas.filter(disponible=False)
+            # Herramientas con reservas activas
+            herramientas = [h for h in herramientas if h.reservas.filter(fecha_devolucion__isnull=True).exists()]
     
     context = {
         'herramientas': herramientas,
@@ -941,10 +945,16 @@ def gestion_inventario_rrhh(request):
     """Vista para que RRHH gestione el inventario de herramientas"""
     herramientas = HerramientaEspecial.objects.all().order_by('codigo')
     
-    # Estadísticas
+    # Estadísticas - calcular disponibilidad basada en reservas activas
     total_herramientas = herramientas.count()
-    herramientas_disponibles = herramientas.filter(disponible=True).count()
-    herramientas_prestadas = herramientas.filter(disponible=False).count()
+    
+    # Contar herramientas con reservas activas (no disponibles)
+    herramientas_prestadas = 0
+    for herramienta in herramientas:
+        if herramienta.reservas.filter(fecha_devolucion__isnull=True).exists():
+            herramientas_prestadas += 1
+    
+    herramientas_disponibles = total_herramientas - herramientas_prestadas
     
     context = {
         'herramientas': herramientas,

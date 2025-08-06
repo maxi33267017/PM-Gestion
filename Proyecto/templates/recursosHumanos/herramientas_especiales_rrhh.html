@@ -83,10 +83,10 @@
                                 <td>{{ herramienta.nombre }}</td>
                                 <td>{{ herramienta.get_ubicacion_display }}</td>
                                 <td>
-                                    {% if herramienta.disponible %}
-                                        <span class="badge bg-success">Disponible</span>
-                                    {% else %}
+                                    {% if herramienta.reservas.filter.fecha_devolucion__isnull=True.exists %}
                                         <span class="badge bg-danger">No Disponible</span>
+                                    {% else %}
+                                        <span class="badge bg-success">Disponible</span>
                                     {% endif %}
                                 </td>
                                 <td>{{ herramienta.observaciones|truncatewords:10 }}</td>
