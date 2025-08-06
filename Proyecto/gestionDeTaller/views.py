@@ -3920,9 +3920,16 @@ def dashboard_gerente(request):
     
     total_facturacion = facturacion_mano_obra + facturacion_repuestos + facturacion_gastos + facturacion_terceros
     
+    # Calcular porcentajes para las barras de progreso
+    porcentaje_mano_obra = round((facturacion_mano_obra / total_facturacion * 100) if total_facturacion > 0 else 0, 1)
+    porcentaje_repuestos = round((facturacion_repuestos / total_facturacion * 100) if total_facturacion > 0 else 0, 1)
+    porcentaje_gastos = round((facturacion_gastos / total_facturacion * 100) if total_facturacion > 0 else 0, 1)
+    porcentaje_terceros = round((facturacion_terceros / total_facturacion * 100) if total_facturacion > 0 else 0, 1)
+    
     # Debug: imprimir resultados de facturación
     print(f"DEBUG: Facturación - Mano obra: ${facturacion_mano_obra}, Repuestos: ${facturacion_repuestos}")
     print(f"DEBUG: Facturación - Gastos: ${facturacion_gastos}, Terceros: ${facturacion_terceros}, Total: ${total_facturacion}")
+    print(f"DEBUG: Porcentajes - M.O: {porcentaje_mano_obra}%, Rep: {porcentaje_repuestos}%, Gas: {porcentaje_gastos}%, Ter: {porcentaje_terceros}%")
     
     # === MÉTRICAS DE TÉCNICOS ===
     tecnicos_activos = Usuario.objects.filter(rol='TECNICO').count()
@@ -4163,6 +4170,10 @@ def dashboard_gerente(request):
         'porcentaje_completados': round((servicios_completados / total_servicios_mes * 100) if total_servicios_mes > 0 else 0, 1),
         'porcentaje_en_proceso': round((servicios_en_proceso / total_servicios_mes * 100) if total_servicios_mes > 0 else 0, 1),
         'porcentaje_espera': round((servicios_espera_repuestos / total_servicios_mes * 100) if total_servicios_mes > 0 else 0, 1),
+        'porcentaje_mano_obra': porcentaje_mano_obra,
+        'porcentaje_repuestos': porcentaje_repuestos,
+        'porcentaje_gastos': porcentaje_gastos,
+        'porcentaje_terceros': porcentaje_terceros,
         
         # Facturación año fiscal
         'facturacion_anio_fiscal': json.dumps(facturacion_anio_fiscal),

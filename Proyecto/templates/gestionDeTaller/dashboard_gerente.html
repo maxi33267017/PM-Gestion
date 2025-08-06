@@ -694,7 +694,7 @@
                                 <div class="facturacion-value">${{ facturacion_mano_obra|floatformat:0 }}</div>
                                 <div class="facturacion-label">Mano de Obra</div>
                                 <div class="progress-bar-custom mt-2">
-                                    <div class="progress-fill success" style="width: {% if total_facturacion > 0 %}{{ facturacion_mano_obra|div:total_facturacion|mul:100 }}{% else %}0{% endif %}%"></div>
+                                    <div class="progress-fill success" style="width: {% if total_facturacion > 0 %}{{ porcentaje_mano_obra }}{% else %}0{% endif %}%"></div>
                                 </div>
                             </div>
                         </div>
@@ -704,7 +704,7 @@
                                 <div class="facturacion-value">${{ facturacion_repuestos|floatformat:0 }}</div>
                                 <div class="facturacion-label">Repuestos</div>
                                 <div class="progress-bar-custom mt-2">
-                                    <div class="progress-fill info" style="width: {% if total_facturacion > 0 %}{{ facturacion_repuestos|div:total_facturacion|mul:100 }}{% else %}0{% endif %}%"></div>
+                                    <div class="progress-fill info" style="width: {% if total_facturacion > 0 %}{{ porcentaje_repuestos }}{% else %}0{% endif %}%"></div>
                                 </div>
                             </div>
                         </div>
@@ -714,7 +714,7 @@
                                 <div class="facturacion-value">${{ facturacion_gastos|floatformat:0 }}</div>
                                 <div class="facturacion-label">Gastos</div>
                                 <div class="progress-bar-custom mt-2">
-                                    <div class="progress-fill warning" style="width: {% if total_facturacion > 0 %}{{ facturacion_gastos|div:total_facturacion|mul:100 }}{% else %}0{% endif %}%"></div>
+                                    <div class="progress-fill warning" style="width: {% if total_facturacion > 0 %}{{ porcentaje_gastos }}{% else %}0{% endif %}%"></div>
                                 </div>
                             </div>
                         </div>
@@ -724,7 +724,7 @@
                                 <div class="facturacion-value">${{ facturacion_terceros|floatformat:0 }}</div>
                                 <div class="facturacion-label">Terceros</div>
                                 <div class="progress-bar-custom mt-2">
-                                    <div class="progress-fill primary" style="width: {% if total_facturacion > 0 %}{{ facturacion_terceros|div:total_facturacion|mul:100 }}{% else %}0{% endif %}%"></div>
+                                    <div class="progress-fill primary" style="width: {% if total_facturacion > 0 %}{{ porcentaje_terceros }}{% else %}0{% endif %}%"></div>
                                 </div>
                             </div>
                         </div>
