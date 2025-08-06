@@ -495,7 +495,7 @@
         // Gráfico de facturación año fiscal
         const ctx = document.getElementById('facturacionChart');
         if (ctx) {
-            const facturacionData = JSON.parse('{{ facturacion_anio_fiscal|escapejs }}');
+            const facturacionData = {{ facturacion_anio_fiscal|safe }};
             
             new Chart(ctx.getContext('2d'), {
                 type: 'bar',

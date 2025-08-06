@@ -4073,7 +4073,7 @@ def dashboard_gerente(request):
         'porcentaje_espera': round((servicios_espera_repuestos / total_servicios_mes * 100) if total_servicios_mes > 0 else 0, 1),
         
         # Facturación año fiscal
-        'facturacion_anio_fiscal': facturacion_anio_fiscal,
+        'facturacion_anio_fiscal': json.dumps(facturacion_anio_fiscal),
         'año_fiscal_inicio': año_fiscal_inicio,
         'año_fiscal_fin': año_fiscal_fin,
         
