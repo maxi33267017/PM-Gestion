@@ -3848,12 +3848,11 @@ def dashboard_gerente(request):
     facturacion_gastos = calcular_gastos_servicios(servicios_facturados)
     
     # Calcular venta de terceros
-    from gestionDeTaller.models import VentaRepuesto
-    facturacion_terceros = VentaRepuesto.objects.filter(
-        servicio__in=servicios_facturados,
-        es_venta_terceros=True
+    from gestionDeTaller.models import GastoInsumosTerceros
+    facturacion_terceros = GastoInsumosTerceros.objects.filter(
+        servicio__in=servicios_facturados
     ).aggregate(
-        total=Sum('valor_total')
+        total=Sum('monto_usd')
     )['total'] or 0
     
     total_facturacion = facturacion_mano_obra + facturacion_repuestos + facturacion_gastos + facturacion_terceros
