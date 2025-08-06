@@ -3823,10 +3823,21 @@ def dashboard_gerente(request):
     from gestionDeTaller.models import Servicio, PreOrden
     from recursosHumanos.models import Usuario, RegistroHorasTecnico, PermisoAusencia
     
+    # === FILTROS POR SUCURSAL ===
+    sucursal_filtro = request.GET.get('sucursal', '')
+    
+    # Obtener lista de sucursales para el filtro
+    from recursosHumanos.models import Sucursal
+    sucursales = Sucursal.objects.all()
+    
     # === MÉTRICAS DE SERVICIOS ===
     servicios_mes = Servicio.objects.filter(
         fecha_servicio__range=[inicio_mes, fin_mes]
     )
+    
+    # Aplicar filtro por sucursal si se especifica
+    if sucursal_filtro:
+        servicios_mes = servicios_mes.filter(preorden__sucursal__nombre=sucursal_filtro)
     
     total_servicios_mes = servicios_mes.count()
     servicios_completados = servicios_mes.filter(estado='COMPLETADO').count()
@@ -3892,14 +3903,7 @@ def dashboard_gerente(request):
         fecha_inicio__range=[inicio_mes, fin_mes]
     ).count()
     
-    # === FILTROS POR SUCURSAL ===
-    sucursal_filtro = request.GET.get('sucursal', '')
-    if sucursal_filtro:
-        servicios_mes = servicios_mes.filter(preorden__sucursal__nombre=sucursal_filtro)
-    
-    # Obtener lista de sucursales para el filtro
-    from recursosHumanos.models import Sucursal
-    sucursales = Sucursal.objects.all()
+
     
     # === SERVICIOS RECIENTES ===
     servicios_recientes = servicios_mes.order_by('-fecha_servicio')[:5]
@@ -3969,9 +3973,15 @@ def dashboard_gerente(request):
     
     servicios_mes_anterior = Servicio.objects.filter(
         fecha_servicio__range=[mes_anterior_inicio, mes_anterior_fin]
-    ).count()
+    )
     
-    crecimiento_servicios = ((total_servicios_mes - servicios_mes_anterior) / servicios_mes_anterior * 100) if servicios_mes_anterior > 0 else 0
+    # Aplicar filtro por sucursal al mes anterior también
+    if sucursal_filtro:
+        servicios_mes_anterior = servicios_mes_anterior.filter(preorden__sucursal__nombre=sucursal_filtro)
+    
+    servicios_mes_anterior_count = servicios_mes_anterior.count()
+    
+    crecimiento_servicios = ((total_servicios_mes - servicios_mes_anterior_count) / servicios_mes_anterior_count * 100) if servicios_mes_anterior_count > 0 else 0
     
     # === FACTURACIÓN POR AÑO FISCAL (Noviembre a Octubre) ===
     # Determinar año fiscal actual
@@ -4001,6 +4011,10 @@ def dashboard_gerente(request):
             fecha_servicio__range=[mes_inicio, mes_fin],
             estado='COMPLETADO'
         )
+        
+        # Aplicar filtro por sucursal si se especifica
+        if sucursal_filtro:
+            servicios_mes = servicios_mes.filter(preorden__sucursal__nombre=sucursal_filtro)
         
         facturacion_mes = servicios_mes.aggregate(
             total=Sum('valor_mano_obra')
