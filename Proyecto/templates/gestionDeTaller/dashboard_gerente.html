@@ -5,143 +5,418 @@
 
 {% block extra_css %}
 <style>
-    .metric-card {
-        transition: transform 0.2s;
-        border-left: 4px solid #007bff;
+    :root {
+        --primary-color: #2c3e50;
+        --secondary-color: #34495e;
+        --accent-color: #3498db;
+        --success-color: #27ae60;
+        --warning-color: #f39c12;
+        --danger-color: #e74c3c;
+        --info-color: #17a2b8;
+        --light-bg: #f8f9fa;
+        --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        --card-shadow-hover: 0 8px 15px rgba(0, 0, 0, 0.15);
+        --border-radius: 12px;
+        --transition: all 0.3s ease;
     }
+
+    body {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+    }
+
+    .dashboard-container {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: var(--border-radius);
+        box-shadow: var(--card-shadow);
+        margin: 20px 0;
+        padding: 30px;
+    }
+
+    .metric-card {
+        background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+        border: none;
+        border-radius: var(--border-radius);
+        box-shadow: var(--card-shadow);
+        transition: var(--transition);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .metric-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--accent-color), var(--success-color));
+        opacity: 0;
+        transition: var(--transition);
+    }
+
     .metric-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--card-shadow-hover);
+    }
+
+    .metric-card:hover::before {
+        opacity: 1;
+    }
+
+    .metric-card.success::before { background: linear-gradient(90deg, var(--success-color), #2ecc71); }
+    .metric-card.warning::before { background: linear-gradient(90deg, var(--warning-color), #f1c40f); }
+    .metric-card.danger::before { background: linear-gradient(90deg, var(--danger-color), #e67e22); }
+    .metric-card.info::before { background: linear-gradient(90deg, var(--info-color), #3498db); }
+
+    .metric-value {
+        font-size: 2.5rem;
+        font-weight: 700;
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 5px;
+    }
+
+    .metric-label {
+        color: var(--secondary-color);
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        font-weight: 600;
+    }
+
+    .metric-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        color: white;
+        background: linear-gradient(135deg, var(--accent-color), var(--info-color));
+    }
+
+    .metric-card.success .metric-icon { background: linear-gradient(135deg, var(--success-color), #2ecc71); }
+    .metric-card.warning .metric-icon { background: linear-gradient(135deg, var(--warning-color), #f1c40f); }
+    .metric-card.danger .metric-icon { background: linear-gradient(135deg, var(--danger-color), #e67e22); }
+    .metric-card.info .metric-icon { background: linear-gradient(135deg, var(--info-color), #3498db); }
+
+    .dashboard-header {
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        color: white;
+        border-radius: var(--border-radius);
+        padding: 25px;
+        margin-bottom: 30px;
+        box-shadow: var(--card-shadow);
+    }
+
+    .dashboard-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 10px;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    }
+
+    .dashboard-subtitle {
+        font-size: 1.1rem;
+        opacity: 0.9;
+        margin-bottom: 5px;
+    }
+
+    .filter-container {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 10px;
+        padding: 15px;
+        backdrop-filter: blur(10px);
+    }
+
+    .filter-btn {
+        background: rgba(255, 255, 255, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        color: white;
+        border-radius: 8px;
+        padding: 10px 20px;
+        transition: var(--transition);
+        backdrop-filter: blur(10px);
+    }
+
+    .filter-btn:hover {
+        background: rgba(255, 255, 255, 0.3);
+        color: white;
         transform: translateY(-2px);
+    }
+
+    .action-btn {
+        background: linear-gradient(135deg, var(--accent-color), var(--info-color));
+        border: none;
+        border-radius: 8px;
+        padding: 12px 25px;
+        color: white;
+        font-weight: 600;
+        transition: var(--transition);
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .action-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
+        color: white;
+        text-decoration: none;
+    }
+
+    .chart-card {
+        background: white;
+        border-radius: var(--border-radius);
+        box-shadow: var(--card-shadow);
+        transition: var(--transition);
+        border: none;
+        overflow: hidden;
+    }
+
+    .chart-card:hover {
+        transform: translateY(-3px);
+        box-shadow: var(--card-shadow-hover);
+    }
+
+    .chart-header {
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        color: white;
+        padding: 20px;
+        border: none;
+    }
+
+    .chart-title {
+        font-size: 1.3rem;
+        font-weight: 600;
+        margin: 0;
+    }
+
+    .status-circle {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 700;
+        margin: 0 auto 15px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .status-circle::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(135deg, rgba(255,255,255,0.2), rgba(255,255,255,0.1));
+        border-radius: 50%;
+    }
+
+    .status-circle.success { background: linear-gradient(135deg, var(--success-color), #2ecc71); }
+    .status-circle.warning { background: linear-gradient(135deg, var(--warning-color), #f1c40f); }
+    .status-circle.info { background: linear-gradient(135deg, var(--info-color), #3498db); }
+    .status-circle.primary { background: linear-gradient(135deg, var(--accent-color), #2980b9); }
+
+    .recent-item {
+        background: linear-gradient(135deg, #f8f9fa, #ffffff);
+        border-left: 4px solid var(--accent-color);
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 15px;
+        transition: var(--transition);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    .recent-item:hover {
+        transform: translateX(5px);
         box-shadow: 0 4px 8px rgba(0,0,0,0.1);
     }
-    .metric-card.success { border-left-color: #28a745; }
-    .metric-card.warning { border-left-color: #ffc107; }
-    .metric-card.danger { border-left-color: #dc3545; }
-    .metric-card.info { border-left-color: #17a2b8; }
-    
-    .metric-value {
-        font-size: 2rem;
-        font-weight: bold;
-        color: #2c3e50;
-    }
-    
-    .metric-label {
-        color: #6c757d;
-        font-size: 0.9rem;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
-    
-    .quick-action-btn {
-        transition: all 0.3s;
-        border-radius: 10px;
-        border: none;
-        padding: 15px;
-        text-align: center;
-        text-decoration: none;
-        display: block;
-        color: white;
-        font-weight: 500;
-    }
-    
-    .quick-action-btn:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 6px 12px rgba(0,0,0,0.15);
-        color: white;
-        text-decoration: none;
-    }
-    
-    .chart-container {
+
+    .tecnico-item {
         background: white;
         border-radius: 10px;
         padding: 20px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        margin-bottom: 15px;
+        box-shadow: var(--card-shadow);
+        transition: var(--transition);
+        border-left: 4px solid var(--accent-color);
     }
-    
-    .progress-ring {
-        width: 80px;
-        height: 80px;
+
+    .tecnico-item:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--card-shadow-hover);
     }
-    
-    .recent-item {
-        border-left: 3px solid #007bff;
-        padding: 10px;
-        margin-bottom: 10px;
-        background: #f8f9fa;
-        border-radius: 5px;
+
+    .progress-bar-custom {
+        height: 8px;
+        border-radius: 4px;
+        background: #e9ecef;
+        overflow: hidden;
+    }
+
+    .progress-fill {
+        height: 100%;
+        border-radius: 4px;
+        transition: width 0.3s ease;
+    }
+
+    .progress-fill.success { background: linear-gradient(90deg, var(--success-color), #2ecc71); }
+    .progress-fill.warning { background: linear-gradient(90deg, var(--warning-color), #f1c40f); }
+    .progress-fill.info { background: linear-gradient(90deg, var(--info-color), #3498db); }
+
+    .facturacion-item {
+        background: linear-gradient(135deg, #f8f9fa, #ffffff);
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 15px;
+        box-shadow: var(--card-shadow);
+        transition: var(--transition);
+        border-left: 4px solid var(--accent-color);
+    }
+
+    .facturacion-item:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--card-shadow-hover);
+    }
+
+    .facturacion-value {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: var(--primary-color);
+    }
+
+    .facturacion-label {
+        color: var(--secondary-color);
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-weight: 600;
+    }
+
+    .growth-indicator {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 4px 8px;
+        border-radius: 15px;
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+
+    .growth-indicator.positive {
+        background: rgba(39, 174, 96, 0.1);
+        color: var(--success-color);
+    }
+
+    .growth-indicator.negative {
+        background: rgba(231, 76, 60, 0.1);
+        color: var(--danger-color);
+    }
+
+    @media (max-width: 768px) {
+        .dashboard-container {
+            margin: 10px;
+            padding: 20px;
+        }
+        
+        .dashboard-title {
+            font-size: 2rem;
+        }
+        
+        .metric-value {
+            font-size: 2rem;
+        }
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container-fluid">
+<div class="dashboard-container">
     <!-- Header del Dashboard -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <h1 class="h3 mb-0">
-                        <i class="fas fa-chart-line me-2 text-primary"></i>
-                        Dashboard Gerente
-                    </h1>
-                    <p class="text-muted mb-0">Métricas y análisis del mes: {{ mes_actual }}</p>
-                    <p class="text-muted mb-0">Año Fiscal: {{ año_fiscal_inicio|date:"d/m/Y" }} - {{ año_fiscal_fin|date:"d/m/Y" }}</p>
-                </div>
-                <div class="d-flex gap-2">
-                    <!-- Filtro por Sucursal -->
-                    <div class="dropdown">
-                        <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="sucursalDropdown" data-bs-toggle="dropdown">
-                            <i class="fas fa-building me-1"></i>
-                            {% if sucursal_filtro %}{{ sucursal_filtro }}{% else %}Todas las Sucursales{% endif %}
-                        </button>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="?{% if mes_filtro %}mes={{ mes_filtro }}{% endif %}{% if año_filtro %}{% if mes_filtro %}&{% endif %}año={{ año_filtro }}{% endif %}">Todas las Sucursales</a></li>
-                            {% for sucursal in sucursales %}
-                            <li><a class="dropdown-item" href="?sucursal={{ sucursal.nombre }}{% if mes_filtro %}&mes={{ mes_filtro }}{% endif %}{% if año_filtro %}&año={{ año_filtro }}{% endif %}">{{ sucursal.nombre }}</a></li>
-                            {% endfor %}
-                        </ul>
-                    </div>
-                    
-                    <!-- Filtro por Mes -->
-                    <div class="dropdown">
-                        <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="mesDropdown" data-bs-toggle="dropdown">
-                            <i class="fas fa-calendar me-1"></i>
-                            {% if mes_filtro %}
-                                {% for mes in meses %}
-                                    {% if mes.valor == mes_filtro %}{{ mes.nombre }}{% endif %}
+    <div class="dashboard-header">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <h1 class="dashboard-title">
+                    <i class="fas fa-chart-line me-3"></i>
+                    Dashboard Gerencial
+                </h1>
+                <p class="dashboard-subtitle">
+                    <i class="fas fa-calendar me-2"></i>
+                    Período: {{ mes_actual }} - Año Fiscal: {{ año_fiscal_inicio|date:"d/m/Y" }} - {{ año_fiscal_fin|date:"d/m/Y" }}
+                </p>
+            </div>
+            <div class="col-lg-4">
+                <div class="filter-container">
+                    <div class="d-flex flex-wrap gap-2 justify-content-end">
+                        <!-- Filtro por Sucursal -->
+                        <div class="dropdown">
+                            <button class="filter-btn dropdown-toggle" type="button" id="sucursalDropdown" data-bs-toggle="dropdown">
+                                <i class="fas fa-building me-1"></i>
+                                {% if sucursal_filtro %}{{ sucursal_filtro }}{% else %}Todas{% endif %}
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="?{% if mes_filtro %}mes={{ mes_filtro }}{% endif %}{% if año_filtro %}{% if mes_filtro %}&{% endif %}año={{ año_filtro }}{% endif %}">Todas las Sucursales</a></li>
+                                {% for sucursal in sucursales %}
+                                <li><a class="dropdown-item" href="?sucursal={{ sucursal.nombre }}{% if mes_filtro %}&mes={{ mes_filtro }}{% endif %}{% if año_filtro %}&año={{ año_filtro }}{% endif %}">{{ sucursal.nombre }}</a></li>
                                 {% endfor %}
-                            {% else %}
-                                {{ mes_actual|slice:":-5" }}
-                            {% endif %}
-                        </button>
-                        <ul class="dropdown-menu">
-                            {% for mes in meses %}
-                            <li><a class="dropdown-item" href="?{% if sucursal_filtro %}sucursal={{ sucursal_filtro }}{% endif %}{% if sucursal_filtro or año_filtro %}&{% endif %}{% if año_filtro %}año={{ año_filtro }}{% endif %}{% if año_filtro %}&{% endif %}mes={{ mes.valor }}">{{ mes.nombre }}</a></li>
-                            {% endfor %}
-                        </ul>
+                            </ul>
+                        </div>
+                        
+                        <!-- Filtro por Mes -->
+                        <div class="dropdown">
+                            <button class="filter-btn dropdown-toggle" type="button" id="mesDropdown" data-bs-toggle="dropdown">
+                                <i class="fas fa-calendar me-1"></i>
+                                {% if mes_filtro %}
+                                    {% for mes in meses %}
+                                        {% if mes.valor == mes_filtro %}{{ mes.nombre }}{% endif %}
+                                    {% endfor %}
+                                {% else %}
+                                    {{ mes_actual|slice:":-5" }}
+                                {% endif %}
+                            </button>
+                            <ul class="dropdown-menu">
+                                {% for mes in meses %}
+                                <li><a class="dropdown-item" href="?{% if sucursal_filtro %}sucursal={{ sucursal_filtro }}{% endif %}{% if sucursal_filtro or año_filtro %}&{% endif %}{% if año_filtro %}año={{ año_filtro }}{% endif %}{% if año_filtro %}&{% endif %}mes={{ mes.valor }}">{{ mes.nombre }}</a></li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        
+                        <!-- Filtro por Año -->
+                        <div class="dropdown">
+                            <button class="filter-btn dropdown-toggle" type="button" id="añoDropdown" data-bs-toggle="dropdown">
+                                <i class="fas fa-calendar-alt me-1"></i>
+                                {% if año_filtro %}{{ año_filtro }}{% else %}{{ inicio_mes.year }}{% endif %}
+                            </button>
+                            <ul class="dropdown-menu">
+                                {% for año in años %}
+                                <li><a class="dropdown-item" href="?{% if sucursal_filtro %}sucursal={{ sucursal_filtro }}{% endif %}{% if sucursal_filtro or mes_filtro %}&{% endif %}{% if mes_filtro %}mes={{ mes_filtro }}{% endif %}{% if mes_filtro %}&{% endif %}año={{ año }}">{{ año }}</a></li>
+                                {% endfor %}
+                            </ul>
+                        </div>
                     </div>
                     
-                    <!-- Filtro por Año -->
-                    <div class="dropdown">
-                        <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="añoDropdown" data-bs-toggle="dropdown">
-                            <i class="fas fa-calendar-alt me-1"></i>
-                            {% if año_filtro %}{{ año_filtro }}{% else %}{{ inicio_mes.year }}{% endif %}
-                        </button>
-                        <ul class="dropdown-menu">
-                            {% for año in años %}
-                            <li><a class="dropdown-item" href="?{% if sucursal_filtro %}sucursal={{ sucursal_filtro }}{% endif %}{% if sucursal_filtro or mes_filtro %}&{% endif %}{% if mes_filtro %}mes={{ mes_filtro }}{% endif %}{% if mes_filtro %}&{% endif %}año={{ año }}">{{ año }}</a></li>
-                            {% endfor %}
-                        </ul>
+                    <div class="d-flex gap-2 justify-content-end mt-3">
+                        <a href="{% url 'gestionDeTaller:lista_servicios' %}" class="action-btn">
+                            <i class="fas fa-tools"></i>
+                            Servicios
+                        </a>
+                        <a href="{% url 'gestionDeTaller:tecnicos' %}" class="action-btn">
+                            <i class="fas fa-users"></i>
+                            Técnicos
+                        </a>
                     </div>
-                        </ul>
-                    </div>
-                    <a href="{% url 'gestionDeTaller:lista_servicios' %}" class="btn btn-outline-primary">
-                        <i class="fas fa-tools me-1"></i>
-                        Ver Servicios
-                    </a>
-                    <a href="{% url 'gestionDeTaller:tecnicos' %}" class="btn btn-outline-info">
-                        <i class="fas fa-users me-1"></i>
-                        Ver Técnicos
-                    </a>
                 </div>
             </div>
         </div>
@@ -152,21 +427,21 @@
         <div class="col-xl-3 col-md-6 mb-3">
             <div class="card metric-card success h-100">
                 <div class="card-body">
-                    <div class="d-flex justify-content-between">
-                        <div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="flex-grow-1">
                             <div class="metric-value">{{ total_servicios_mes }}</div>
                             <div class="metric-label">Servicios del Mes</div>
+                            {% if crecimiento_servicios != 0 %}
+                            <div class="growth-indicator {% if crecimiento_servicios > 0 %}positive{% else %}negative{% endif %}">
+                                <i class="fas fa-arrow-{% if crecimiento_servicios > 0 %}up{% else %}down{% endif %}"></i>
+                                {{ crecimiento_servicios|floatformat:1 }}%
+                            </div>
+                            {% endif %}
                         </div>
-                        <div class="align-self-center">
-                            <i class="fas fa-tools fa-2x text-success"></i>
+                        <div class="metric-icon">
+                            <i class="fas fa-tools"></i>
                         </div>
                     </div>
-                    {% if crecimiento_servicios != 0 %}
-                    <small class="text-muted">
-                        <i class="fas fa-arrow-{% if crecimiento_servicios > 0 %}up text-success{% else %}down text-danger{% endif %} me-1"></i>
-                        {{ crecimiento_servicios }}% vs mes anterior
-                    </small>
-                    {% endif %}
                 </div>
             </div>
         </div>
@@ -174,18 +449,18 @@
         <div class="col-xl-3 col-md-6 mb-3">
             <div class="card metric-card info h-100">
                 <div class="card-body">
-                    <div class="d-flex justify-content-between">
-                        <div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="flex-grow-1">
                             <div class="metric-value">${{ total_facturacion|floatformat:0 }}</div>
                             <div class="metric-label">Facturación del Mes</div>
+                            <small class="text-muted">
+                                M.O: ${{ facturacion_mano_obra|floatformat:0 }}
+                            </small>
                         </div>
-                        <div class="align-self-center">
-                            <i class="fas fa-dollar-sign fa-2x text-info"></i>
+                        <div class="metric-icon">
+                            <i class="fas fa-dollar-sign"></i>
                         </div>
                     </div>
-                    <small class="text-muted">
-                        Mano de obra: ${{ facturacion_mano_obra|floatformat:0 }}
-                    </small>
                 </div>
             </div>
         </div>
@@ -193,18 +468,18 @@
         <div class="col-xl-3 col-md-6 mb-3">
             <div class="card metric-card warning h-100">
                 <div class="card-body">
-                    <div class="d-flex justify-content-between">
-                        <div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="flex-grow-1">
                             <div class="metric-value">{{ tecnicos_activos }}</div>
                             <div class="metric-label">Técnicos Activos</div>
+                            <small class="text-muted">
+                                Productividad: {{ productividad_promedio|floatformat:1 }}%
+                            </small>
                         </div>
-                        <div class="align-self-center">
-                            <i class="fas fa-users fa-2x text-warning"></i>
+                        <div class="metric-icon">
+                            <i class="fas fa-users"></i>
                         </div>
                     </div>
-                    <small class="text-muted">
-                        Productividad: {{ productividad_promedio }}%
-                    </small>
                 </div>
             </div>
         </div>
@@ -212,18 +487,18 @@
         <div class="col-xl-3 col-md-6 mb-3">
             <div class="card metric-card danger h-100">
                 <div class="card-body">
-                    <div class="d-flex justify-content-between">
-                        <div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="flex-grow-1">
                             <div class="metric-value">{{ permisos_pendientes }}</div>
                             <div class="metric-label">Permisos Pendientes</div>
+                            <small class="text-muted">
+                                {{ permisos_mes }} este mes
+                            </small>
                         </div>
-                        <div class="align-self-center">
-                            <i class="fas fa-calendar-times fa-2x text-danger"></i>
+                        <div class="metric-icon">
+                            <i class="fas fa-calendar-times"></i>
                         </div>
                     </div>
-                    <small class="text-muted">
-                        {{ permisos_mes }} permisos este mes
-                    </small>
                 </div>
             </div>
         </div>
@@ -233,59 +508,43 @@
     <div class="row mb-4">
         <!-- Estado de Servicios -->
         <div class="col-lg-6 mb-3">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="mb-0">
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h5 class="chart-title mb-0">
                         <i class="fas fa-chart-pie me-2"></i>
                         Estado de Servicios del Mes
                     </h5>
                 </div>
                 <div class="card-body">
                     <div class="row">
-                        <div class="col-md-6 text-center mb-3">
-                            <div class="progress-ring mx-auto mb-2">
-                                <div class="d-flex align-items-center justify-content-center bg-success text-white rounded-circle" style="width: 80px; height: 80px;">
-                                    <div class="text-center">
-                                        <div class="h4 mb-0">{{ servicios_completados }}</div>
-                                        <small>Completados</small>
-                                    </div>
-                                </div>
+                        <div class="col-md-6 text-center mb-4">
+                            <div class="status-circle success">
+                                <div class="h3 mb-0">{{ servicios_completados }}</div>
+                                <small>Completados</small>
                             </div>
                             <div class="text-muted small">{{ porcentaje_completados }}%</div>
                         </div>
                         
-                        <div class="col-md-6 text-center mb-3">
-                            <div class="progress-ring mx-auto mb-2">
-                                <div class="d-flex align-items-center justify-content-center bg-warning text-white rounded-circle" style="width: 80px; height: 80px;">
-                                    <div class="text-center">
-                                        <div class="h4 mb-0">{{ servicios_en_proceso }}</div>
-                                        <small>En Proceso</small>
-                                    </div>
-                                </div>
+                        <div class="col-md-6 text-center mb-4">
+                            <div class="status-circle warning">
+                                <div class="h3 mb-0">{{ servicios_en_proceso }}</div>
+                                <small>En Proceso</small>
                             </div>
                             <div class="text-muted small">{{ porcentaje_en_proceso }}%</div>
                         </div>
                         
-                        <div class="col-md-6 text-center mb-3">
-                            <div class="progress-ring mx-auto mb-2">
-                                <div class="d-flex align-items-center justify-content-center bg-info text-white rounded-circle" style="width: 80px; height: 80px;">
-                                    <div class="text-center">
-                                        <div class="h4 mb-0">{{ servicios_espera_repuestos }}</div>
-                                        <small>Espera Repuestos</small>
-                                    </div>
-                                </div>
+                        <div class="col-md-6 text-center mb-4">
+                            <div class="status-circle info">
+                                <div class="h3 mb-0">{{ servicios_espera_repuestos }}</div>
+                                <small>Espera Repuestos</small>
                             </div>
                             <div class="text-muted small">{{ porcentaje_espera }}%</div>
                         </div>
                         
-                        <div class="col-md-6 text-center mb-3">
-                            <div class="progress-ring mx-auto mb-2">
-                                <div class="d-flex align-items-center justify-content-center bg-primary text-white rounded-circle" style="width: 80px; height: 80px;">
-                                    <div class="text-center">
-                                        <div class="h4 mb-0">{{ servicios_a_facturar }}</div>
-                                        <small>A Facturar</small>
-                                    </div>
-                                </div>
+                        <div class="col-md-6 text-center mb-4">
+                            <div class="status-circle primary">
+                                <div class="h3 mb-0">{{ servicios_a_facturar }}</div>
+                                <small>A Facturar</small>
                             </div>
                             <div class="text-muted small">
                                 {% if total_servicios_mes > 0 %}
@@ -302,155 +561,116 @@
 
         <!-- Facturación Año Fiscal -->
         <div class="col-lg-6 mb-3">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="mb-0">
-                        <i class="fas fa-chart-bar me-2"></i>
-                        Facturación Año Fiscal (Noviembre - Octubre)
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <canvas id="facturacionChart" width="400" height="200"></canvas>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Acciones Rápidas -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="mb-0">
-                        <i class="fas fa-bolt me-2"></i>
-                        Acciones Rápidas
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h5 class="chart-title mb-0">
+                        <i class="fas fa-chart-line me-2"></i>
+                        Facturación Año Fiscal
                     </h5>
                 </div>
                 <div class="card-body">
                     <div class="row">
-                        <div class="col-md-2 mb-2">
-                            <a href="{% url 'gestionDeTaller:lista_servicios' %}" class="quick-action-btn bg-success">
-                                <i class="fas fa-tools me-2"></i>
-                                Gestionar Servicios
-                            </a>
+                        {% for mes_data in facturacion_anio_fiscal %}
+                        <div class="col-md-4 text-center mb-3">
+                            <div class="facturacion-item">
+                                <div class="facturacion-value">${{ mes_data.total|floatformat:0 }}</div>
+                                <div class="facturacion-label">{{ mes_data.mes }}</div>
+                            </div>
                         </div>
-                        
-                        <div class="col-md-2 mb-2">
-                            <a href="{% url 'gestionDeTaller:tecnicos' %}" class="quick-action-btn bg-info">
-                                <i class="fas fa-users me-2"></i>
-                                Ver Técnicos
-                            </a>
-                        </div>
-                        
-                        <div class="col-md-2 mb-2">
-                            <a href="{% url 'gestionDeTaller:lista_revisiones_5s' %}" class="quick-action-btn bg-warning">
-                                <i class="fas fa-clipboard-check me-2"></i>
-                                Revisiones 5S
-                            </a>
-                        </div>
-                        
-                        <div class="col-md-2 mb-2">
-                            <a href="{% url 'gestionDeTaller:lista_encuestas' %}" class="quick-action-btn bg-secondary">
-                                <i class="fas fa-poll me-2"></i>
-                                Encuestas
-                            </a>
-                        </div>
-                        
-                        <div class="col-md-2 mb-2">
-                            <a href="{% url 'reportes:dashboard_reportes' %}" class="quick-action-btn bg-primary">
-                                <i class="fas fa-chart-bar me-2"></i>
-                                Reportes
-                            </a>
-                        </div>
-                        
-                        <div class="col-md-2 mb-2">
-                            <a href="{% url 'recursosHumanos:solicitar_permiso' %}" class="quick-action-btn bg-danger">
-                                <i class="fas fa-calendar-plus me-2"></i>
-                                Solicitar Permiso
-                            </a>
-                        </div>
+                        {% endfor %}
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Servicios Recientes y Técnicos con Más Actividad -->
+    <!-- Servicios Recientes y Técnicos con Actividad -->
     <div class="row mb-4">
         <!-- Servicios Recientes -->
         <div class="col-lg-6 mb-3">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="mb-0">
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h5 class="chart-title mb-0">
                         <i class="fas fa-clock me-2"></i>
                         Servicios Recientes
                     </h5>
                 </div>
-                <div class="card-body" style="max-height: 300px; overflow-y: auto;">
+                <div class="card-body">
                     {% if servicios_recientes %}
                         {% for servicio in servicios_recientes %}
                         <div class="recent-item">
                             <div class="d-flex justify-content-between align-items-start">
-                                <div>
-                                    <strong>Servicio #{{ servicio.id }}</strong>
-                                    <br>
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-1">{{ servicio.preorden.cliente.nombre }}</h6>
+                                    <p class="text-muted mb-1">{{ servicio.preorden.equipo.marca }} {{ servicio.preorden.equipo.modelo }}</p>
                                     <small class="text-muted">
-                                        {{ servicio.preorden.cliente.razon_social }} - {{ servicio.preorden.equipo.numero_serie }}
+                                        <i class="fas fa-calendar me-1"></i>
+                                        {{ servicio.fecha_servicio|date:"d/m/Y" }}
                                     </small>
                                 </div>
                                 <div class="text-end">
-                                    <span class="badge bg-{% if servicio.estado == 'COMPLETADO' %}success{% elif servicio.estado == 'EN_PROCESO' %}warning{% elif servicio.estado == 'ESPERA_REPUESTOS' %}info{% elif servicio.estado == 'ESPERA_CONFIRMACION_CLIENTE' %}info{% else %}secondary{% endif %}">
+                                    <span class="badge bg-{% if servicio.estado == 'COMPLETADO' %}success{% elif servicio.estado == 'EN_PROCESO' %}warning{% elif servicio.estado == 'ESPERA_REPUESTOS' %}info{% else %}primary{% endif %}">
                                         {{ servicio.get_estado_display }}
                                     </span>
-                                    <br>
-                                    <small class="text-muted">{{ servicio.fecha_servicio|date:"d/m/Y" }}</small>
                                 </div>
                             </div>
                         </div>
                         {% endfor %}
                     {% else %}
-                        <p class="text-muted text-center">No hay servicios recientes</p>
+                        <div class="text-center text-muted py-4">
+                            <i class="fas fa-inbox fa-3x mb-3"></i>
+                            <p>No hay servicios recientes</p>
+                        </div>
                     {% endif %}
                 </div>
             </div>
         </div>
 
-        <!-- Técnicos con Más Actividad -->
+        <!-- Técnicos con Actividad -->
         <div class="col-lg-6 mb-3">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="mb-0">
-                        <i class="fas fa-trophy me-2"></i>
-                        Técnicos con Más Actividad
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h5 class="chart-title mb-0">
+                        <i class="fas fa-user-cog me-2"></i>
+                        KPIs Técnicos
                     </h5>
                 </div>
                 <div class="card-body">
                     {% if tecnicos_actividad %}
                         {% for tecnico in tecnicos_actividad %}
-                        <div class="recent-item">
-                            <div class="d-flex justify-content-between align-items-start">
+                        <div class="tecnico-item">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
                                 <div>
-                                    <strong>{{ tecnico.tecnico__nombre }} {{ tecnico.tecnico__apellido }}</strong>
-                                    <br>
-                                    <small class="text-muted">
-                                        {{ tecnico.total_horas|floatformat:1 }}h ({{ tecnico.porcentaje_horas }}% del disponible)
-                                    </small>
+                                    <h6 class="mb-1">{{ tecnico.tecnico__nombre }} {{ tecnico.tecnico__apellido }}</h6>
+                                    <small class="text-muted">{{ tecnico.total_horas|floatformat:1 }} horas</small>
                                 </div>
                                 <div class="text-end">
-                                    <div class="mb-1">
-                                        <span class="badge bg-primary me-1">Prod: {{ tecnico.productividad }}%</span>
-                                        <span class="badge bg-success me-1">Efic: {{ tecnico.eficiencia }}%</span>
-                                        <span class="badge bg-info">Des: {{ tecnico.desempeño }}%</span>
-                                    </div>
-                                    <small class="text-muted">
-                                        Productividad | Eficiencia | Desempeño
-                                    </small>
+                                    <div class="h5 mb-0">{{ tecnico.porcentaje_horas|floatformat:1 }}%</div>
+                                    <small class="text-muted">Horas</small>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-4 text-center">
+                                    <div class="h6 mb-1">{{ tecnico.productividad|floatformat:1 }}%</div>
+                                    <small class="text-muted">Productividad</small>
+                                </div>
+                                <div class="col-4 text-center">
+                                    <div class="h6 mb-1">{{ tecnico.eficiencia|floatformat:1 }}%</div>
+                                    <small class="text-muted">Eficiencia</small>
+                                </div>
+                                <div class="col-4 text-center">
+                                    <div class="h6 mb-1">{{ tecnico.desempeño|floatformat:1 }}%</div>
+                                    <small class="text-muted">Desempeño</small>
                                 </div>
                             </div>
                         </div>
                         {% endfor %}
                     {% else %}
-                        <p class="text-muted text-center">No hay registros de actividad</p>
+                        <div class="text-center text-muted py-4">
+                            <i class="fas fa-users fa-3x mb-3"></i>
+                            <p>No hay actividad de técnicos</p>
+                        </div>
                     {% endif %}
                 </div>
             </div>
@@ -458,39 +678,54 @@
     </div>
 
     <!-- Desglose de Facturación -->
-    <div class="row mb-4">
+    <div class="row">
         <div class="col-12">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="mb-0">
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h5 class="chart-title mb-0">
                         <i class="fas fa-chart-bar me-2"></i>
                         Desglose de Facturación del Mes
                     </h5>
                 </div>
                 <div class="card-body">
                     <div class="row">
-                        <div class="col-md-3 text-center">
-                            <div class="border-end">
-                                <h4 class="text-primary">${{ facturacion_mano_obra|floatformat:0 }}</h4>
-                                <p class="text-muted mb-0">Mano de Obra</p>
+                        <div class="col-md-3 mb-3">
+                            <div class="facturacion-item">
+                                <div class="facturacion-value">${{ facturacion_mano_obra|floatformat:0 }}</div>
+                                <div class="facturacion-label">Mano de Obra</div>
+                                <div class="progress-bar-custom mt-2">
+                                    <div class="progress-fill success" style="width: {% if total_facturacion > 0 %}{{ facturacion_mano_obra|div:total_facturacion|mul:100 }}{% else %}0{% endif %}%"></div>
+                                </div>
                             </div>
                         </div>
-                        <div class="col-md-3 text-center">
-                            <div class="border-end">
-                                <h4 class="text-success">${{ facturacion_repuestos|floatformat:0 }}</h4>
-                                <p class="text-muted mb-0">Repuestos</p>
+                        
+                        <div class="col-md-3 mb-3">
+                            <div class="facturacion-item">
+                                <div class="facturacion-value">${{ facturacion_repuestos|floatformat:0 }}</div>
+                                <div class="facturacion-label">Repuestos</div>
+                                <div class="progress-bar-custom mt-2">
+                                    <div class="progress-fill info" style="width: {% if total_facturacion > 0 %}{{ facturacion_repuestos|div:total_facturacion|mul:100 }}{% else %}0{% endif %}%"></div>
+                                </div>
                             </div>
                         </div>
-                        <div class="col-md-3 text-center">
-                            <div class="border-end">
-                                <h4 class="text-info">${{ facturacion_gastos|floatformat:0 }}</h4>
-                                <p class="text-muted mb-0">Gastos de Asistencia</p>
+                        
+                        <div class="col-md-3 mb-3">
+                            <div class="facturacion-item">
+                                <div class="facturacion-value">${{ facturacion_gastos|floatformat:0 }}</div>
+                                <div class="facturacion-label">Gastos</div>
+                                <div class="progress-bar-custom mt-2">
+                                    <div class="progress-fill warning" style="width: {% if total_facturacion > 0 %}{{ facturacion_gastos|div:total_facturacion|mul:100 }}{% else %}0{% endif %}%"></div>
+                                </div>
                             </div>
                         </div>
-                        <div class="col-md-3 text-center">
-                            <div>
-                                <h4 class="text-warning">${{ facturacion_terceros|floatformat:0 }}</h4>
-                                <p class="text-muted mb-0">Venta de Terceros</p>
+                        
+                        <div class="col-md-3 mb-3">
+                            <div class="facturacion-item">
+                                <div class="facturacion-value">${{ facturacion_terceros|floatformat:0 }}</div>
+                                <div class="facturacion-label">Terceros</div>
+                                <div class="progress-bar-custom mt-2">
+                                    <div class="progress-fill primary" style="width: {% if total_facturacion > 0 %}{{ facturacion_terceros|div:total_facturacion|mul:100 }}{% else %}0{% endif %}%"></div>
+                                </div>
                             </div>
                         </div>
                     </div>
