@@ -3847,7 +3847,16 @@ def dashboard_gerente(request):
     facturacion_repuestos = calcular_repuestos_servicios(servicios_facturados)
     facturacion_gastos = calcular_gastos_servicios(servicios_facturados)
     
-    total_facturacion = facturacion_mano_obra + facturacion_repuestos + facturacion_gastos
+    # Calcular venta de terceros
+    from gestionDeTaller.models import VentaRepuesto
+    facturacion_terceros = VentaRepuesto.objects.filter(
+        servicio__in=servicios_facturados,
+        es_venta_terceros=True
+    ).aggregate(
+        total=Sum('valor_total')
+    )['total'] or 0
+    
+    total_facturacion = facturacion_mano_obra + facturacion_repuestos + facturacion_gastos + facturacion_terceros
     
     # === MÉTRICAS DE TÉCNICOS ===
     tecnicos_activos = Usuario.objects.filter(rol='TECNICO').count()
@@ -3890,7 +3899,7 @@ def dashboard_gerente(request):
     # === TÉCNICOS CON MÁS ACTIVIDAD ===
     tecnicos_actividad = RegistroHorasTecnico.objects.filter(
         fecha__range=[inicio_mes, fin_mes]
-    ).values('tecnico__nombre', 'tecnico__apellido').annotate(
+    ).values('tecnico__nombre', 'tecnico__apellido', 'tecnico__id').annotate(
         total_horas=Sum(
             ExpressionWrapper(
                 F('hora_fin') - F('hora_inicio'),
@@ -3898,6 +3907,48 @@ def dashboard_gerente(request):
             )
         )
     ).order_by('-total_horas')[:5]
+    
+    # Calcular métricas de productividad para cada técnico
+    for tecnico in tecnicos_actividad:
+        tecnico_id = tecnico['tecnico__id']
+        
+        # Horas contratadas hasta la fecha
+        dias_hasta_hoy = (hoy - inicio_mes).days + 1
+        horas_contratadas = dias_hasta_hoy * 8  # 8 horas por día
+        
+        # Horas registradas
+        horas_registradas = tecnico['total_horas'].total_seconds() / 3600 if tecnico['total_horas'] else 0
+        
+        # Calcular porcentaje de horas registradas
+        tecnico['porcentaje_horas'] = round((horas_registradas / horas_contratadas) * 100, 1) if horas_contratadas > 0 else 0
+        
+        # Calcular productividad, eficiencia y desempeño
+        from recursosHumanos.models import ActividadTrabajo
+        
+        # Horas que generan ingreso
+        horas_generan_ingreso = RegistroHorasTecnico.objects.filter(
+            tecnico_id=tecnico_id,
+            fecha__range=[inicio_mes, fin_mes],
+            tipo_hora__disponibilidad='DISPONIBLE',
+            tipo_hora__genera_ingreso='INGRESO'
+        ).aggregate(
+            total=Sum(
+                ExpressionWrapper(
+                    F('hora_fin') - F('hora_inicio'),
+                    output_field=DurationField()
+                )
+            )
+        )['total']
+        
+        horas_generan_ingreso = horas_generan_ingreso.total_seconds() / 3600 if horas_generan_ingreso else 0
+        
+        # Horas facturadas (simulado como 80% de las horas que generan ingreso)
+        horas_facturadas = horas_generan_ingreso * 0.8
+        
+        # Calcular métricas
+        tecnico['productividad'] = round((horas_generan_ingreso / horas_contratadas) * 100, 1) if horas_contratadas > 0 else 0
+        tecnico['eficiencia'] = round((horas_facturadas / horas_generan_ingreso) * 100, 1) if horas_generan_ingreso > 0 else 0
+        tecnico['desempeño'] = round((horas_facturadas / horas_contratadas) * 100, 1) if horas_contratadas > 0 else 0
     
     # === ESTADÍSTICAS DE ESTADOS ===
     estados_servicios = servicios_mes.values('estado').annotate(
@@ -3913,6 +3964,60 @@ def dashboard_gerente(request):
     ).count()
     
     crecimiento_servicios = ((total_servicios_mes - servicios_mes_anterior) / servicios_mes_anterior * 100) if servicios_mes_anterior > 0 else 0
+    
+    # === FACTURACIÓN POR AÑO FISCAL (Noviembre a Octubre) ===
+    # Determinar año fiscal actual
+    if hoy.month >= 11:  # Noviembre en adelante
+        año_fiscal_inicio = date(hoy.year, 11, 1)
+        año_fiscal_fin = date(hoy.year + 1, 10, 31)
+    else:  # Enero a Octubre
+        año_fiscal_inicio = date(hoy.year - 1, 11, 1)
+        año_fiscal_fin = date(hoy.year, 10, 31)
+    
+    # Facturación por mes del año fiscal
+    facturacion_anio_fiscal = []
+    for mes in range(1, 13):
+        if mes >= 11:
+            año = hoy.year if hoy.month >= 11 else hoy.year - 1
+            mes_inicio = date(año, mes, 1)
+            if mes == 12:
+                mes_fin = date(año + 1, 1, 1) - timedelta(days=1)
+            else:
+                mes_fin = date(año, mes + 1, 1) - timedelta(days=1)
+        else:
+            año = hoy.year if hoy.month >= 11 else hoy.year - 1
+            mes_inicio = date(año, mes, 1)
+            mes_fin = date(año, mes + 1, 1) - timedelta(days=1)
+        
+        servicios_mes = Servicio.objects.filter(
+            fecha_servicio__range=[mes_inicio, mes_fin],
+            estado='COMPLETADO'
+        )
+        
+        facturacion_mes = servicios_mes.aggregate(
+            total=Sum('valor_mano_obra')
+        )['total'] or 0
+        
+        facturacion_repuestos_mes = calcular_repuestos_servicios(servicios_mes)
+        facturacion_gastos_mes = calcular_gastos_servicios(servicios_mes)
+        
+        total_mes = facturacion_mes + facturacion_repuestos_mes + facturacion_gastos_mes
+        
+        facturacion_anio_fiscal.append({
+            'mes': mes,
+            'nombre_mes': mes_inicio.strftime('%B'),
+            'total': total_mes
+        })
+    
+    # === FILTROS POR SUCURSAL ===
+    sucursal_filtro = request.GET.get('sucursal', '')
+    if sucursal_filtro:
+        servicios_mes = servicios_mes.filter(preorden__sucursal__nombre=sucursal_filtro)
+        servicios_recientes = servicios_recientes.filter(preorden__sucursal__nombre=sucursal_filtro)
+    
+    # Obtener lista de sucursales para el filtro
+    from recursosHumanos.models import Sucursal
+    sucursales = Sucursal.objects.all()
     
     context = {
         'inicio_mes': inicio_mes,
@@ -3931,6 +4036,7 @@ def dashboard_gerente(request):
         'facturacion_mano_obra': facturacion_mano_obra,
         'facturacion_repuestos': facturacion_repuestos,
         'facturacion_gastos': facturacion_gastos,
+        'facturacion_terceros': facturacion_terceros,
         
         # Métricas de técnicos
         'tecnicos_activos': tecnicos_activos,
@@ -3953,6 +4059,15 @@ def dashboard_gerente(request):
         'porcentaje_completados': round((servicios_completados / total_servicios_mes * 100) if total_servicios_mes > 0 else 0, 1),
         'porcentaje_en_proceso': round((servicios_en_proceso / total_servicios_mes * 100) if total_servicios_mes > 0 else 0, 1),
         'porcentaje_espera': round((servicios_espera_repuestos / total_servicios_mes * 100) if total_servicios_mes > 0 else 0, 1),
+        
+        # Facturación año fiscal
+        'facturacion_anio_fiscal': facturacion_anio_fiscal,
+        'año_fiscal_inicio': año_fiscal_inicio,
+        'año_fiscal_fin': año_fiscal_fin,
+        
+        # Filtros
+        'sucursales': sucursales,
+        'sucursal_filtro': sucursal_filtro,
     }
     
     return render(request, 'gestionDeTaller/dashboard_gerente.html', context)

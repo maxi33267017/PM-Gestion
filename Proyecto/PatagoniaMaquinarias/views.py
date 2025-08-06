@@ -18,7 +18,7 @@ def home_redirect(request):
             return redirect('recursosHumanos:dashboard_administrativo_rrhh')
         # Redirigir gerentes al dashboard de gerentes
         elif request.user.rol == 'GERENTE':
-            return redirect('gestionDeTaller:gestion_de_taller')
+            return redirect('gestionDeTaller:dashboard_gerente')
         # Para otros roles, ir a gestión de taller
         else:
             return redirect('gestionDeTaller:gestion_de_taller')
