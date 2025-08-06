@@ -3860,6 +3860,10 @@ def dashboard_gerente(request):
         fin_mes = date(hoy.year, hoy.month + 1, 1) - timedelta(days=1) if hoy.month < 12 else date(hoy.year + 1, 1, 1) - timedelta(days=1)
         print(f"DEBUG: Sin filtros, usando mes actual - Inicio: {inicio_mes}, Fin: {fin_mes}")
     
+    # Asegurar que hoy esté definida
+    if 'hoy' not in locals():
+        hoy = date.today()
+    
     # Fecha de hace 30 días
     hace_30_dias = hoy - timedelta(days=30)
     
