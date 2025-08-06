@@ -3945,9 +3945,9 @@ def dashboard_gerente(request):
     for tecnico in tecnicos_actividad:
         tecnico_id = tecnico['tecnico__id']
         
-        # Horas contratadas hasta la fecha
-        dias_hasta_hoy = (hoy - inicio_mes).days + 1
-        horas_contratadas = dias_hasta_hoy * 8  # 8 horas por día
+        # Horas contratadas para el mes completo
+        dias_en_mes = (fin_mes - inicio_mes).days + 1
+        horas_contratadas = dias_en_mes * 8  # 8 horas por día
         
         # Horas registradas
         horas_registradas = tecnico['total_horas'].total_seconds() / 3600 if tecnico['total_horas'] else 0
@@ -3989,8 +3989,13 @@ def dashboard_gerente(request):
     ).order_by('-count')
     
     # === MÉTRICAS DE CRECIMIENTO (comparación con mes anterior) ===
-    mes_anterior_inicio = date(hoy.year, hoy.month - 1, 1) if hoy.month > 1 else date(hoy.year - 1, 12, 1)
-    mes_anterior_fin = date(hoy.year, hoy.month, 1) - timedelta(days=1)
+    # Calcular mes anterior basado en las fechas filtradas
+    if inicio_mes.month == 1:
+        mes_anterior_inicio = date(inicio_mes.year - 1, 12, 1)
+    else:
+        mes_anterior_inicio = date(inicio_mes.year, inicio_mes.month - 1, 1)
+    
+    mes_anterior_fin = inicio_mes - timedelta(days=1)
     
     servicios_mes_anterior = Servicio.objects.filter(
         fecha_servicio__range=[mes_anterior_inicio, mes_anterior_fin]
@@ -4005,22 +4010,22 @@ def dashboard_gerente(request):
     crecimiento_servicios = ((total_servicios_mes - servicios_mes_anterior_count) / servicios_mes_anterior_count * 100) if servicios_mes_anterior_count > 0 else 0
     
     # === FACTURACIÓN POR AÑO FISCAL (Noviembre a Octubre) ===
-    # Determinar año fiscal actual
-    if hoy.month >= 11:  # Noviembre en adelante
-        año_fiscal_inicio = date(hoy.year, 11, 1)
-        año_fiscal_fin = date(hoy.year + 1, 10, 31)
+    # Determinar año fiscal basado en las fechas filtradas
+    if inicio_mes.month >= 11:  # Noviembre en adelante
+        año_fiscal_inicio = date(inicio_mes.year, 11, 1)
+        año_fiscal_fin = date(inicio_mes.year + 1, 10, 31)
     else:  # Enero a Octubre
-        año_fiscal_inicio = date(hoy.year - 1, 11, 1)
-        año_fiscal_fin = date(hoy.year, 10, 31)
+        año_fiscal_inicio = date(inicio_mes.year - 1, 11, 1)
+        año_fiscal_fin = date(inicio_mes.year, 10, 31)
     
     # Facturación por mes del año fiscal
     facturacion_anio_fiscal = []
     
-    # Determinar el año fiscal correcto
-    if hoy.month >= 11:  # Noviembre en adelante
-        año_fiscal = hoy.year
+    # Determinar el año fiscal correcto basado en las fechas filtradas
+    if inicio_mes.month >= 11:  # Noviembre en adelante
+        año_fiscal = inicio_mes.year
     else:  # Enero a Octubre
-        año_fiscal = hoy.year - 1
+        año_fiscal = inicio_mes.year - 1
     
     for mes in range(1, 13):
         if mes >= 11:  # Noviembre a Diciembre
