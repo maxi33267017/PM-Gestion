@@ -3892,6 +3892,15 @@ def dashboard_gerente(request):
         fecha_inicio__range=[inicio_mes, fin_mes]
     ).count()
     
+    # === FILTROS POR SUCURSAL ===
+    sucursal_filtro = request.GET.get('sucursal', '')
+    if sucursal_filtro:
+        servicios_mes = servicios_mes.filter(preorden__sucursal__nombre=sucursal_filtro)
+    
+    # Obtener lista de sucursales para el filtro
+    from recursosHumanos.models import Sucursal
+    sucursales = Sucursal.objects.all()
+    
     # === SERVICIOS RECIENTES ===
     servicios_recientes = servicios_mes.order_by('-fecha_servicio')[:5]
     
@@ -4007,16 +4016,6 @@ def dashboard_gerente(request):
             'nombre_mes': mes_inicio.strftime('%B'),
             'total': total_mes
         })
-    
-    # === FILTROS POR SUCURSAL ===
-    sucursal_filtro = request.GET.get('sucursal', '')
-    if sucursal_filtro:
-        servicios_mes = servicios_mes.filter(preorden__sucursal__nombre=sucursal_filtro)
-        servicios_recientes = servicios_recientes.filter(preorden__sucursal__nombre=sucursal_filtro)
-    
-    # Obtener lista de sucursales para el filtro
-    from recursosHumanos.models import Sucursal
-    sucursales = Sucursal.objects.all()
     
     context = {
         'inicio_mes': inicio_mes,
