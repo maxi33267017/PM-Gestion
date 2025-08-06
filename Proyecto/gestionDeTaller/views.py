@@ -3826,16 +3826,23 @@ def dashboard_gerente(request):
                 fin_mes = date(año_seleccionado + 1, 1, 1) - timedelta(days=1)
             else:
                 fin_mes = date(año_seleccionado, mes_seleccionado + 1, 1) - timedelta(days=1)
+            
+            # Debug: imprimir fechas calculadas
+            print(f"DEBUG: Filtros aplicados - Mes: {mes_filtro}, Año: {año_filtro}")
+            print(f"DEBUG: Fechas calculadas - Inicio: {inicio_mes}, Fin: {fin_mes}")
+            
         except (ValueError, TypeError):
             # Si hay error en los parámetros, usar mes actual
             hoy = date.today()
             inicio_mes = date(hoy.year, hoy.month, 1)
             fin_mes = date(hoy.year, hoy.month + 1, 1) - timedelta(days=1) if hoy.month < 12 else date(hoy.year + 1, 1, 1) - timedelta(days=1)
+            print(f"DEBUG: Error en parámetros, usando mes actual - Inicio: {inicio_mes}, Fin: {fin_mes}")
     else:
         # Usar mes actual
         hoy = date.today()
         inicio_mes = date(hoy.year, hoy.month, 1)
         fin_mes = date(hoy.year, hoy.month + 1, 1) - timedelta(days=1) if hoy.month < 12 else date(hoy.year + 1, 1, 1) - timedelta(days=1)
+        print(f"DEBUG: Sin filtros, usando mes actual - Inicio: {inicio_mes}, Fin: {fin_mes}")
     
     # Fecha de hace 30 días
     hace_30_dias = hoy - timedelta(days=30)
@@ -3866,6 +3873,10 @@ def dashboard_gerente(request):
     servicios_espera_repuestos = servicios_mes.filter(estado='ESPERA_REPUESTOS').count()
     servicios_a_facturar = servicios_mes.filter(estado='A_FACTURAR').count()
     
+    # Debug: imprimir resultados de servicios
+    print(f"DEBUG: Servicios encontrados - Total: {total_servicios_mes}, Completados: {servicios_completados}")
+    print(f"DEBUG: Servicios por estado - En proceso: {servicios_en_proceso}, Espera: {servicios_espera_repuestos}, A facturar: {servicios_a_facturar}")
+    
     # === MÉTRICAS DE FACTURACIÓN ===
     servicios_facturados = servicios_mes.filter(estado='COMPLETADO')
     
@@ -3888,6 +3899,10 @@ def dashboard_gerente(request):
     )['total'] or 0
     
     total_facturacion = facturacion_mano_obra + facturacion_repuestos + facturacion_gastos + facturacion_terceros
+    
+    # Debug: imprimir resultados de facturación
+    print(f"DEBUG: Facturación - Mano obra: ${facturacion_mano_obra}, Repuestos: ${facturacion_repuestos}")
+    print(f"DEBUG: Facturación - Gastos: ${facturacion_gastos}, Terceros: ${facturacion_terceros}, Total: ${total_facturacion}")
     
     # === MÉTRICAS DE TÉCNICOS ===
     tecnicos_activos = Usuario.objects.filter(rol='TECNICO').count()
