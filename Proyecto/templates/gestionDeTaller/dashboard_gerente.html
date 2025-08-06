@@ -115,7 +115,7 @@
                         </button>
                         <ul class="dropdown-menu">
                             {% for mes in meses %}
-                            <li><a class="dropdown-item" href="?{% if sucursal_filtro %}sucursal={{ sucursal_filtro }}{% endif %}{% if sucursal_filtro and año_filtro %}&{% elif año_filtro %}{% else %}{% endif %}{% if año_filtro %}año={{ año_filtro }}{% endif %}&mes={{ mes.valor }}">{{ mes.nombre }}</a></li>
+                            <li><a class="dropdown-item" href="?{% if sucursal_filtro %}sucursal={{ sucursal_filtro }}{% endif %}{% if sucursal_filtro or año_filtro %}&{% endif %}{% if año_filtro %}año={{ año_filtro }}{% endif %}{% if año_filtro %}&{% endif %}mes={{ mes.valor }}">{{ mes.nombre }}</a></li>
                             {% endfor %}
                         </ul>
                     </div>
@@ -128,7 +128,7 @@
                         </button>
                         <ul class="dropdown-menu">
                             {% for año in años %}
-                            <li><a class="dropdown-item" href="?{% if sucursal_filtro %}sucursal={{ sucursal_filtro }}{% endif %}{% if sucursal_filtro and mes_filtro %}&{% elif mes_filtro %}{% else %}{% endif %}{% if mes_filtro %}mes={{ mes_filtro }}{% endif %}&año={{ año }}">{{ año }}</a></li>
+                            <li><a class="dropdown-item" href="?{% if sucursal_filtro %}sucursal={{ sucursal_filtro }}{% endif %}{% if sucursal_filtro or mes_filtro %}&{% endif %}{% if mes_filtro %}mes={{ mes_filtro }}{% endif %}{% if mes_filtro %}&{% endif %}año={{ año }}">{{ año }}</a></li>
                             {% endfor %}
                         </ul>
                     </div>
