@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load tarifario_filters %}
 
 {% block title %}Gestionar Tarifario{% endblock %}
 
@@ -193,8 +194,22 @@
                                         {% endfor %}
                                     </td>
                                     <td>
-                                        {% for relacion in tarifario.modelos_equipo.all %}
-                                        <span class="badge bg-secondary me-1">{{ relacion.modelo_equipo.marca }} {{ relacion.modelo_equipo.nombre }}</span>
+                                        {% regroup tarifario.modelos_equipo.all by modelo_equipo.tipo_equipo as modelos_por_tipo %}
+                                        {% for grupo in modelos_por_tipo %}
+                                            {% with total_modelos=total_modelos_por_tipo|get_item:grupo.grouper.id %}
+                                            {% with modelos_seleccionados=grupo.list|length %}
+                                                <div class="mb-1">
+                                                    <small class="text-muted">{{ grupo.grouper.nombre }}:</small><br>
+                                                    {% if modelos_seleccionados == total_modelos %}
+                                                        <span class="badge bg-secondary me-1">Todas las disponibles</span>
+                                                    {% else %}
+                                                        {% for relacion in grupo.list %}
+                                                        <span class="badge bg-secondary me-1">{{ relacion.modelo_equipo.marca }} {{ relacion.modelo_equipo.nombre }}</span>
+                                                        {% endfor %}
+                                                    {% endif %}
+                                                </div>
+                                            {% endwith %}
+                                            {% endwith %}
                                         {% endfor %}
                                     </td>
                                     <td>
