@@ -171,15 +171,26 @@
                                         {% for tarifario in tarifarios %}
                                         <div class="col-md-6 col-lg-4 mb-3">
                                             <div class="servicio-item">
-                                                <div class="d-flex justify-content-between align-items-start mb-2">
-                                                    <h6 class="mb-0">{{ tarifario.nombre_servicio }}</h6>
+                                                                                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                                <h6 class="mb-0">{{ tarifario.nombre_servicio }}</h6>
+                                                <div class="text-end">
+                                                    {% if tarifario.tmo_horas %}
+                                                    <span class="badge bg-info me-1">{{ tarifario.tmo_horas }}h</span>
+                                                    {% endif %}
                                                     <span class="badge precio-badge bg-success">
                                                         ${{ tarifario.precio_usd }} USD
                                                     </span>
                                                 </div>
-                                                {% if tarifario.descripcion %}
-                                                <p class="text-muted mb-0 small">{{ tarifario.descripcion }}</p>
-                                                {% endif %}
+                                            </div>
+                                            {% if tarifario.descripcion %}
+                                            <p class="text-muted mb-0 small">{{ tarifario.descripcion }}</p>
+                                            {% endif %}
+                                            {% if tarifario.actividades %}
+                                            <div class="mt-2">
+                                                <small class="text-muted"><strong>Actividades:</strong></small>
+                                                <p class="text-muted mb-0 small">{{ tarifario.actividades }}</p>
+                                            </div>
+                                            {% endif %}
                                             </div>
                                         </div>
                                         {% endfor %}

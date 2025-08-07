@@ -974,6 +974,7 @@ class TarifarioAdmin(admin.ModelAdmin):
         'fecha', 
         'nombre_servicio', 
         'precio_usd_display', 
+        'tmo_display',
         'modelos_asociados_display',
         'creado_por', 
         'activo_badge'
@@ -997,6 +998,10 @@ class TarifarioAdmin(admin.ModelAdmin):
         ('Información Básica', {
             'fields': ('fecha', 'nombre_servicio', 'descripcion', 'precio_usd', 'activo')
         }),
+        ('Información Técnica', {
+            'fields': ('tmo_horas', 'actividades'),
+            'description': 'Información técnica del servicio'
+        }),
         ('Modelos Asociados', {
             'fields': ('modelos_equipo',),
             'description': 'Selecciona los modelos de equipo a los que aplica este tarifario'
@@ -1014,6 +1019,12 @@ class TarifarioAdmin(admin.ModelAdmin):
     def precio_usd_display(self, obj):
         return f"${obj.precio_usd} USD"
     precio_usd_display.short_description = 'Precio USD'
+    
+    def tmo_display(self, obj):
+        if obj.tmo_horas:
+            return f"{obj.tmo_horas}h"
+        return "-"
+    tmo_display.short_description = 'TMO'
     
     def modelos_asociados_display(self, obj):
         modelos = obj.modelos_equipo.all()
@@ -1051,12 +1062,10 @@ class TarifarioModeloEquipoAdmin(admin.ModelAdmin):
     list_display = [
         'tarifario', 
         'modelo_equipo_display', 
-        'tipo_equipo_display',
-        'fecha_creacion'
+        'tipo_equipo_display'
     ]
     list_filter = [
         'modelo_equipo__tipo_equipo',
-        'fecha_creacion',
         'tarifario__activo'
     ]
     search_fields = [
@@ -1065,20 +1074,13 @@ class TarifarioModeloEquipoAdmin(admin.ModelAdmin):
         'modelo_equipo__marca',
         'modelo_equipo__tipo_equipo__nombre'
     ]
-    date_hierarchy = 'fecha_creacion'
     list_per_page = 25
     
     fieldsets = (
         ('Información de Relación', {
             'fields': ('tarifario', 'modelo_equipo')
         }),
-        ('Información de Auditoría', {
-            'fields': ('fecha_creacion',),
-            'classes': ('collapse',)
-        }),
     )
-    
-    readonly_fields = ['fecha_creacion']
     
     def modelo_equipo_display(self, obj):
         return f"{obj.modelo_equipo.marca} {obj.modelo_equipo.nombre}"

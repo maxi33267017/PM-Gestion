@@ -1817,6 +1817,19 @@ class Tarifario(models.Model):
     nombre_servicio = models.CharField(max_length=200)
     descripcion = models.TextField(blank=True)
     precio_usd = models.DecimalField(max_digits=10, decimal_places=2)
+    tmo_horas = models.DecimalField(
+        max_digits=5, 
+        decimal_places=2, 
+        null=True, 
+        blank=True, 
+        verbose_name="TMO (Tiempo Medio Operativo) en Horas",
+        help_text="Tiempo estimado que lleva realizar este servicio"
+    )
+    actividades = models.TextField(
+        blank=True, 
+        verbose_name="Actividades Incluidas",
+        help_text="Lista de actividades que incluye este servicio"
+    )
     activo = models.BooleanField(default=True)
     fecha_creacion = models.DateTimeField(auto_now_add=True)
     fecha_modificacion = models.DateTimeField(auto_now=True)

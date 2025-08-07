@@ -130,12 +130,18 @@
                                     <input type="text" class="form-control" id="nombre_servicio" name="nombre_servicio" required>
                                 </div>
                             </div>
-                            <div class="col-md-3">
-                                <div class="mb-3">
-                                    <label for="precio_usd" class="form-label">Precio (USD)</label>
-                                    <input type="number" class="form-control" id="precio_usd" name="precio_usd" step="0.01" min="0" required>
-                                </div>
-                            </div>
+                                                       <div class="col-md-3">
+                               <div class="mb-3">
+                                   <label for="precio_usd" class="form-label">Precio (USD)</label>
+                                   <input type="number" class="form-control" id="precio_usd" name="precio_usd" step="0.01" min="0" required>
+                               </div>
+                           </div>
+                           <div class="col-md-3">
+                               <div class="mb-3">
+                                   <label for="tmo_horas" class="form-label">TMO (Horas)</label>
+                                   <input type="number" class="form-control" id="tmo_horas" name="tmo_horas" step="0.5" min="0" placeholder="Opcional">
+                               </div>
+                           </div>
                         </div>
                         <div class="row">
                             <div class="col-md-6">
@@ -147,12 +153,18 @@
                                     <small class="form-text text-muted">Mantén presionado Ctrl (Cmd en Mac) para seleccionar múltiples modelos</small>
                                 </div>
                             </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="descripcion_tarifario" class="form-label">Descripción</label>
-                                    <textarea class="form-control" id="descripcion_tarifario" name="descripcion" rows="1"></textarea>
-                                </div>
-                            </div>
+                                                       <div class="col-md-6">
+                               <div class="mb-3">
+                                   <label for="descripcion_tarifario" class="form-label">Descripción</label>
+                                   <textarea class="form-control" id="descripcion_tarifario" name="descripcion" rows="1"></textarea>
+                               </div>
+                           </div>
+                           <div class="col-md-6">
+                               <div class="mb-3">
+                                   <label for="actividades" class="form-label">Actividades Incluidas</label>
+                                   <textarea class="form-control" id="actividades" name="actividades" rows="3" placeholder="Lista las actividades que incluye este servicio..."></textarea>
+                               </div>
+                           </div>
                         </div>
                         <button type="submit" class="btn btn-info btn-action">
                             <i class="fas fa-plus me-1"></i>
@@ -173,6 +185,7 @@
                                 <tr>
                                     <th>Fecha</th>
                                     <th>Servicio</th>
+                                    <th>TMO</th>
                                     <th>Tipo de Equipo</th>
                                     <th>Modelos</th>
                                     <th>Precio (USD)</th>
@@ -187,6 +200,13 @@
                                         <span class="badge badge-categoria bg-info">{{ tarifario.fecha }}</span>
                                     </td>
                                     <td>{{ tarifario.nombre_servicio }}</td>
+                                    <td>
+                                        {% if tarifario.tmo_horas %}
+                                        <span class="badge bg-info">{{ tarifario.tmo_horas }}h</span>
+                                        {% else %}
+                                        <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
                                     <td>
                                         {% regroup tarifario.modelos_equipo.all by modelo_equipo.tipo_equipo.nombre as tipos_list %}
                                         {% for tipo in tipos_list %}

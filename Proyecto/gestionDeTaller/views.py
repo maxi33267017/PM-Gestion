@@ -4584,6 +4584,8 @@ def crear_tarifario(request):
         nombre_servicio = request.POST.get('nombre_servicio')
         descripcion = request.POST.get('descripcion', '')
         precio_usd = request.POST.get('precio_usd')
+        tmo_horas = request.POST.get('tmo_horas')
+        actividades = request.POST.get('actividades', '')
         modelos_equipo_ids = request.POST.getlist('modelos_equipo_ids')
         
         if not fecha or not nombre_servicio or not precio_usd or not modelos_equipo_ids:
@@ -4595,6 +4597,8 @@ def crear_tarifario(request):
             nombre_servicio=nombre_servicio,
             descripcion=descripcion,
             precio_usd=precio_usd,
+            tmo_horas=tmo_horas if tmo_horas else None,
+            actividades=actividades,
             creado_por=request.user
         )
         
