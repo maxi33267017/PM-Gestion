@@ -237,13 +237,13 @@ document.getElementById('tipo_equipo').addEventListener('change', function() {
     
     if (tipoEquipoId) {
         // Filtrar modelos por tipo de equipo
-        const modelos = {{ modelos_equipo|safe }};
+        const modelos = {{ modelos_json|safe }};
         const modelosFiltrados = modelos.filter(modelo => modelo.tipo_equipo_id == tipoEquipoId);
         
         modelosFiltrados.forEach(modelo => {
             const option = document.createElement('option');
             option.value = modelo.id;
-            option.textContent = `${modelo.tipo_equipo_nombre} - ${modelo.nombre}`;
+            option.textContent = `${modelo.marca} ${modelo.nombre}`;
             modeloSelect.appendChild(option);
         });
     }

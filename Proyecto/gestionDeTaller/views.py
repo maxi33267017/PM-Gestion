@@ -4657,9 +4657,21 @@ def ver_tarifario(request):
             if tarifario not in tarifarios_agrupados[tipo_nombre][modelo_nombre]:
                 tarifarios_agrupados[tipo_nombre][modelo_nombre].append(tarifario)
     
+    # Convertir modelos a JSON para JavaScript
+    modelos_json = []
+    for modelo in modelos_equipo:
+        modelos_json.append({
+            'id': modelo.id,
+            'nombre': modelo.nombre,
+            'marca': modelo.marca,
+            'tipo_equipo_id': modelo.tipo_equipo.id,
+            'tipo_equipo_nombre': modelo.tipo_equipo.nombre
+        })
+    
     context = {
         'tipos_equipo': tipos_equipo,
         'modelos_equipo': modelos_equipo,
+        'modelos_json': modelos_json,
         'tarifarios_agrupados': tarifarios_agrupados,
         'filtro_tipo_equipo': tipo_equipo_id,
         'filtro_modelo_equipo': modelo_equipo_id,
