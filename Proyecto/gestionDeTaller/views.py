@@ -4646,10 +4646,18 @@ def ver_tarifario(request):
         # Iterar a través de todos los modelos asociados al tarifario
         for relacion in tarifario.modelos_equipo.all():
             tipo_nombre = relacion.modelo_equipo.tipo_equipo.nombre
+            modelo_nombre = f"{relacion.modelo_equipo.marca} {relacion.modelo_equipo.nombre}"
+            
+            # Si se filtró por modelo específico, solo mostrar ese modelo
+            if modelo_equipo_id:
+                modelo_filtrado = get_object_or_404(ModeloEquipo, id=modelo_equipo_id)
+                modelo_filtrado_nombre = f"{modelo_filtrado.marca} {modelo_filtrado.nombre}"
+                if modelo_nombre != modelo_filtrado_nombre:
+                    continue
+            
             if tipo_nombre not in tarifarios_agrupados:
                 tarifarios_agrupados[tipo_nombre] = {}
             
-            modelo_nombre = f"{relacion.modelo_equipo.marca} {relacion.modelo_equipo.nombre}"
             if modelo_nombre not in tarifarios_agrupados[tipo_nombre]:
                 tarifarios_agrupados[tipo_nombre][modelo_nombre] = []
             
