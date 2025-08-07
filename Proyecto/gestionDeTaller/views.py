@@ -4626,28 +4626,30 @@ def ver_tarifario(request):
     modelos_equipo = ModeloEquipo.objects.filter(activo=True).select_related('tipo_equipo').order_by('tipo_equipo__nombre', 'nombre')
     
     # Filtrar tarifarios
-    tarifarios = Tarifario.objects.filter(activo=True).select_related('modelo_equipo__tipo_equipo')
+    tarifarios = Tarifario.objects.filter(activo=True).prefetch_related('modelos_equipo__modelo_equipo__tipo_equipo')
     
     if tipo_equipo_id:
-        tarifarios = tarifarios.filter(modelo_equipo__tipo_equipo_id=tipo_equipo_id)
+        tarifarios = tarifarios.filter(modelos_equipo__modelo_equipo__tipo_equipo_id=tipo_equipo_id)
     
     if modelo_equipo_id:
-        tarifarios = tarifarios.filter(modelo_equipo_id=modelo_equipo_id)
+        tarifarios = tarifarios.filter(modelos_equipo__modelo_equipo_id=modelo_equipo_id)
     
-    tarifarios = tarifarios.order_by('modelo_equipo__tipo_equipo__nombre', 'modelo_equipo__nombre', 'nombre_servicio')
+    tarifarios = tarifarios.order_by('fecha', 'nombre_servicio')
     
     # Agrupar por tipo de equipo
     tarifarios_agrupados = {}
     for tarifario in tarifarios:
-        tipo_nombre = tarifario.modelo_equipo.tipo_equipo.nombre
-        if tipo_nombre not in tarifarios_agrupados:
-            tarifarios_agrupados[tipo_nombre] = {}
-        
-        modelo_nombre = f"{tarifario.modelo_equipo.marca} {tarifario.modelo_equipo.nombre}"
-        if modelo_nombre not in tarifarios_agrupados[tipo_nombre]:
-            tarifarios_agrupados[tipo_nombre][modelo_nombre] = []
-        
-        tarifarios_agrupados[tipo_nombre][modelo_nombre].append(tarifario)
+        # Iterar a través de todos los modelos asociados al tarifario
+        for relacion in tarifario.modelos_equipo.all():
+            tipo_nombre = relacion.modelo_equipo.tipo_equipo.nombre
+            if tipo_nombre not in tarifarios_agrupados:
+                tarifarios_agrupados[tipo_nombre] = {}
+            
+            modelo_nombre = f"{relacion.modelo_equipo.marca} {relacion.modelo_equipo.nombre}"
+            if modelo_nombre not in tarifarios_agrupados[tipo_nombre]:
+                tarifarios_agrupados[tipo_nombre][modelo_nombre] = []
+            
+            tarifarios_agrupados[tipo_nombre][modelo_nombre].append(tarifario)
     
     context = {
         'tipos_equipo': tipos_equipo,
