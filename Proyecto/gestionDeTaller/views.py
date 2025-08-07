@@ -54,6 +54,7 @@ from django.contrib.auth.decorators import user_passes_test
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt
 from clientes.models import TipoEquipo, ModeloEquipo
+from .models import Tarifario
 import json
 
 @login_required
