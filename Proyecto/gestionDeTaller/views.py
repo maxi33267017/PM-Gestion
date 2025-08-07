@@ -4508,11 +4508,17 @@ def gestionar_tarifario(request):
             'tipo_equipo_nombre': modelo.tipo_equipo.nombre
         })
     
+    # Calcular total de modelos por tipo para comparación
+    total_modelos_por_tipo = {}
+    for tipo in tipos_equipo:
+        total_modelos_por_tipo[tipo.id] = ModeloEquipo.objects.filter(tipo_equipo=tipo, activo=True).count()
+    
     context = {
         'tipos_equipo': tipos_equipo,
         'modelos_equipo': modelos_equipo,
         'modelos_json': modelos_json,
         'tarifarios': tarifarios,
+        'total_modelos_por_tipo': total_modelos_por_tipo,
     }
     
     return render(request, 'gestionDeTaller/gestionar_tarifario.html', context)
