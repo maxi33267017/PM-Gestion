@@ -193,18 +193,8 @@
                                         {% endfor %}
                                     </td>
                                     <td>
-                                        {% regroup tarifario.modelos_equipo.all by modelo_equipo.tipo_equipo as modelos_por_tipo %}
-                                        {% for grupo in modelos_por_tipo %}
-                                            {% if grupo.list|length > 1 %}
-                                                <div class="mb-1">
-                                                    <small class="text-muted">{{ grupo.grouper.nombre }}:</small><br>
-                                                    <span class="badge bg-secondary me-1">Todas las disponibles</span>
-                                                </div>
-                                            {% else %}
-                                                {% for relacion in grupo.list %}
-                                                <span class="badge bg-secondary me-1">{{ relacion.modelo_equipo.marca }} {{ relacion.modelo_equipo.nombre }}</span>
-                                                {% endfor %}
-                                            {% endif %}
+                                        {% for relacion in tarifario.modelos_equipo.all %}
+                                        <span class="badge bg-secondary me-1">{{ relacion.modelo_equipo.marca }} {{ relacion.modelo_equipo.nombre }}</span>
                                         {% endfor %}
                                     </td>
                                     <td>
