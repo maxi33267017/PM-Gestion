@@ -4653,7 +4653,9 @@ def ver_tarifario(request):
             if modelo_nombre not in tarifarios_agrupados[tipo_nombre]:
                 tarifarios_agrupados[tipo_nombre][modelo_nombre] = []
             
-            tarifarios_agrupados[tipo_nombre][modelo_nombre].append(tarifario)
+            # Evitar duplicados del mismo tarifario
+            if tarifario not in tarifarios_agrupados[tipo_nombre][modelo_nombre]:
+                tarifarios_agrupados[tipo_nombre][modelo_nombre].append(tarifario)
     
     context = {
         'tipos_equipo': tipos_equipo,
