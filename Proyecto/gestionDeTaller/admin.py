@@ -5,7 +5,8 @@ from .models import (
     AnalisisTaller, Evidencia, ChecklistSalidaCampo, EncuestaServicio,
     RespuestaEncuesta, InsatisfaccionCliente, LogCambioServicio, ObservacionServicio,
     EvidenciaRevision5S, Repuesto, HerramientaEspecial, ReservaHerramienta, LogHerramienta,
-    HerramientaPersonal, AsignacionHerramientaPersonal, AuditoriaHerramientaPersonal, DetalleAuditoriaHerramienta, ItemHerramientaPersonal, LogCambioItemHerramienta
+    HerramientaPersonal, AsignacionHerramientaPersonal, AuditoriaHerramientaPersonal, DetalleAuditoriaHerramienta, ItemHerramientaPersonal, LogCambioItemHerramienta,
+    Tarifario, TarifarioModeloEquipo
 )
 
 
@@ -964,4 +965,126 @@ class LogCambioItemHerramientaAdmin(admin.ModelAdmin):
     
     def has_delete_permission(self, request, obj=None):
         return request.user.is_superuser  # Solo superusuarios pueden eliminar logs
+
+
+# Admin para Tarifario
+@admin.register(Tarifario)
+class TarifarioAdmin(admin.ModelAdmin):
+    list_display = [
+        'fecha', 
+        'nombre_servicio', 
+        'precio_usd_display', 
+        'modelos_asociados_display',
+        'creado_por', 
+        'activo_badge'
+    ]
+    list_filter = [
+        'fecha', 
+        'activo', 
+        'fecha_creacion',
+        'creado_por__rol'
+    ]
+    search_fields = [
+        'nombre_servicio', 
+        'descripcion',
+        'creado_por__nombre',
+        'creado_por__apellido'
+    ]
+    date_hierarchy = 'fecha'
+    list_per_page = 25
+    
+    fieldsets = (
+        ('Información Básica', {
+            'fields': ('fecha', 'nombre_servicio', 'descripcion', 'precio_usd', 'activo')
+        }),
+        ('Modelos Asociados', {
+            'fields': ('modelos_equipo',),
+            'description': 'Selecciona los modelos de equipo a los que aplica este tarifario'
+        }),
+        ('Información de Auditoría', {
+            'fields': ('creado_por', 'fecha_creacion', 'fecha_modificacion'),
+            'classes': ('collapse',)
+        }),
+    )
+    
+    readonly_fields = ['fecha_creacion', 'fecha_modificacion']
+    
+    actions = ['activar_tarifarios', 'desactivar_tarifarios']
+    
+    def precio_usd_display(self, obj):
+        return f"${obj.precio_usd} USD"
+    precio_usd_display.short_description = 'Precio USD'
+    
+    def modelos_asociados_display(self, obj):
+        modelos = obj.modelos_equipo.all()
+        if modelos.count() > 3:
+            return f"{modelos.count()} modelos"
+        return ", ".join([f"{m.modelo_equipo.marca} {m.modelo_equipo.nombre}" for m in modelos[:3]])
+    modelos_asociados_display.short_description = 'Modelos Asociados'
+    
+    def activo_badge(self, obj):
+        if obj.activo:
+            return '<span style="color: green;">✓ Activo</span>'
+        return '<span style="color: red;">✗ Inactivo</span>'
+    activo_badge.allow_tags = True
+    activo_badge.short_description = 'Estado'
+    
+    def activar_tarifarios(self, request, queryset):
+        queryset.update(activo=True)
+        self.message_user(request, f"{queryset.count()} tarifarios activados exitosamente.")
+    activar_tarifarios.short_description = "Activar tarifarios seleccionados"
+    
+    def desactivar_tarifarios(self, request, queryset):
+        queryset.update(activo=False)
+        self.message_user(request, f"{queryset.count()} tarifarios desactivados exitosamente.")
+    desactivar_tarifarios.short_description = "Desactivar tarifarios seleccionados"
+    
+    def save_model(self, request, obj, form, change):
+        if not change:  # Si es un nuevo objeto
+            obj.creado_por = request.user
+        super().save_model(request, obj, form, change)
+
+
+# Admin para TarifarioModeloEquipo (modelo intermedio)
+@admin.register(TarifarioModeloEquipo)
+class TarifarioModeloEquipoAdmin(admin.ModelAdmin):
+    list_display = [
+        'tarifario', 
+        'modelo_equipo_display', 
+        'tipo_equipo_display',
+        'fecha_creacion'
+    ]
+    list_filter = [
+        'modelo_equipo__tipo_equipo',
+        'fecha_creacion',
+        'tarifario__activo'
+    ]
+    search_fields = [
+        'tarifario__nombre_servicio',
+        'modelo_equipo__nombre',
+        'modelo_equipo__marca',
+        'modelo_equipo__tipo_equipo__nombre'
+    ]
+    date_hierarchy = 'fecha_creacion'
+    list_per_page = 25
+    
+    fieldsets = (
+        ('Información de Relación', {
+            'fields': ('tarifario', 'modelo_equipo')
+        }),
+        ('Información de Auditoría', {
+            'fields': ('fecha_creacion',),
+            'classes': ('collapse',)
+        }),
+    )
+    
+    readonly_fields = ['fecha_creacion']
+    
+    def modelo_equipo_display(self, obj):
+        return f"{obj.modelo_equipo.marca} {obj.modelo_equipo.nombre}"
+    modelo_equipo_display.short_description = 'Modelo de Equipo'
+    
+    def tipo_equipo_display(self, obj):
+        return obj.modelo_equipo.tipo_equipo.nombre
+    tipo_equipo_display.short_description = 'Tipo de Equipo'
 
