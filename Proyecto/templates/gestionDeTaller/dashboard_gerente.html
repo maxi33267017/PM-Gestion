@@ -678,10 +678,20 @@
         <div class="col-12">
             <div class="chart-card">
                 <div class="chart-header">
-                    <h5 class="chart-title mb-0">
-                        <i class="fas fa-user-cog me-2"></i>
-                        KPIs Técnicos
-                    </h5>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="chart-title mb-0">
+                            <i class="fas fa-user-cog me-2"></i>
+                            KPIs Técnicos
+                        </h5>
+                        {% if user.is_superuser %}
+                        <div class="header-actions">
+                            <a href="{% url 'gestionDeTaller:gestionar_tarifario' %}" class="btn btn-sm btn-primary">
+                                <i class="fas fa-cog me-1"></i>
+                                Gestionar Tarifario
+                            </a>
+                        </div>
+                        {% endif %}
+                    </div>
                 </div>
                 <div class="card-body">
                     {% if tecnicos_actividad %}
@@ -769,10 +779,20 @@
         <div class="col-12">
             <div class="chart-card">
                 <div class="chart-header">
-                    <h5 class="chart-title mb-0">
-                        <i class="fas fa-chart-bar me-2"></i>
-                        Desglose de Facturación del Mes
-                    </h5>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="chart-title mb-0">
+                            <i class="fas fa-chart-bar me-2"></i>
+                            Desglose de Facturación del Mes
+                        </h5>
+                        {% if user.rol != 'TECNICO' %}
+                        <div class="header-actions">
+                            <a href="{% url 'gestionDeTaller:ver_tarifario' %}" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-dollar-sign me-1"></i>
+                                Ver Tarifario
+                            </a>
+                        </div>
+                        {% endif %}
+                    </div>
                 </div>
                 <div class="card-body">
                     <div class="row">

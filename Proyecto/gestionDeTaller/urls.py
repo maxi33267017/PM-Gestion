@@ -106,4 +106,14 @@ urlpatterns = [
         path('herramientas-personales/<int:tool_id>/auditar/', views.audit_personal_tool, name='audit_personal_tool'),
         path('herramientas-personales/<int:tool_id>/certificacion/', views.update_certification, name='update_certification'),
         path('herramientas-personales/<int:tool_id>/items/', views.add_item, name='add_item'),
+        
+        # URLs para el sistema de tarifario
+        path('tarifario/', views.ver_tarifario, name='ver_tarifario'),
+        path('gestionar-tarifario/', views.gestionar_tarifario, name='gestionar_tarifario'),
+        path('crear-tipo-equipo/', views.crear_tipo_equipo, name='crear_tipo_equipo'),
+        path('crear-modelo-equipo/', views.crear_modelo_equipo, name='crear_modelo_equipo'),
+        path('crear-tarifario/', views.crear_tarifario, name='crear_tarifario'),
+        path('eliminar-tarifario/', views.eliminar_tarifario, name='eliminar_tarifario'),
+        path('eliminar-modelo-equipo/', views.eliminar_modelo_equipo, name='eliminar_modelo_equipo'),
+        path('eliminar-tipo-equipo/', views.eliminar_tipo_equipo, name='eliminar_tipo_equipo'),
     ]

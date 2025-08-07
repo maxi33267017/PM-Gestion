@@ -50,6 +50,11 @@ from .models import (
 from recursosHumanos.models import Usuario
 from .models import EvidenciaPlanAccion5S
 from recursosHumanos.forms import FiltroExportacionHorasForm
+from django.contrib.auth.decorators import user_passes_test
+from django.views.decorators.http import require_http_methods
+from django.views.decorators.csrf import csrf_exempt
+from clientes.models import TipoEquipo, ModeloEquipo
+import json
 
 @login_required
 def equipos_por_cliente(request, cliente_id):
@@ -4469,3 +4474,209 @@ def agregar_gasto_insumos_terceros(request, servicio_id):
         form = GastoInsumosTercerosForm()
     
     return redirect('gestionDeTaller:detalle_servicio', servicio_id=servicio.id)
+
+def is_superuser(user):
+    """Verifica si el usuario es superuser"""
+    return user.is_superuser
+
+def is_not_tecnico(user):
+    """Verifica si el usuario NO es técnico"""
+    return user.rol != 'TECNICO'
+
+@user_passes_test(is_superuser)
+def gestionar_tarifario(request):
+    """Vista para gestionar el tarifario (solo superusers)"""
+    
+    # Obtener datos para el formulario
+    tipos_equipo = TipoEquipo.objects.filter(activo=True).order_by('nombre')
+    modelos_equipo = ModeloEquipo.objects.filter(activo=True).select_related('tipo_equipo').order_by('tipo_equipo__nombre', 'nombre')
+    tarifarios = Tarifario.objects.filter(activo=True).select_related('modelo_equipo__tipo_equipo').order_by('modelo_equipo__tipo_equipo__nombre', 'modelo_equipo__nombre', 'nombre_servicio')
+    
+    context = {
+        'tipos_equipo': tipos_equipo,
+        'modelos_equipo': modelos_equipo,
+        'tarifarios': tarifarios,
+    }
+    
+    return render(request, 'gestionDeTaller/gestionar_tarifario.html', context)
+
+@user_passes_test(is_superuser)
+@require_http_methods(["POST"])
+def crear_tipo_equipo(request):
+    """Crear nuevo tipo de equipo"""
+    try:
+        nombre = request.POST.get('nombre')
+        descripcion = request.POST.get('descripcion', '')
+        
+        if not nombre:
+            return JsonResponse({'success': False, 'message': 'El nombre es obligatorio'})
+        
+        tipo_equipo = TipoEquipo.objects.create(
+            nombre=nombre,
+            descripcion=descripcion
+        )
+        
+        return JsonResponse({
+            'success': True, 
+            'message': 'Tipo de equipo creado exitosamente',
+            'id': tipo_equipo.id,
+            'nombre': tipo_equipo.nombre
+        })
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': f'Error: {str(e)}'})
+
+@user_passes_test(is_superuser)
+@require_http_methods(["POST"])
+def crear_modelo_equipo(request):
+    """Crear nuevo modelo de equipo"""
+    try:
+        tipo_equipo_id = request.POST.get('tipo_equipo_id')
+        nombre = request.POST.get('nombre')
+        marca = request.POST.get('marca', '')
+        descripcion = request.POST.get('descripcion', '')
+        
+        if not tipo_equipo_id or not nombre:
+            return JsonResponse({'success': False, 'message': 'El tipo de equipo y nombre son obligatorios'})
+        
+        tipo_equipo = get_object_or_404(TipoEquipo, id=tipo_equipo_id)
+        
+        modelo_equipo = ModeloEquipo.objects.create(
+            tipo_equipo=tipo_equipo,
+            nombre=nombre,
+            marca=marca,
+            descripcion=descripcion
+        )
+        
+        return JsonResponse({
+            'success': True, 
+            'message': 'Modelo de equipo creado exitosamente',
+            'id': modelo_equipo.id,
+            'nombre': modelo_equipo.nombre,
+            'marca': modelo_equipo.marca,
+            'tipo_equipo': tipo_equipo.nombre
+        })
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': f'Error: {str(e)}'})
+
+@user_passes_test(is_superuser)
+@require_http_methods(["POST"])
+def crear_tarifario(request):
+    """Crear nuevo tarifario"""
+    try:
+        modelo_equipo_id = request.POST.get('modelo_equipo_id')
+        nombre_servicio = request.POST.get('nombre_servicio')
+        descripcion = request.POST.get('descripcion', '')
+        precio_usd = request.POST.get('precio_usd')
+        
+        if not modelo_equipo_id or not nombre_servicio or not precio_usd:
+            return JsonResponse({'success': False, 'message': 'Todos los campos son obligatorios'})
+        
+        modelo_equipo = get_object_or_404(ModeloEquipo, id=modelo_equipo_id)
+        
+        tarifario = Tarifario.objects.create(
+            modelo_equipo=modelo_equipo,
+            nombre_servicio=nombre_servicio,
+            descripcion=descripcion,
+            precio_usd=precio_usd,
+            creado_por=request.user
+        )
+        
+        return JsonResponse({
+            'success': True, 
+            'message': 'Tarifario creado exitosamente',
+            'id': tarifario.id,
+            'nombre_servicio': tarifario.nombre_servicio,
+            'precio_usd': str(tarifario.precio_usd),
+            'modelo_equipo': modelo_equipo.nombre,
+            'tipo_equipo': modelo_equipo.tipo_equipo.nombre
+        })
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': f'Error: {str(e)}'})
+
+@user_passes_test(is_not_tecnico)
+def ver_tarifario(request):
+    """Vista para ver el tarifario (todos excepto técnicos)"""
+    
+    # Obtener filtros
+    tipo_equipo_id = request.GET.get('tipo_equipo')
+    modelo_equipo_id = request.GET.get('modelo_equipo')
+    
+    # Obtener datos
+    tipos_equipo = TipoEquipo.objects.filter(activo=True).order_by('nombre')
+    modelos_equipo = ModeloEquipo.objects.filter(activo=True).select_related('tipo_equipo').order_by('tipo_equipo__nombre', 'nombre')
+    
+    # Filtrar tarifarios
+    tarifarios = Tarifario.objects.filter(activo=True).select_related('modelo_equipo__tipo_equipo')
+    
+    if tipo_equipo_id:
+        tarifarios = tarifarios.filter(modelo_equipo__tipo_equipo_id=tipo_equipo_id)
+    
+    if modelo_equipo_id:
+        tarifarios = tarifarios.filter(modelo_equipo_id=modelo_equipo_id)
+    
+    tarifarios = tarifarios.order_by('modelo_equipo__tipo_equipo__nombre', 'modelo_equipo__nombre', 'nombre_servicio')
+    
+    # Agrupar por tipo de equipo
+    tarifarios_agrupados = {}
+    for tarifario in tarifarios:
+        tipo_nombre = tarifario.modelo_equipo.tipo_equipo.nombre
+        if tipo_nombre not in tarifarios_agrupados:
+            tarifarios_agrupados[tipo_nombre] = {}
+        
+        modelo_nombre = f"{tarifario.modelo_equipo.marca} {tarifario.modelo_equipo.nombre}"
+        if modelo_nombre not in tarifarios_agrupados[tipo_nombre]:
+            tarifarios_agrupados[tipo_nombre][modelo_nombre] = []
+        
+        tarifarios_agrupados[tipo_nombre][modelo_nombre].append(tarifario)
+    
+    context = {
+        'tipos_equipo': tipos_equipo,
+        'modelos_equipo': modelos_equipo,
+        'tarifarios_agrupados': tarifarios_agrupados,
+        'filtro_tipo_equipo': tipo_equipo_id,
+        'filtro_modelo_equipo': modelo_equipo_id,
+    }
+    
+    return render(request, 'gestionDeTaller/ver_tarifario.html', context)
+
+@user_passes_test(is_superuser)
+@require_http_methods(["POST"])
+def eliminar_tarifario(request):
+    """Eliminar tarifario (desactivar)"""
+    try:
+        tarifario_id = request.POST.get('tarifario_id')
+        tarifario = get_object_or_404(Tarifario, id=tarifario_id)
+        tarifario.activo = False
+        tarifario.save()
+        
+        return JsonResponse({'success': True, 'message': 'Tarifario eliminado exitosamente'})
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': f'Error: {str(e)}'})
+
+@user_passes_test(is_superuser)
+@require_http_methods(["POST"])
+def eliminar_modelo_equipo(request):
+    """Eliminar modelo de equipo (desactivar)"""
+    try:
+        modelo_id = request.POST.get('modelo_id')
+        modelo = get_object_or_404(ModeloEquipo, id=modelo_id)
+        modelo.activo = False
+        modelo.save()
+        
+        return JsonResponse({'success': True, 'message': 'Modelo de equipo eliminado exitosamente'})
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': f'Error: {str(e)}'})
+
+@user_passes_test(is_superuser)
+@require_http_methods(["POST"])
+def eliminar_tipo_equipo(request):
+    """Eliminar tipo de equipo (desactivar)"""
+    try:
+        tipo_id = request.POST.get('tipo_id')
+        tipo = get_object_or_404(TipoEquipo, id=tipo_id)
+        tipo.activo = False
+        tipo.save()
+        
+        return JsonResponse({'success': True, 'message': 'Tipo de equipo eliminado exitosamente'})
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': f'Error: {str(e)}'})

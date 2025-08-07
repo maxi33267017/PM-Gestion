@@ -1,0 +1,411 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Gestionar Tarifario{% endblock %}
+
+{% block extra_css %}
+<style>
+    .tarifario-container {
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        margin-bottom: 30px;
+    }
+    
+    .form-section {
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 25px;
+        margin-bottom: 25px;
+    }
+    
+    .form-section h4 {
+        color: #2c3e50;
+        margin-bottom: 20px;
+        border-bottom: 2px solid #3498db;
+        padding-bottom: 10px;
+    }
+    
+    .btn-action {
+        border-radius: 8px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-action:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+    
+    .table-container {
+        background: white;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    
+    .table th {
+        background: #34495e;
+        color: white;
+        border: none;
+        font-weight: 600;
+    }
+    
+    .table td {
+        vertical-align: middle;
+    }
+    
+    .badge-categoria {
+        font-size: 0.8rem;
+        padding: 5px 10px;
+        border-radius: 15px;
+    }
+    
+    .modal-content {
+        border-radius: 15px;
+        border: none;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    }
+    
+    .modal-header {
+        background: linear-gradient(135deg, #3498db, #2980b9);
+        color: white;
+        border-radius: 15px 15px 0 0;
+        border: none;
+    }
+    
+    .alert {
+        border-radius: 10px;
+        border: none;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="mb-0">
+                    <i class="fas fa-cog me-2"></i>
+                    Gestionar Tarifario
+                </h2>
+                <a href="{% url 'gestionDeTaller:dashboard_gerente' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left me-1"></i>
+                    Volver al Dashboard
+                </a>
+            </div>
+            
+            <!-- Alertas -->
+            <div id="alert-container"></div>
+            
+            <!-- Sección: Crear Tipo de Equipo -->
+            <div class="tarifario-container">
+                <div class="form-section">
+                    <h4><i class="fas fa-tag me-2"></i>Crear Tipo de Equipo</h4>
+                    <form id="form-tipo-equipo">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="nombre_tipo" class="form-label">Nombre del Tipo</label>
+                                    <input type="text" class="form-control" id="nombre_tipo" name="nombre" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="descripcion_tipo" class="form-label">Descripción</label>
+                                    <textarea class="form-control" id="descripcion_tipo" name="descripcion" rows="1"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-action">
+                            <i class="fas fa-plus me-1"></i>
+                            Crear Tipo de Equipo
+                        </button>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Sección: Crear Modelo de Equipo -->
+            <div class="tarifario-container">
+                <div class="form-section">
+                    <h4><i class="fas fa-cogs me-2"></i>Crear Modelo de Equipo</h4>
+                    <form id="form-modelo-equipo">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="tipo_equipo" class="form-label">Tipo de Equipo</label>
+                                    <select class="form-control" id="tipo_equipo" name="tipo_equipo_id" required>
+                                        <option value="">Seleccionar tipo...</option>
+                                        {% for tipo in tipos_equipo %}
+                                        <option value="{{ tipo.id }}">{{ tipo.nombre }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="mb-3">
+                                    <label for="nombre_modelo" class="form-label">Nombre del Modelo</label>
+                                    <input type="text" class="form-control" id="nombre_modelo" name="nombre" required>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="mb-3">
+                                    <label for="marca_modelo" class="form-label">Marca</label>
+                                    <input type="text" class="form-control" id="marca_modelo" name="marca" required>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="mb-3">
+                                    <label for="descripcion_modelo" class="form-label">Descripción</label>
+                                    <textarea class="form-control" id="descripcion_modelo" name="descripcion" rows="1"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-success btn-action">
+                            <i class="fas fa-plus me-1"></i>
+                            Crear Modelo de Equipo
+                        </button>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Sección: Crear Tarifario -->
+            <div class="tarifario-container">
+                <div class="form-section">
+                    <h4><i class="fas fa-dollar-sign me-2"></i>Crear Tarifario</h4>
+                    <form id="form-tarifario">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="col-md-3">
+                                <div class="mb-3">
+                                    <label for="modelo_equipo" class="form-label">Modelo de Equipo</label>
+                                    <select class="form-control" id="modelo_equipo" name="modelo_equipo_id" required>
+                                        <option value="">Seleccionar modelo...</option>
+                                        {% for modelo in modelos_equipo %}
+                                        <option value="{{ modelo.id }}">{{ modelo.tipo_equipo.nombre }} - {{ modelo.marca }} {{ modelo.nombre }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="mb-3">
+                                    <label for="nombre_servicio" class="form-label">Nombre del Servicio</label>
+                                    <input type="text" class="form-control" id="nombre_servicio" name="nombre_servicio" required>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="mb-3">
+                                    <label for="precio_usd" class="form-label">Precio (USD)</label>
+                                    <input type="number" class="form-control" id="precio_usd" name="precio_usd" step="0.01" min="0" required>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="mb-3">
+                                    <label for="descripcion_tarifario" class="form-label">Descripción</label>
+                                    <textarea class="form-control" id="descripcion_tarifario" name="descripcion" rows="1"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-info btn-action">
+                            <i class="fas fa-plus me-1"></i>
+                            Crear Tarifario
+                        </button>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Sección: Lista de Tarifarios -->
+            <div class="tarifario-container">
+                <div class="card-body">
+                    <h4 class="mb-4"><i class="fas fa-list me-2"></i>Tarifarios Existentes</h4>
+                    
+                    <div class="table-container">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Tipo de Equipo</th>
+                                    <th>Modelo</th>
+                                    <th>Servicio</th>
+                                    <th>Precio (USD)</th>
+                                    <th>Descripción</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for tarifario in tarifarios %}
+                                <tr>
+                                    <td>
+                                        <span class="badge badge-categoria bg-primary">{{ tarifario.modelo_equipo.tipo_equipo.nombre }}</span>
+                                    </td>
+                                    <td>{{ tarifario.modelo_equipo.marca }} {{ tarifario.modelo_equipo.nombre }}</td>
+                                    <td>{{ tarifario.nombre_servicio }}</td>
+                                    <td>
+                                        <span class="badge bg-success">${{ tarifario.precio_usd }}</span>
+                                    </td>
+                                    <td>{{ tarifario.descripcion|default:"-" }}</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-danger" onclick="eliminarTarifario({{ tarifario.id }})">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="6" class="text-center text-muted">
+                                        <i class="fas fa-info-circle me-2"></i>
+                                        No hay tarifarios creados
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Función para mostrar alertas
+function showAlert(message, type = 'success') {
+    const alertContainer = document.getElementById('alert-container');
+    const alert = document.createElement('div');
+    alert.className = `alert alert-${type} alert-dismissible fade show`;
+    alert.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    alertContainer.appendChild(alert);
+    
+    // Auto-remover después de 5 segundos
+    setTimeout(() => {
+        alert.remove();
+    }, 5000);
+}
+
+// Crear Tipo de Equipo
+document.getElementById('form-tipo-equipo').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    
+    fetch('{% url "gestionDeTaller:crear_tipo_equipo" %}', {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showAlert(data.message, 'success');
+            this.reset();
+            // Recargar la página para actualizar las listas
+            setTimeout(() => location.reload(), 1000);
+        } else {
+            showAlert(data.message, 'danger');
+        }
+    })
+    .catch(error => {
+        showAlert('Error al crear tipo de equipo', 'danger');
+    });
+});
+
+// Crear Modelo de Equipo
+document.getElementById('form-modelo-equipo').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    
+    fetch('{% url "gestionDeTaller:crear_modelo_equipo" %}', {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showAlert(data.message, 'success');
+            this.reset();
+            // Recargar la página para actualizar las listas
+            setTimeout(() => location.reload(), 1000);
+        } else {
+            showAlert(data.message, 'danger');
+        }
+    })
+    .catch(error => {
+        showAlert('Error al crear modelo de equipo', 'danger');
+    });
+});
+
+// Crear Tarifario
+document.getElementById('form-tarifario').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    
+    fetch('{% url "gestionDeTaller:crear_tarifario" %}', {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showAlert(data.message, 'success');
+            this.reset();
+            // Recargar la página para actualizar las listas
+            setTimeout(() => location.reload(), 1000);
+        } else {
+            showAlert(data.message, 'danger');
+        }
+    })
+    .catch(error => {
+        showAlert('Error al crear tarifario', 'danger');
+    });
+});
+
+// Eliminar Tarifario
+function eliminarTarifario(tarifarioId) {
+    if (!confirm('¿Estás seguro de que quieres eliminar este tarifario?')) {
+        return;
+    }
+    
+    const formData = new FormData();
+    formData.append('tarifario_id', tarifarioId);
+    formData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
+    
+    fetch('{% url "gestionDeTaller:eliminar_tarifario" %}', {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showAlert(data.message, 'success');
+            // Recargar la página para actualizar las listas
+            setTimeout(() => location.reload(), 1000);
+        } else {
+            showAlert(data.message, 'danger');
+        }
+    })
+    .catch(error => {
+        showAlert('Error al eliminar tarifario', 'danger');
+    });
+}
+</script>
+{% endblock %} 

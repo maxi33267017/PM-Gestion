@@ -1809,3 +1809,31 @@ class DetalleAuditoriaHerramienta(models.Model):
             return date.today() > self.fecha_limite_accion
         return False 
     
+
+class Tarifario(models.Model):
+    """Modelo para el tarifario de servicios"""
+    modelo_equipo = models.ForeignKey('clientes.ModeloEquipo', on_delete=models.CASCADE, related_name='tarifarios')
+    nombre_servicio = models.CharField(max_length=200)
+    descripcion = models.TextField(blank=True)
+    precio_usd = models.DecimalField(max_digits=10, decimal_places=2)
+    activo = models.BooleanField(default=True)
+    fecha_creacion = models.DateTimeField(auto_now_add=True)
+    fecha_modificacion = models.DateTimeField(auto_now=True)
+    creado_por = models.ForeignKey('recursosHumanos.Usuario', on_delete=models.SET_NULL, null=True, blank=True)
+
+    class Meta:
+        verbose_name = "Tarifario"
+        verbose_name_plural = "Tarifarios"
+        ordering = ['modelo_equipo__tipo_equipo', 'modelo_equipo', 'nombre_servicio']
+        unique_together = ['modelo_equipo', 'nombre_servicio']
+
+    def __str__(self):
+        return f"{self.modelo_equipo} - {self.nombre_servicio} - ${self.precio_usd} USD"
+
+    @property
+    def tipo_equipo(self):
+        return self.modelo_equipo.tipo_equipo.nombre
+
+    @property
+    def modelo_nombre(self):
+        return self.modelo_equipo.nombre
