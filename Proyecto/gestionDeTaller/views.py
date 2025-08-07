@@ -4482,7 +4482,11 @@ def is_superuser(user):
 
 def is_not_tecnico(user):
     """Verifica si el usuario NO es técnico"""
-    return user.rol != 'TECNICO'
+    # Verificar si el usuario está autenticado y tiene el atributo rol
+    if user.is_authenticated and hasattr(user, 'rol'):
+        return user.rol != 'TECNICO'
+    # Si no está autenticado o no tiene rol, no permitir acceso
+    return False
 
 @user_passes_test(is_superuser)
 def gestionar_tarifario(request):
