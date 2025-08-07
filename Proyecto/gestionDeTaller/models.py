@@ -112,6 +112,7 @@ class Servicio(models.Model):
         ('EN_PROCESO', 'En Proceso'),
         ('ESPERA_REPUESTOS', 'En Espera de Repuestos'),
         ('ESPERA_CONFIRMACION_CLIENTE', 'En Espera Confirmación Cliente'),
+        ('ESPERA_CONFECCION_PRESUPUESTO', 'Esperando Confección de Presupuesto'),
         ('A_FACTURAR', 'Finalizado a Facturar'),
         ('COMPLETADO', 'Completado'),
     ]
