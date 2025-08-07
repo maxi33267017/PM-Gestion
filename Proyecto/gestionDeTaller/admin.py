@@ -1054,6 +1054,45 @@ class TarifarioAdmin(admin.ModelAdmin):
         if not change:  # Si es un nuevo objeto
             obj.creado_por = request.user
         super().save_model(request, obj, form, change)
+    
+    def get_form(self, request, obj=None, **kwargs):
+        form = super().get_form(request, obj, **kwargs)
+        # Agregar campo personalizado para modelos de equipo
+        from django import forms
+        from clientes.models import ModeloEquipo
+        
+        class TarifarioForm(form):
+            modelos_equipo = forms.ModelMultipleChoiceField(
+                queryset=ModeloEquipo.objects.filter(activo=True),
+                required=False,
+                widget=forms.SelectMultiple(attrs={'size': '10'}),
+                help_text="Selecciona los modelos de equipo a los que aplica este tarifario"
+            )
+            
+            def __init__(self, *args, **kwargs):
+                super().__init__(*args, **kwargs)
+                if obj:
+                    # Pre-seleccionar modelos existentes
+                    self.fields['modelos_equipo'].initial = [
+                        relacion.modelo_equipo.id 
+                        for relacion in obj.modelos_equipo.all()
+                    ]
+            
+            def save(self, commit=True):
+                tarifario = super().save(commit=False)
+                if commit:
+                    tarifario.save()
+                    # Actualizar relaciones muchos a muchos
+                    tarifario.modelos_equipo.clear()
+                    for modelo in self.cleaned_data.get('modelos_equipo', []):
+                        from .models import TarifarioModeloEquipo
+                        TarifarioModeloEquipo.objects.create(
+                            tarifario=tarifario,
+                            modelo_equipo=modelo
+                        )
+                return tarifario
+        
+        return TarifarioForm
 
 
 # Admin para TarifarioModeloEquipo (modelo intermedio)
