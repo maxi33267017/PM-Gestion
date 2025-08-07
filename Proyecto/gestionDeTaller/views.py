@@ -4491,11 +4491,23 @@ def gestionar_tarifario(request):
     # Obtener datos para el formulario
     tipos_equipo = TipoEquipo.objects.filter(activo=True).order_by('nombre')
     modelos_equipo = ModeloEquipo.objects.filter(activo=True).select_related('tipo_equipo').order_by('tipo_equipo__nombre', 'nombre')
-    tarifarios = Tarifario.objects.filter(activo=True).select_related('modelo_equipo__tipo_equipo').order_by('modelo_equipo__tipo_equipo__nombre', 'modelo_equipo__nombre', 'nombre_servicio')
+    tarifarios = Tarifario.objects.filter(activo=True).prefetch_related('modelos_equipo__modelo_equipo__tipo_equipo').order_by('fecha', 'nombre_servicio')
+    
+    # Convertir modelos a JSON para JavaScript
+    modelos_json = []
+    for modelo in modelos_equipo:
+        modelos_json.append({
+            'id': modelo.id,
+            'nombre': modelo.nombre,
+            'marca': modelo.marca,
+            'tipo_equipo_id': modelo.tipo_equipo.id,
+            'tipo_equipo_nombre': modelo.tipo_equipo.nombre
+        })
     
     context = {
         'tipos_equipo': tipos_equipo,
         'modelos_equipo': modelos_equipo,
+        'modelos_json': modelos_json,
         'tarifarios': tarifarios,
     }
     
@@ -4564,23 +4576,31 @@ def crear_modelo_equipo(request):
 def crear_tarifario(request):
     """Crear nuevo tarifario"""
     try:
-        modelo_equipo_id = request.POST.get('modelo_equipo_id')
+        fecha = request.POST.get('fecha')
         nombre_servicio = request.POST.get('nombre_servicio')
         descripcion = request.POST.get('descripcion', '')
         precio_usd = request.POST.get('precio_usd')
+        modelos_equipo_ids = request.POST.getlist('modelos_equipo_ids')
         
-        if not modelo_equipo_id or not nombre_servicio or not precio_usd:
+        if not fecha or not nombre_servicio or not precio_usd or not modelos_equipo_ids:
             return JsonResponse({'success': False, 'message': 'Todos los campos son obligatorios'})
         
-        modelo_equipo = get_object_or_404(ModeloEquipo, id=modelo_equipo_id)
-        
+        # Crear el tarifario
         tarifario = Tarifario.objects.create(
-            modelo_equipo=modelo_equipo,
+            fecha=fecha,
             nombre_servicio=nombre_servicio,
             descripcion=descripcion,
             precio_usd=precio_usd,
             creado_por=request.user
         )
+        
+        # Crear las relaciones con los modelos de equipo
+        for modelo_id in modelos_equipo_ids:
+            modelo_equipo = get_object_or_404(ModeloEquipo, id=modelo_id)
+            TarifarioModeloEquipo.objects.create(
+                tarifario=tarifario,
+                modelo_equipo=modelo_equipo
+            )
         
         return JsonResponse({
             'success': True, 
@@ -4588,8 +4608,7 @@ def crear_tarifario(request):
             'id': tarifario.id,
             'nombre_servicio': tarifario.nombre_servicio,
             'precio_usd': str(tarifario.precio_usd),
-            'modelo_equipo': modelo_equipo.nombre,
-            'tipo_equipo': modelo_equipo.tipo_equipo.nombre
+            'fecha': str(tarifario.fecha)
         })
     except Exception as e:
         return JsonResponse({'success': False, 'message': f'Error: {str(e)}'})

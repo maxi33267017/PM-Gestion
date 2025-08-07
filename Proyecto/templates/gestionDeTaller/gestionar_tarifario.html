@@ -99,79 +99,6 @@
             <!-- Alertas -->
             <div id="alert-container"></div>
             
-            <!-- Sección: Crear Tipo de Equipo -->
-            <div class="tarifario-container">
-                <div class="form-section">
-                    <h4><i class="fas fa-tag me-2"></i>Crear Tipo de Equipo</h4>
-                    <form id="form-tipo-equipo">
-                        {% csrf_token %}
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="nombre_tipo" class="form-label">Nombre del Tipo</label>
-                                    <input type="text" class="form-control" id="nombre_tipo" name="nombre" required>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="descripcion_tipo" class="form-label">Descripción</label>
-                                    <textarea class="form-control" id="descripcion_tipo" name="descripcion" rows="1"></textarea>
-                                </div>
-                            </div>
-                        </div>
-                        <button type="submit" class="btn btn-primary btn-action">
-                            <i class="fas fa-plus me-1"></i>
-                            Crear Tipo de Equipo
-                        </button>
-                    </form>
-                </div>
-            </div>
-            
-            <!-- Sección: Crear Modelo de Equipo -->
-            <div class="tarifario-container">
-                <div class="form-section">
-                    <h4><i class="fas fa-cogs me-2"></i>Crear Modelo de Equipo</h4>
-                    <form id="form-modelo-equipo">
-                        {% csrf_token %}
-                        <div class="row">
-                            <div class="col-md-4">
-                                <div class="mb-3">
-                                    <label for="tipo_equipo" class="form-label">Tipo de Equipo</label>
-                                    <select class="form-control" id="tipo_equipo" name="tipo_equipo_id" required>
-                                        <option value="">Seleccionar tipo...</option>
-                                        {% for tipo in tipos_equipo %}
-                                        <option value="{{ tipo.id }}">{{ tipo.nombre }}</option>
-                                        {% endfor %}
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="col-md-3">
-                                <div class="mb-3">
-                                    <label for="nombre_modelo" class="form-label">Nombre del Modelo</label>
-                                    <input type="text" class="form-control" id="nombre_modelo" name="nombre" required>
-                                </div>
-                            </div>
-                            <div class="col-md-3">
-                                <div class="mb-3">
-                                    <label for="marca_modelo" class="form-label">Marca</label>
-                                    <input type="text" class="form-control" id="marca_modelo" name="marca" required>
-                                </div>
-                            </div>
-                            <div class="col-md-3">
-                                <div class="mb-3">
-                                    <label for="descripcion_modelo" class="form-label">Descripción</label>
-                                    <textarea class="form-control" id="descripcion_modelo" name="descripcion" rows="1"></textarea>
-                                </div>
-                            </div>
-                        </div>
-                        <button type="submit" class="btn btn-success btn-action">
-                            <i class="fas fa-plus me-1"></i>
-                            Crear Modelo de Equipo
-                        </button>
-                    </form>
-                </div>
-            </div>
-            
             <!-- Sección: Crear Tarifario -->
             <div class="tarifario-container">
                 <div class="form-section">
@@ -181,11 +108,17 @@
                         <div class="row">
                             <div class="col-md-3">
                                 <div class="mb-3">
-                                    <label for="modelo_equipo" class="form-label">Modelo de Equipo</label>
-                                    <select class="form-control" id="modelo_equipo" name="modelo_equipo_id" required>
-                                        <option value="">Seleccionar modelo...</option>
-                                        {% for modelo in modelos_equipo %}
-                                        <option value="{{ modelo.id }}">{{ modelo.tipo_equipo.nombre }} - {{ modelo.marca }} {{ modelo.nombre }}</option>
+                                    <label for="fecha_tarifario" class="form-label">Fecha</label>
+                                    <input type="date" class="form-control" id="fecha_tarifario" name="fecha" required>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="mb-3">
+                                    <label for="tipo_equipo_tarifario" class="form-label">Tipo de Equipo</label>
+                                    <select class="form-control" id="tipo_equipo_tarifario" name="tipo_equipo_id" required>
+                                        <option value="">Seleccionar tipo...</option>
+                                        {% for tipo in tipos_equipo %}
+                                        <option value="{{ tipo.id }}">{{ tipo.nombre }}</option>
                                         {% endfor %}
                                     </select>
                                 </div>
@@ -202,7 +135,18 @@
                                     <input type="number" class="form-control" id="precio_usd" name="precio_usd" step="0.01" min="0" required>
                                 </div>
                             </div>
-                            <div class="col-md-3">
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="modelos_equipo" class="form-label">Modelos de Equipo</label>
+                                    <select class="form-control" id="modelos_equipo" name="modelos_equipo_ids" multiple required>
+                                        <option value="">Primero selecciona un tipo de equipo</option>
+                                    </select>
+                                    <small class="form-text text-muted">Mantén presionado Ctrl (Cmd en Mac) para seleccionar múltiples modelos</small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
                                 <div class="mb-3">
                                     <label for="descripcion_tarifario" class="form-label">Descripción</label>
                                     <textarea class="form-control" id="descripcion_tarifario" name="descripcion" rows="1"></textarea>
@@ -226,9 +170,9 @@
                         <table class="table table-hover">
                             <thead>
                                 <tr>
-                                    <th>Tipo de Equipo</th>
-                                    <th>Modelo</th>
+                                    <th>Fecha</th>
                                     <th>Servicio</th>
+                                    <th>Modelos</th>
                                     <th>Precio (USD)</th>
                                     <th>Descripción</th>
                                     <th>Acciones</th>
@@ -238,10 +182,14 @@
                                 {% for tarifario in tarifarios %}
                                 <tr>
                                     <td>
-                                        <span class="badge badge-categoria bg-primary">{{ tarifario.modelo_equipo.tipo_equipo.nombre }}</span>
+                                        <span class="badge badge-categoria bg-info">{{ tarifario.fecha }}</span>
                                     </td>
-                                    <td>{{ tarifario.modelo_equipo.marca }} {{ tarifario.modelo_equipo.nombre }}</td>
                                     <td>{{ tarifario.nombre_servicio }}</td>
+                                    <td>
+                                        {% for relacion in tarifario.modelos_equipo.all %}
+                                        <span class="badge bg-secondary me-1">{{ relacion.modelo_equipo.marca }} {{ relacion.modelo_equipo.nombre }}</span>
+                                        {% endfor %}
+                                    </td>
                                     <td>
                                         <span class="badge bg-success">${{ tarifario.precio_usd }}</span>
                                     </td>
@@ -289,62 +237,31 @@ function showAlert(message, type = 'success') {
     }, 5000);
 }
 
-// Crear Tipo de Equipo
-document.getElementById('form-tipo-equipo').addEventListener('submit', function(e) {
-    e.preventDefault();
+// Cargar modelos cuando cambie el tipo de equipo
+document.getElementById('tipo_equipo_tarifario').addEventListener('change', function() {
+    const tipoEquipoId = this.value;
+    const modelosSelect = document.getElementById('modelos_equipo');
     
-    const formData = new FormData(this);
+    // Limpiar opciones actuales
+    modelosSelect.innerHTML = '<option value="">Cargando modelos...</option>';
     
-    fetch('{% url "gestionDeTaller:crear_tipo_equipo" %}', {
-        method: 'POST',
-        body: formData,
-        headers: {
-            'X-CSRFToken': formData.get('csrfmiddlewaretoken')
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            showAlert(data.message, 'success');
-            this.reset();
-            // Recargar la página para actualizar las listas
-            setTimeout(() => location.reload(), 1000);
-        } else {
-            showAlert(data.message, 'danger');
-        }
-    })
-    .catch(error => {
-        showAlert('Error al crear tipo de equipo', 'danger');
-    });
-});
-
-// Crear Modelo de Equipo
-document.getElementById('form-modelo-equipo').addEventListener('submit', function(e) {
-    e.preventDefault();
-    
-    const formData = new FormData(this);
-    
-    fetch('{% url "gestionDeTaller:crear_modelo_equipo" %}', {
-        method: 'POST',
-        body: formData,
-        headers: {
-            'X-CSRFToken': formData.get('csrfmiddlewaretoken')
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            showAlert(data.message, 'success');
-            this.reset();
-            // Recargar la página para actualizar las listas
-            setTimeout(() => location.reload(), 1000);
-        } else {
-            showAlert(data.message, 'danger');
-        }
-    })
-    .catch(error => {
-        showAlert('Error al crear modelo de equipo', 'danger');
-    });
+    if (tipoEquipoId) {
+        // Obtener modelos del tipo seleccionado
+        const modelos = {{ modelos_json|safe }};
+        const modelosFiltrados = modelos.filter(modelo => modelo.tipo_equipo_id == tipoEquipoId);
+        
+        // Limpiar y agregar opciones
+        modelosSelect.innerHTML = '<option value="">Seleccionar modelos...</option>';
+        
+        modelosFiltrados.forEach(modelo => {
+            const option = document.createElement('option');
+            option.value = modelo.id;
+            option.textContent = `${modelo.marca} ${modelo.nombre}`;
+            modelosSelect.appendChild(option);
+        });
+    } else {
+        modelosSelect.innerHTML = '<option value="">Primero selecciona un tipo de equipo</option>';
+    }
 });
 
 // Crear Tarifario

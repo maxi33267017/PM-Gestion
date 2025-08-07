@@ -1812,7 +1812,7 @@ class DetalleAuditoriaHerramienta(models.Model):
 
 class Tarifario(models.Model):
     """Modelo para el tarifario de servicios"""
-    modelo_equipo = models.ForeignKey('clientes.ModeloEquipo', on_delete=models.CASCADE, related_name='tarifarios')
+    fecha = models.DateField(default=timezone.now)
     nombre_servicio = models.CharField(max_length=200)
     descripcion = models.TextField(blank=True)
     precio_usd = models.DecimalField(max_digits=10, decimal_places=2)
@@ -1824,16 +1824,20 @@ class Tarifario(models.Model):
     class Meta:
         verbose_name = "Tarifario"
         verbose_name_plural = "Tarifarios"
-        ordering = ['modelo_equipo__tipo_equipo', 'modelo_equipo', 'nombre_servicio']
-        unique_together = ['modelo_equipo', 'nombre_servicio']
+        ordering = ['fecha', 'nombre_servicio']
 
     def __str__(self):
-        return f"{self.modelo_equipo} - {self.nombre_servicio} - ${self.precio_usd} USD"
+        return f"{self.fecha} - {self.nombre_servicio} - ${self.precio_usd} USD"
 
-    @property
-    def tipo_equipo(self):
-        return self.modelo_equipo.tipo_equipo.nombre
+class TarifarioModeloEquipo(models.Model):
+    """Modelo intermedio para relación muchos a muchos entre Tarifario y ModeloEquipo"""
+    tarifario = models.ForeignKey(Tarifario, on_delete=models.CASCADE, related_name='modelos_equipo')
+    modelo_equipo = models.ForeignKey('clientes.ModeloEquipo', on_delete=models.CASCADE, related_name='tarifarios_relacionados')
+    
+    class Meta:
+        verbose_name = "Tarifario - Modelo de Equipo"
+        verbose_name_plural = "Tarifarios - Modelos de Equipo"
+        unique_together = ['tarifario', 'modelo_equipo']
 
-    @property
-    def modelo_nombre(self):
-        return self.modelo_equipo.nombre
+    def __str__(self):
+        return f"{self.tarifario.nombre_servicio} - {self.modelo_equipo}"
