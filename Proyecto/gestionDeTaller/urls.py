@@ -127,4 +127,5 @@ urlpatterns = [
         path('checklist-inspeccion/<int:checklist_id>/actualizar/', views.actualizar_checklist, name='actualizar_checklist'),
         path('checklist-inspeccion/<int:checklist_id>/descargar-pdf/', views.descargar_checklist_pdf, name='descargar_checklist_pdf'),
         path('checklist-inspeccion/<int:checklist_id>/enviar-email/', views.enviar_checklist_email, name='enviar_checklist_email'),
+        path('checklist-inspeccion/<int:checklist_id>/guardar-todo/', views.guardar_todo_checklist, name='guardar_todo_checklist'),
     ]

@@ -5134,3 +5134,62 @@ def obtener_modelos_equipo(request):
     
     print(f"DEBUG: Datos a enviar: {modelos_data}")
     return JsonResponse({'modelos': modelos_data})
+
+@require_http_methods(["POST"])
+def guardar_todo_checklist(request, checklist_id):
+    """Guardar todos los cambios del checklist de una vez"""
+    try:
+        checklist = get_object_or_404(ChecklistInspeccion, id=checklist_id)
+        
+        # Actualizar estado y notas generales
+        estado = request.POST.get('estado', checklist.estado)
+        notas_generales = request.POST.get('notas_generales', checklist.notas_generales)
+        
+        checklist.estado = estado
+        checklist.notas_generales = notas_generales
+        checklist.save()
+        
+        # Actualizar elementos del checklist
+        elementos_actualizados = 0
+        for key, value in request.POST.items():
+            if key.startswith('elemento_') and key.endswith('_respuesta'):
+                elemento_id = key.replace('elemento_', '').replace('_respuesta', '')
+                respuesta = value
+                notas = request.POST.get(f'elemento_{elemento_id}_notas', '')
+                
+                try:
+                    elemento = ElementoChecklist.objects.get(id=elemento_id, checklist=checklist)
+                    elemento.respuesta = respuesta
+                    elemento.notas = notas
+                    elemento.save()
+                    elementos_actualizados += 1
+                    
+                    # Log del cambio
+                    LogChecklistInspeccion.objects.create(
+                        checklist=checklist,
+                        elemento=elemento,
+                        accion='ACTUALIZAR',
+                        usuario=request.user,
+                        detalles=f'Respuesta: {respuesta}, Notas: {notas}'
+                    )
+                except ElementoChecklist.DoesNotExist:
+                    continue
+        
+        # Log de la actualización masiva
+        LogChecklistInspeccion.objects.create(
+            checklist=checklist,
+            accion='GUARDAR_TODO',
+            usuario=request.user,
+            detalles=f'Estado: {estado}, Elementos actualizados: {elementos_actualizados}'
+        )
+        
+        return JsonResponse({
+            'success': True,
+            'message': f'Checklist guardado exitosamente. {elementos_actualizados} elementos actualizados.'
+        })
+        
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': f'Error al guardar: {str(e)}'
+        })

@@ -4,8 +4,8 @@
 {% block content %}
 <style>
     :root {
-        --jd-green: #007934;
-        --jd-green-dark: #005a26;
+        --jd-black: #000000;
+        --jd-black-dark: #1a1a1a;
         --jd-yellow: #ffd700;
         --jd-yellow-dark: #e6c200;
         --jd-orange: #ff8c00;
@@ -15,7 +15,7 @@
     }
     
     .checklist-header {
-        background: linear-gradient(135deg, var(--jd-green) 0%, var(--jd-green-dark) 100%);
+        background: linear-gradient(135deg, var(--jd-black) 0%, var(--jd-black-dark) 100%);
         color: var(--jd-white);
         padding: 2rem;
         border-radius: 15px;
@@ -59,15 +59,12 @@
         margin-right: 15px;
         position: relative;
         overflow: hidden;
-    }
-    
-    .jd-logo::before {
-        content: '🦌';
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        font-size: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        color: var(--jd-black);
+        font-size: 12px;
     }
     
     .info-card {
@@ -76,11 +73,11 @@
         box-shadow: 0 5px 20px rgba(0,0,0,0.08);
         padding: 1.5rem;
         margin-bottom: 2rem;
-        border-left: 5px solid var(--jd-green);
+        border-left: 5px solid var(--jd-black);
     }
     
     .info-card h3 {
-        color: var(--jd-green);
+        color: var(--jd-black);
         margin-bottom: 1rem;
         padding-bottom: 0.5rem;
         border-bottom: 2px solid var(--jd-light-gray);
@@ -99,12 +96,12 @@
     }
     
     .accordion-item:hover {
-        border-color: var(--jd-green);
+        border-color: var(--jd-black);
         transform: translateY(-2px);
     }
     
     .accordion-header {
-        background: linear-gradient(135deg, var(--jd-green) 0%, var(--jd-green-dark) 100%);
+        background: linear-gradient(135deg, var(--jd-black) 0%, var(--jd-black-dark) 100%);
         color: var(--jd-white);
         padding: 1rem 1.5rem;
         font-weight: 600;
@@ -128,7 +125,7 @@
     }
     
     .accordion-header:hover {
-        background: linear-gradient(135deg, var(--jd-green-dark) 0%, var(--jd-green) 100%);
+        background: linear-gradient(135deg, var(--jd-black-dark) 0%, var(--jd-black) 100%);
     }
     
     .accordion-header .toggle-icon {
@@ -238,16 +235,16 @@
     }
     
     .checklist-option.selected {
-        border-color: var(--jd-green);
-        background: var(--jd-green);
+        border-color: var(--jd-black);
+        background: var(--jd-black);
         color: var(--jd-white);
-        box-shadow: 0 3px 10px rgba(0,121,52,0.3);
+        box-shadow: 0 3px 10px rgba(0,0,0,0.3);
     }
     
     .checklist-option.aceptable.selected {
-        border-color: var(--jd-green);
-        background: var(--jd-green);
-        box-shadow: 0 3px 10px rgba(0,121,52,0.3);
+        border-color: var(--jd-black);
+        background: var(--jd-black);
+        box-shadow: 0 3px 10px rgba(0,0,0,0.3);
     }
     
     .checklist-option.rechazado.selected {
@@ -303,8 +300,8 @@
     
     .notas-textarea:focus {
         outline: none;
-        border-color: var(--jd-green);
-        box-shadow: 0 0 0 0.2rem rgba(0,121,52,0.25);
+        border-color: var(--jd-black);
+        box-shadow: 0 0 0 0.2rem rgba(0,0,0,0.25);
     }
     
     .estado-badge {
@@ -337,7 +334,7 @@
     }
     
     .estado-completado {
-        background: linear-gradient(135deg, var(--jd-green) 0%, var(--jd-green-dark) 100%);
+        background: linear-gradient(135deg, var(--jd-black) 0%, var(--jd-black-dark) 100%);
         color: var(--jd-white);
     }
     
@@ -351,7 +348,7 @@
         border-radius: 10px;
         padding: 1rem;
         margin-bottom: 1rem;
-        border: 2px solid var(--jd-green);
+        border: 2px solid var(--jd-black);
         position: relative;
         overflow: hidden;
     }
@@ -370,7 +367,7 @@
         border-radius: 15px;
         overflow: hidden;
         background: var(--jd-white);
-        border: 2px solid var(--jd-green);
+        border: 2px solid var(--jd-black);
     }
     
     .progress-fill {
@@ -383,7 +380,7 @@
         color: var(--jd-white);
         font-weight: 600;
         font-size: 0.9rem;
-        background: linear-gradient(90deg, var(--jd-green) 0%, var(--jd-green-dark) 100%);
+        background: linear-gradient(90deg, var(--jd-black) 0%, var(--jd-black-dark) 100%);
     }
     
     .btn-action {
@@ -423,7 +420,7 @@
     }
     
     .btn-success {
-        background: linear-gradient(135deg, var(--jd-green) 0%, var(--jd-green-dark) 100%);
+        background: linear-gradient(135deg, var(--jd-black) 0%, var(--jd-black-dark) 100%);
         color: var(--jd-white);
     }
     
@@ -431,7 +428,7 @@
         position: fixed;
         top: 20px;
         right: 20px;
-        background: var(--jd-green);
+        background: var(--jd-black);
         color: var(--jd-white);
         padding: 0.75rem 1.5rem;
         border-radius: 25px;
@@ -466,15 +463,28 @@
         opacity: 1;
     }
     
-    .section-icon {
-        margin-right: 8px;
-        font-size: 16px;
-    }
-    
     .construction-theme {
         background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
         min-height: 100vh;
         padding: 20px 0;
+    }
+    
+    .save-all-section {
+        background: var(--jd-white);
+        border-radius: 15px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        border-left: 5px solid var(--jd-yellow);
+    }
+    
+    .save-all-section h3 {
+        color: var(--jd-black);
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid var(--jd-light-gray);
+        display: flex;
+        align-items: center;
     }
 </style>
 
@@ -484,9 +494,9 @@
         <div class="checklist-header">
             <div class="d-flex justify-content-between align-items-center">
                 <div class="d-flex align-items-center">
-                    <div class="jd-logo"></div>
+                    <div class="jd-logo">JD</div>
                     <div>
-                        <h1><i class="fas fa-shield-alt me-3"></i>John Deere Protect - Checklist de Inspección</h1>
+                        <h1><i class="fas fa-shield-alt me-3"></i>John Deere Construction - Checklist de Inspección</h1>
                         <p class="mb-0"><i class="fas fa-tag me-2"></i>ID: #{{ checklist.id }} - {{ checklist.equipo.numero_serie }}</p>
                     </div>
                 </div>
@@ -588,29 +598,6 @@
         <div class="accordion-item">
             <div class="accordion-header" onclick="toggleAccordion(this)">
                 <div>
-                    <span class="section-icon">
-                        {% if 'CABINA' in seccion_nombre %}
-                            🚛
-                        {% elif 'TRANSMISSION' in seccion_nombre %}
-                            ⚙️
-                        {% elif 'SISTEMA_HIDRAULICO' in seccion_nombre %}
-                            💧
-                        {% elif 'SISTEMA_ELECTRICO' in seccion_nombre %}
-                            ⚡
-                        {% elif 'SISTEMA_FRENOS' in seccion_nombre %}
-                            🛑
-                        {% elif 'MOTOR' in seccion_nombre %}
-                            🔥
-                        {% elif 'SISTEMA_REFRIGERACION' in seccion_nombre %}
-                            ❄️
-                        {% elif 'LANTAS_CARRILERIA' in seccion_nombre %}
-                            🛞
-                        {% elif 'CHASSIS_ESTRUCTURA' in seccion_nombre %}
-                            🏗️
-                        {% else %}
-                            🔧
-                        {% endif %}
-                    </span>
                     {{ seccion_nombre }}
                     <i class="fas fa-check completion-check" id="check-{{ forloop.counter }}"></i>
                 </div>
@@ -661,31 +648,28 @@
         </div>
         {% endfor %}
 
-        <!-- Formulario de Actualización -->
-        <div class="info-card">
-            <h3><i class="fas fa-edit me-2"></i>Actualizar Checklist</h3>
-            <form method="post" action="{% url 'gestionDeTaller:actualizar_checklist' checklist.id %}">
-                {% csrf_token %}
-                <div class="row">
-                    <div class="col-md-4">
-                        <label for="estado" class="form-label"><i class="fas fa-flag me-2"></i>Estado:</label>
-                        <select class="form-control" id="estado" name="estado">
-                            <option value="BORRADOR" {% if checklist.estado == 'BORRADOR' %}selected{% endif %}>Borrador</option>
-                            <option value="COMPLETADO" {% if checklist.estado == 'COMPLETADO' %}selected{% endif %}>Completado</option>
-                            <option value="ENVIADO" {% if checklist.estado == 'ENVIADO' %}selected{% endif %}>Enviado</option>
-                        </select>
-                    </div>
-                    <div class="col-md-8">
-                        <label for="notas_generales" class="form-label"><i class="fas fa-comment me-2"></i>Notas Generales:</label>
-                        <textarea class="form-control" id="notas_generales" name="notas_generales" rows="3">{{ checklist.notas_generales }}</textarea>
-                    </div>
+        <!-- Sección de Guardar Todo -->
+        <div class="save-all-section">
+            <h3><i class="fas fa-save me-2"></i>Guardar Checklist</h3>
+            <div class="row">
+                <div class="col-md-4">
+                    <label for="estado" class="form-label"><i class="fas fa-flag me-2"></i>Estado:</label>
+                    <select class="form-control" id="estado" name="estado">
+                        <option value="BORRADOR" {% if checklist.estado == 'BORRADOR' %}selected{% endif %}>Borrador</option>
+                        <option value="COMPLETADO" {% if checklist.estado == 'COMPLETADO' %}selected{% endif %}>Completado</option>
+                        <option value="ENVIADO" {% if checklist.estado == 'ENVIADO' %}selected{% endif %}>Enviado</option>
+                    </select>
                 </div>
-                <div class="text-center mt-3">
-                    <button type="submit" class="btn-action btn-success">
-                        <i class="fas fa-save me-2"></i>Guardar Cambios
-                    </button>
+                <div class="col-md-8">
+                    <label for="notas_generales" class="form-label"><i class="fas fa-comment me-2"></i>Notas Generales:</label>
+                    <textarea class="form-control" id="notas_generales" name="notas_generales" rows="3">{{ checklist.notas_generales }}</textarea>
                 </div>
-            </form>
+            </div>
+            <div class="text-center mt-3">
+                <button type="button" class="btn-action btn-success" onclick="guardarTodo()">
+                    <i class="fas fa-save me-2"></i>Guardar Todo el Checklist
+                </button>
+            </div>
         </div>
     </div>
 </div>
@@ -696,6 +680,10 @@
 </div>
 
 <script>
+    // Variables para almacenar cambios pendientes
+    let cambiosPendientes = {};
+    let notasPendientes = {};
+    
     function toggleAccordion(header) {
         const body = header.nextElementSibling;
         const icon = header.querySelector('.toggle-icon');
@@ -730,91 +718,101 @@
     }
     
     function actualizarRespuesta(elementoId, respuesta) {
-        const formData = new FormData();
-        formData.append('respuesta', respuesta);
-        
-        // Obtener las notas actuales
-        const notasElement = document.querySelector(`[data-elemento-id="${elementoId}"] .notas-textarea`);
-        formData.append('notas', notasElement ? notasElement.value : '');
-        
-        fetch(`/gestion_de_taller/elemento-checklist/${elementoId}/actualizar/`, {
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': '{{ csrf_token }}',
-            },
-            body: formData
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                // Actualizar visualización de botones
-                const elementoItem = document.querySelector(`[data-elemento-id="${elementoId}"]`);
-                elementoItem.querySelectorAll('.checklist-option').forEach(option => {
-                    option.classList.remove('selected');
-                });
-                
-                const selectedOption = elementoItem.querySelector(`.checklist-option input[value="${respuesta}"]`).parentElement;
-                selectedOption.classList.add('selected');
-                
-                // Verificar si la sección está completa
-                const seccionId = elementoItem.getAttribute('data-seccion');
-                checkSeccionCompleta(seccionId);
-                
-                // Mostrar indicador de guardado
-                mostrarIndicadorGuardado();
-                
-                // Recargar página después de un delay para actualizar métricas
-                setTimeout(() => {
-                    location.reload();
-                }, 2000);
-            } else {
-                alert('Error al actualizar: ' + data.message);
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Error al actualizar el elemento');
+        // Solo actualizar visualmente, no guardar automáticamente
+        const elementoItem = document.querySelector(`[data-elemento-id="${elementoId}"]`);
+        elementoItem.querySelectorAll('.checklist-option').forEach(option => {
+            option.classList.remove('selected');
         });
+        
+        const selectedOption = elementoItem.querySelector(`.checklist-option input[value="${respuesta}"]`).parentElement;
+        selectedOption.classList.add('selected');
+        
+        // Guardar cambio pendiente
+        cambiosPendientes[elementoId] = respuesta;
+        
+        // Verificar si la sección está completa
+        const seccionId = elementoItem.getAttribute('data-seccion');
+        checkSeccionCompleta(seccionId);
+        
+        // Mostrar indicador de cambio pendiente
+        mostrarIndicadorCambio();
     }
     
     function actualizarNotas(elementoId, notas) {
-        // Obtener la respuesta actual seleccionada
-        const elementoItem = document.querySelector(`[data-elemento-id="${elementoId}"]`);
-        const respuestaSeleccionada = elementoItem.querySelector('.checklist-option.selected input');
-        const respuesta = respuestaSeleccionada ? respuestaSeleccionada.value : '';
+        // Guardar nota pendiente
+        notasPendientes[elementoId] = notas;
         
-        const formData = new FormData();
-        formData.append('notas', notas);
-        formData.append('respuesta', respuesta);
+        // Mostrar indicador de cambio pendiente
+        mostrarIndicadorCambio();
+    }
+    
+    function mostrarIndicadorCambio() {
+        const indicator = document.getElementById('saveIndicator');
+        indicator.innerHTML = '<i class="fas fa-clock me-2"></i>Cambios pendientes - Guardar para aplicar';
+        indicator.style.background = 'var(--jd-orange)';
+        indicator.classList.add('show');
         
-        fetch(`/gestion_de_taller/elemento-checklist/${elementoId}/actualizar/`, {
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': '{{ csrf_token }}',
-            },
-            body: formData
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                mostrarIndicadorGuardado();
-            } else {
-                alert('Error al actualizar notas: ' + data.message);
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Error al actualizar las notas');
-        });
+        setTimeout(() => {
+            indicator.classList.remove('show');
+        }, 3000);
     }
     
     function mostrarIndicadorGuardado() {
         const indicator = document.getElementById('saveIndicator');
+        indicator.innerHTML = '<i class="fas fa-check me-2"></i>¡Guardado exitosamente!';
+        indicator.style.background = 'var(--jd-black)';
         indicator.classList.add('show');
         
         setTimeout(() => {
             indicator.classList.remove('show');
         }, 2000);
+    }
+    
+    function guardarTodo() {
+        // Crear FormData con todos los cambios pendientes
+        const formData = new FormData();
+        
+        // Agregar estado y notas generales
+        const estado = document.getElementById('estado').value;
+        const notasGenerales = document.getElementById('notas_generales').value;
+        formData.append('estado', estado);
+        formData.append('notas_generales', notasGenerales);
+        
+        // Agregar cambios de elementos
+        for (const [elementoId, respuesta] of Object.entries(cambiosPendientes)) {
+            formData.append(`elemento_${elementoId}_respuesta`, respuesta);
+            formData.append(`elemento_${elementoId}_notas`, notasPendientes[elementoId] || '');
+        }
+        
+        // Enviar todos los cambios
+        fetch(`/gestion_de_taller/checklist/${checklistId}/guardar-todo/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+            },
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Limpiar cambios pendientes
+                cambiosPendientes = {};
+                notasPendientes = {};
+                
+                mostrarIndicadorGuardado();
+                
+                // Recargar página después de un delay
+                setTimeout(() => {
+                    location.reload();
+                }, 2000);
+            } else {
+                alert('Error al guardar: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error al guardar el checklist');
+        });
     }
     
     // Expandir la primera sección por defecto y verificar secciones completas
@@ -829,5 +827,10 @@
             checkSeccionCompleta(i);
         }
     });
+</script>
+
+<script>
+    // Variable global para el ID del checklist
+    const checklistId = {{ checklist.id }};
 </script>
 {% endblock %} 
