@@ -5014,14 +5014,20 @@ def descargar_checklist_pdf(request, checklist_id):
         'elementos_por_seccion': elementos_por_seccion,
     }
     
-    # Generar PDF
+    # Generar HTML
+    html = render_to_string('gestionDeTaller/checklist_pdf.html', context)
+    
+    # Crear respuesta PDF
     response = HttpResponse(content_type='application/pdf')
     response['Content-Disposition'] = f'attachment; filename="checklist_inspeccion_{checklist.id}.pdf"'
     
-    # Aquí se generaría el PDF usando una librería como reportlab
-    # Por ahora retornamos un mensaje
-    response.write(b'PDF generado correctamente')
+    # Convertir HTML a PDF con link_callback para manejar archivos estáticos
+    pisa_status = pisa.CreatePDF(io.StringIO(html), dest=response, link_callback=link_callback)
     
+    # Verificar errores
+    if pisa_status.err:
+        return HttpResponse("Hubo un error al generar el PDF", status=400)
+
     return response
 
 

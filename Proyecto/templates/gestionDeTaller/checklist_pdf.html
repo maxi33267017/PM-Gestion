@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checklist de Inspección JD Protect</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 2cm;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 12px;
+            line-height: 1.4;
+            color: #333;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 3px solid #000;
+            padding-bottom: 20px;
+        }
+        
+        .header h1 {
+            color: #000;
+            font-size: 24px;
+            margin: 0;
+            font-weight: bold;
+        }
+        
+        .header .subtitle {
+            color: #666;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+        
+        .info-section {
+            margin-bottom: 20px;
+        }
+        
+        .info-grid {
+            display: table;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+        
+        .info-row {
+            display: table-row;
+        }
+        
+        .info-cell {
+            display: table-cell;
+            padding: 8px;
+            border: 1px solid #ddd;
+            vertical-align: top;
+        }
+        
+        .info-label {
+            font-weight: bold;
+            background-color: #f5f5f5;
+            width: 30%;
+        }
+        
+        .section-header {
+            background-color: #000;
+            color: #fff;
+            padding: 10px;
+            margin: 20px 0 10px 0;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        
+        .elemento-item {
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            padding: 10px;
+        }
+        
+        .elemento-nombre {
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+        
+        .respuesta-section {
+            margin-top: 8px;
+        }
+        
+        .respuesta-option {
+            display: inline-block;
+            margin-right: 20px;
+            font-size: 11px;
+        }
+        
+        .respuesta-option input[type="radio"] {
+            margin-right: 5px;
+        }
+        
+        .notas-section {
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid #eee;
+        }
+        
+        .notas-label {
+            font-weight: bold;
+            font-size: 11px;
+            color: #666;
+        }
+        
+        .notas-text {
+            font-size: 11px;
+            color: #333;
+            margin-top: 3px;
+        }
+        
+        .footer {
+            margin-top: 40px;
+            text-align: center;
+            font-size: 10px;
+            color: #666;
+            border-top: 1px solid #ddd;
+            padding-top: 20px;
+        }
+        
+        .estado-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+        
+        .estado-borrador {
+            background-color: #ffc107;
+            color: #000;
+        }
+        
+        .estado-completado {
+            background-color: #28a745;
+            color: #fff;
+        }
+        
+        .estado-enviado {
+            background-color: #17a2b8;
+            color: #fff;
+        }
+        
+        .porcentaje-info {
+            text-align: center;
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border: 2px solid #dee2e6;
+            border-radius: 5px;
+        }
+        
+        .porcentaje-valor {
+            font-size: 24px;
+            font-weight: bold;
+            color: #000;
+        }
+        
+        .porcentaje-label {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>CHECKLIST DE INSPECCIÓN JD PROTECT</h1>
+        <div class="subtitle">John Deere Construction - Patagonia Maquinarias</div>
+    </div>
+    
+    <div class="info-section">
+        <div class="info-grid">
+            <div class="info-row">
+                <div class="info-cell info-label">ID Checklist:</div>
+                <div class="info-cell">#{{ checklist.id }}</div>
+                <div class="info-cell info-label">Fecha de Inspección:</div>
+                <div class="info-cell">{{ checklist.fecha_inspeccion|date:"d/m/Y" }}</div>
+            </div>
+            <div class="info-row">
+                <div class="info-cell info-label">Cliente:</div>
+                <div class="info-cell">{{ checklist.servicio.preorden.cliente.razon_social }}</div>
+                <div class="info-cell info-label">Equipo:</div>
+                <div class="info-cell">{{ checklist.equipo.numero_serie }} - {{ checklist.equipo.modelo }}</div>
+            </div>
+            <div class="info-row">
+                <div class="info-cell info-label">Servicio:</div>
+                <div class="info-cell">#{{ checklist.servicio.id }}</div>
+                <div class="info-cell info-label">Horómetro:</div>
+                <div class="info-cell">{{ checklist.horometro|default:"N/A" }}</div>
+            </div>
+            <div class="info-row">
+                <div class="info-cell info-label">Estado:</div>
+                <div class="info-cell">
+                    <span class="estado-badge estado-{{ checklist.estado|lower }}">
+                        {{ checklist.get_estado_display }}
+                    </span>
+                </div>
+                <div class="info-cell info-label">Creado por:</div>
+                <div class="info-cell">{{ checklist.creado_por.get_nombre_completo }}</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="porcentaje-info">
+        <div class="porcentaje-valor">{{ checklist.porcentaje_aceptable|floatformat:1 }}%</div>
+        <div class="porcentaje-label">Elementos Aceptables</div>
+    </div>
+    
+    {% for seccion_nombre, elementos in elementos_por_seccion.items %}
+    <div class="section-header">{{ seccion_nombre }}</div>
+    
+    {% for elemento in elementos %}
+    <div class="elemento-item">
+        <div class="elemento-nombre">{{ elemento.nombre_elemento }}</div>
+        
+        <div class="respuesta-section">
+            <div class="respuesta-option">
+                <input type="radio" {% if elemento.respuesta == 'A' %}checked{% endif %} disabled>
+                <strong>Aceptable</strong>
+            </div>
+            <div class="respuesta-option">
+                <input type="radio" {% if elemento.respuesta == 'R' %}checked{% endif %} disabled>
+                <strong>Rechazado</strong>
+            </div>
+            <div class="respuesta-option">
+                <input type="radio" {% if elemento.respuesta == 'N/A' %}checked{% endif %} disabled>
+                <strong>No Aplica</strong>
+            </div>
+        </div>
+        
+        {% if elemento.notas %}
+        <div class="notas-section">
+            <div class="notas-label">Notas:</div>
+            <div class="notas-text">{{ elemento.notas }}</div>
+        </div>
+        {% endif %}
+    </div>
+    {% endfor %}
+    {% endfor %}
+    
+    {% if checklist.notas_generales %}
+    <div class="section-header">Notas Generales</div>
+    <div style="padding: 15px; border: 1px solid #ddd; margin-bottom: 20px;">
+        {{ checklist.notas_generales|linebreaks }}
+    </div>
+    {% endif %}
+    
+    <div class="footer">
+        <p>Checklist generado el {{ checklist.fecha_modificacion|date:"d/m/Y H:i" }}</p>
+        <p>Patagonia Maquinarias - John Deere Construction</p>
+    </div>
+</body>
+</html> 
