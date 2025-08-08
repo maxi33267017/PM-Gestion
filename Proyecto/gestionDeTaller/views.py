@@ -25,6 +25,7 @@ import io
 from datetime import datetime
 import csv
 from django.urls import reverse
+from xhtml2pdf import pisa
 from .models import Revision5S, PlanAccion5S
 from .forms import Revision5SForm, PlanAccion5SForm, RespuestaEncuestaForm
 from django.core.paginator import Paginator
