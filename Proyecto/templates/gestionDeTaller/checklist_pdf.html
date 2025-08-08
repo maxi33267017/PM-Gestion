@@ -7,44 +7,60 @@
     <style>
         @page {
             size: A4;
-            margin: 2cm;
+            margin: 1.5cm;
         }
         
         body {
             font-family: Arial, sans-serif;
-            font-size: 12px;
-            line-height: 1.4;
+            font-size: 10px;
+            line-height: 1.3;
             color: #333;
+            margin: 0;
+            padding: 0;
         }
         
         .header {
             text-align: center;
-            margin-bottom: 30px;
-            border-bottom: 3px solid #000;
-            padding-bottom: 20px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #000;
+            padding-bottom: 15px;
+        }
+        
+        .header-logos {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .logo {
+            height: 40px;
+            width: auto;
         }
         
         .header h1 {
             color: #000;
-            font-size: 24px;
+            font-size: 18px;
             margin: 0;
             font-weight: bold;
+            text-transform: uppercase;
         }
         
         .header .subtitle {
             color: #666;
-            font-size: 14px;
+            font-size: 12px;
             margin-top: 5px;
         }
         
         .info-section {
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
         
         .info-grid {
             display: table;
             width: 100%;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
+            font-size: 9px;
         }
         
         .info-row {
@@ -53,7 +69,7 @@
         
         .info-cell {
             display: table-cell;
-            padding: 8px;
+            padding: 4px 6px;
             border: 1px solid #ddd;
             vertical-align: top;
         }
@@ -61,75 +77,101 @@
         .info-label {
             font-weight: bold;
             background-color: #f5f5f5;
-            width: 30%;
+            width: 25%;
+        }
+        
+        .porcentaje-info {
+            text-align: center;
+            margin: 15px 0;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border: 2px solid #dee2e6;
+            border-radius: 5px;
+        }
+        
+        .porcentaje-valor {
+            font-size: 20px;
+            font-weight: bold;
+            color: #000;
+        }
+        
+        .porcentaje-label {
+            font-size: 10px;
+            color: #666;
+            margin-top: 3px;
         }
         
         .section-header {
             background-color: #000;
             color: #fff;
-            padding: 10px;
-            margin: 20px 0 10px 0;
+            padding: 6px 8px;
+            margin: 12px 0 6px 0;
             font-weight: bold;
-            font-size: 14px;
+            font-size: 11px;
+            page-break-inside: avoid;
         }
         
-        .elemento-item {
-            margin-bottom: 15px;
+        .elementos-grid {
+            display: table;
+            width: 100%;
+            font-size: 8px;
+            margin-bottom: 10px;
+        }
+        
+        .elemento-row {
+            display: table-row;
+            page-break-inside: avoid;
+        }
+        
+        .elemento-cell {
+            display: table-cell;
+            padding: 3px 4px;
             border: 1px solid #ddd;
-            padding: 10px;
+            vertical-align: top;
         }
         
         .elemento-nombre {
+            width: 50%;
             font-weight: bold;
-            margin-bottom: 8px;
         }
         
-        .respuesta-section {
-            margin-top: 8px;
-        }
-        
-        .respuesta-option {
-            display: inline-block;
-            margin-right: 20px;
-            font-size: 11px;
-        }
-        
-        .respuesta-option input[type="radio"] {
-            margin-right: 5px;
-        }
-        
-        .notas-section {
-            margin-top: 8px;
-            padding-top: 8px;
-            border-top: 1px solid #eee;
-        }
-        
-        .notas-label {
-            font-weight: bold;
-            font-size: 11px;
-            color: #666;
-        }
-        
-        .notas-text {
-            font-size: 11px;
-            color: #333;
-            margin-top: 3px;
-        }
-        
-        .footer {
-            margin-top: 40px;
+        .elemento-respuesta {
+            width: 30%;
             text-align: center;
-            font-size: 10px;
-            color: #666;
-            border-top: 1px solid #ddd;
-            padding-top: 20px;
+        }
+        
+        .elemento-notas {
+            width: 20%;
+        }
+        
+        .respuesta-badge {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 8px;
+            font-weight: bold;
+        }
+        
+        .respuesta-aceptable {
+            background-color: #28a745;
+            color: #fff;
+        }
+        
+        .respuesta-rechazado {
+            background-color: #dc3545;
+            color: #fff;
+        }
+        
+        .respuesta-no-aplica {
+            background-color: #6c757d;
+            color: #fff;
         }
         
         .estado-badge {
             display: inline-block;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 11px;
+            padding: 3px 6px;
+            border-radius: 3px;
+            font-size: 9px;
             font-weight: bold;
         }
         
@@ -148,30 +190,49 @@
             color: #fff;
         }
         
-        .porcentaje-info {
+        .footer {
+            margin-top: 20px;
             text-align: center;
-            margin: 20px 0;
-            padding: 15px;
-            background-color: #f8f9fa;
-            border: 2px solid #dee2e6;
-            border-radius: 5px;
-        }
-        
-        .porcentaje-valor {
-            font-size: 24px;
-            font-weight: bold;
-            color: #000;
-        }
-        
-        .porcentaje-label {
-            font-size: 12px;
+            font-size: 8px;
             color: #666;
-            margin-top: 5px;
+            border-top: 1px solid #ddd;
+            padding-top: 10px;
+        }
+        
+        .notas-generales {
+            margin-top: 15px;
+            padding: 8px;
+            border: 1px solid #ddd;
+            background-color: #f8f9fa;
+            font-size: 9px;
+        }
+        
+        .notas-generales h4 {
+            margin: 0 0 5px 0;
+            font-size: 10px;
+            font-weight: bold;
+        }
+        
+        .page-break {
+            page-break-before: always;
+        }
+        
+        .compact-table {
+            font-size: 8px;
+        }
+        
+        .compact-table th,
+        .compact-table td {
+            padding: 2px 4px;
         }
     </style>
 </head>
 <body>
     <div class="header">
+        <div class="header-logos">
+            <img src="{{ STATIC_URL }}img/logoJohnDeere.png" alt="John Deere" class="logo">
+            <img src="{{ STATIC_URL }}img/logo_pm.png" alt="Patagonia Maquinarias" class="logo">
+        </div>
         <h1>CHECKLIST DE INSPECCIÓN JD PROTECT</h1>
         <div class="subtitle">John Deere Construction - Patagonia Maquinarias</div>
     </div>
@@ -181,14 +242,14 @@
             <div class="info-row">
                 <div class="info-cell info-label">ID Checklist:</div>
                 <div class="info-cell">#{{ checklist.id }}</div>
-                <div class="info-cell info-label">Fecha de Inspección:</div>
+                <div class="info-cell info-label">Fecha:</div>
                 <div class="info-cell">{{ checklist.fecha_inspeccion|date:"d/m/Y" }}</div>
             </div>
             <div class="info-row">
                 <div class="info-cell info-label">Cliente:</div>
                 <div class="info-cell">{{ checklist.servicio.preorden.cliente.razon_social }}</div>
                 <div class="info-cell info-label">Equipo:</div>
-                <div class="info-cell">{{ checklist.equipo.numero_serie }} - {{ checklist.equipo.modelo }}</div>
+                <div class="info-cell">{{ checklist.equipo.numero_serie }}</div>
             </div>
             <div class="info-row">
                 <div class="info-cell info-label">Servicio:</div>
@@ -217,38 +278,42 @@
     {% for seccion_nombre, elementos in elementos_por_seccion.items %}
     <div class="section-header">{{ seccion_nombre }}</div>
     
-    {% for elemento in elementos %}
-    <div class="elemento-item">
-        <div class="elemento-nombre">{{ elemento.nombre_elemento }}</div>
-        
-        <div class="respuesta-section">
-            <div class="respuesta-option">
-                <input type="radio" {% if elemento.respuesta == 'A' %}checked{% endif %} disabled>
-                <strong>Aceptable</strong>
-            </div>
-            <div class="respuesta-option">
-                <input type="radio" {% if elemento.respuesta == 'R' %}checked{% endif %} disabled>
-                <strong>Rechazado</strong>
-            </div>
-            <div class="respuesta-option">
-                <input type="radio" {% if elemento.respuesta == 'N/A' %}checked{% endif %} disabled>
-                <strong>No Aplica</strong>
-            </div>
+    <div class="elementos-grid">
+        <div class="elemento-row">
+            <div class="elemento-cell info-label">Elemento</div>
+            <div class="elemento-cell info-label">Respuesta</div>
+            <div class="elemento-cell info-label">Notas</div>
         </div>
         
-        {% if elemento.notas %}
-        <div class="notas-section">
-            <div class="notas-label">Notas:</div>
-            <div class="notas-text">{{ elemento.notas }}</div>
+        {% for elemento in elementos %}
+        <div class="elemento-row">
+            <div class="elemento-cell elemento-nombre">{{ elemento.nombre_elemento }}</div>
+            <div class="elemento-cell elemento-respuesta">
+                {% if elemento.respuesta == 'A' %}
+                    <span class="respuesta-badge respuesta-aceptable">Aceptable</span>
+                {% elif elemento.respuesta == 'R' %}
+                    <span class="respuesta-badge respuesta-rechazado">Rechazado</span>
+                {% elif elemento.respuesta == 'N/A' %}
+                    <span class="respuesta-badge respuesta-no-aplica">No Aplica</span>
+                {% else %}
+                    <span style="color: #999;">Sin respuesta</span>
+                {% endif %}
+            </div>
+            <div class="elemento-cell elemento-notas">
+                {% if elemento.notas %}
+                    {{ elemento.notas|truncatechars:50 }}
+                {% else %}
+                    -
+                {% endif %}
+            </div>
         </div>
-        {% endif %}
+        {% endfor %}
     </div>
-    {% endfor %}
     {% endfor %}
     
     {% if checklist.notas_generales %}
-    <div class="section-header">Notas Generales</div>
-    <div style="padding: 15px; border: 1px solid #ddd; margin-bottom: 20px;">
+    <div class="notas-generales">
+        <h4>Notas Generales:</h4>
         {{ checklist.notas_generales|linebreaks }}
     </div>
     {% endif %}
