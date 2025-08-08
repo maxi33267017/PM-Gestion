@@ -2970,7 +2970,7 @@ def servicios_sin_ingresos(request):
         
         # Calcular repuestos incluyendo modelos antiguos y nuevos
         total_repuestos_antiguos = servicio.repuestos.aggregate(total=Sum(F('precio_unitario') * F('cantidad')))['total'] or Decimal('0.00')
-        total_repuestos_simplificados = servicio.venta_repuestos_simplificada.aggregate(total=Sum('monto_total'))['total'] or Decimal('0.00')
+        total_repuestos_simplificados = servicio.venta_repuestos_simplificada.aggregate(total=Sum('monto_total_usd'))['total'] or Decimal('0.00')
         total_repuestos = total_repuestos_antiguos + total_repuestos_simplificados
         valor_total = valor_mano_obra + total_gastos + total_repuestos
         if valor_total == Decimal('0.00'):
