@@ -5191,7 +5191,7 @@ def guardar_todo_checklist(request, checklist_id):
         return JsonResponse({
             'success': True,
             'message': f'Checklist guardado exitosamente. {elementos_actualizados} elementos actualizados.',
-            'redirect_url': reverse('detalle_servicio', args=[checklist.servicio.id])
+            'redirect_url': reverse('gestionDeTaller:detalle_servicio', args=[checklist.servicio.id])
         })
         
     except Exception as e:
