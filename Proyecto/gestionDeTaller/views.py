@@ -45,7 +45,8 @@ from .models import (
     RespuestaEncuesta, InsatisfaccionCliente, ObservacionServicio, Repuesto,
     HerramientaEspecial, ReservaHerramienta, LogHerramienta,
     HerramientaPersonal, AsignacionHerramientaPersonal, AuditoriaHerramientaPersonal,
-    DetalleAuditoriaHerramienta, ItemHerramientaPersonal, LogCambioItemHerramienta
+    DetalleAuditoriaHerramienta, ItemHerramientaPersonal, LogCambioItemHerramienta,
+    ChecklistInspeccion, ElementoChecklist, LogChecklistInspeccion
 )
 from recursosHumanos.models import Usuario
 from .models import EvidenciaPlanAccion5S
@@ -53,7 +54,7 @@ from recursosHumanos.forms import FiltroExportacionHorasForm
 from django.contrib.auth.decorators import user_passes_test
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt
-from clientes.models import TipoEquipo, ModeloEquipo
+from clientes.models import TipoEquipo, ModeloEquipo, Equipo
 from .models import Tarifario, TarifarioModeloEquipo
 import json
 
