@@ -4891,7 +4891,7 @@ def crear_checklist_inspeccion(request, servicio_id):
             )
             
             messages.success(request, 'Checklist de inspección creado exitosamente.')
-            return redirect('detalle_checklist_inspeccion', checklist_id=checklist.id)
+            return redirect('gestionDeTaller:detalle_checklist_inspeccion', checklist_id=checklist.id)
         else:
             messages.error(request, 'Por favor complete todos los campos requeridos.')
     
