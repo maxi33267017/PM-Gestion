@@ -293,8 +293,9 @@
         const modeloEquipoSelect = document.getElementById('modelo_equipo');
         
         if (tipoEquipoSelect) {
-            tipoEquipoSelect.addEventListener('change', function() {
-                const tipoId = this.value;
+            // Función para cargar modelos
+            function cargarModelos(tipoId) {
+                console.log('Cargando modelos para tipo ID:', tipoId);
                 modeloEquipoSelect.innerHTML = '<option value="">Selecciona un modelo...</option>';
                 
                 if (tipoId) {
@@ -305,20 +306,45 @@
                             'X-CSRFToken': '{{ csrf_token }}',
                         }
                     })
-                    .then(response => response.json())
+                    .then(response => {
+                        console.log('Respuesta del servidor:', response);
+                        return response.json();
+                    })
                     .then(data => {
-                        data.modelos.forEach(modelo => {
-                            const option = document.createElement('option');
-                            option.value = modelo.id;
-                            option.textContent = modelo.nombre;
-                            modeloEquipoSelect.appendChild(option);
-                        });
+                        console.log('Datos recibidos:', data);
+                        if (data.modelos && data.modelos.length > 0) {
+                            data.modelos.forEach(modelo => {
+                                const option = document.createElement('option');
+                                option.value = modelo.id;
+                                option.textContent = modelo.nombre;
+                                modeloEquipoSelect.appendChild(option);
+                            });
+                            console.log(`${data.modelos.length} modelos cargados`);
+                        } else {
+                            console.log('No se encontraron modelos para este tipo');
+                        }
                     })
                     .catch(error => {
                         console.error('Error al cargar modelos:', error);
                     });
                 }
+            }
+            
+            // Event listener para cambio de tipo
+            tipoEquipoSelect.addEventListener('change', function() {
+                cargarModelos(this.value);
             });
+            
+            // También cargar modelos cuando se abre el modal si ya hay un tipo seleccionado
+            const modalCrearEquipo = document.getElementById('modalCrearEquipo');
+            if (modalCrearEquipo) {
+                modalCrearEquipo.addEventListener('shown.bs.modal', function() {
+                    if (tipoEquipoSelect.value) {
+                        console.log('Modal abierto, cargando modelos para tipo seleccionado:', tipoEquipoSelect.value);
+                        cargarModelos(tipoEquipoSelect.value);
+                    }
+                });
+            }
         }
     });
     

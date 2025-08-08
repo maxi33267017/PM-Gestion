@@ -5114,8 +5114,10 @@ def crear_equipo_rapido(request, servicio_id):
 def obtener_modelos_equipo(request):
     """Obtener modelos de equipo por tipo"""
     tipo_id = request.GET.get('tipo_id')
+    print(f"DEBUG: Obteniendo modelos para tipo_id: {tipo_id}")
     
     if not tipo_id:
+        print("DEBUG: No se proporcionó tipo_id")
         return JsonResponse({'modelos': []})
     
     from clientes.models import ModeloEquipo
@@ -5123,6 +5125,8 @@ def obtener_modelos_equipo(request):
         tipo_equipo_id=tipo_id,
         activo=True
     ).order_by('marca', 'nombre')
+    
+    print(f"DEBUG: Encontrados {modelos.count()} modelos para tipo_id {tipo_id}")
     
     modelos_data = [
         {
@@ -5132,4 +5136,5 @@ def obtener_modelos_equipo(request):
         for modelo in modelos
     ]
     
+    print(f"DEBUG: Datos a enviar: {modelos_data}")
     return JsonResponse({'modelos': modelos_data})
