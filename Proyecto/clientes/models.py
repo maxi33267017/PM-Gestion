@@ -133,7 +133,7 @@ class Equipo(models.Model):
     numero_serie = models.CharField(max_length=50, unique=True, verbose_name="Número de Serie/PIN")
     modelo_motor = models.ForeignKey(ModeloMotor, on_delete=models.PROTECT, null=True, blank=True)
     numero_serie_motor = models.CharField(max_length=50, verbose_name="Número de Serie Motor", null=True, blank=True)
-    año_fabricacion = models.PositiveIntegerField(verbose_name="Año de Fabricación")
+    año_fabricacion = models.PositiveIntegerField(verbose_name="Año de Fabricación", null=True, blank=True)
     fecha_venta = models.DateField(verbose_name="Fecha de Venta", null=True, blank=True)
     # estado = models.CharField(max_length=15, choices=ESTADO_CHOICES, default='ACTIVO')
     notas = models.TextField(blank=True)

@@ -142,6 +142,13 @@
                             {% endfor %}
                         </select>
                         <small class="text-muted">Selecciona el equipo específico para esta inspección</small>
+                        
+                        <!-- Opción para crear equipo nuevo -->
+                        <div class="mt-2">
+                            <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalCrearEquipo">
+                                <i class="fas fa-plus me-1"></i>Crear Equipo Nuevo
+                            </button>
+                        </div>
                     </div>
                 </div>
                 
@@ -191,6 +198,63 @@
     </div>
 </div>
 
+<!-- Modal para crear equipo nuevo -->
+<div class="modal fade" id="modalCrearEquipo" tabindex="-1" aria-labelledby="modalCrearEquipoLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalCrearEquipoLabel">
+                    <i class="fas fa-plus me-2"></i>Crear Equipo Nuevo
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="formCrearEquipo">
+                    <div class="mb-3">
+                        <label for="pin" class="form-label">
+                            <i class="fas fa-hashtag me-2"></i>PIN del Equipo *
+                        </label>
+                        <input type="text" class="form-control" id="pin" name="pin" required 
+                               placeholder="Ingresa el PIN del equipo (17 dígitos)">
+                        <small class="text-muted">PIN único del equipo (obligatorio)</small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="tipo_equipo" class="form-label">
+                            <i class="fas fa-tag me-2"></i>Tipo de Equipo
+                        </label>
+                        <select class="form-control" id="tipo_equipo" name="tipo_equipo">
+                            <option value="">Selecciona un tipo...</option>
+                            {% for tipo in tipos_equipo %}
+                                <option value="{{ tipo.id }}">{{ tipo.nombre }}</option>
+                            {% endfor %}
+                        </select>
+                        <small class="text-muted">Opcional - para identificar el tipo de equipo</small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="modelo_equipo" class="form-label">
+                            <i class="fas fa-cogs me-2"></i>Modelo de Equipo
+                        </label>
+                        <select class="form-control" id="modelo_equipo" name="modelo_equipo">
+                            <option value="">Selecciona un modelo...</option>
+                        </select>
+                        <small class="text-muted">Opcional - para identificar el modelo específico</small>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-2"></i>Cancelar
+                </button>
+                <button type="button" class="btn btn-primary" onclick="crearEquipo()">
+                    <i class="fas fa-save me-2"></i>Crear Equipo
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         // Validación del formulario
@@ -223,6 +287,91 @@
         // Establecer fecha por defecto
         const today = new Date().toISOString().split('T')[0];
         fechaInput.value = today;
+        
+        // Cargar modelos cuando se selecciona un tipo de equipo
+        const tipoEquipoSelect = document.getElementById('tipo_equipo');
+        const modeloEquipoSelect = document.getElementById('modelo_equipo');
+        
+        if (tipoEquipoSelect) {
+            tipoEquipoSelect.addEventListener('change', function() {
+                const tipoId = this.value;
+                modeloEquipoSelect.innerHTML = '<option value="">Selecciona un modelo...</option>';
+                
+                if (tipoId) {
+                    // Cargar modelos del tipo seleccionado
+                    fetch(`{% url 'gestionDeTaller:obtener_modelos_equipo' %}?tipo_id=${tipoId}`, {
+                        method: 'GET',
+                        headers: {
+                            'X-CSRFToken': '{{ csrf_token }}',
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        data.modelos.forEach(modelo => {
+                            const option = document.createElement('option');
+                            option.value = modelo.id;
+                            option.textContent = modelo.nombre;
+                            modeloEquipoSelect.appendChild(option);
+                        });
+                    })
+                    .catch(error => {
+                        console.error('Error al cargar modelos:', error);
+                    });
+                }
+            });
+        }
     });
+    
+    // Función para crear equipo
+    function crearEquipo() {
+        const pin = document.getElementById('pin').value.trim();
+        const tipoEquipo = document.getElementById('tipo_equipo').value;
+        const modeloEquipo = document.getElementById('modelo_equipo').value;
+        
+        if (!pin) {
+            alert('Por favor ingresa el PIN del equipo.');
+            return;
+        }
+        
+        const formData = new FormData();
+        formData.append('pin', pin);
+        formData.append('tipo_equipo', tipoEquipo);
+        formData.append('modelo_equipo', modeloEquipo);
+        
+        fetch('{% url "gestionDeTaller:crear_equipo_rapido" servicio.id %}', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+            },
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(data.message);
+                
+                // Agregar el nuevo equipo al select
+                const equipoSelect = document.getElementById('equipo');
+                const option = document.createElement('option');
+                option.value = data.equipo.id;
+                option.textContent = `${data.equipo.numero_serie} - ${data.equipo.modelo}`;
+                option.selected = true;
+                equipoSelect.appendChild(option);
+                
+                // Cerrar modal
+                const modal = bootstrap.Modal.getInstance(document.getElementById('modalCrearEquipo'));
+                modal.hide();
+                
+                // Limpiar formulario
+                document.getElementById('formCrearEquipo').reset();
+            } else {
+                alert('Error: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error al crear el equipo. Por favor intenta nuevamente.');
+        });
+    }
 </script>
 {% endblock %} 

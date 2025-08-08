@@ -120,6 +120,8 @@ urlpatterns = [
         # URLs para Checklists de Inspección JD Protect
         path('checklists-inspeccion/', views.lista_checklists_inspeccion, name='lista_checklists_inspeccion'),
         path('servicio/<int:servicio_id>/crear-checklist/', views.crear_checklist_inspeccion, name='crear_checklist_inspeccion'),
+        path('servicio/<int:servicio_id>/crear-equipo-rapido/', views.crear_equipo_rapido, name='crear_equipo_rapido'),
+        path('obtener-modelos-equipo/', views.obtener_modelos_equipo, name='obtener_modelos_equipo'),
         path('checklist-inspeccion/<int:checklist_id>/', views.detalle_checklist_inspeccion, name='detalle_checklist_inspeccion'),
         path('elemento-checklist/<int:elemento_id>/actualizar/', views.actualizar_elemento_checklist, name='actualizar_elemento_checklist'),
         path('checklist-inspeccion/<int:checklist_id>/actualizar/', views.actualizar_checklist, name='actualizar_checklist'),

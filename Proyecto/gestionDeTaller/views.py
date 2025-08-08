@@ -4897,9 +4897,14 @@ def crear_checklist_inspeccion(request, servicio_id):
     # Obtener equipos del cliente
     equipos_cliente = servicio.preorden.cliente.equipos.all()
     
+    # Obtener tipos de equipo para el modal
+    from clientes.models import TipoEquipo
+    tipos_equipo = TipoEquipo.objects.filter(activo=True).order_by('nombre')
+    
     context = {
         'servicio': servicio,
         'equipos_cliente': equipos_cliente,
+        'tipos_equipo': tipos_equipo,
     }
     
     return render(request, 'gestionDeTaller/crear_checklist_inspeccion.html', context)
@@ -5054,3 +5059,76 @@ def enviar_checklist_email(request, checklist_id):
     
     messages.success(request, f'Checklist enviado por email a {email_cliente}')
     return redirect('detalle_checklist_inspeccion', checklist_id=checklist.id)
+
+@login_required
+@require_http_methods(["POST"])
+def crear_equipo_rapido(request, servicio_id):
+    """Crear equipo rápidamente desde el formulario de checklist"""
+    servicio = get_object_or_404(Servicio, id=servicio_id)
+    
+    pin = request.POST.get('pin')
+    tipo_equipo_id = request.POST.get('tipo_equipo')
+    modelo_equipo_id = request.POST.get('modelo_equipo')
+    
+    if not pin:
+        return JsonResponse({
+            'success': False,
+            'message': 'El PIN del equipo es obligatorio'
+        })
+    
+    # Verificar si el PIN ya existe
+    if Equipo.objects.filter(numero_serie=pin).exists():
+        return JsonResponse({
+            'success': False,
+            'message': f'Ya existe un equipo con el PIN {pin}'
+        })
+    
+    try:
+        # Crear el equipo con datos mínimos
+        equipo = Equipo.objects.create(
+            cliente=servicio.preorden.cliente,
+            modelo_id=modelo_equipo_id,
+            numero_serie=pin,
+            activo=True
+        )
+        
+        return JsonResponse({
+            'success': True,
+            'message': f'Equipo creado exitosamente con PIN {pin}',
+            'equipo': {
+                'id': equipo.id,
+                'numero_serie': equipo.numero_serie,
+                'modelo': str(equipo.modelo)
+            }
+        })
+        
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': f'Error al crear el equipo: {str(e)}'
+        })
+
+
+@login_required
+def obtener_modelos_equipo(request):
+    """Obtener modelos de equipo por tipo"""
+    tipo_id = request.GET.get('tipo_id')
+    
+    if not tipo_id:
+        return JsonResponse({'modelos': []})
+    
+    from clientes.models import ModeloEquipo
+    modelos = ModeloEquipo.objects.filter(
+        tipo_equipo_id=tipo_id,
+        activo=True
+    ).order_by('marca', 'nombre')
+    
+    modelos_data = [
+        {
+            'id': modelo.id,
+            'nombre': f"{modelo.marca} {modelo.nombre}"
+        }
+        for modelo in modelos
+    ]
+    
+    return JsonResponse({'modelos': modelos_data})
