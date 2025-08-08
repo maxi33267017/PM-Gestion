@@ -50,13 +50,16 @@
     }
     
     .elemento-item {
-        padding: 1rem 1.5rem;
+        padding: 1.5rem;
         border-bottom: 1px solid #e9ecef;
         transition: background-color 0.3s ease;
+        background: #f8f9fa;
+        margin: 0.5rem;
+        border-radius: 10px;
     }
     
     .elemento-item:hover {
-        background-color: #f8f9fa;
+        background-color: #e9ecef;
     }
     
     .elemento-item:last-child {
@@ -66,57 +69,97 @@
     .elemento-nombre {
         font-weight: 600;
         color: #2c3e50;
-        margin-bottom: 0.5rem;
+        margin-bottom: 1rem;
+        font-size: 1.1rem;
     }
     
-    .elemento-controls {
+    .checklist-options {
         display: flex;
         align-items: center;
         gap: 1rem;
+        margin-bottom: 1rem;
         flex-wrap: wrap;
     }
     
-    .respuesta-btn {
-        padding: 0.5rem 1rem;
-        border: none;
-        border-radius: 20px;
-        font-weight: 500;
+    .checklist-option {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1.5rem;
+        border: 2px solid #e9ecef;
+        border-radius: 25px;
         cursor: pointer;
         transition: all 0.3s ease;
-        font-size: 0.9rem;
+        font-weight: 500;
+        background: white;
+        min-width: 140px;
+        justify-content: center;
     }
     
-    .respuesta-btn.aceptable {
-        background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+    .checklist-option:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+    }
+    
+    .checklist-option.selected {
+        border-color: #007bff;
+        background: #007bff;
         color: white;
+        box-shadow: 0 3px 10px rgba(0,123,255,0.3);
     }
     
-    .respuesta-btn.rechazado {
-        background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
-        color: white;
+    .checklist-option.aceptable.selected {
+        border-color: #28a745;
+        background: #28a745;
+        box-shadow: 0 3px 10px rgba(40,167,69,0.3);
     }
     
-    .respuesta-btn.no-aplica {
-        background: linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%);
-        color: white;
+    .checklist-option.rechazado.selected {
+        border-color: #dc3545;
+        background: #dc3545;
+        box-shadow: 0 3px 10px rgba(220,53,69,0.3);
     }
     
-    .respuesta-btn:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+    .checklist-option.no-aplica.selected {
+        border-color: #6c757d;
+        background: #6c757d;
+        box-shadow: 0 3px 10px rgba(108,117,125,0.3);
     }
     
-    .respuesta-btn.active {
-        box-shadow: 0 0 0 2px rgba(255,255,255,0.5);
+    .checklist-option input[type="radio"] {
+        display: none;
     }
     
-    .notas-input {
+    .checklist-option i {
+        font-size: 1.2rem;
+    }
+    
+    .notas-container {
+        margin-top: 1rem;
+    }
+    
+    .notas-label {
+        font-weight: 600;
+        color: #495057;
+        margin-bottom: 0.5rem;
+        display: block;
+    }
+    
+    .notas-textarea {
         width: 100%;
-        max-width: 300px;
-        padding: 0.5rem;
-        border: 1px solid #e9ecef;
-        border-radius: 5px;
-        font-size: 0.9rem;
+        min-height: 80px;
+        padding: 0.75rem;
+        border: 2px solid #e9ecef;
+        border-radius: 8px;
+        font-size: 0.95rem;
+        resize: vertical;
+        transition: border-color 0.3s ease;
+    }
+    
+    .notas-textarea:focus {
+        outline: none;
+        border-color: #007bff;
+        box-shadow: 0 0 0 0.2rem rgba(0,123,255,0.25);
     }
     
     .estado-badge {
@@ -198,6 +241,26 @@
     .btn-warning {
         background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
         color: white;
+    }
+    
+    .save-indicator {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: #28a745;
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border-radius: 25px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        z-index: 1000;
+        opacity: 0;
+        transform: translateY(-20px);
+        transition: all 0.3s ease;
+    }
+    
+    .save-indicator.show {
+        opacity: 1;
+        transform: translateY(0);
     }
 </style>
 
@@ -319,22 +382,40 @@
             {% for elemento in elementos %}
             <div class="elemento-item" data-elemento-id="{{ elemento.id }}">
                 <div class="elemento-nombre">{{ elemento.nombre_elemento }}</div>
-                <div class="elemento-controls">
-                    <button type="button" class="respuesta-btn aceptable {% if elemento.respuesta == 'A' %}active{% endif %}"
-                            onclick="actualizarRespuesta({{ elemento.id }}, 'A')">
-                        <i class="fas fa-check me-1"></i>Aceptable
-                    </button>
-                    <button type="button" class="respuesta-btn rechazado {% if elemento.respuesta == 'R' %}active{% endif %}"
-                            onclick="actualizarRespuesta({{ elemento.id }}, 'R')">
-                        <i class="fas fa-times me-1"></i>Rechazado
-                    </button>
-                    <button type="button" class="respuesta-btn no-aplica {% if elemento.respuesta == 'N/A' %}active{% endif %}"
-                            onclick="actualizarRespuesta({{ elemento.id }}, 'N/A')">
-                        <i class="fas fa-minus me-1"></i>No Aplica
-                    </button>
-                    <input type="text" class="notas-input" placeholder="Notas..." 
-                           value="{{ elemento.notas }}" 
-                           onchange="actualizarNotas({{ elemento.id }}, this.value)">
+                
+                <div class="checklist-options">
+                    <label class="checklist-option aceptable {% if elemento.respuesta == 'A' %}selected{% endif %}">
+                        <input type="radio" name="respuesta_{{ elemento.id }}" value="A" 
+                               {% if elemento.respuesta == 'A' %}checked{% endif %}
+                               onchange="actualizarRespuesta({{ elemento.id }}, 'A')">
+                        <i class="fas fa-check"></i>
+                        <span>Aceptable</span>
+                    </label>
+                    
+                    <label class="checklist-option rechazado {% if elemento.respuesta == 'R' %}selected{% endif %}">
+                        <input type="radio" name="respuesta_{{ elemento.id }}" value="R"
+                               {% if elemento.respuesta == 'R' %}checked{% endif %}
+                               onchange="actualizarRespuesta({{ elemento.id }}, 'R')">
+                        <i class="fas fa-times"></i>
+                        <span>Rechazado</span>
+                    </label>
+                    
+                    <label class="checklist-option no-aplica {% if elemento.respuesta == 'N/A' %}selected{% endif %}">
+                        <input type="radio" name="respuesta_{{ elemento.id }}" value="N/A"
+                               {% if elemento.respuesta == 'N/A' %}checked{% endif %}
+                               onchange="actualizarRespuesta({{ elemento.id }}, 'N/A')">
+                        <i class="fas fa-minus"></i>
+                        <span>No Aplica</span>
+                    </label>
+                </div>
+                
+                <div class="notas-container">
+                    <label class="notas-label">
+                        <i class="fas fa-sticky-note me-2"></i>Notas:
+                    </label>
+                    <textarea class="notas-textarea" 
+                              placeholder="Agregar notas sobre este elemento..."
+                              onchange="actualizarNotas({{ elemento.id }}, this.value)">{{ elemento.notas }}</textarea>
                 </div>
             </div>
             {% endfor %}
@@ -370,11 +451,19 @@
     </div>
 </div>
 
+<!-- Indicador de guardado -->
+<div class="save-indicator" id="saveIndicator">
+    <i class="fas fa-check me-2"></i>Guardado automáticamente
+</div>
+
 <script>
     function actualizarRespuesta(elementoId, respuesta) {
         const formData = new FormData();
         formData.append('respuesta', respuesta);
-        formData.append('notas', document.querySelector(`[data-elemento-id="${elementoId}"] .notas-input`).value);
+        
+        // Obtener las notas actuales
+        const notasElement = document.querySelector(`[data-elemento-id="${elementoId}"] .notas-textarea`);
+        formData.append('notas', notasElement ? notasElement.value : '');
         
         fetch(`/gestion_de_taller/elemento-checklist/${elementoId}/actualizar/`, {
             method: 'POST',
@@ -386,17 +475,22 @@
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                // Actualizar botones
+                // Actualizar visualización de botones
                 const elementoItem = document.querySelector(`[data-elemento-id="${elementoId}"]`);
-                elementoItem.querySelectorAll('.respuesta-btn').forEach(btn => {
-                    btn.classList.remove('active');
+                elementoItem.querySelectorAll('.checklist-option').forEach(option => {
+                    option.classList.remove('selected');
                 });
-                elementoItem.querySelector(`.respuesta-btn.${respuesta === 'A' ? 'aceptable' : respuesta === 'R' ? 'rechazado' : 'no-aplica'}`).classList.add('active');
                 
-                // Recargar página para actualizar métricas
+                const selectedOption = elementoItem.querySelector(`.checklist-option input[value="${respuesta}"]`).parentElement;
+                selectedOption.classList.add('selected');
+                
+                // Mostrar indicador de guardado
+                mostrarIndicadorGuardado();
+                
+                // Recargar página después de un delay para actualizar métricas
                 setTimeout(() => {
                     location.reload();
-                }, 1000);
+                }, 2000);
             } else {
                 alert('Error al actualizar: ' + data.message);
             }
@@ -408,10 +502,14 @@
     }
     
     function actualizarNotas(elementoId, notas) {
+        // Obtener la respuesta actual seleccionada
+        const elementoItem = document.querySelector(`[data-elemento-id="${elementoId}"]`);
+        const respuestaSeleccionada = elementoItem.querySelector('.checklist-option.selected input');
+        const respuesta = respuestaSeleccionada ? respuestaSeleccionada.value : '';
+        
         const formData = new FormData();
         formData.append('notas', notas);
-        formData.append('respuesta', document.querySelector(`[data-elemento-id="${elementoId}"] .respuesta-btn.active`).textContent.trim().includes('Aceptable') ? 'A' : 
-                       document.querySelector(`[data-elemento-id="${elementoId}"] .respuesta-btn.active`).textContent.trim().includes('Rechazado') ? 'R' : 'N/A');
+        formData.append('respuesta', respuesta);
         
         fetch(`/gestion_de_taller/elemento-checklist/${elementoId}/actualizar/`, {
             method: 'POST',
@@ -422,7 +520,9 @@
         })
         .then(response => response.json())
         .then(data => {
-            if (!data.success) {
+            if (data.success) {
+                mostrarIndicadorGuardado();
+            } else {
                 alert('Error al actualizar notas: ' + data.message);
             }
         })
@@ -430,6 +530,15 @@
             console.error('Error:', error);
             alert('Error al actualizar las notas');
         });
+    }
+    
+    function mostrarIndicadorGuardado() {
+        const indicator = document.getElementById('saveIndicator');
+        indicator.classList.add('show');
+        
+        setTimeout(() => {
+            indicator.classList.remove('show');
+        }, 2000);
     }
 </script>
 {% endblock %} 
