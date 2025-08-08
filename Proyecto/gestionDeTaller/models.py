@@ -1963,16 +1963,13 @@ class ElementoChecklist(models.Model):
     SECCION_CHOICES = [
         ('CABINA', 'Cabina'),
         ('TRANSMISSION', 'Transmission'),
-        ('SISTEMA_HIDRAULICO', 'Sistema Hidráulico'),
-        ('SISTEMA_ELECTRICO', 'Sistema Eléctrico'),
         ('SISTEMA_FRENOS', 'Sistema de Frenos'),
         ('MOTOR', 'Motor'),
-        ('CHASSIS_ESTRUCTURA', 'Chassis y Estructura'),
-        ('SISTEMA_ASPIRACION', 'Sistema de Aspiración'),
-        ('SISTEMA_COMBUSTIBLE', 'Sistema de Combustible'),
-        ('SISTEMA_DEF', 'Sistema DEF'),
         ('SISTEMA_REFRIGERACION', 'Sistema de Refrigeración'),
-        ('LANTAS_CARRILERIA', 'Lantas y Carrilería'),
+        ('LANTAS_CARRILERIA', 'Llantas y Carrilería'),
+        ('SISTEMA_HIDRAULICO', 'Sistema Hidráulico'),
+        ('SISTEMA_ELECTRICO', 'Sistema Eléctrico'),
+        ('CHASSIS_ESTRUCTURA', 'Chassis y Estructura'),
     ]
     
     checklist = models.ForeignKey(

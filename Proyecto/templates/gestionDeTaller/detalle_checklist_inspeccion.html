@@ -33,20 +33,47 @@
         border-bottom: 2px solid #e9ecef;
     }
     
-    .seccion-card {
+    .accordion-item {
         background: white;
         border-radius: 15px;
         box-shadow: 0 5px 20px rgba(0,0,0,0.08);
-        margin-bottom: 2rem;
+        margin-bottom: 1rem;
         overflow: hidden;
     }
     
-    .seccion-header {
+    .accordion-header {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         color: white;
         padding: 1rem 1.5rem;
         font-weight: 600;
         font-size: 1.1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .accordion-header:hover {
+        background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+    }
+    
+    .accordion-header .toggle-icon {
+        transition: transform 0.3s ease;
+    }
+    
+    .accordion-header.collapsed .toggle-icon {
+        transform: rotate(-90deg);
+    }
+    
+    .accordion-body {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease;
+    }
+    
+    .accordion-body.show {
+        max-height: 2000px;
     }
     
     .elemento-item {
@@ -262,6 +289,23 @@
         opacity: 1;
         transform: translateY(0);
     }
+    
+    .section-stats {
+        display: flex;
+        gap: 1rem;
+        margin-top: 0.5rem;
+        font-size: 0.9rem;
+    }
+    
+    .stat-item {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+    
+    .stat-aceptable { color: #28a745; }
+    .stat-rechazado { color: #dc3545; }
+    .stat-no-aplica { color: #6c757d; }
 </style>
 
 <div class="container-fluid mt-4">
@@ -372,13 +416,36 @@
         </a>
     </div>
 
-    <!-- Elementos por Sección -->
+    <!-- Elementos por Sección (Acordeón) -->
     {% for seccion_nombre, elementos in elementos_por_seccion.items %}
-    <div class="seccion-card">
-        <div class="seccion-header">
-            <i class="fas fa-cogs me-2"></i>{{ seccion_nombre }}
+    <div class="accordion-item">
+        <div class="accordion-header" onclick="toggleAccordion(this)">
+            <div>
+                <i class="fas fa-cogs me-2"></i>{{ seccion_nombre }}
+                <div class="section-stats">
+                    {% with elementos|length as total %}
+                    {% with elementos|slice:":1"|first as first_element %}
+                    {% if first_element %}
+                        <span class="stat-item stat-aceptable">
+                            <i class="fas fa-check"></i>
+                            {{ elementos|slice:":1"|first|default:0 }}
+                        </span>
+                        <span class="stat-item stat-rechazado">
+                            <i class="fas fa-times"></i>
+                            {{ elementos|slice:":1"|first|default:0 }}
+                        </span>
+                        <span class="stat-item stat-no-aplica">
+                            <i class="fas fa-minus"></i>
+                            {{ elementos|slice:":1"|first|default:0 }}
+                        </span>
+                    {% endif %}
+                    {% endwith %}
+                    {% endwith %}
+                </div>
+            </div>
+            <i class="fas fa-chevron-down toggle-icon"></i>
         </div>
-        <div class="seccion-body">
+        <div class="accordion-body">
             {% for elemento in elementos %}
             <div class="elemento-item" data-elemento-id="{{ elemento.id }}">
                 <div class="elemento-nombre">{{ elemento.nombre_elemento }}</div>
@@ -457,6 +524,19 @@
 </div>
 
 <script>
+    function toggleAccordion(header) {
+        const body = header.nextElementSibling;
+        const icon = header.querySelector('.toggle-icon');
+        
+        if (body.classList.contains('show')) {
+            body.classList.remove('show');
+            header.classList.add('collapsed');
+        } else {
+            body.classList.add('show');
+            header.classList.remove('collapsed');
+        }
+    }
+    
     function actualizarRespuesta(elementoId, respuesta) {
         const formData = new FormData();
         formData.append('respuesta', respuesta);
@@ -540,5 +620,13 @@
             indicator.classList.remove('show');
         }, 2000);
     }
+    
+    // Expandir la primera sección por defecto
+    document.addEventListener('DOMContentLoaded', function() {
+        const firstAccordion = document.querySelector('.accordion-header');
+        if (firstAccordion) {
+            toggleAccordion(firstAccordion);
+        }
+    });
 </script>
 {% endblock %} 

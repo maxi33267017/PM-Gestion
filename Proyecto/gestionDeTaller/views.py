@@ -4794,84 +4794,80 @@ def crear_checklist_inspeccion(request, servicio_id):
                 creado_por=request.user
             )
             
-            # Crear elementos del checklist basados en el template JD Protect
+            # Crear elementos del checklist según nueva especificación
             elementos_template = [
                 # Cabina
-                ('CABINA', 'Cinturon de Seguridad', 1),
-                ('CABINA', 'Operacion de transmision', 2),
-                ('CABINA', 'Claxon', 3),
-                ('CABINA', 'Aceite de transmision', 4),
-                ('CABINA', 'Vidrios', 5),
-                ('CABINA', 'Filtros de transmision', 6),
-                ('CABINA', 'Limpiadores', 7),
-                ('CABINA', 'Barra cardan y crucetas', 8),
-                ('CABINA', 'Espejos', 9),
-                ('CABINA', 'Lubricacion de rodamientos', 10),
-                ('CABINA', 'Alarma de Reversa', 11),
-                ('CABINA', 'Mandos finales', 12),
-                ('CABINA', 'Operacion del HVAC', 13),
-                ('CABINA', 'Filtros de Aire de Cabina', 14),
-                ('CABINA', 'Monitor de Cabina', 15),
+                ('CABINA', 'Cinturon de seguridad', 1),
+                ('CABINA', 'Claxon/Bocina', 2),
+                ('CABINA', 'Vidrios', 3),
+                ('CABINA', 'Limpiadores de vidrios', 4),
+                ('CABINA', 'Espejos', 5),
+                ('CABINA', 'Alarma de Reversa', 6),
+                ('CABINA', 'Operaciones del HVAC', 7),
+                ('CABINA', 'Filtros de aire de cabina', 8),
+                ('CABINA', 'Monitor de Cabina', 9),
+                ('CABINA', 'DTCS', 10),
+                ('CABINA', 'Actualizacion de software', 11),
+                ('CABINA', 'PIPS', 12),
+                ('CABINA', 'Conexion JDLINK/ Experts Alerts', 13),
                 
-                # Sistema Hidráulico
-                ('SISTEMA_HIDRAULICO', 'Operacion de Sistema Hidraulico (fugas)', 16),
-                ('SISTEMA_HIDRAULICO', 'Nivel de Aceite', 17),
-                ('SISTEMA_HIDRAULICO', 'DTCs', 18),
-                ('SISTEMA_HIDRAULICO', 'Filtros de Aceite', 19),
-                ('SISTEMA_HIDRAULICO', 'Actualizacion de Software', 20),
-                ('SISTEMA_HIDRAULICO', 'Mangueras y tubos hidraulicos', 21),
-                ('SISTEMA_HIDRAULICO', 'Product Improvement Programs (PIPs)', 22),
-                ('SISTEMA_HIDRAULICO', 'Cilindros hidraulicos', 23),
-                ('SISTEMA_HIDRAULICO', 'Conexão JD Link, Expert Alerts', 24),
-                
-                # Sistema Eléctrico
-                ('SISTEMA_ELECTRICO', 'Neutral Safety Start', 25),
-                ('SISTEMA_ELECTRICO', 'Alternador', 26),
-                ('SISTEMA_ELECTRICO', 'Baterias', 27),
-                ('SISTEMA_ELECTRICO', 'Operacion general', 28),
-                ('SISTEMA_ELECTRICO', 'Arneses electricos', 29),
+                # Transmission
+                ('TRANSMISSION', 'Operacion de transmision', 14),
+                ('TRANSMISSION', 'Aceite de transmision', 15),
+                ('TRANSMISSION', 'Filstros de Transmision', 16),
+                ('TRANSMISSION', 'Barra cardan y crucetas', 17),
+                ('TRANSMISSION', 'Lubricacion de rodamientos', 18),
+                ('TRANSMISSION', 'Mandos finales', 19),
                 
                 # Sistema de Frenos
-                ('SISTEMA_FRENOS', 'Frenos de Servicio', 30),
-                ('SISTEMA_FRENOS', 'Motor de marcha', 31),
-                ('SISTEMA_FRENOS', 'Frenos de Estacionamiento', 32),
-                ('SISTEMA_FRENOS', 'Luces y direccionales', 33),
-                ('SISTEMA_FRENOS', 'Frenos en operacion', 34),
+                ('SISTEMA_FRENOS', 'Frenos de servicio', 20),
+                ('SISTEMA_FRENOS', 'Frenos de estacionamiento', 21),
+                ('SISTEMA_FRENOS', 'Frenos de operacion', 22),
                 
                 # Motor
-                ('MOTOR', 'Aceite de Motor', 35),
-                ('MOTOR', 'Filtro de Aceite', 36),
-                ('MOTOR', 'Turbocargador', 37),
-                
-                # Chassis y Estructura
-                ('CHASSIS_ESTRUCTURA', 'Escalones', 38),
-                ('CHASSIS_ESTRUCTURA', 'Poleas y correas', 39),
-                ('CHASSIS_ESTRUCTURA', 'Pasa manos', 40),
-                ('CHASSIS_ESTRUCTURA', 'Candados de seguridad', 41),
-                ('CHASSIS_ESTRUCTURA', 'ROPS', 42),
-                ('CHASSIS_ESTRUCTURA', 'Tapas y cubiertas', 43),
-                ('CHASSIS_ESTRUCTURA', 'Calcomanias', 44),
-                ('CHASSIS_ESTRUCTURA', 'Contrapesos', 45),
-                ('CHASSIS_ESTRUCTURA', 'Acesorios', 46),
-                
-                # Sistema de Aspiración
-                ('SISTEMA_ASPIRACION', 'Sistema de Aspiracion', 47),
-                
-                # Sistema de Combustible
-                ('SISTEMA_COMBUSTIBLE', 'Sistema de Combustible', 48),
-                
-                # Sistema DEF
-                ('SISTEMA_DEF', 'Sistema DEF', 49),
+                ('MOTOR', 'Operacion general', 23),
+                ('MOTOR', 'Aceite motor', 24),
+                ('MOTOR', 'Filtro de aceite', 25),
+                ('MOTOR', 'Poleas y correas', 26),
+                ('MOTOR', 'Sistema de aspiracion', 27),
+                ('MOTOR', 'Turbocargador', 28),
+                ('MOTOR', 'Sistema de combustible', 29),
+                ('MOTOR', 'Sistema DEF', 30),
                 
                 # Sistema de Refrigeración
-                ('SISTEMA_REFRIGERACION', 'Sistema de Refrigeracion', 50),
-                ('SISTEMA_REFRIGERACION', 'Nivel de Anticongelante', 51),
-                ('SISTEMA_REFRIGERACION', 'Cooling Package', 52),
+                ('SISTEMA_REFRIGERACION', 'Nivel de anticongelante', 31),
+                ('SISTEMA_REFRIGERACION', 'Cooling Package', 32),
                 
-                # Lantas y Carrilería
-                ('LANTAS_CARRILERIA', 'Lantas/Zapatas', 53),
-                ('LANTAS_CARRILERIA', 'Rims/Rodillos y Rueda Guia', 54),
-                ('LANTAS_CARRILERIA', 'Sprockets (Si aplica)', 55),
+                # Llantas y Carrilería
+                ('LANTAS_CARRILERIA', 'Llantas/Zapatas', 33),
+                ('LANTAS_CARRILERIA', 'RIMS/Rodillos y Rueda Guia', 34),
+                ('LANTAS_CARRILERIA', 'Sprockets', 35),
+                
+                # Sistema Hidráulico
+                ('SISTEMA_HIDRAULICO', 'Operacion de sistema hidraulico (Fugas)', 36),
+                ('SISTEMA_HIDRAULICO', 'Nivel de aceite', 37),
+                ('SISTEMA_HIDRAULICO', 'Filtros de aceite', 38),
+                ('SISTEMA_HIDRAULICO', 'Mangueras y tubos hidraulicos', 39),
+                ('SISTEMA_HIDRAULICO', 'Cilindros Hidraulicos', 40),
+                
+                # Sistema Eléctrico
+                ('SISTEMA_ELECTRICO', 'Neutral Safety Start', 41),
+                ('SISTEMA_ELECTRICO', 'Motor de marcha', 42),
+                ('SISTEMA_ELECTRICO', 'Luces y direccionales', 43),
+                ('SISTEMA_ELECTRICO', 'Alternador', 44),
+                ('SISTEMA_ELECTRICO', 'Baterias', 45),
+                ('SISTEMA_ELECTRICO', 'Arneses electricos', 46),
+                
+                # Chassis y Estructura
+                ('CHASSIS_ESTRUCTURA', 'Escalones', 47),
+                ('CHASSIS_ESTRUCTURA', 'Pasa manos', 48),
+                ('CHASSIS_ESTRUCTURA', 'Candados', 49),
+                ('CHASSIS_ESTRUCTURA', 'ROPS', 50),
+                ('CHASSIS_ESTRUCTURA', 'Tapas y cubiertas', 51),
+                ('CHASSIS_ESTRUCTURA', 'Calcomanias', 52),
+                ('CHASSIS_ESTRUCTURA', 'Contrapesos', 53),
+                ('CHASSIS_ESTRUCTURA', 'Chasis y estructura', 54),
+                ('CHASSIS_ESTRUCTURA', 'Accesorios', 55),
             ]
             
             for seccion, nombre, orden in elementos_template:
