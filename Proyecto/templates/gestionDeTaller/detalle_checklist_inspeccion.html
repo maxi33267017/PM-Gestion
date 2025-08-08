@@ -698,22 +698,37 @@
     }
     
     function checkSeccionCompleta(seccionId) {
+        console.log(`Verificando sección ${seccionId}...`);
         const elementos = document.querySelectorAll(`[data-seccion="${seccionId}"]`);
         let completados = 0;
         let total = elementos.length;
         
-        elementos.forEach(elemento => {
-            const tieneRespuesta = elemento.querySelector('.checklist-option.selected') !== null;
+        console.log(`Total elementos en sección ${seccionId}: ${total}`);
+        
+        elementos.forEach((elemento, index) => {
+            const selectedOption = elemento.querySelector('.checklist-option.selected');
+            const tieneRespuesta = selectedOption !== null;
+            
+            console.log(`Elemento ${index + 1}: ${tieneRespuesta ? 'Completado' : 'Pendiente'}`);
+            
             if (tieneRespuesta) {
                 completados++;
             }
         });
         
+        console.log(`Sección ${seccionId}: ${completados}/${total} completados`);
+        
         const checkIcon = document.getElementById(`check-${seccionId}`);
-        if (completados === total && total > 0) {
-            checkIcon.classList.add('show');
+        if (checkIcon) {
+            if (completados === total && total > 0) {
+                console.log(`✅ Sección ${seccionId} COMPLETA - Mostrando tilde`);
+                checkIcon.classList.add('show');
+            } else {
+                console.log(`❌ Sección ${seccionId} INCOMPLETA - Ocultando tilde`);
+                checkIcon.classList.remove('show');
+            }
         } else {
-            checkIcon.classList.remove('show');
+            console.error(`No se encontró el icono de check para sección ${seccionId}`);
         }
     }
     
