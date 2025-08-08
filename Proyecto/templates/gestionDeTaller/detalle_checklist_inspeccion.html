@@ -250,23 +250,8 @@
         box-shadow: 0 5px 15px rgba(0,0,0,0.2);
     }
     
-    .btn-success {
-        background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
-        color: white;
-    }
-    
-    .btn-info {
-        background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
-        color: white;
-    }
-    
     .btn-secondary {
         background: linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%);
-        color: white;
-    }
-    
-    .btn-warning {
-        background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
         color: white;
     }
     
@@ -290,22 +275,17 @@
         transform: translateY(0);
     }
     
-    .section-stats {
-        display: flex;
-        gap: 1rem;
-        margin-top: 0.5rem;
-        font-size: 0.9rem;
+    .completion-check {
+        color: #28a745;
+        font-size: 1.2rem;
+        margin-left: 0.5rem;
+        opacity: 0;
+        transition: opacity 0.3s ease;
     }
     
-    .stat-item {
-        display: flex;
-        align-items: center;
-        gap: 0.25rem;
+    .completion-check.show {
+        opacity: 1;
     }
-    
-    .stat-aceptable { color: #28a745; }
-    .stat-rechazado { color: #dc3545; }
-    .stat-no-aplica { color: #6c757d; }
 </style>
 
 <div class="container-fluid mt-4">
@@ -407,13 +387,6 @@
         <a href="{% url 'gestionDeTaller:detalle_servicio' checklist.servicio.id %}" class="btn-action btn-secondary">
             <i class="fas fa-arrow-left me-2"></i>Volver al Servicio
         </a>
-        <a href="{% url 'gestionDeTaller:descargar_checklist_pdf' checklist.id %}" class="btn-action btn-info">
-            <i class="fas fa-file-pdf me-2"></i>Descargar PDF
-        </a>
-        <a href="{% url 'gestionDeTaller:enviar_checklist_email' checklist.id %}" class="btn-action btn-success"
-           onclick="return confirm('¿Estás seguro de que quieres enviar este checklist por email al cliente?')">
-            <i class="fas fa-envelope me-2"></i>Enviar por Email
-        </a>
     </div>
 
     <!-- Elementos por Sección (Acordeón) -->
@@ -422,32 +395,13 @@
         <div class="accordion-header" onclick="toggleAccordion(this)">
             <div>
                 <i class="fas fa-cogs me-2"></i>{{ seccion_nombre }}
-                <div class="section-stats">
-                    {% with elementos|length as total %}
-                    {% with elementos|slice:":1"|first as first_element %}
-                    {% if first_element %}
-                        <span class="stat-item stat-aceptable">
-                            <i class="fas fa-check"></i>
-                            {{ elementos|slice:":1"|first|default:0 }}
-                        </span>
-                        <span class="stat-item stat-rechazado">
-                            <i class="fas fa-times"></i>
-                            {{ elementos|slice:":1"|first|default:0 }}
-                        </span>
-                        <span class="stat-item stat-no-aplica">
-                            <i class="fas fa-minus"></i>
-                            {{ elementos|slice:":1"|first|default:0 }}
-                        </span>
-                    {% endif %}
-                    {% endwith %}
-                    {% endwith %}
-                </div>
+                <i class="fas fa-check completion-check" id="check-{{ forloop.counter }}"></i>
             </div>
             <i class="fas fa-chevron-down toggle-icon"></i>
         </div>
         <div class="accordion-body">
             {% for elemento in elementos %}
-            <div class="elemento-item" data-elemento-id="{{ elemento.id }}">
+            <div class="elemento-item" data-elemento-id="{{ elemento.id }}" data-seccion="{{ forloop.parentloop.counter }}">
                 <div class="elemento-nombre">{{ elemento.nombre_elemento }}</div>
                 
                 <div class="checklist-options">
@@ -537,6 +491,26 @@
         }
     }
     
+    function checkSeccionCompleta(seccionId) {
+        const elementos = document.querySelectorAll(`[data-seccion="${seccionId}"]`);
+        let completados = 0;
+        let total = elementos.length;
+        
+        elementos.forEach(elemento => {
+            const tieneRespuesta = elemento.querySelector('.checklist-option.selected') !== null;
+            if (tieneRespuesta) {
+                completados++;
+            }
+        });
+        
+        const checkIcon = document.getElementById(`check-${seccionId}`);
+        if (completados === total && total > 0) {
+            checkIcon.classList.add('show');
+        } else {
+            checkIcon.classList.remove('show');
+        }
+    }
+    
     function actualizarRespuesta(elementoId, respuesta) {
         const formData = new FormData();
         formData.append('respuesta', respuesta);
@@ -563,6 +537,10 @@
                 
                 const selectedOption = elementoItem.querySelector(`.checklist-option input[value="${respuesta}"]`).parentElement;
                 selectedOption.classList.add('selected');
+                
+                // Verificar si la sección está completa
+                const seccionId = elementoItem.getAttribute('data-seccion');
+                checkSeccionCompleta(seccionId);
                 
                 // Mostrar indicador de guardado
                 mostrarIndicadorGuardado();
@@ -621,11 +599,16 @@
         }, 2000);
     }
     
-    // Expandir la primera sección por defecto
+    // Expandir la primera sección por defecto y verificar secciones completas
     document.addEventListener('DOMContentLoaded', function() {
         const firstAccordion = document.querySelector('.accordion-header');
         if (firstAccordion) {
             toggleAccordion(firstAccordion);
+        }
+        
+        // Verificar secciones completas al cargar
+        for (let i = 1; i <= 9; i++) {
+            checkSeccionCompleta(i);
         }
     });
 </script>
