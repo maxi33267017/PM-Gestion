@@ -219,10 +219,10 @@
     
     .elemento-item {
         background: var(--jd-white);
-        border-radius: 15px;
-        box-shadow: 0 3px 15px rgba(0,0,0,0.1);
-        padding: 2rem;
-        margin-bottom: 1.5rem;
+        border-radius: 10px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        padding: 1rem;
+        margin-bottom: 0.75rem;
         border: 2px solid transparent;
         transition: all 0.3s ease;
         position: relative;
@@ -235,45 +235,46 @@
         top: 0;
         left: 0;
         right: 0;
-        height: 4px;
+        height: 3px;
         background: linear-gradient(90deg, var(--jd-yellow) 0%, var(--jd-black) 100%);
     }
     
     .elemento-item:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.12);
         border-color: var(--jd-yellow);
     }
     
     .elemento-nombre {
-        font-size: 1.3rem;
-        font-weight: 700;
+        font-size: 1.1rem;
+        font-weight: 600;
         color: var(--jd-black);
-        margin-bottom: 1.5rem;
-        padding-bottom: 1rem;
-        border-bottom: 2px solid var(--jd-light-gray);
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px solid var(--jd-light-gray);
     }
     
     .checklist-options {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 1rem;
-        margin-bottom: 2rem;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 0.75rem;
+        margin-bottom: 1rem;
     }
     
     .checklist-option {
         display: flex;
         align-items: center;
-        gap: 1rem;
-        padding: 1.5rem;
-        border: 3px solid var(--jd-light-gray);
-        border-radius: 15px;
+        gap: 0.5rem;
+        padding: 0.75rem 1rem;
+        border: 2px solid var(--jd-light-gray);
+        border-radius: 8px;
         cursor: pointer;
         transition: all 0.3s ease;
         font-weight: 600;
         background: var(--jd-white);
         position: relative;
         overflow: hidden;
+        font-size: 0.9rem;
     }
     
     .checklist-option::before {
@@ -292,15 +293,15 @@
     }
     
     .checklist-option:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        transform: translateY(-1px);
+        box-shadow: 0 3px 10px rgba(0,0,0,0.1);
     }
     
     .checklist-option.selected {
         border-color: var(--jd-black);
         background: var(--jd-black);
         color: var(--jd-white);
-        box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+        box-shadow: 0 3px 10px rgba(0,0,0,0.2);
     }
     
     .checklist-option.aceptable.selected {
@@ -323,32 +324,32 @@
     }
     
     .checklist-option i {
-        font-size: 1.5rem;
+        font-size: 1.2rem;
     }
     
     .notas-container {
         background: var(--jd-light-gray);
-        border-radius: 15px;
-        padding: 1.5rem;
-        margin-top: 1rem;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-top: 0.75rem;
     }
     
     .notas-label {
-        font-weight: 700;
+        font-weight: 600;
         color: var(--jd-black);
-        margin-bottom: 1rem;
+        margin-bottom: 0.5rem;
         display: flex;
         align-items: center;
-        font-size: 1.1rem;
+        font-size: 0.95rem;
     }
     
     .notas-textarea {
         width: 100%;
-        min-height: 120px;
-        padding: 1rem;
-        border: 3px solid var(--jd-light-gray);
-        border-radius: 10px;
-        font-size: 1rem;
+        min-height: 80px;
+        padding: 0.75rem;
+        border: 2px solid var(--jd-light-gray);
+        border-radius: 6px;
+        font-size: 0.9rem;
         resize: vertical;
         transition: all 0.3s ease;
         background: var(--jd-white);
