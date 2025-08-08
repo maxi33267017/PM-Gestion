@@ -5164,13 +5164,12 @@ def guardar_todo_checklist(request, checklist_id):
                     elemento.save()
                     elementos_actualizados += 1
                     
-                    # Log del cambio
+                    # Log del cambio (sin campo elemento)
                     LogChecklistInspeccion.objects.create(
                         checklist=checklist,
-                        elemento=elemento,
                         accion='ACTUALIZAR',
                         usuario=request.user,
-                        detalles=f'Respuesta: {respuesta}, Notas: {notas}'
+                        detalles=f'Elemento {elemento.nombre_elemento}: Respuesta: {respuesta}, Notas: {notas}'
                     )
                 except ElementoChecklist.DoesNotExist:
                     continue
