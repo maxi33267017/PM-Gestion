@@ -1,0 +1,228 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+    .checklist-header {
+        background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 15px;
+        margin-bottom: 2rem;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        text-align: center;
+    }
+    
+    .checklist-header h1 {
+        margin: 0;
+        font-weight: 700;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    }
+    
+    .form-card {
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+        padding: 2rem;
+        margin-bottom: 2rem;
+    }
+    
+    .form-card h3 {
+        color: #2c3e50;
+        margin-bottom: 1.5rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid #e9ecef;
+    }
+    
+    .form-label {
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 0.5rem;
+    }
+    
+    .form-control {
+        border-radius: 8px;
+        border: 1px solid #e9ecef;
+        padding: 0.75rem;
+        transition: all 0.3s ease;
+    }
+    
+    .form-control:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+    }
+    
+    .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        border-radius: 25px;
+        padding: 0.75rem 2rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+    }
+    
+    .btn-secondary {
+        background: linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%);
+        border: none;
+        border-radius: 25px;
+        padding: 0.75rem 2rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    
+    .info-box {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        border-left: 4px solid #667eea;
+    }
+    
+    .info-box h4 {
+        color: #2c3e50;
+        margin-bottom: 1rem;
+    }
+    
+    .info-box p {
+        color: #6c757d;
+        margin-bottom: 0;
+    }
+</style>
+
+<div class="container-fluid mt-4">
+    <!-- Header -->
+    <div class="checklist-header">
+        <h1><i class="fas fa-clipboard-check me-3"></i>Crear Checklist de Inspección JD Protect</h1>
+        <p class="mb-0">Servicio #{{ servicio.id }} - {{ servicio.preorden.cliente.razon_social }}</p>
+    </div>
+
+    <!-- Información del Servicio -->
+    <div class="info-box">
+        <h4><i class="fas fa-info-circle me-2"></i>Información del Servicio</h4>
+        <div class="row">
+            <div class="col-md-3">
+                <strong>Cliente:</strong> {{ servicio.preorden.cliente.razon_social }}
+            </div>
+            <div class="col-md-3">
+                <strong>Equipo:</strong> {{ servicio.preorden.equipo.numero_serie }}
+            </div>
+            <div class="col-md-3">
+                <strong>Fecha Servicio:</strong> {{ servicio.fecha_servicio|date:"d/m/Y" }}
+            </div>
+            <div class="col-md-3">
+                <strong>Estado:</strong> {{ servicio.get_estado_display }}
+            </div>
+        </div>
+    </div>
+
+    <!-- Formulario de Creación -->
+    <div class="form-card">
+        <h3><i class="fas fa-edit me-2"></i>Datos del Checklist</h3>
+        
+        <form method="post">
+            {% csrf_token %}
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="equipo" class="form-label">
+                            <i class="fas fa-cogs me-2"></i>Equipo a Inspeccionar *
+                        </label>
+                        <select class="form-control" id="equipo" name="equipo" required>
+                            <option value="">Selecciona un equipo...</option>
+                            {% for equipo in equipos_cliente %}
+                                <option value="{{ equipo.id }}">
+                                    {{ equipo.numero_serie }} - {{ equipo.modelo_equipo.marca }} {{ equipo.modelo_equipo.nombre }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                        <small class="text-muted">Selecciona el equipo específico para esta inspección</small>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="fecha_inspeccion" class="form-label">
+                            <i class="fas fa-calendar me-2"></i>Fecha de Inspección *
+                        </label>
+                        <input type="date" class="form-control" id="fecha_inspeccion" name="fecha_inspeccion" 
+                               value="{% now 'Y-m-d' %}" required>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="horometro" class="form-label">
+                            <i class="fas fa-tachometer-alt me-2"></i>Horómetro (Opcional)
+                        </label>
+                        <input type="number" class="form-control" id="horometro" name="horometro" 
+                               step="0.1" min="0" placeholder="Ingresa el horómetro actual">
+                        <small class="text-muted">Horómetro del equipo al momento de la inspección</small>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="alert alert-info">
+                <h6><i class="fas fa-lightbulb me-2"></i>Información Importante</h6>
+                <ul class="mb-0">
+                    <li>Al crear el checklist se generarán automáticamente <strong>55 elementos de verificación</strong> basados en el formato JD Protect.</li>
+                    <li>Los elementos se organizan en <strong>12 secciones principales</strong>: Cabina, Transmission, Sistema Hidráulico, etc.</li>
+                    <li>Podrás completar cada elemento con las opciones: <strong>A (Aceptable)</strong>, <strong>R (Rechazado)</strong>, o <strong>N/A (No Aplica)</strong>.</li>
+                    <li>Una vez creado, podrás descargar el checklist en PDF y enviarlo por email al cliente.</li>
+                </ul>
+            </div>
+            
+            <div class="text-center mt-4">
+                <a href="{% url 'gestionDeTaller:detalle_servicio' servicio.id %}" class="btn btn-secondary me-3">
+                    <i class="fas fa-arrow-left me-2"></i>Cancelar
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-plus me-2"></i>Crear Checklist
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Validación del formulario
+        const form = document.querySelector('form');
+        const equipoSelect = document.getElementById('equipo');
+        const fechaInput = document.getElementById('fecha_inspeccion');
+        
+        form.addEventListener('submit', function(e) {
+            if (!equipoSelect.value) {
+                e.preventDefault();
+                alert('Por favor selecciona un equipo para la inspección.');
+                equipoSelect.focus();
+                return false;
+            }
+            
+            if (!fechaInput.value) {
+                e.preventDefault();
+                alert('Por favor selecciona una fecha de inspección.');
+                fechaInput.focus();
+                return false;
+            }
+            
+            // Confirmar creación
+            if (!confirm('¿Estás seguro de que quieres crear este checklist de inspección? Se generarán 55 elementos de verificación automáticamente.')) {
+                e.preventDefault();
+                return false;
+            }
+        });
+        
+        // Establecer fecha por defecto
+        const today = new Date().toISOString().split('T')[0];
+        fechaInput.value = today;
+    });
+</script>
+{% endblock %} 

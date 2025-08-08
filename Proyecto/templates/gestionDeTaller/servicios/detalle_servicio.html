@@ -895,16 +895,111 @@
                 </div>
             </div>
 
-    <!-- Observaciones del Servicio -->
-    <div class="row">
-        <div class="col-md-12">
-            <div class="card">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h3><i class="fas fa-comments me-2"></i>Observaciones del Servicio</h3>
-                    <button type="button" class="btn btn-dark btn-sm" data-bs-toggle="modal" data-bs-target="#modalAgregarObservacion">
-                        <i class="bi bi-plus-circle me-2"></i> Agregar Observación
-                    </button>
+                <!-- Checklists de Inspección JD Protect -->
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="card">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h3><i class="fas fa-clipboard-check me-2"></i>Checklists de Inspección JD Protect</h3>
+                            <a href="{% url 'gestionDeTaller:crear_checklist_inspeccion' servicio.id %}" class="btn btn-success btn-sm">
+                                <i class="fas fa-plus me-2"></i> Crear Checklist
+                            </a>
+                        </div>
+                        <div class="card-body">
+                            {% if servicio.checklists_inspeccion.exists %}
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead class="table-dark">
+                                            <tr>
+                                                <th><i class="fas fa-hashtag me-2"></i>ID</th>
+                                                <th><i class="fas fa-calendar me-2"></i>Fecha Inspección</th>
+                                                <th><i class="fas fa-cogs me-2"></i>Equipo</th>
+                                                <th><i class="fas fa-tachometer-alt me-2"></i>Horómetro</th>
+                                                <th><i class="fas fa-flag me-2"></i>Estado</th>
+                                                <th><i class="fas fa-percentage me-2"></i>% Aceptable</th>
+                                                <th><i class="fas fa-user me-2"></i>Creado por</th>
+                                                <th><i class="fas fa-cogs me-2"></i>Acciones</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for checklist in servicio.checklists_inspeccion.all %}
+                                            <tr>
+                                                <td><strong>#{{ checklist.id }}</strong></td>
+                                                <td>{{ checklist.fecha_inspeccion|date:"d/m/Y" }}</td>
+                                                <td>{{ checklist.equipo.numero_serie }}</td>
+                                                <td>{{ checklist.horometro|default:"N/A" }}</td>
+                                                <td>
+                                                    <span class="badge 
+                                                        {% if checklist.estado == 'BORRADOR' %}bg-warning
+                                                        {% elif checklist.estado == 'COMPLETADO' %}bg-success
+                                                        {% elif checklist.estado == 'ENVIADO' %}bg-info
+                                                        {% endif %}">
+                                                        {{ checklist.get_estado_display }}
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <div class="progress" style="height: 20px;">
+                                                        <div class="progress-bar 
+                                                            {% if checklist.porcentaje_aceptable >= 80 %}bg-success
+                                                            {% elif checklist.porcentaje_aceptable >= 60 %}bg-warning
+                                                            {% else %}bg-danger
+                                                            {% endif %}" 
+                                                             role="progressbar" 
+                                                             style="width: {{ checklist.porcentaje_aceptable }}%"
+                                                             aria-valuenow="{{ checklist.porcentaje_aceptable }}" 
+                                                             aria-valuemin="0" 
+                                                             aria-valuemax="100">
+                                                            {{ checklist.porcentaje_aceptable|floatformat:1 }}%
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td>{{ checklist.creado_por.get_nombre_completo }}</td>
+                                                <td>
+                                                    <div class="btn-group" role="group">
+                                                        <a href="{% url 'gestionDeTaller:detalle_checklist_inspeccion' checklist.id %}" 
+                                                           class="btn btn-sm btn-outline-primary" title="Ver Detalle">
+                                                            <i class="fas fa-eye"></i>
+                                                        </a>
+                                                        <a href="{% url 'gestionDeTaller:descargar_checklist_pdf' checklist.id %}" 
+                                                           class="btn btn-sm btn-outline-secondary" title="Descargar PDF">
+                                                            <i class="fas fa-file-pdf"></i>
+                                                        </a>
+                                                        <a href="{% url 'gestionDeTaller:enviar_checklist_email' checklist.id %}" 
+                                                           class="btn btn-sm btn-outline-info" title="Enviar por Email"
+                                                           onclick="return confirm('¿Estás seguro de que quieres enviar este checklist por email al cliente?')">
+                                                            <i class="fas fa-envelope"></i>
+                                                        </a>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {% else %}
+                                <div class="text-center py-4">
+                                    <i class="fas fa-clipboard-list fa-3x text-muted mb-3"></i>
+                                    <p class="text-muted">No hay checklists de inspección registrados para este servicio.</p>
+                                    <a href="{% url 'gestionDeTaller:crear_checklist_inspeccion' servicio.id %}" class="btn btn-success">
+                                        <i class="fas fa-plus me-2"></i>Crear Primer Checklist
+                                    </a>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
                 </div>
+            </div>
+
+            <!-- Observaciones del Servicio -->
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="card">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h3><i class="fas fa-comments me-2"></i>Observaciones del Servicio</h3>
+                            <button type="button" class="btn btn-dark btn-sm" data-bs-toggle="modal" data-bs-target="#modalAgregarObservacion">
+                                <i class="bi bi-plus-circle me-2"></i> Agregar Observación
+                            </button>
+                        </div>
                 <div class="card-body">
                     {% if observaciones %}
                         <div class="observaciones-container">

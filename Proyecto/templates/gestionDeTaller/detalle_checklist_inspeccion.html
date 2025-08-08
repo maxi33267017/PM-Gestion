@@ -1,0 +1,435 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+    .checklist-header {
+        background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 15px;
+        margin-bottom: 2rem;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+    
+    .checklist-header h1 {
+        margin: 0;
+        font-weight: 700;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    }
+    
+    .info-card {
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .info-card h3 {
+        color: #2c3e50;
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid #e9ecef;
+    }
+    
+    .seccion-card {
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+        margin-bottom: 2rem;
+        overflow: hidden;
+    }
+    
+    .seccion-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 1rem 1.5rem;
+        font-weight: 600;
+        font-size: 1.1rem;
+    }
+    
+    .elemento-item {
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid #e9ecef;
+        transition: background-color 0.3s ease;
+    }
+    
+    .elemento-item:hover {
+        background-color: #f8f9fa;
+    }
+    
+    .elemento-item:last-child {
+        border-bottom: none;
+    }
+    
+    .elemento-nombre {
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 0.5rem;
+    }
+    
+    .elemento-controls {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+    
+    .respuesta-btn {
+        padding: 0.5rem 1rem;
+        border: none;
+        border-radius: 20px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-size: 0.9rem;
+    }
+    
+    .respuesta-btn.aceptable {
+        background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+        color: white;
+    }
+    
+    .respuesta-btn.rechazado {
+        background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+        color: white;
+    }
+    
+    .respuesta-btn.no-aplica {
+        background: linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%);
+        color: white;
+    }
+    
+    .respuesta-btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+    }
+    
+    .respuesta-btn.active {
+        box-shadow: 0 0 0 2px rgba(255,255,255,0.5);
+    }
+    
+    .notas-input {
+        width: 100%;
+        max-width: 300px;
+        padding: 0.5rem;
+        border: 1px solid #e9ecef;
+        border-radius: 5px;
+        font-size: 0.9rem;
+    }
+    
+    .estado-badge {
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+    
+    .estado-borrador {
+        background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+        color: white;
+    }
+    
+    .estado-completado {
+        background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+        color: white;
+    }
+    
+    .estado-enviado {
+        background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+        color: white;
+    }
+    
+    .progress-container {
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+    }
+    
+    .progress-bar {
+        height: 25px;
+        border-radius: 15px;
+        overflow: hidden;
+    }
+    
+    .progress-fill {
+        height: 100%;
+        border-radius: 15px;
+        transition: width 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+    
+    .btn-action {
+        border-radius: 25px;
+        padding: 0.75rem 1.5rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        border: none;
+        margin: 0.25rem;
+    }
+    
+    .btn-action:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    }
+    
+    .btn-success {
+        background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+        color: white;
+    }
+    
+    .btn-info {
+        background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+        color: white;
+    }
+    
+    .btn-secondary {
+        background: linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%);
+        color: white;
+    }
+    
+    .btn-warning {
+        background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+        color: white;
+    }
+</style>
+
+<div class="container-fluid mt-4">
+    <!-- Header -->
+    <div class="checklist-header">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h1><i class="fas fa-clipboard-check me-3"></i>Checklist de Inspección JD Protect</h1>
+                <p class="mb-0">ID: #{{ checklist.id }} - {{ checklist.equipo.numero_serie }}</p>
+            </div>
+            <div class="text-end">
+                <span class="estado-badge 
+                    {% if checklist.estado == 'BORRADOR' %}estado-borrador
+                    {% elif checklist.estado == 'COMPLETADO' %}estado-completado
+                    {% elif checklist.estado == 'ENVIADO' %}estado-enviado
+                    {% endif %}">
+                    {{ checklist.get_estado_display }}
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Información General -->
+    <div class="info-card">
+        <h3><i class="fas fa-info-circle me-2"></i>Información General</h3>
+        <div class="row">
+            <div class="col-md-3">
+                <strong>Servicio:</strong> #{{ checklist.servicio.id }}
+            </div>
+            <div class="col-md-3">
+                <strong>Cliente:</strong> {{ checklist.servicio.preorden.cliente.razon_social }}
+            </div>
+            <div class="col-md-3">
+                <strong>Equipo:</strong> {{ checklist.equipo.numero_serie }}
+            </div>
+            <div class="col-md-3">
+                <strong>Fecha:</strong> {{ checklist.fecha_inspeccion|date:"d/m/Y" }}
+            </div>
+        </div>
+        <div class="row mt-2">
+            <div class="col-md-3">
+                <strong>Horómetro:</strong> {{ checklist.horometro|default:"N/A" }}
+            </div>
+            <div class="col-md-3">
+                <strong>Creado por:</strong> {{ checklist.creado_por.get_nombre_completo }}
+            </div>
+            <div class="col-md-3">
+                <strong>Total elementos:</strong> {{ checklist.total_elementos }}
+            </div>
+            <div class="col-md-3">
+                <strong>% Aceptable:</strong> {{ checklist.porcentaje_aceptable|floatformat:1 }}%
+            </div>
+        </div>
+    </div>
+
+    <!-- Progreso -->
+    <div class="progress-container">
+        <h5><i class="fas fa-chart-bar me-2"></i>Progreso de la Inspección</h5>
+        <div class="row">
+            <div class="col-md-8">
+                <div class="progress-bar">
+                    <div class="progress-fill 
+                        {% if checklist.porcentaje_aceptable >= 80 %}bg-success
+                        {% elif checklist.porcentaje_aceptable >= 60 %}bg-warning
+                        {% else %}bg-danger
+                        {% endif %}" 
+                         style="width: {{ checklist.porcentaje_aceptable }}%">
+                        {{ checklist.porcentaje_aceptable|floatformat:1 }}% Aceptable
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="row text-center">
+                    <div class="col-4">
+                        <div class="text-success">
+                            <strong>{{ checklist.elementos_aceptables }}</strong><br>
+                            <small>Aceptable</small>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="text-danger">
+                            <strong>{{ checklist.elementos_rechazados }}</strong><br>
+                            <small>Rechazado</small>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="text-muted">
+                            <strong>{{ checklist.elementos_no_aplican }}</strong><br>
+                            <small>No Aplica</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Acciones -->
+    <div class="text-center mb-4">
+        <a href="{% url 'gestionDeTaller:detalle_servicio' checklist.servicio.id %}" class="btn-action btn-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Volver al Servicio
+        </a>
+        <a href="{% url 'gestionDeTaller:descargar_checklist_pdf' checklist.id %}" class="btn-action btn-info">
+            <i class="fas fa-file-pdf me-2"></i>Descargar PDF
+        </a>
+        <a href="{% url 'gestionDeTaller:enviar_checklist_email' checklist.id %}" class="btn-action btn-success"
+           onclick="return confirm('¿Estás seguro de que quieres enviar este checklist por email al cliente?')">
+            <i class="fas fa-envelope me-2"></i>Enviar por Email
+        </a>
+    </div>
+
+    <!-- Elementos por Sección -->
+    {% for seccion_nombre, elementos in elementos_por_seccion.items %}
+    <div class="seccion-card">
+        <div class="seccion-header">
+            <i class="fas fa-cogs me-2"></i>{{ seccion_nombre }}
+        </div>
+        <div class="seccion-body">
+            {% for elemento in elementos %}
+            <div class="elemento-item" data-elemento-id="{{ elemento.id }}">
+                <div class="elemento-nombre">{{ elemento.nombre_elemento }}</div>
+                <div class="elemento-controls">
+                    <button type="button" class="respuesta-btn aceptable {% if elemento.respuesta == 'A' %}active{% endif %}"
+                            onclick="actualizarRespuesta({{ elemento.id }}, 'A')">
+                        <i class="fas fa-check me-1"></i>Aceptable
+                    </button>
+                    <button type="button" class="respuesta-btn rechazado {% if elemento.respuesta == 'R' %}active{% endif %}"
+                            onclick="actualizarRespuesta({{ elemento.id }}, 'R')">
+                        <i class="fas fa-times me-1"></i>Rechazado
+                    </button>
+                    <button type="button" class="respuesta-btn no-aplica {% if elemento.respuesta == 'N/A' %}active{% endif %}"
+                            onclick="actualizarRespuesta({{ elemento.id }}, 'N/A')">
+                        <i class="fas fa-minus me-1"></i>No Aplica
+                    </button>
+                    <input type="text" class="notas-input" placeholder="Notas..." 
+                           value="{{ elemento.notas }}" 
+                           onchange="actualizarNotas({{ elemento.id }}, this.value)">
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endfor %}
+
+    <!-- Formulario de Actualización -->
+    <div class="info-card">
+        <h3><i class="fas fa-edit me-2"></i>Actualizar Checklist</h3>
+        <form method="post" action="{% url 'gestionDeTaller:actualizar_checklist' checklist.id %}">
+            {% csrf_token %}
+            <div class="row">
+                <div class="col-md-4">
+                    <label for="estado" class="form-label">Estado:</label>
+                    <select class="form-control" id="estado" name="estado">
+                        <option value="BORRADOR" {% if checklist.estado == 'BORRADOR' %}selected{% endif %}>Borrador</option>
+                        <option value="COMPLETADO" {% if checklist.estado == 'COMPLETADO' %}selected{% endif %}>Completado</option>
+                        <option value="ENVIADO" {% if checklist.estado == 'ENVIADO' %}selected{% endif %}>Enviado</option>
+                    </select>
+                </div>
+                <div class="col-md-8">
+                    <label for="notas_generales" class="form-label">Notas Generales:</label>
+                    <textarea class="form-control" id="notas_generales" name="notas_generales" rows="3">{{ checklist.notas_generales }}</textarea>
+                </div>
+            </div>
+            <div class="text-center mt-3">
+                <button type="submit" class="btn-action btn-success">
+                    <i class="fas fa-save me-2"></i>Guardar Cambios
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function actualizarRespuesta(elementoId, respuesta) {
+        const formData = new FormData();
+        formData.append('respuesta', respuesta);
+        formData.append('notas', document.querySelector(`[data-elemento-id="${elementoId}"] .notas-input`).value);
+        
+        fetch(`/gestion_de_taller/elemento-checklist/${elementoId}/actualizar/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+            },
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Actualizar botones
+                const elementoItem = document.querySelector(`[data-elemento-id="${elementoId}"]`);
+                elementoItem.querySelectorAll('.respuesta-btn').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                elementoItem.querySelector(`.respuesta-btn.${respuesta === 'A' ? 'aceptable' : respuesta === 'R' ? 'rechazado' : 'no-aplica'}`).classList.add('active');
+                
+                // Recargar página para actualizar métricas
+                setTimeout(() => {
+                    location.reload();
+                }, 1000);
+            } else {
+                alert('Error al actualizar: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error al actualizar el elemento');
+        });
+    }
+    
+    function actualizarNotas(elementoId, notas) {
+        const formData = new FormData();
+        formData.append('notas', notas);
+        formData.append('respuesta', document.querySelector(`[data-elemento-id="${elementoId}"] .respuesta-btn.active`).textContent.trim().includes('Aceptable') ? 'A' : 
+                       document.querySelector(`[data-elemento-id="${elementoId}"] .respuesta-btn.active`).textContent.trim().includes('Rechazado') ? 'R' : 'N/A');
+        
+        fetch(`/gestion_de_taller/elemento-checklist/${elementoId}/actualizar/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+            },
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (!data.success) {
+                alert('Error al actualizar notas: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error al actualizar las notas');
+        });
+    }
+</script>
+{% endblock %} 
