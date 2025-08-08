@@ -1097,9 +1097,13 @@
                 
                 mostrarIndicadorGuardado();
                 
-                // Recargar página después de un delay
+                // Redirigir al detalle del servicio después de un delay
                 setTimeout(() => {
-                    location.reload();
+                    if (data.redirect_url) {
+                        window.location.href = data.redirect_url;
+                    } else {
+                        location.reload();
+                    }
                 }, 2000);
             } else {
                 alert('Error al guardar: ' + data.message);
