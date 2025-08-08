@@ -85,36 +85,113 @@
         align-items: center;
     }
     
-    .accordion-item {
+    .progress-steps {
         background: var(--jd-white);
         border-radius: 15px;
         box-shadow: 0 5px 20px rgba(0,0,0,0.08);
-        margin-bottom: 1rem;
-        overflow: hidden;
-        border: 2px solid transparent;
-        transition: all 0.3s ease;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        border-left: 5px solid var(--jd-yellow);
     }
     
-    .accordion-item:hover {
-        border-color: var(--jd-black);
-        transform: translateY(-2px);
-    }
-    
-    .accordion-header {
-        background: linear-gradient(135deg, var(--jd-black) 0%, var(--jd-black-dark) 100%);
-        color: var(--jd-white);
-        padding: 1rem 1.5rem;
-        font-weight: 600;
-        font-size: 1.1rem;
-        cursor: pointer;
-        transition: all 0.3s ease;
+    .step-indicator {
         display: flex;
         justify-content: space-between;
         align-items: center;
+        margin-bottom: 2rem;
         position: relative;
     }
     
-    .accordion-header::before {
+    .step-indicator::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: var(--jd-light-gray);
+        z-index: 1;
+    }
+    
+    .step {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        position: relative;
+        z-index: 2;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .step-circle {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background: var(--jd-white);
+        border: 3px solid var(--jd-light-gray);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        color: var(--jd-gray);
+        margin-bottom: 0.5rem;
+        transition: all 0.3s ease;
+    }
+    
+    .step.active .step-circle {
+        background: var(--jd-yellow);
+        border-color: var(--jd-black);
+        color: var(--jd-black);
+        transform: scale(1.1);
+    }
+    
+    .step.completed .step-circle {
+        background: var(--jd-black);
+        border-color: var(--jd-black);
+        color: var(--jd-white);
+    }
+    
+    .step-label {
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-align: center;
+        color: var(--jd-gray);
+        max-width: 80px;
+    }
+    
+    .step.active .step-label {
+        color: var(--jd-black);
+    }
+    
+    .step.completed .step-label {
+        color: var(--jd-black);
+    }
+    
+    .step-section {
+        display: none;
+        animation: fadeIn 0.5s ease;
+    }
+    
+    .step-section.active {
+        display: block;
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .section-header {
+        background: linear-gradient(135deg, var(--jd-black) 0%, var(--jd-black-dark) 100%);
+        color: var(--jd-white);
+        padding: 1.5rem;
+        border-radius: 15px;
+        margin-bottom: 2rem;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .section-header::before {
         content: '';
         position: absolute;
         left: 0;
@@ -124,92 +201,77 @@
         background: var(--jd-yellow);
     }
     
-    .accordion-header:hover {
-        background: linear-gradient(135deg, var(--jd-black-dark) 0%, var(--jd-black) 100%);
+    .section-header h2 {
+        margin: 0;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
     }
     
-    .accordion-header .toggle-icon {
-        transition: transform 0.3s ease;
-        color: var(--jd-yellow);
-    }
-    
-    .accordion-header.collapsed .toggle-icon {
-        transform: rotate(-90deg);
-    }
-    
-    .accordion-body {
-        max-height: 0;
-        overflow: hidden;
-        transition: max-height 0.3s ease;
-    }
-    
-    .accordion-body.show {
-        max-height: 2000px;
+    .section-progress {
+        background: var(--jd-light-gray);
+        border-radius: 10px;
+        padding: 1rem;
+        margin-bottom: 2rem;
+        border: 2px solid var(--jd-black);
     }
     
     .elemento-item {
-        padding: 1.5rem;
-        border-bottom: 1px solid var(--jd-light-gray);
-        transition: background-color 0.3s ease;
-        background: var(--jd-light-gray);
-        margin: 0.5rem;
-        border-radius: 10px;
+        background: var(--jd-white);
+        border-radius: 15px;
+        box-shadow: 0 3px 15px rgba(0,0,0,0.1);
+        padding: 2rem;
+        margin-bottom: 1.5rem;
+        border: 2px solid transparent;
+        transition: all 0.3s ease;
         position: relative;
+        overflow: hidden;
     }
     
     .elemento-item::before {
-        content: '🔧';
+        content: '';
         position: absolute;
-        top: 10px;
-        right: 10px;
-        font-size: 16px;
-        opacity: 0.3;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--jd-yellow) 0%, var(--jd-black) 100%);
     }
     
     .elemento-item:hover {
-        background-color: #d5dbdb;
-    }
-    
-    .elemento-item:last-child {
-        border-bottom: none;
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        border-color: var(--jd-yellow);
     }
     
     .elemento-nombre {
-        font-weight: 600;
-        color: var(--jd-gray);
-        margin-bottom: 1rem;
-        font-size: 1.1rem;
-        display: flex;
-        align-items: center;
-    }
-    
-    .elemento-nombre::before {
-        content: '⚙️';
-        margin-right: 8px;
-        font-size: 14px;
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: var(--jd-black);
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid var(--jd-light-gray);
     }
     
     .checklist-options {
-        display: flex;
-        align-items: center;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
         gap: 1rem;
-        margin-bottom: 1rem;
-        flex-wrap: wrap;
+        margin-bottom: 2rem;
     }
     
     .checklist-option {
         display: flex;
         align-items: center;
-        gap: 0.5rem;
-        padding: 0.75rem 1.5rem;
-        border: 2px solid var(--jd-light-gray);
-        border-radius: 25px;
+        gap: 1rem;
+        padding: 1.5rem;
+        border: 3px solid var(--jd-light-gray);
+        border-radius: 15px;
         cursor: pointer;
         transition: all 0.3s ease;
-        font-weight: 500;
+        font-weight: 600;
         background: var(--jd-white);
-        min-width: 140px;
-        justify-content: center;
         position: relative;
         overflow: hidden;
     }
@@ -231,32 +293,29 @@
     
     .checklist-option:hover {
         transform: translateY(-2px);
-        box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        box-shadow: 0 5px 20px rgba(0,0,0,0.1);
     }
     
     .checklist-option.selected {
         border-color: var(--jd-black);
         background: var(--jd-black);
         color: var(--jd-white);
-        box-shadow: 0 3px 10px rgba(0,0,0,0.3);
+        box-shadow: 0 5px 20px rgba(0,0,0,0.2);
     }
     
     .checklist-option.aceptable.selected {
         border-color: var(--jd-black);
         background: var(--jd-black);
-        box-shadow: 0 3px 10px rgba(0,0,0,0.3);
     }
     
     .checklist-option.rechazado.selected {
         border-color: #dc3545;
         background: #dc3545;
-        box-shadow: 0 3px 10px rgba(220,53,69,0.3);
     }
     
     .checklist-option.no-aplica.selected {
         border-color: #6c757d;
         background: #6c757d;
-        box-shadow: 0 3px 10px rgba(108,117,125,0.3);
     }
     
     .checklist-option input[type="radio"] {
@@ -264,68 +323,102 @@
     }
     
     .checklist-option i {
-        font-size: 1.2rem;
+        font-size: 1.5rem;
     }
     
     .notas-container {
+        background: var(--jd-light-gray);
+        border-radius: 15px;
+        padding: 1.5rem;
         margin-top: 1rem;
     }
     
     .notas-label {
-        font-weight: 600;
-        color: var(--jd-gray);
-        margin-bottom: 0.5rem;
-        display: block;
+        font-weight: 700;
+        color: var(--jd-black);
+        margin-bottom: 1rem;
         display: flex;
         align-items: center;
-    }
-    
-    .notas-label::before {
-        content: '📝';
-        margin-right: 8px;
-        font-size: 14px;
+        font-size: 1.1rem;
     }
     
     .notas-textarea {
         width: 100%;
-        min-height: 80px;
-        padding: 0.75rem;
-        border: 2px solid var(--jd-light-gray);
-        border-radius: 8px;
-        font-size: 0.95rem;
+        min-height: 120px;
+        padding: 1rem;
+        border: 3px solid var(--jd-light-gray);
+        border-radius: 10px;
+        font-size: 1rem;
         resize: vertical;
-        transition: border-color 0.3s ease;
+        transition: all 0.3s ease;
         background: var(--jd-white);
+        font-family: inherit;
     }
     
     .notas-textarea:focus {
         outline: none;
         border-color: var(--jd-black);
-        box-shadow: 0 0 0 0.2rem rgba(0,0,0,0.25);
+        box-shadow: 0 0 0 0.2rem rgba(0,0,0,0.1);
+    }
+    
+    .navigation-buttons {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 2rem;
+        padding: 2rem;
+        background: var(--jd-white);
+        border-radius: 15px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+    }
+    
+    .btn-nav {
+        padding: 1rem 2rem;
+        border-radius: 25px;
+        font-weight: 700;
+        font-size: 1.1rem;
+        border: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .btn-prev {
+        background: linear-gradient(135deg, var(--jd-gray) 0%, #34495e 100%);
+        color: var(--jd-white);
+    }
+    
+    .btn-next {
+        background: linear-gradient(135deg, var(--jd-black) 0%, var(--jd-black-dark) 100%);
+        color: var(--jd-white);
+    }
+    
+    .btn-save {
+        background: linear-gradient(135deg, var(--jd-yellow) 0%, var(--jd-yellow-dark) 100%);
+        color: var(--jd-black);
+        font-weight: 700;
+    }
+    
+    .btn-nav:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    }
+    
+    .btn-nav:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none;
     }
     
     .estado-badge {
-        padding: 0.5rem 1rem;
-        border-radius: 20px;
-        font-weight: 600;
-        font-size: 0.9rem;
+        padding: 0.75rem 1.5rem;
+        border-radius: 25px;
+        font-weight: 700;
+        font-size: 1rem;
         position: relative;
         overflow: hidden;
-    }
-    
-    .estado-badge::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: -100%;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-        transition: left 0.5s ease;
-    }
-    
-    .estado-badge:hover::before {
-        left: 100%;
     }
     
     .estado-borrador {
@@ -343,94 +436,13 @@
         color: var(--jd-white);
     }
     
-    .progress-container {
-        background: var(--jd-light-gray);
-        border-radius: 10px;
-        padding: 1rem;
-        margin-bottom: 1rem;
-        border: 2px solid var(--jd-black);
-        position: relative;
-        overflow: hidden;
-    }
-    
-    .progress-container::before {
-        content: '📊';
-        position: absolute;
-        top: 10px;
-        right: 15px;
-        font-size: 20px;
-        opacity: 0.3;
-    }
-    
-    .progress-bar {
-        height: 25px;
-        border-radius: 15px;
-        overflow: hidden;
-        background: var(--jd-white);
-        border: 2px solid var(--jd-black);
-    }
-    
-    .progress-fill {
-        height: 100%;
-        border-radius: 15px;
-        transition: width 0.3s ease;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: var(--jd-white);
-        font-weight: 600;
-        font-size: 0.9rem;
-        background: linear-gradient(90deg, var(--jd-black) 0%, var(--jd-black-dark) 100%);
-    }
-    
-    .btn-action {
-        border-radius: 25px;
-        padding: 0.75rem 1.5rem;
-        font-weight: 600;
-        transition: all 0.3s ease;
-        border: none;
-        margin: 0.25rem;
-        position: relative;
-        overflow: hidden;
-    }
-    
-    .btn-action::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: -100%;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-        transition: left 0.5s ease;
-    }
-    
-    .btn-action:hover::before {
-        left: 100%;
-    }
-    
-    .btn-action:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-    }
-    
-    .btn-secondary {
-        background: linear-gradient(135deg, var(--jd-gray) 0%, #34495e 100%);
-        color: var(--jd-white);
-    }
-    
-    .btn-success {
-        background: linear-gradient(135deg, var(--jd-black) 0%, var(--jd-black-dark) 100%);
-        color: var(--jd-white);
-    }
-    
     .save-indicator {
         position: fixed;
         top: 20px;
         right: 20px;
         background: var(--jd-black);
         color: var(--jd-white);
-        padding: 0.75rem 1.5rem;
+        padding: 1rem 2rem;
         border-radius: 25px;
         box-shadow: 0 5px 15px rgba(0,0,0,0.2);
         z-index: 1000;
@@ -438,29 +450,12 @@
         transform: translateY(-20px);
         transition: all 0.3s ease;
         border: 2px solid var(--jd-yellow);
+        font-weight: 600;
     }
     
     .save-indicator.show {
         opacity: 1;
         transform: translateY(0);
-    }
-    
-    .completion-check {
-        color: var(--jd-yellow);
-        font-size: 1.2rem;
-        margin-left: 0.5rem;
-        opacity: 0;
-        transition: opacity 0.3s ease;
-        animation: pulse 2s infinite;
-    }
-    
-    @keyframes pulse {
-        0%, 100% { transform: scale(1); }
-        50% { transform: scale(1.1); }
-    }
-    
-    .completion-check.show {
-        opacity: 1;
     }
     
     .construction-theme {
@@ -473,18 +468,19 @@
         background: var(--jd-white);
         border-radius: 15px;
         box-shadow: 0 5px 20px rgba(0,0,0,0.08);
-        padding: 1.5rem;
+        padding: 2rem;
         margin-bottom: 2rem;
         border-left: 5px solid var(--jd-yellow);
     }
     
     .save-all-section h3 {
         color: var(--jd-black);
-        margin-bottom: 1rem;
+        margin-bottom: 1.5rem;
         padding-bottom: 0.5rem;
         border-bottom: 2px solid var(--jd-light-gray);
         display: flex;
         align-items: center;
+        font-size: 1.3rem;
     }
 </style>
 
@@ -545,112 +541,156 @@
             </div>
         </div>
 
-        <!-- Progreso -->
-        <div class="progress-container">
-            <h5><i class="fas fa-chart-bar me-2"></i>Progreso de la Inspección</h5>
-            <div class="row">
-                <div class="col-md-8">
-                    <div class="progress-bar">
-                        <div class="progress-fill 
-                            {% if checklist.porcentaje_aceptable >= 80 %}bg-success
-                            {% elif checklist.porcentaje_aceptable >= 60 %}bg-warning
-                            {% else %}bg-danger
-                            {% endif %}" 
-                             style="width: {{ checklist.porcentaje_aceptable }}%">
-                            {{ checklist.porcentaje_aceptable|floatformat:1 }}% Aceptable
-                        </div>
-                    </div>
+        <!-- Indicador de Progreso por Etapas -->
+        <div class="progress-steps">
+            <h3><i class="fas fa-route me-2"></i>Progreso por Etapas</h3>
+            <div class="step-indicator">
+                <div class="step active" data-step="1">
+                    <div class="step-circle">1</div>
+                    <div class="step-label">Chasis y Estructura</div>
                 </div>
-                <div class="col-md-4">
-                    <div class="row text-center">
-                        <div class="col-4">
-                            <div class="text-success">
-                                <strong>{{ checklist.elementos_aceptables }}</strong><br>
-                                <small><i class="fas fa-check me-1"></i>Aceptable</small>
-                            </div>
-                        </div>
-                        <div class="col-4">
-                            <div class="text-danger">
-                                <strong>{{ checklist.elementos_rechazados }}</strong><br>
-                                <small><i class="fas fa-times me-1"></i>Rechazado</small>
-                            </div>
-                        </div>
-                        <div class="col-4">
-                            <div class="text-muted">
-                                <strong>{{ checklist.elementos_no_aplican }}</strong><br>
-                                <small><i class="fas fa-minus me-1"></i>No Aplica</small>
-                            </div>
-                        </div>
-                    </div>
+                <div class="step" data-step="2">
+                    <div class="step-circle">2</div>
+                    <div class="step-label">Llantas y Carrilería</div>
+                </div>
+                <div class="step" data-step="3">
+                    <div class="step-circle">3</div>
+                    <div class="step-label">Cabina</div>
+                </div>
+                <div class="step" data-step="4">
+                    <div class="step-circle">4</div>
+                    <div class="step-label">Motor</div>
+                </div>
+                <div class="step" data-step="5">
+                    <div class="step-circle">5</div>
+                    <div class="step-label">Transmission</div>
+                </div>
+                <div class="step" data-step="6">
+                    <div class="step-circle">6</div>
+                    <div class="step-label">Sistema Hidráulico</div>
+                </div>
+                <div class="step" data-step="7">
+                    <div class="step-circle">7</div>
+                    <div class="step-label">Sistema Eléctrico</div>
+                </div>
+                <div class="step" data-step="8">
+                    <div class="step-circle">8</div>
+                    <div class="step-label">Sistema de Frenos</div>
+                </div>
+                <div class="step" data-step="9">
+                    <div class="step-circle">9</div>
+                    <div class="step-label">Sistema de Refrigeración</div>
                 </div>
             </div>
         </div>
 
-        <!-- Acciones -->
-        <div class="text-center mb-4">
-            <a href="{% url 'gestionDeTaller:detalle_servicio' checklist.servicio.id %}" class="btn-action btn-secondary">
-                <i class="fas fa-arrow-left me-2"></i>Volver al Servicio
-            </a>
-        </div>
-
-        <!-- Elementos por Sección (Acordeón) -->
+        <!-- Etapas del Checklist -->
         {% for seccion_nombre, elementos in elementos_por_seccion.items %}
-        <div class="accordion-item">
-            <div class="accordion-header" onclick="toggleAccordion(this)">
-                <div>
-                    {{ seccion_nombre }}
-                    <i class="fas fa-check completion-check" id="check-{{ forloop.counter }}"></i>
-                </div>
-                <i class="fas fa-chevron-down toggle-icon"></i>
+        <div class="step-section {% if forloop.first %}active{% endif %}" data-step="{{ forloop.counter }}">
+            <div class="section-header">
+                <h2>
+                    <i class="fas fa-cogs me-3"></i>{{ seccion_nombre }}
+                    <span class="badge bg-warning text-dark">
+                        <i class="fas fa-clock me-1"></i>Etapa {{ forloop.counter }} de 9
+                    </span>
+                </h2>
             </div>
-            <div class="accordion-body">
-                {% for elemento in elementos %}
-                <div class="elemento-item" data-elemento-id="{{ elemento.id }}" data-seccion="{{ forloop.parentloop.counter }}">
-                    <div class="elemento-nombre">{{ elemento.nombre_elemento }}</div>
-                    
-                    <div class="checklist-options">
-                        <label class="checklist-option aceptable {% if elemento.respuesta == 'A' %}selected{% endif %}">
-                            <input type="radio" name="respuesta_{{ elemento.id }}" value="A" 
-                                   {% if elemento.respuesta == 'A' %}checked{% endif %}
-                                   onchange="actualizarRespuesta({{ elemento.id }}, 'A')">
-                            <i class="fas fa-check"></i>
-                            <span>Aceptable</span>
-                        </label>
-                        
-                        <label class="checklist-option rechazado {% if elemento.respuesta == 'R' %}selected{% endif %}">
-                            <input type="radio" name="respuesta_{{ elemento.id }}" value="R"
-                                   {% if elemento.respuesta == 'R' %}checked{% endif %}
-                                   onchange="actualizarRespuesta({{ elemento.id }}, 'R')">
-                            <i class="fas fa-times"></i>
-                            <span>Rechazado</span>
-                        </label>
-                        
-                        <label class="checklist-option no-aplica {% if elemento.respuesta == 'N/A' %}selected{% endif %}">
-                            <input type="radio" name="respuesta_{{ elemento.id }}" value="N/A"
-                                   {% if elemento.respuesta == 'N/A' %}checked{% endif %}
-                                   onchange="actualizarRespuesta({{ elemento.id }}, 'N/A')">
-                            <i class="fas fa-minus"></i>
-                            <span>No Aplica</span>
-                        </label>
-                    </div>
-                    
-                    <div class="notas-container">
-                        <label class="notas-label">
-                            <i class="fas fa-sticky-note me-2"></i>Notas:
-                        </label>
-                        <textarea class="notas-textarea" 
-                                  placeholder="Agregar notas sobre este elemento..."
-                                  onchange="actualizarNotas({{ elemento.id }}, this.value)">{{ elemento.notas }}</textarea>
+
+            <div class="section-progress">
+                <h5><i class="fas fa-chart-bar me-2"></i>Progreso de esta Etapa</h5>
+                <div class="progress mb-3">
+                    <div class="progress-bar bg-success" role="progressbar" style="width: 0%" id="progress-{{ forloop.counter }}">
+                        0%
                     </div>
                 </div>
-                {% endfor %}
+                <div class="row text-center">
+                    <div class="col-4">
+                        <div class="text-success">
+                            <strong id="aceptables-{{ forloop.counter }}">0</strong><br>
+                            <small><i class="fas fa-check me-1"></i>Aceptable</small>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="text-danger">
+                            <strong id="rechazados-{{ forloop.counter }}">0</strong><br>
+                            <small><i class="fas fa-times me-1"></i>Rechazado</small>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="text-muted">
+                            <strong id="no-aplican-{{ forloop.counter }}">0</strong><br>
+                            <small><i class="fas fa-minus me-1"></i>No Aplica</small>
+                        </div>
+                    </div>
+                </div>
             </div>
+
+            {% for elemento in elementos %}
+            <div class="elemento-item" data-elemento-id="{{ elemento.id }}" data-seccion="{{ forloop.parentloop.counter }}">
+                <div class="elemento-nombre">{{ elemento.nombre_elemento }}</div>
+                
+                <div class="checklist-options">
+                    <label class="checklist-option aceptable {% if elemento.respuesta == 'A' %}selected{% endif %}">
+                        <input type="radio" name="respuesta_{{ elemento.id }}" value="A" 
+                               {% if elemento.respuesta == 'A' %}checked{% endif %}
+                               onchange="actualizarRespuesta({{ elemento.id }}, 'A')">
+                        <i class="fas fa-check"></i>
+                        <span>Aceptable</span>
+                    </label>
+                    
+                    <label class="checklist-option rechazado {% if elemento.respuesta == 'R' %}selected{% endif %}">
+                        <input type="radio" name="respuesta_{{ elemento.id }}" value="R"
+                               {% if elemento.respuesta == 'R' %}checked{% endif %}
+                               onchange="actualizarRespuesta({{ elemento.id }}, 'R')">
+                        <i class="fas fa-times"></i>
+                        <span>Rechazado</span>
+                    </label>
+                    
+                    <label class="checklist-option no-aplica {% if elemento.respuesta == 'N/A' %}selected{% endif %}">
+                        <input type="radio" name="respuesta_{{ elemento.id }}" value="N/A"
+                               {% if elemento.respuesta == 'N/A' %}checked{% endif %}
+                               onchange="actualizarRespuesta({{ elemento.id }}, 'N/A')">
+                        <i class="fas fa-minus"></i>
+                        <span>No Aplica</span>
+                    </label>
+                </div>
+                
+                <div class="notas-container">
+                    <label class="notas-label">
+                        <i class="fas fa-sticky-note me-2"></i>Notas sobre este elemento:
+                    </label>
+                    <textarea class="notas-textarea" 
+                              placeholder="Describe cualquier observación, problema o detalle importante sobre este elemento..."
+                              onchange="actualizarNotas({{ elemento.id }}, this.value)">{{ elemento.notas }}</textarea>
+                </div>
+            </div>
+            {% endfor %}
         </div>
         {% endfor %}
 
+        <!-- Navegación -->
+        <div class="navigation-buttons">
+            <button type="button" class="btn-nav btn-prev" onclick="anteriorEtapa()" id="btn-prev" disabled>
+                <i class="fas fa-arrow-left"></i>Etapa Anterior
+            </button>
+            
+            <div class="d-flex gap-2">
+                <a href="{% url 'gestionDeTaller:detalle_servicio' checklist.servicio.id %}" class="btn-nav btn-prev">
+                    <i class="fas fa-arrow-left me-2"></i>Volver al Servicio
+                </a>
+                <button type="button" class="btn-nav btn-save" onclick="guardarTodo()">
+                    <i class="fas fa-save me-2"></i>Guardar Todo
+                </button>
+            </div>
+            
+            <button type="button" class="btn-nav btn-next" onclick="siguienteEtapa()" id="btn-next">
+                Siguiente Etapa<i class="fas fa-arrow-right"></i>
+            </button>
+        </div>
+
         <!-- Sección de Guardar Todo -->
         <div class="save-all-section">
-            <h3><i class="fas fa-save me-2"></i>Guardar Checklist</h3>
+            <h3><i class="fas fa-save me-2"></i>Configuración Final del Checklist</h3>
             <div class="row">
                 <div class="col-md-4">
                     <label for="estado" class="form-label"><i class="fas fa-flag me-2"></i>Estado:</label>
@@ -662,13 +702,8 @@
                 </div>
                 <div class="col-md-8">
                     <label for="notas_generales" class="form-label"><i class="fas fa-comment me-2"></i>Notas Generales:</label>
-                    <textarea class="form-control" id="notas_generales" name="notas_generales" rows="3">{{ checklist.notas_generales }}</textarea>
+                    <textarea class="form-control" id="notas_generales" name="notas_generales" rows="3" placeholder="Agregar notas generales sobre toda la inspección...">{{ checklist.notas_generales }}</textarea>
                 </div>
-            </div>
-            <div class="text-center mt-3">
-                <button type="button" class="btn-action btn-success" onclick="guardarTodo()">
-                    <i class="fas fa-save me-2"></i>Guardar Todo el Checklist
-                </button>
             </div>
         </div>
     </div>
@@ -683,52 +718,82 @@
     // Variables para almacenar cambios pendientes
     let cambiosPendientes = {};
     let notasPendientes = {};
+    let etapaActual = 1;
+    const totalEtapas = 9;
     
-    function toggleAccordion(header) {
-        const body = header.nextElementSibling;
-        const icon = header.querySelector('.toggle-icon');
+    function actualizarEtapa(nuevaEtapa) {
+        // Ocultar etapa actual
+        document.querySelector(`.step-section[data-step="${etapaActual}"]`).classList.remove('active');
+        document.querySelector(`.step[data-step="${etapaActual}"]`).classList.remove('active');
         
-        if (body.classList.contains('show')) {
-            body.classList.remove('show');
-            header.classList.add('collapsed');
-        } else {
-            body.classList.add('show');
-            header.classList.remove('collapsed');
+        // Mostrar nueva etapa
+        document.querySelector(`.step-section[data-step="${nuevaEtapa}"]`).classList.add('active');
+        document.querySelector(`.step[data-step="${nuevaEtapa}"]`).classList.add('active');
+        
+        etapaActual = nuevaEtapa;
+        
+        // Actualizar botones de navegación
+        document.getElementById('btn-prev').disabled = etapaActual === 1;
+        document.getElementById('btn-next').disabled = etapaActual === totalEtapas;
+        
+        // Actualizar progreso de la etapa
+        actualizarProgresoEtapa(etapaActual);
+    }
+    
+    function anteriorEtapa() {
+        if (etapaActual > 1) {
+            actualizarEtapa(etapaActual - 1);
         }
     }
     
-    function checkSeccionCompleta(seccionId) {
-        console.log(`Verificando sección ${seccionId}...`);
-        const elementos = document.querySelectorAll(`[data-seccion="${seccionId}"]`);
+    function siguienteEtapa() {
+        if (etapaActual < totalEtapas) {
+            actualizarEtapa(etapaActual + 1);
+        }
+    }
+    
+    function actualizarProgresoEtapa(etapa) {
+        const elementos = document.querySelectorAll(`.step-section[data-step="${etapa}"] .elemento-item`);
         let completados = 0;
-        let total = elementos.length;
+        let aceptables = 0;
+        let rechazados = 0;
+        let noAplican = 0;
         
-        console.log(`Total elementos en sección ${seccionId}: ${total}`);
-        
-        elementos.forEach((elemento, index) => {
+        elementos.forEach(elemento => {
             const selectedOption = elemento.querySelector('.checklist-option.selected');
-            const tieneRespuesta = selectedOption !== null;
-            
-            console.log(`Elemento ${index + 1}: ${tieneRespuesta ? 'Completado' : 'Pendiente'}`);
-            
-            if (tieneRespuesta) {
+            if (selectedOption) {
                 completados++;
+                const respuesta = selectedOption.querySelector('input').value;
+                if (respuesta === 'A') aceptables++;
+                else if (respuesta === 'R') rechazados++;
+                else if (respuesta === 'N/A') noAplican++;
             }
         });
         
-        console.log(`Sección ${seccionId}: ${completados}/${total} completados`);
+        const porcentaje = elementos.length > 0 ? (completados / elementos.length) * 100 : 0;
         
-        const checkIcon = document.getElementById(`check-${seccionId}`);
-        if (checkIcon) {
-            if (completados === total && total > 0) {
-                console.log(`✅ Sección ${seccionId} COMPLETA - Mostrando tilde`);
-                checkIcon.classList.add('show');
-            } else {
-                console.log(`❌ Sección ${seccionId} INCOMPLETA - Ocultando tilde`);
-                checkIcon.classList.remove('show');
-            }
+        // Actualizar barra de progreso
+        const progressBar = document.getElementById(`progress-${etapa}`);
+        if (progressBar) {
+            progressBar.style.width = `${porcentaje}%`;
+            progressBar.textContent = `${Math.round(porcentaje)}%`;
+        }
+        
+        // Actualizar contadores
+        const aceptablesEl = document.getElementById(`aceptables-${etapa}`);
+        const rechazadosEl = document.getElementById(`rechazados-${etapa}`);
+        const noAplicanEl = document.getElementById(`no-aplican-${etapa}`);
+        
+        if (aceptablesEl) aceptablesEl.textContent = aceptables;
+        if (rechazadosEl) rechazadosEl.textContent = rechazados;
+        if (noAplicanEl) noAplicanEl.textContent = noAplican;
+        
+        // Marcar etapa como completada si todos los elementos están completados
+        const stepElement = document.querySelector(`.step[data-step="${etapa}"]`);
+        if (completados === elementos.length && elementos.length > 0) {
+            stepElement.classList.add('completed');
         } else {
-            console.error(`No se encontró el icono de check para sección ${seccionId}`);
+            stepElement.classList.remove('completed');
         }
     }
     
@@ -745,9 +810,8 @@
         // Guardar cambio pendiente
         cambiosPendientes[elementoId] = respuesta;
         
-        // Verificar si la sección está completa
-        const seccionId = elementoItem.getAttribute('data-seccion');
-        checkSeccionCompleta(seccionId);
+        // Actualizar progreso de la etapa actual
+        actualizarProgresoEtapa(etapaActual);
         
         // Mostrar indicador de cambio pendiente
         mostrarIndicadorCambio();
@@ -830,17 +894,19 @@
         });
     }
     
-    // Expandir la primera sección por defecto y verificar secciones completas
+    // Inicializar al cargar la página
     document.addEventListener('DOMContentLoaded', function() {
-        const firstAccordion = document.querySelector('.accordion-header');
-        if (firstAccordion) {
-            toggleAccordion(firstAccordion);
-        }
+        // Inicializar progreso de la primera etapa
+        actualizarProgresoEtapa(1);
         
-        // Verificar secciones completas al cargar
-        for (let i = 1; i <= 9; i++) {
-            checkSeccionCompleta(i);
-        }
+        // Configurar navegación por teclado
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'ArrowLeft' && etapaActual > 1) {
+                anteriorEtapa();
+            } else if (e.key === 'ArrowRight' && etapaActual < totalEtapas) {
+                siguienteEtapa();
+            }
+        });
     });
 </script>
 
