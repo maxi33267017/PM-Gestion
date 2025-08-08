@@ -80,27 +80,6 @@
             width: 25%;
         }
         
-        .porcentaje-info {
-            text-align: center;
-            margin: 15px 0;
-            padding: 10px;
-            background-color: #f8f9fa;
-            border: 2px solid #dee2e6;
-            border-radius: 5px;
-        }
-        
-        .porcentaje-valor {
-            font-size: 20px;
-            font-weight: bold;
-            color: #000;
-        }
-        
-        .porcentaje-label {
-            font-size: 10px;
-            color: #666;
-            margin-top: 3px;
-        }
-        
         .section-header {
             background-color: #000;
             color: #fff;
@@ -136,12 +115,12 @@
         }
         
         .elemento-respuesta {
-            width: 30%;
+            width: 20%;
             text-align: center;
         }
         
         .elemento-notas {
-            width: 20%;
+            width: 30%;
         }
         
         .respuesta-badge {
@@ -213,6 +192,68 @@
             font-weight: bold;
         }
         
+        .elementos-rechazados {
+            margin-top: 15px;
+            padding: 8px;
+            border: 2px solid #dc3545;
+            background-color: #fff5f5;
+            font-size: 9px;
+        }
+        
+        .elementos-rechazados h4 {
+            margin: 0 0 5px 0;
+            font-size: 10px;
+            font-weight: bold;
+            color: #dc3545;
+        }
+        
+        .elemento-rechazado {
+            margin-bottom: 8px;
+            padding: 4px;
+            border-left: 3px solid #dc3545;
+            background-color: #fff;
+        }
+        
+        .elemento-rechazado .nombre {
+            font-weight: bold;
+            font-size: 9px;
+        }
+        
+        .elemento-rechazado .notas {
+            font-size: 8px;
+            color: #666;
+            margin-top: 2px;
+        }
+        
+        .resumen-estadisticas {
+            margin: 15px 0;
+            padding: 8px;
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            font-size: 9px;
+        }
+        
+        .resumen-estadisticas h4 {
+            margin: 0 0 5px 0;
+            font-size: 10px;
+            font-weight: bold;
+        }
+        
+        .stats-grid {
+            display: table;
+            width: 100%;
+        }
+        
+        .stats-row {
+            display: table-row;
+        }
+        
+        .stats-cell {
+            display: table-cell;
+            padding: 2px 4px;
+            font-size: 8px;
+        }
+        
         .page-break {
             page-break-before: always;
         }
@@ -270,21 +311,22 @@
         </div>
     </div>
     
-    <div class="porcentaje-info">
-        <div class="porcentaje-valor">{{ checklist.porcentaje_aceptable|floatformat:1 }}%</div>
-        <div class="porcentaje-label">Elementos Aceptables</div>
+    <div class="resumen-estadisticas">
+        <h4>Resumen de Inspección:</h4>
+        <div class="stats-grid">
+            <div class="stats-row">
+                <div class="stats-cell"><strong>Total Elementos:</strong> {{ checklist.total_elementos }}</div>
+                <div class="stats-cell"><strong>Aceptables:</strong> {{ checklist.elementos_aceptables }}</div>
+                <div class="stats-cell"><strong>Rechazados:</strong> {{ checklist.elementos_rechazados }}</div>
+                <div class="stats-cell"><strong>No Aplican:</strong> {{ checklist.elementos_no_aplican }}</div>
+            </div>
+        </div>
     </div>
     
     {% for seccion_nombre, elementos in elementos_por_seccion.items %}
     <div class="section-header">{{ seccion_nombre }}</div>
     
     <div class="elementos-grid">
-        <div class="elemento-row">
-            <div class="elemento-cell info-label">Elemento</div>
-            <div class="elemento-cell info-label">Respuesta</div>
-            <div class="elemento-cell info-label">Notas</div>
-        </div>
-        
         {% for elemento in elementos %}
         <div class="elemento-row">
             <div class="elemento-cell elemento-nombre">{{ elemento.nombre_elemento }}</div>
@@ -311,9 +353,27 @@
     </div>
     {% endfor %}
     
+    {% if checklist.elementos_rechazados > 0 %}
+    <div class="elementos-rechazados">
+        <h4>Elementos Rechazados - Requieren Atención:</h4>
+        {% for seccion_nombre, elementos in elementos_por_seccion.items %}
+            {% for elemento in elementos %}
+                {% if elemento.respuesta == 'R' %}
+                <div class="elemento-rechazado">
+                    <div class="nombre">{{ seccion_nombre }} - {{ elemento.nombre_elemento }}</div>
+                    {% if elemento.notas %}
+                    <div class="notas">{{ elemento.notas }}</div>
+                    {% endif %}
+                </div>
+                {% endif %}
+            {% endfor %}
+        {% endfor %}
+    </div>
+    {% endif %}
+    
     {% if checklist.notas_generales %}
     <div class="notas-generales">
-        <h4>Notas Generales:</h4>
+        <h4>Notas Generales - Información para Cotización:</h4>
         {{ checklist.notas_generales|linebreaks }}
     </div>
     {% endif %}
