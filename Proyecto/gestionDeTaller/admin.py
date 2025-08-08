@@ -1002,10 +1002,6 @@ class TarifarioAdmin(admin.ModelAdmin):
             'fields': ('tmo_horas', 'actividades'),
             'description': 'Información técnica del servicio'
         }),
-        ('Modelos Asociados', {
-            'fields': ('modelos_equipo',),
-            'description': 'Selecciona los modelos de equipo a los que aplica este tarifario'
-        }),
         ('Información de Auditoría', {
             'fields': ('creado_por', 'fecha_creacion', 'fecha_modificacion'),
             'classes': ('collapse',)
@@ -1063,14 +1059,17 @@ class TarifarioAdmin(admin.ModelAdmin):
         
         class TarifarioForm(form):
             modelos_equipo = forms.ModelMultipleChoiceField(
-                queryset=ModeloEquipo.objects.filter(activo=True),
+                queryset=ModeloEquipo.objects.filter(activo=True).select_related('tipo_equipo').order_by('tipo_equipo__nombre', 'nombre'),
                 required=False,
-                widget=forms.SelectMultiple(attrs={'size': '10'}),
+                widget=forms.SelectMultiple(attrs={'size': '15'}),
                 help_text="Selecciona los modelos de equipo a los que aplica este tarifario"
             )
             
             def __init__(self, *args, **kwargs):
                 super().__init__(*args, **kwargs)
+                # Personalizar las etiquetas de los modelos
+                self.fields['modelos_equipo'].label_from_instance = lambda obj: f"{obj.tipo_equipo.nombre} - {obj.marca} {obj.nombre}"
+                
                 if obj:
                     # Pre-seleccionar modelos existentes
                     self.fields['modelos_equipo'].initial = [
