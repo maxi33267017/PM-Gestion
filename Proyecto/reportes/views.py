@@ -2964,8 +2964,8 @@ def servicios_sin_ingresos(request):
         valor_mano_obra = servicio.valor_mano_obra or Decimal('0.00')
         # Calcular gastos incluyendo modelos antiguos y nuevos
         total_gastos_antiguos = servicio.gastos.aggregate(total=Sum('monto'))['total'] or Decimal('0.00')
-        total_gastos_simplificados = servicio.gastos_asistencia_simplificados.aggregate(total=Sum('monto'))['total'] or Decimal('0.00')
-        total_gastos_terceros = servicio.gastos_insumos_terceros.aggregate(total=Sum('monto'))['total'] or Decimal('0.00')
+        total_gastos_simplificados = servicio.gastos_asistencia_simplificados.aggregate(total=Sum('monto_usd'))['total'] or Decimal('0.00')
+        total_gastos_terceros = servicio.gastos_insumos_terceros.aggregate(total=Sum('monto_usd'))['total'] or Decimal('0.00')
         total_gastos = total_gastos_antiguos + total_gastos_simplificados + total_gastos_terceros
         
         # Calcular repuestos incluyendo modelos antiguos y nuevos
