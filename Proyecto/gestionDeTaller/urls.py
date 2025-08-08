@@ -116,4 +116,13 @@ urlpatterns = [
         path('eliminar-tarifario/', views.eliminar_tarifario, name='eliminar_tarifario'),
         path('eliminar-modelo-equipo/', views.eliminar_modelo_equipo, name='eliminar_modelo_equipo'),
         path('eliminar-tipo-equipo/', views.eliminar_tipo_equipo, name='eliminar_tipo_equipo'),
+
+        # URLs para Checklists de Inspección JD Protect
+        path('checklists-inspeccion/', views.lista_checklists_inspeccion, name='lista_checklists_inspeccion'),
+        path('servicio/<int:servicio_id>/crear-checklist/', views.crear_checklist_inspeccion, name='crear_checklist_inspeccion'),
+        path('checklist-inspeccion/<int:checklist_id>/', views.detalle_checklist_inspeccion, name='detalle_checklist_inspeccion'),
+        path('elemento-checklist/<int:elemento_id>/actualizar/', views.actualizar_elemento_checklist, name='actualizar_elemento_checklist'),
+        path('checklist-inspeccion/<int:checklist_id>/actualizar/', views.actualizar_checklist, name='actualizar_checklist'),
+        path('checklist-inspeccion/<int:checklist_id>/descargar-pdf/', views.descargar_checklist_pdf, name='descargar_checklist_pdf'),
+        path('checklist-inspeccion/<int:checklist_id>/enviar-email/', views.enviar_checklist_email, name='enviar_checklist_email'),
     ]

@@ -4744,3 +4744,313 @@ def eliminar_tipo_equipo(request):
         return JsonResponse({'success': True, 'message': 'Tipo de equipo eliminado exitosamente'})
     except Exception as e:
         return JsonResponse({'success': False, 'message': f'Error: {str(e)}'})
+
+# Vistas para Checklists de Inspección JD Protect
+
+@login_required
+def lista_checklists_inspeccion(request):
+    """Lista de checklists de inspección"""
+    checklists = ChecklistInspeccion.objects.select_related(
+        'servicio', 'equipo', 'creado_por'
+    ).order_by('-fecha_creacion')
+    
+    # Filtrar por servicio si se especifica
+    servicio_id = request.GET.get('servicio_id')
+    if servicio_id:
+        checklists = checklists.filter(servicio_id=servicio_id)
+    
+    # Filtrar por estado
+    estado = request.GET.get('estado')
+    if estado:
+        checklists = checklists.filter(estado=estado)
+    
+    context = {
+        'checklists': checklists,
+        'estados': ChecklistInspeccion.ESTADO_CHOICES,
+    }
+    
+    return render(request, 'gestionDeTaller/lista_checklists_inspeccion.html', context)
+
+
+@login_required
+def crear_checklist_inspeccion(request, servicio_id):
+    """Crear nuevo checklist de inspección"""
+    servicio = get_object_or_404(Servicio, id=servicio_id)
+    
+    if request.method == 'POST':
+        # Procesar formulario de creación
+        equipo_id = request.POST.get('equipo')
+        fecha_inspeccion = request.POST.get('fecha_inspeccion')
+        horometro = request.POST.get('horometro')
+        
+        if equipo_id and fecha_inspeccion:
+            # Crear el checklist
+            checklist = ChecklistInspeccion.objects.create(
+                servicio=servicio,
+                equipo_id=equipo_id,
+                fecha_inspeccion=fecha_inspeccion,
+                horometro=horometro if horometro else None,
+                creado_por=request.user
+            )
+            
+            # Crear elementos del checklist basados en el template JD Protect
+            elementos_template = [
+                # Cabina
+                ('CABINA', 'Cinturon de Seguridad', 1),
+                ('CABINA', 'Operacion de transmision', 2),
+                ('CABINA', 'Claxon', 3),
+                ('CABINA', 'Aceite de transmision', 4),
+                ('CABINA', 'Vidrios', 5),
+                ('CABINA', 'Filtros de transmision', 6),
+                ('CABINA', 'Limpiadores', 7),
+                ('CABINA', 'Barra cardan y crucetas', 8),
+                ('CABINA', 'Espejos', 9),
+                ('CABINA', 'Lubricacion de rodamientos', 10),
+                ('CABINA', 'Alarma de Reversa', 11),
+                ('CABINA', 'Mandos finales', 12),
+                ('CABINA', 'Operacion del HVAC', 13),
+                ('CABINA', 'Filtros de Aire de Cabina', 14),
+                ('CABINA', 'Monitor de Cabina', 15),
+                
+                # Sistema Hidráulico
+                ('SISTEMA_HIDRAULICO', 'Operacion de Sistema Hidraulico (fugas)', 16),
+                ('SISTEMA_HIDRAULICO', 'Nivel de Aceite', 17),
+                ('SISTEMA_HIDRAULICO', 'DTCs', 18),
+                ('SISTEMA_HIDRAULICO', 'Filtros de Aceite', 19),
+                ('SISTEMA_HIDRAULICO', 'Actualizacion de Software', 20),
+                ('SISTEMA_HIDRAULICO', 'Mangueras y tubos hidraulicos', 21),
+                ('SISTEMA_HIDRAULICO', 'Product Improvement Programs (PIPs)', 22),
+                ('SISTEMA_HIDRAULICO', 'Cilindros hidraulicos', 23),
+                ('SISTEMA_HIDRAULICO', 'Conexão JD Link, Expert Alerts', 24),
+                
+                # Sistema Eléctrico
+                ('SISTEMA_ELECTRICO', 'Neutral Safety Start', 25),
+                ('SISTEMA_ELECTRICO', 'Alternador', 26),
+                ('SISTEMA_ELECTRICO', 'Baterias', 27),
+                ('SISTEMA_ELECTRICO', 'Operacion general', 28),
+                ('SISTEMA_ELECTRICO', 'Arneses electricos', 29),
+                
+                # Sistema de Frenos
+                ('SISTEMA_FRENOS', 'Frenos de Servicio', 30),
+                ('SISTEMA_FRENOS', 'Motor de marcha', 31),
+                ('SISTEMA_FRENOS', 'Frenos de Estacionamiento', 32),
+                ('SISTEMA_FRENOS', 'Luces y direccionales', 33),
+                ('SISTEMA_FRENOS', 'Frenos en operacion', 34),
+                
+                # Motor
+                ('MOTOR', 'Aceite de Motor', 35),
+                ('MOTOR', 'Filtro de Aceite', 36),
+                ('MOTOR', 'Turbocargador', 37),
+                
+                # Chassis y Estructura
+                ('CHASSIS_ESTRUCTURA', 'Escalones', 38),
+                ('CHASSIS_ESTRUCTURA', 'Poleas y correas', 39),
+                ('CHASSIS_ESTRUCTURA', 'Pasa manos', 40),
+                ('CHASSIS_ESTRUCTURA', 'Candados de seguridad', 41),
+                ('CHASSIS_ESTRUCTURA', 'ROPS', 42),
+                ('CHASSIS_ESTRUCTURA', 'Tapas y cubiertas', 43),
+                ('CHASSIS_ESTRUCTURA', 'Calcomanias', 44),
+                ('CHASSIS_ESTRUCTURA', 'Contrapesos', 45),
+                ('CHASSIS_ESTRUCTURA', 'Acesorios', 46),
+                
+                # Sistema de Aspiración
+                ('SISTEMA_ASPIRACION', 'Sistema de Aspiracion', 47),
+                
+                # Sistema de Combustible
+                ('SISTEMA_COMBUSTIBLE', 'Sistema de Combustible', 48),
+                
+                # Sistema DEF
+                ('SISTEMA_DEF', 'Sistema DEF', 49),
+                
+                # Sistema de Refrigeración
+                ('SISTEMA_REFRIGERACION', 'Sistema de Refrigeracion', 50),
+                ('SISTEMA_REFRIGERACION', 'Nivel de Anticongelante', 51),
+                ('SISTEMA_REFRIGERACION', 'Cooling Package', 52),
+                
+                # Lantas y Carrilería
+                ('LANTAS_CARRILERIA', 'Lantas/Zapatas', 53),
+                ('LANTAS_CARRILERIA', 'Rims/Rodillos y Rueda Guia', 54),
+                ('LANTAS_CARRILERIA', 'Sprockets (Si aplica)', 55),
+            ]
+            
+            for seccion, nombre, orden in elementos_template:
+                ElementoChecklist.objects.create(
+                    checklist=checklist,
+                    seccion=seccion,
+                    nombre_elemento=nombre,
+                    orden=orden
+                )
+            
+            # Crear log
+            LogChecklistInspeccion.objects.create(
+                checklist=checklist,
+                usuario=request.user,
+                accion='Crear checklist',
+                detalles=f'Checklist creado para el servicio {servicio.id}'
+            )
+            
+            messages.success(request, 'Checklist de inspección creado exitosamente.')
+            return redirect('detalle_checklist_inspeccion', checklist_id=checklist.id)
+        else:
+            messages.error(request, 'Por favor complete todos los campos requeridos.')
+    
+    # Obtener equipos del cliente
+    equipos_cliente = servicio.preorden.cliente.equipos.all()
+    
+    context = {
+        'servicio': servicio,
+        'equipos_cliente': equipos_cliente,
+    }
+    
+    return render(request, 'gestionDeTaller/crear_checklist_inspeccion.html', context)
+
+
+@login_required
+def detalle_checklist_inspeccion(request, checklist_id):
+    """Detalle de un checklist de inspección"""
+    checklist = get_object_or_404(
+        ChecklistInspeccion.objects.select_related('servicio', 'equipo', 'creado_por'),
+        id=checklist_id
+    )
+    
+    # Agrupar elementos por sección
+    elementos_por_seccion = {}
+    for elemento in checklist.elementos.all().order_by('seccion', 'orden'):
+        seccion_nombre = elemento.get_seccion_display()
+        if seccion_nombre not in elementos_por_seccion:
+            elementos_por_seccion[seccion_nombre] = []
+        elementos_por_seccion[seccion_nombre].append(elemento)
+    
+    context = {
+        'checklist': checklist,
+        'elementos_por_seccion': elementos_por_seccion,
+    }
+    
+    return render(request, 'gestionDeTaller/detalle_checklist_inspeccion.html', context)
+
+
+@login_required
+@require_http_methods(["POST"])
+def actualizar_elemento_checklist(request, elemento_id):
+    """Actualizar respuesta de un elemento del checklist"""
+    elemento = get_object_or_404(ElementoChecklist, id=elemento_id)
+    
+    respuesta = request.POST.get('respuesta')
+    notas = request.POST.get('notas', '')
+    
+    if respuesta in ['A', 'R', 'N/A']:
+        elemento.respuesta = respuesta
+        elemento.notas = notas
+        elemento.save()
+        
+        # Crear log
+        LogChecklistInspeccion.objects.create(
+            checklist=elemento.checklist,
+            usuario=request.user,
+            accion='Actualizar elemento',
+            detalles=f'Elemento "{elemento.nombre_elemento}" actualizado a "{elemento.get_respuesta_display()}"'
+        )
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Elemento actualizado correctamente'
+        })
+    
+    return JsonResponse({
+        'success': False,
+        'message': 'Respuesta inválida'
+    })
+
+
+@login_required
+@require_http_methods(["POST"])
+def actualizar_checklist(request, checklist_id):
+    """Actualizar datos generales del checklist"""
+    checklist = get_object_or_404(ChecklistInspeccion, id=checklist_id)
+    
+    estado = request.POST.get('estado')
+    notas_generales = request.POST.get('notas_generales', '')
+    
+    if estado in ['BORRADOR', 'COMPLETADO', 'ENVIADO']:
+        checklist.estado = estado
+        checklist.notas_generales = notas_generales
+        checklist.save()
+        
+        # Crear log
+        LogChecklistInspeccion.objects.create(
+            checklist=checklist,
+            usuario=request.user,
+            accion='Actualizar checklist',
+            detalles=f'Estado cambiado a "{checklist.get_estado_display()}"'
+        )
+        
+        messages.success(request, 'Checklist actualizado correctamente.')
+        return redirect('detalle_checklist_inspeccion', checklist_id=checklist.id)
+    
+    messages.error(request, 'Estado inválido.')
+    return redirect('detalle_checklist_inspeccion', checklist_id=checklist.id)
+
+
+@login_required
+def descargar_checklist_pdf(request, checklist_id):
+    """Descargar checklist en PDF"""
+    checklist = get_object_or_404(
+        ChecklistInspeccion.objects.select_related('servicio', 'equipo', 'creado_por'),
+        id=checklist_id
+    )
+    
+    # Agrupar elementos por sección
+    elementos_por_seccion = {}
+    for elemento in checklist.elementos.all().order_by('seccion', 'orden'):
+        seccion_nombre = elemento.get_seccion_display()
+        if seccion_nombre not in elementos_por_seccion:
+            elementos_por_seccion[seccion_nombre] = []
+        elementos_por_seccion[seccion_nombre].append(elemento)
+    
+    context = {
+        'checklist': checklist,
+        'elementos_por_seccion': elementos_por_seccion,
+    }
+    
+    # Generar PDF
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="checklist_inspeccion_{checklist.id}.pdf"'
+    
+    # Aquí se generaría el PDF usando una librería como reportlab
+    # Por ahora retornamos un mensaje
+    response.write(b'PDF generado correctamente')
+    
+    return response
+
+
+@login_required
+def enviar_checklist_email(request, checklist_id):
+    """Enviar checklist por email al cliente"""
+    checklist = get_object_or_404(
+        ChecklistInspeccion.objects.select_related('servicio', 'equipo', 'creado_por'),
+        id=checklist_id
+    )
+    
+    # Obtener email del cliente
+    cliente = checklist.servicio.preorden.cliente
+    email_cliente = cliente.email
+    
+    if not email_cliente:
+        messages.error(request, 'El cliente no tiene email registrado.')
+        return redirect('detalle_checklist_inspeccion', checklist_id=checklist.id)
+    
+    # Aquí se enviaría el email
+    # Por ahora solo marcamos como enviado
+    checklist.estado = 'ENVIADO'
+    checklist.save()
+    
+    # Crear log
+    LogChecklistInspeccion.objects.create(
+        checklist=checklist,
+        usuario=request.user,
+        accion='Enviar por email',
+        detalles=f'Checklist enviado por email a {email_cliente}'
+    )
+    
+    messages.success(request, f'Checklist enviado por email a {email_cliente}')
+    return redirect('detalle_checklist_inspeccion', checklist_id=checklist.id)

@@ -6,7 +6,7 @@ from .models import (
     RespuestaEncuesta, InsatisfaccionCliente, LogCambioServicio, ObservacionServicio,
     EvidenciaRevision5S, Repuesto, HerramientaEspecial, ReservaHerramienta, LogHerramienta,
     HerramientaPersonal, AsignacionHerramientaPersonal, AuditoriaHerramientaPersonal, DetalleAuditoriaHerramienta, ItemHerramientaPersonal, LogCambioItemHerramienta,
-    Tarifario, TarifarioModeloEquipo
+    Tarifario, TarifarioModeloEquipo, ChecklistInspeccion, ElementoChecklist, LogChecklistInspeccion
 )
 
 
@@ -1127,4 +1127,183 @@ class TarifarioModeloEquipoAdmin(admin.ModelAdmin):
     def tipo_equipo_display(self, obj):
         return obj.modelo_equipo.tipo_equipo.nombre
     tipo_equipo_display.short_description = 'Tipo de Equipo'
+
+
+# Admin para ChecklistInspeccion
+@admin.register(ChecklistInspeccion)
+class ChecklistInspeccionAdmin(admin.ModelAdmin):
+    list_display = [
+        'id', 
+        'servicio', 
+        'equipo', 
+        'fecha_inspeccion', 
+        'estado_display',
+        'porcentaje_aceptable_display',
+        'creado_por', 
+        'fecha_creacion'
+    ]
+    list_filter = [
+        'estado', 
+        'fecha_inspeccion', 
+        'fecha_creacion',
+        'creado_por__rol'
+    ]
+    search_fields = [
+        'servicio__id',
+        'equipo__numero_serie',
+        'equipo__modelo_equipo__nombre',
+        'creado_por__nombre',
+        'creado_por__apellido'
+    ]
+    date_hierarchy = 'fecha_inspeccion'
+    list_per_page = 25
+    
+    fieldsets = (
+        ('Información del Servicio', {
+            'fields': ('servicio', 'equipo')
+        }),
+        ('Datos de Inspección', {
+            'fields': ('fecha_inspeccion', 'horometro', 'estado')
+        }),
+        ('Información Adicional', {
+            'fields': ('notas_generales',)
+        }),
+        ('Información de Auditoría', {
+            'fields': ('creado_por', 'fecha_creacion', 'fecha_modificacion'),
+            'classes': ('collapse',)
+        }),
+    )
+    
+    readonly_fields = ['fecha_creacion', 'fecha_modificacion']
+    
+    actions = ['marcar_completado', 'marcar_enviado']
+    
+    def estado_display(self, obj):
+        if obj.estado == 'BORRADOR':
+            return '<span style="color: orange;">📝 Borrador</span>'
+        elif obj.estado == 'COMPLETADO':
+            return '<span style="color: green;">✅ Completado</span>'
+        elif obj.estado == 'ENVIADO':
+            return '<span style="color: blue;">📧 Enviado</span>'
+        return obj.get_estado_display()
+    estado_display.allow_tags = True
+    estado_display.short_description = 'Estado'
+    
+    def porcentaje_aceptable_display(self, obj):
+        return f"{obj.porcentaje_aceptable:.1f}%"
+    porcentaje_aceptable_display.short_description = '% Aceptable'
+    
+    def marcar_completado(self, request, queryset):
+        queryset.update(estado='COMPLETADO')
+        self.message_user(request, f"{queryset.count()} checklists marcados como completados.")
+    marcar_completado.short_description = "Marcar como Completado"
+    
+    def marcar_enviado(self, request, queryset):
+        queryset.update(estado='ENVIADO')
+        self.message_user(request, f"{queryset.count()} checklists marcados como enviados.")
+    marcar_enviado.short_description = "Marcar como Enviado"
+    
+    def save_model(self, request, obj, form, change):
+        if not change:  # Si es un nuevo objeto
+            obj.creado_por = request.user
+        super().save_model(request, obj, form, change)
+
+
+# Admin para ElementoChecklist
+@admin.register(ElementoChecklist)
+class ElementoChecklistAdmin(admin.ModelAdmin):
+    list_display = [
+        'checklist', 
+        'seccion_display', 
+        'nombre_elemento', 
+        'respuesta_display',
+        'requiere_accion_badge'
+    ]
+    list_filter = [
+        'seccion', 
+        'respuesta',
+        'checklist__estado',
+        'checklist__fecha_inspeccion'
+    ]
+    search_fields = [
+        'nombre_elemento',
+        'checklist__servicio__id',
+        'checklist__equipo__numero_serie'
+    ]
+    list_per_page = 25
+    
+    fieldsets = (
+        ('Información del Elemento', {
+            'fields': ('checklist', 'seccion', 'nombre_elemento', 'orden')
+        }),
+        ('Evaluación', {
+            'fields': ('respuesta', 'notas')
+        }),
+    )
+    
+    def seccion_display(self, obj):
+        return obj.get_seccion_display()
+    seccion_display.short_description = 'Sección'
+    
+    def respuesta_display(self, obj):
+        if obj.respuesta == 'A':
+            return '<span style="color: green;">✅ Aceptable</span>'
+        elif obj.respuesta == 'R':
+            return '<span style="color: red;">❌ Rechazado</span>'
+        elif obj.respuesta == 'N/A':
+            return '<span style="color: gray;">➖ No Aplica</span>'
+        return '-'
+    respuesta_display.allow_tags = True
+    respuesta_display.short_description = 'Respuesta'
+    
+    def requiere_accion_badge(self, obj):
+        if obj.requiere_accion:
+            return '<span style="background-color: red; color: white; padding: 2px 6px; border-radius: 3px;">Requiere Acción</span>'
+        return ''
+    requiere_accion_badge.allow_tags = True
+    requiere_accion_badge.short_description = 'Estado'
+
+
+# Admin para LogChecklistInspeccion
+@admin.register(LogChecklistInspeccion)
+class LogChecklistInspeccionAdmin(admin.ModelAdmin):
+    list_display = [
+        'checklist', 
+        'usuario', 
+        'accion', 
+        'fecha_cambio'
+    ]
+    list_filter = [
+        'accion', 
+        'fecha_cambio',
+        'usuario__rol'
+    ]
+    search_fields = [
+        'checklist__servicio__id',
+        'usuario__nombre',
+        'accion',
+        'detalles'
+    ]
+    date_hierarchy = 'fecha_cambio'
+    list_per_page = 25
+    
+    fieldsets = (
+        ('Información del Log', {
+            'fields': ('checklist', 'usuario', 'accion', 'fecha_cambio')
+        }),
+        ('Detalles', {
+            'fields': ('detalles',)
+        }),
+    )
+    
+    readonly_fields = ['fecha_cambio']
+    
+    def has_add_permission(self, request):
+        return False  # No permitir crear logs manualmente
+    
+    def has_change_permission(self, request, obj=None):
+        return False  # No permitir editar logs
+    
+    def has_delete_permission(self, request, obj=None):
+        return request.user.is_superuser  # Solo superusuarios pueden eliminar logs
 

@@ -1855,3 +1855,221 @@ class TarifarioModeloEquipo(models.Model):
 
     def __str__(self):
         return f"{self.tarifario.nombre_servicio} - {self.modelo_equipo}"
+
+class ChecklistInspeccion(models.Model):
+    """Modelo para checklists de inspección JD Protect"""
+    
+    ESTADO_CHOICES = [
+        ('BORRADOR', 'Borrador'),
+        ('COMPLETADO', 'Completado'),
+        ('ENVIADO', 'Enviado al Cliente'),
+    ]
+    
+    # Relación con el servicio
+    servicio = models.ForeignKey(
+        Servicio, 
+        on_delete=models.CASCADE, 
+        related_name='checklists_inspeccion',
+        verbose_name="Servicio"
+    )
+    
+    # Equipo específico para este checklist (puede ser diferente al del servicio)
+    equipo = models.ForeignKey(
+        'clientes.Equipo',
+        on_delete=models.CASCADE,
+        verbose_name="Equipo Inspeccionado"
+    )
+    
+    # Datos del cliente
+    fecha_inspeccion = models.DateField(verbose_name="Fecha de Inspección")
+    horometro = models.DecimalField(
+        max_digits=10, 
+        decimal_places=2, 
+        null=True, 
+        blank=True,
+        verbose_name="Horómetro"
+    )
+    
+    # Estado del checklist
+    estado = models.CharField(
+        max_length=20,
+        choices=ESTADO_CHOICES,
+        default='BORRADOR',
+        verbose_name="Estado"
+    )
+    
+    # Información adicional
+    notas_generales = models.TextField(
+        blank=True,
+        verbose_name="Notas Generales"
+    )
+    
+    # Campos de auditoría
+    creado_por = models.ForeignKey(
+        'recursosHumanos.Usuario',
+        on_delete=models.SET_NULL,
+        null=True,
+        verbose_name="Creado por"
+    )
+    fecha_creacion = models.DateTimeField(auto_now_add=True, verbose_name="Fecha de Creación")
+    fecha_modificacion = models.DateTimeField(auto_now=True, verbose_name="Última Modificación")
+    
+    class Meta:
+        verbose_name = "Checklist de Inspección"
+        verbose_name_plural = "Checklists de Inspección"
+        ordering = ['-fecha_creacion']
+    
+    def __str__(self):
+        return f"Checklist {self.id} - {self.equipo} - {self.fecha_inspeccion}"
+    
+    @property
+    def total_elementos(self):
+        """Total de elementos en el checklist"""
+        return self.elementos.count()
+    
+    @property
+    def elementos_aceptables(self):
+        """Elementos marcados como aceptables"""
+        return self.elementos.filter(respuesta='A').count()
+    
+    @property
+    def elementos_rechazados(self):
+        """Elementos marcados como rechazados"""
+        return self.elementos.filter(respuesta='R').count()
+    
+    @property
+    def elementos_no_aplican(self):
+        """Elementos marcados como no aplican"""
+        return self.elementos.filter(respuesta='N/A').count()
+    
+    @property
+    def porcentaje_aceptable(self):
+        """Porcentaje de elementos aceptables"""
+        if self.total_elementos > 0:
+            return (self.elementos_aceptables / self.total_elementos) * 100
+        return 0
+
+
+class ElementoChecklist(models.Model):
+    """Elementos individuales del checklist de inspección"""
+    
+    RESPUESTA_CHOICES = [
+        ('A', 'Aceptable'),
+        ('R', 'Rechazado'),
+        ('N/A', 'No Aplica'),
+    ]
+    
+    # Secciones principales
+    SECCION_CHOICES = [
+        ('CABINA', 'Cabina'),
+        ('TRANSMISSION', 'Transmission'),
+        ('SISTEMA_HIDRAULICO', 'Sistema Hidráulico'),
+        ('SISTEMA_ELECTRICO', 'Sistema Eléctrico'),
+        ('SISTEMA_FRENOS', 'Sistema de Frenos'),
+        ('MOTOR', 'Motor'),
+        ('CHASSIS_ESTRUCTURA', 'Chassis y Estructura'),
+        ('SISTEMA_ASPIRACION', 'Sistema de Aspiración'),
+        ('SISTEMA_COMBUSTIBLE', 'Sistema de Combustible'),
+        ('SISTEMA_DEF', 'Sistema DEF'),
+        ('SISTEMA_REFRIGERACION', 'Sistema de Refrigeración'),
+        ('LANTAS_CARRILERIA', 'Lantas y Carrilería'),
+    ]
+    
+    checklist = models.ForeignKey(
+        ChecklistInspeccion,
+        on_delete=models.CASCADE,
+        related_name='elementos',
+        verbose_name="Checklist"
+    )
+    
+    seccion = models.CharField(
+        max_length=30,
+        choices=SECCION_CHOICES,
+        verbose_name="Sección"
+    )
+    
+    nombre_elemento = models.CharField(
+        max_length=200,
+        verbose_name="Elemento de Verificación"
+    )
+    
+    respuesta = models.CharField(
+        max_length=3,
+        choices=RESPUESTA_CHOICES,
+        blank=True,
+        verbose_name="Respuesta"
+    )
+    
+    notas = models.TextField(
+        blank=True,
+        verbose_name="Notas"
+    )
+    
+    orden = models.PositiveIntegerField(
+        default=0,
+        verbose_name="Orden"
+    )
+    
+    class Meta:
+        verbose_name = "Elemento de Checklist"
+        verbose_name_plural = "Elementos de Checklist"
+        ordering = ['seccion', 'orden', 'nombre_elemento']
+        unique_together = ['checklist', 'nombre_elemento']
+    
+    def __str__(self):
+        return f"{self.get_seccion_display()} - {self.nombre_elemento}"
+    
+    @property
+    def requiere_accion(self):
+        """Verifica si requiere acción (rechazado)"""
+        return self.respuesta == 'R'
+    
+    @property
+    def es_aceptable(self):
+        """Verifica si es aceptable"""
+        return self.respuesta == 'A'
+    
+    @property
+    def no_aplica(self):
+        """Verifica si no aplica"""
+        return self.respuesta == 'N/A'
+
+
+class LogChecklistInspeccion(models.Model):
+    """Log de cambios en checklists de inspección"""
+    
+    checklist = models.ForeignKey(
+        ChecklistInspeccion,
+        on_delete=models.CASCADE,
+        related_name='logs_cambios',
+        verbose_name="Checklist"
+    )
+    
+    usuario = models.ForeignKey(
+        'recursosHumanos.Usuario',
+        on_delete=models.CASCADE,
+        verbose_name="Usuario"
+    )
+    
+    accion = models.CharField(
+        max_length=50,
+        verbose_name="Acción"
+    )
+    
+    detalles = models.TextField(
+        blank=True,
+        verbose_name="Detalles"
+    )
+    
+    fecha_cambio = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name="Fecha de Cambio"
+    )
+    
+    class Meta:
+        verbose_name = "Log de Checklist de Inspección"
+        verbose_name_plural = "Logs de Checklists de Inspección"
+        ordering = ['-fecha_cambio']
+    
+    def __str__(self):
+        return f"{self.checklist} - {self.accion} - {self.fecha_cambio}"
