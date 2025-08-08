@@ -800,7 +800,7 @@
         }
         
         // Enviar todos los cambios
-        fetch(`/gestion_de_taller/checklist/${checklistId}/guardar-todo/`, {
+        fetch(`/gestion_de_taller/checklist-inspeccion/${checklistId}/guardar-todo/`, {
             method: 'POST',
             headers: {
                 'X-CSRFToken': '{{ csrf_token }}',
