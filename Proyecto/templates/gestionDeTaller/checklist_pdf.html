@@ -5,267 +5,37 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Checklist de Inspección JD Protect</title>
     <style>
-        @page {
-            size: A4;
-            margin: 1.5cm;
-        }
-        
-        body {
-            font-family: Arial, sans-serif;
-            font-size: 10px;
-            line-height: 1.3;
-            color: #333;
-            margin: 0;
-            padding: 0;
-        }
-        
-        .header {
-            text-align: center;
-            margin-bottom: 20px;
-            border-bottom: 2px solid #000;
-            padding-bottom: 15px;
-        }
-        
-        .header-logos {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-        
-        .logo {
-            height: 40px;
-            width: auto;
-        }
-        
-        .header h1 {
-            color: #000;
-            font-size: 18px;
-            margin: 0;
-            font-weight: bold;
-            text-transform: uppercase;
-        }
-        
-        .header .subtitle {
-            color: #666;
-            font-size: 12px;
-            margin-top: 5px;
-        }
-        
-        .info-section {
-            margin-bottom: 15px;
-        }
-        
-        .info-grid {
-            display: table;
-            width: 100%;
-            margin-bottom: 15px;
-            font-size: 9px;
-        }
-        
-        .info-row {
-            display: table-row;
-        }
-        
-        .info-cell {
-            display: table-cell;
-            padding: 4px 6px;
-            border: 1px solid #ddd;
-            vertical-align: top;
-        }
-        
-        .info-label {
-            font-weight: bold;
-            background-color: #f5f5f5;
-            width: 25%;
-        }
-        
-        .section-header {
-            background-color: #000;
-            color: #fff;
-            padding: 6px 8px;
-            margin: 12px 0 6px 0;
-            font-weight: bold;
-            font-size: 11px;
-            page-break-inside: avoid;
-        }
-        
-        .elementos-grid {
-            display: table;
-            width: 100%;
-            font-size: 8px;
-            margin-bottom: 10px;
-        }
-        
-        .elemento-row {
-            display: table-row;
-            page-break-inside: avoid;
-        }
-        
-        .elemento-cell {
-            display: table-cell;
-            padding: 3px 4px;
-            border: 1px solid #ddd;
-            vertical-align: top;
-        }
-        
-        .elemento-nombre {
-            width: 50%;
-            font-weight: bold;
-        }
-        
-        .elemento-respuesta {
-            width: 20%;
-            text-align: center;
-        }
-        
-        .elemento-notas {
-            width: 30%;
-        }
-        
-        .respuesta-badge {
-            display: inline-block;
-            padding: 2px 6px;
-            border-radius: 3px;
-            font-size: 8px;
-            font-weight: bold;
-        }
-        
-        .respuesta-aceptable {
-            background-color: #28a745;
-            color: #fff;
-        }
-        
-        .respuesta-rechazado {
-            background-color: #dc3545;
-            color: #fff;
-        }
-        
-        .respuesta-no-aplica {
-            background-color: #6c757d;
-            color: #fff;
-        }
-        
-        .estado-badge {
-            display: inline-block;
-            padding: 3px 6px;
-            border-radius: 3px;
-            font-size: 9px;
-            font-weight: bold;
-        }
-        
-        .estado-borrador {
-            background-color: #ffc107;
-            color: #000;
-        }
-        
-        .estado-completado {
-            background-color: #28a745;
-            color: #fff;
-        }
-        
-        .estado-enviado {
-            background-color: #17a2b8;
-            color: #fff;
-        }
-        
-        .footer {
-            margin-top: 20px;
-            text-align: center;
-            font-size: 8px;
-            color: #666;
-            border-top: 1px solid #ddd;
-            padding-top: 10px;
-        }
-        
-        .notas-generales {
-            margin-top: 15px;
-            padding: 8px;
-            border: 1px solid #ddd;
-            background-color: #f8f9fa;
-            font-size: 9px;
-        }
-        
-        .notas-generales h4 {
-            margin: 0 0 5px 0;
-            font-size: 10px;
-            font-weight: bold;
-        }
-        
-        .elementos-rechazados {
-            margin-top: 15px;
-            padding: 8px;
-            border: 2px solid #dc3545;
-            background-color: #fff5f5;
-            font-size: 9px;
-        }
-        
-        .elementos-rechazados h4 {
-            margin: 0 0 5px 0;
-            font-size: 10px;
-            font-weight: bold;
-            color: #dc3545;
-        }
-        
-        .elemento-rechazado {
-            margin-bottom: 8px;
-            padding: 4px;
-            border-left: 3px solid #dc3545;
-            background-color: #fff;
-        }
-        
-        .elemento-rechazado .nombre {
-            font-weight: bold;
-            font-size: 9px;
-        }
-        
-        .elemento-rechazado .notas {
-            font-size: 8px;
-            color: #666;
-            margin-top: 2px;
-        }
-        
-        .resumen-estadisticas {
-            margin: 15px 0;
-            padding: 8px;
-            background-color: #f8f9fa;
-            border: 1px solid #dee2e6;
-            font-size: 9px;
-        }
-        
-        .resumen-estadisticas h4 {
-            margin: 0 0 5px 0;
-            font-size: 10px;
-            font-weight: bold;
-        }
-        
-        .stats-grid {
-            display: table;
-            width: 100%;
-        }
-        
-        .stats-row {
-            display: table-row;
-        }
-        
-        .stats-cell {
-            display: table-cell;
-            padding: 2px 4px;
-            font-size: 8px;
-        }
-        
-        .page-break {
-            page-break-before: always;
-        }
-        
-        .compact-table {
-            font-size: 8px;
-        }
-        
-        .compact-table th,
-        .compact-table td {
-            padding: 2px 4px;
-        }
+        @page { size: A4; margin: 1.7cm; }
+        body { font-family: Arial, sans-serif; font-size: 11px; line-height: 1.35; color: #333; margin: 0; padding: 0; }
+        .header { text-align: center; margin-bottom: 20px; border-bottom: 2px solid #000; padding-bottom: 12px; }
+        .header-logos { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .logo { height: 42px; width: auto; }
+        .header h1 { color: #000; font-size: 18px; margin: 0; font-weight: bold; text-transform: uppercase; }
+        .header .subtitle { color: #666; font-size: 11px; margin-top: 4px; }
+        .info-section { margin-bottom: 14px; }
+        .info-grid { display: table; width: 100%; margin-bottom: 12px; font-size: 10px; }
+        .info-row { display: table-row; }
+        .info-cell { display: table-cell; padding: 4px 6px; border: 1px solid #ddd; vertical-align: top; }
+        .info-label { font-weight: bold; background-color: #f5f5f5; width: 25%; }
+        .section-header { background-color: #000; color: #fff; padding: 6px 8px; margin: 14px 0 6px 0; font-weight: bold; font-size: 12px; page-break-inside: avoid; }
+        .subheader { font-weight: bold; color: #000; margin: 6px 0 4px 0; font-size: 11px; }
+        /* Rechazados simplificados en lista, sin recuadros repetidos */
+        .rechazados-list { padding: 2px 2px 2px 10px; margin: 0 0 8px 0; border-left: 3px solid #dc3545; }
+        .rechazados-ul { margin: 0; padding-left: 12px; list-style-type: disc; }
+        .rechazados-ul li { margin: 2px 0 4px; }
+        .rechazado-itm { font-weight: bold; }
+        .rechazado-nota { color: #555; font-size: 10px; }
+        /* Aceptables en pills compactos */
+        .aceptables-list { font-size: 10px; color: #333; background: #f8f9fa; border: 1px solid #e9ecef; padding: 6px 8px; }
+        .aceptables-list .pill { display: inline-block; margin: 2px 6px 2px 0; padding: 2px 6px; border-radius: 10px; background: #e9f7ef; border: 1px solid #d4edda; font-size: 10px; white-space: nowrap; }
+        .resumen-estadisticas { margin: 12px 0; padding: 8px; background-color: #f8f9fa; border: 1px solid #dee2e6; font-size: 10px; }
+        .stats-grid { display: table; width: 100%; }
+        .stats-row { display: table-row; }
+        .stats-cell { display: table-cell; padding: 2px 4px; font-size: 10px; }
+        .resumen-estadisticas h4 { margin: 0 0 6px 0; font-size: 11px; font-weight: bold; }
+        .notas-generales { margin-top: 14px; padding: 8px; border: 1px solid #ddd; background-color: #f8f9fa; font-size: 10px; }
+        .notas-generales h4 { margin: 0 0 6px 0; font-size: 11px; font-weight: bold; }
+        .footer { margin-top: 18px; text-align: center; font-size: 9px; color: #666; border-top: 1px solid #ddd; padding-top: 8px; }
     </style>
 </head>
 <body>
@@ -277,7 +47,7 @@
         <h1>CHECKLIST DE INSPECCIÓN JD PROTECT</h1>
         <div class="subtitle">John Deere Construction - Patagonia Maquinarias</div>
     </div>
-    
+
     <div class="info-section">
         <div class="info-grid">
             <div class="info-row">
@@ -300,84 +70,61 @@
             </div>
             <div class="info-row">
                 <div class="info-cell info-label">Estado:</div>
-                <div class="info-cell">
-                    <span class="estado-badge estado-{{ checklist.estado|lower }}">
-                        {{ checklist.get_estado_display }}
-                    </span>
-                </div>
+                <div class="info-cell">{{ checklist.get_estado_display }}</div>
                 <div class="info-cell info-label">Creado por:</div>
                 <div class="info-cell">{{ checklist.creado_por.get_nombre_completo }}</div>
             </div>
         </div>
     </div>
-    
+
     <div class="resumen-estadisticas">
-        <h4>Resumen de Inspección:</h4>
+        <h4>Resumen de Inspección</h4>
         <div class="stats-grid">
             <div class="stats-row">
                 <div class="stats-cell"><strong>Total Elementos:</strong> {{ checklist.total_elementos }}</div>
                 <div class="stats-cell"><strong>Aceptables:</strong> {{ checklist.elementos_aceptables }}</div>
                 <div class="stats-cell"><strong>Rechazados:</strong> {{ checklist.elementos_rechazados }}</div>
-                <div class="stats-cell"><strong>No Aplican:</strong> {{ checklist.elementos_no_aplican }}</div>
+                <div class="stats-cell"><strong>No Aplica:</strong> {{ checklist.elementos_no_aplican }}</div>
             </div>
         </div>
     </div>
-    
+
     {% for seccion_nombre, elementos in elementos_por_seccion.items %}
     <div class="section-header">{{ seccion_nombre }}</div>
-    
-    <div class="elementos-grid">
+
+    <div class="subheader">Rechazados</div>
+    <div class="rechazados-list">
+        <ul class="rechazados-ul">
+            {% for elemento in elementos %}
+                {% if elemento.respuesta == 'R' %}
+                <li>
+                    <span class="rechazado-itm">{{ elemento.nombre_elemento }}</span>
+                    {% if elemento.notas %}
+                        — <span class="rechazado-nota">{{ elemento.notas }}</span>
+                    {% endif %}
+                </li>
+                {% endif %}
+            {% endfor %}
+        </ul>
+    </div>
+
+    <div class="subheader">Aceptables</div>
+    <div class="aceptables-list">
         {% for elemento in elementos %}
-        <div class="elemento-row">
-            <div class="elemento-cell elemento-nombre">{{ elemento.nombre_elemento }}</div>
-            <div class="elemento-cell elemento-respuesta">
-                {% if elemento.respuesta == 'A' %}
-                    <span class="respuesta-badge respuesta-aceptable">Aceptable</span>
-                {% elif elemento.respuesta == 'R' %}
-                    <span class="respuesta-badge respuesta-rechazado">Rechazado</span>
-                {% elif elemento.respuesta == 'N/A' %}
-                    <span class="respuesta-badge respuesta-no-aplica">No Aplica</span>
-                {% else %}
-                    <span style="color: #999;">Sin respuesta</span>
-                {% endif %}
-            </div>
-            <div class="elemento-cell elemento-notas">
-                {% if elemento.notas %}
-                    {{ elemento.notas|truncatechars:50 }}
-                {% else %}
-                    -
-                {% endif %}
-            </div>
-        </div>
+            {% if elemento.respuesta == 'A' %}
+            <span class="pill">{{ elemento.nombre_elemento }}</span>
+            {% endif %}
         {% endfor %}
     </div>
     {% endfor %}
-    
-    {% if checklist.elementos_rechazados > 0 %}
-    <div class="elementos-rechazados">
-        <h4>Elementos Rechazados - Requieren Atención:</h4>
-        {% for seccion_nombre, elementos in elementos_por_seccion.items %}
-            {% for elemento in elementos %}
-                {% if elemento.respuesta == 'R' %}
-                <div class="elemento-rechazado">
-                    <div class="nombre">{{ seccion_nombre }} - {{ elemento.nombre_elemento }}</div>
-                    {% if elemento.notas %}
-                    <div class="notas">{{ elemento.notas }}</div>
-                    {% endif %}
-                </div>
-                {% endif %}
-            {% endfor %}
-        {% endfor %}
-    </div>
-    {% endif %}
-    
+
     {% if checklist.notas_generales %}
     <div class="notas-generales">
-        <h4>Notas Generales - Información para Cotización:</h4>
+        <h4>Notas Generales - Información para Cotización</h4>
         {{ checklist.notas_generales|linebreaks }}
     </div>
     {% endif %}
-    
+
     <div class="footer">
         <p>Checklist generado el {{ checklist.fecha_modificacion|date:"d/m/Y H:i" }}</p>
         <p>Patagonia Maquinarias - John Deere Construction</p>
