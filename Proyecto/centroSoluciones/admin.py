@@ -5,7 +5,7 @@ from django.utils.safestring import mark_safe
 from django.db.models import Count, Q
 from django.utils import timezone
 from datetime import timedelta
-from .models import AlertaEquipo, LeadJohnDeere, AsignacionAlerta, CodigoAlerta
+from .models import AlertaEquipo, LeadJohnDeere, AsignacionAlerta, CodigoAlerta, ReporteCSC, DatosReporteCSC
 
 @admin.register(AlertaEquipo)
 class AlertaEquipoAdmin(admin.ModelAdmin):
@@ -359,6 +359,160 @@ class CodigoAlertaAdmin(admin.ModelAdmin):
         if not change:  # Si es un nuevo código
             obj.creado_por = request.user
         super().save_model(request, obj, form, change)
+
+
+@admin.register(ReporteCSC)
+class ReporteCSCAdmin(admin.ModelAdmin):
+    list_display = [
+        'equipo', 
+        'fecha_reporte', 
+        'estado_badge', 
+        'total_horas_analizadas_display',
+        'eficiencia_general_display',
+        'datos_count_display',
+        'creado_por',
+        'fecha_importacion'
+    ]
+    list_filter = [
+        'estado', 
+        'fecha_reporte',
+        'fecha_importacion',
+        'equipo__modelo',
+        'creado_por'
+    ]
+    search_fields = [
+        'equipo__numero_serie', 
+        'equipo__cliente__razon_social',
+        'recomendaciones_automaticas',
+        'comentarios_manuales'
+    ]
+    date_hierarchy = 'fecha_importacion'
+    list_per_page = 25
+    
+    fieldsets = (
+        ('Información del Reporte', {
+            'fields': ('equipo', 'fecha_reporte', 'estado', 'archivo_csv')
+        }),
+        ('Análisis', {
+            'fields': ('total_horas_analizadas', 'eficiencia_general'),
+            'classes': ('collapse',)
+        }),
+        ('Recomendaciones', {
+            'fields': ('recomendaciones_automaticas', 'comentarios_manuales'),
+            'classes': ('collapse',)
+        }),
+        ('Información de Auditoría', {
+            'fields': ('creado_por', 'fecha_importacion'),
+            'classes': ('collapse',)
+        }),
+    )
+    
+    readonly_fields = ['fecha_importacion', 'creado_por']
+    
+    actions = ['marcar_generados', 'marcar_enviados', 'eliminar_reportes']
+    
+    def estado_badge(self, obj):
+        colors = {
+            'BORRADOR': 'secondary',
+            'GENERADO': 'primary',
+            'ENVIADO': 'success',
+        }
+        color = colors.get(obj.estado, 'secondary')
+        return format_html(
+            '<span class="badge bg-{}">{}</span>',
+            color,
+            obj.get_estado_display()
+        )
+    estado_badge.short_description = 'Estado'
+    
+    def total_horas_analizadas_display(self, obj):
+        if obj.total_horas_analizadas:
+            return f"{obj.total_horas_analizadas} hr"
+        return "-"
+    total_horas_analizadas_display.short_description = 'Total Horas'
+    
+    def eficiencia_general_display(self, obj):
+        if obj.eficiencia_general:
+            return f"{obj.eficiencia_general:.1f}%"
+        return "-"
+    eficiencia_general_display.short_description = 'Eficiencia'
+    
+    def datos_count_display(self, obj):
+        count = obj.datos.count()
+        return format_html(
+            '<span class="badge bg-info">{}</span>',
+            count
+        )
+    datos_count_display.short_description = 'Datos'
+    
+    def marcar_generados(self, request, queryset):
+        updated = queryset.update(estado='GENERADO')
+        self.message_user(request, f'{updated} reportes marcados como generados.')
+    marcar_generados.short_description = "Marcar como generados"
+    
+    def marcar_enviados(self, request, queryset):
+        updated = queryset.update(estado='ENVIADO')
+        self.message_user(request, f'{updated} reportes marcados como enviados.')
+    marcar_enviados.short_description = "Marcar como enviados"
+    
+    def eliminar_reportes(self, request, queryset):
+        count = queryset.count()
+        queryset.delete()
+        self.message_user(request, f'{count} reportes eliminados exitosamente.')
+    eliminar_reportes.short_description = "Eliminar reportes seleccionados"
+    
+    def save_model(self, request, obj, form, change):
+        if not change:  # Si es un nuevo reporte
+            obj.creado_por = request.user
+        super().save_model(request, obj, form, change)
+
+
+@admin.register(DatosReporteCSC)
+class DatosReporteCSCAdmin(admin.ModelAdmin):
+    list_display = [
+        'reporte', 
+        'categoria', 
+        'serie', 
+        'valor_display',
+        'unidad',
+        'fecha_inicio',
+        'fecha_fin'
+    ]
+    list_filter = [
+        'categoria',
+        'unidad',
+        'fecha_inicio',
+        'fecha_fin',
+        'reporte__equipo__modelo'
+    ]
+    search_fields = [
+        'reporte__equipo__numero_serie',
+        'categoria',
+        'serie'
+    ]
+    date_hierarchy = 'fecha_inicio'
+    list_per_page = 50
+    
+    fieldsets = (
+        ('Información del Dato', {
+            'fields': ('reporte', 'categoria', 'serie', 'valor', 'unidad')
+        }),
+        ('Período', {
+            'fields': ('fecha_inicio', 'fecha_fin'),
+        }),
+    )
+    
+    actions = ['eliminar_datos']
+    
+    def valor_display(self, obj):
+        return f"{obj.valor} {obj.unidad}"
+    valor_display.short_description = 'Valor'
+    
+    def eliminar_datos(self, request, queryset):
+        count = queryset.count()
+        queryset.delete()
+        self.message_user(request, f'{count} datos eliminados exitosamente.')
+    eliminar_datos.short_description = "Eliminar datos seleccionados"
 
 
 # Personalización del sitio de administración
