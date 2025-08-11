@@ -28,11 +28,6 @@
         /* Aceptables en pills compactos */
         .aceptables-list { font-size: 10px; color: #333; background: #f8f9fa; border: 1px solid #e9ecef; padding: 6px 8px; }
         .aceptables-list .pill { display: inline-block; margin: 2px 6px 2px 0; padding: 2px 6px; border-radius: 10px; background: #e9f7ef; border: 1px solid #d4edda; font-size: 10px; white-space: nowrap; }
-        .resumen-estadisticas { margin: 12px 0; padding: 8px; background-color: #f8f9fa; border: 1px solid #dee2e6; font-size: 10px; }
-        .stats-grid { display: table; width: 100%; }
-        .stats-row { display: table-row; }
-        .stats-cell { display: table-cell; padding: 2px 4px; font-size: 10px; }
-        .resumen-estadisticas h4 { margin: 0 0 6px 0; font-size: 11px; font-weight: bold; }
         .notas-generales { margin-top: 14px; padding: 8px; border: 1px solid #ddd; background-color: #f8f9fa; font-size: 10px; }
         .notas-generales h4 { margin: 0 0 6px 0; font-size: 11px; font-weight: bold; }
         .footer { margin-top: 18px; text-align: center; font-size: 9px; color: #666; border-top: 1px solid #ddd; padding-top: 8px; }
@@ -41,11 +36,10 @@
 <body>
     <div class="header">
         <div class="header-logos">
-            <img src="{{ STATIC_URL }}img/logoJohnDeere.png" alt="John Deere" class="logo">
-            <img src="{{ STATIC_URL }}img/logo_pm.png" alt="Patagonia Maquinarias" class="logo">
+            <img src="{{ STATIC_URL }}img/logo-web-300x98-1.png" alt="John Deere" class="logo">
+            <img src="{{ STATIC_URL }}img/JD_by_horizontal sem fundo-01.png" alt="John Deere Construction" class="logo">
         </div>
-        <h1>CHECKLIST DE INSPECCIÓN JD PROTECT</h1>
-        <div class="subtitle">John Deere Construction - Patagonia Maquinarias</div>
+        <h1>CHECKLIST DE INSPECCIÓN JOHN DEERE PROTECT</h1>
     </div>
 
     <div class="info-section">
@@ -77,18 +71,6 @@
         </div>
     </div>
 
-    <div class="resumen-estadisticas">
-        <h4>Resumen de Inspección</h4>
-        <div class="stats-grid">
-            <div class="stats-row">
-                <div class="stats-cell"><strong>Total Elementos:</strong> {{ checklist.total_elementos }}</div>
-                <div class="stats-cell"><strong>Aceptables:</strong> {{ checklist.elementos_aceptables }}</div>
-                <div class="stats-cell"><strong>Rechazados:</strong> {{ checklist.elementos_rechazados }}</div>
-                <div class="stats-cell"><strong>No Aplica:</strong> {{ checklist.elementos_no_aplican }}</div>
-            </div>
-        </div>
-    </div>
-
     {% for seccion_nombre, elementos in elementos_por_seccion.items %}
     <div class="section-header">{{ seccion_nombre }}</div>
 
@@ -112,7 +94,7 @@
     <div class="aceptables-list">
         {% for elemento in elementos %}
             {% if elemento.respuesta == 'A' %}
-            <span class="pill">{{ elemento.nombre_elemento }}</span>
+            <span class="pill">{{ elemento.nombre_elemento }}</span>{% if not forloop.last %} / {% endif %}
             {% endif %}
         {% endfor %}
     </div>
