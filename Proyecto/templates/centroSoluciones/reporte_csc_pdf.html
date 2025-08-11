@@ -277,131 +277,141 @@
     </div>
 
     <!-- Utilización del Motor -->
-    {% if 'Utilización del motor' in datos_por_categoria %}
-    <div class="data-section">
-        <div class="section-header">UTILIZACIÓN DEL MOTOR</div>
-        <table class="data-table">
-            <thead>
-                <tr>
-                    <th>Estado</th>
-                    <th>Horas</th>
-                    <th>Porcentaje</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for dato in datos_por_categoria.Utilización del motor %}
-                <tr>
-                    <td>{{ dato.serie }}</td>
-                    <td>{{ dato.valor|floatformat:2 }} hr</td>
-                    <td>{{ dato.valor|div:reporte.total_horas_analizadas|mul:100|floatformat:1 }}%</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-    {% endif %}
+    {% for categoria in categorias %}
+        {% if categoria.nombre == 'Utilización del motor' %}
+        <div class="data-section">
+            <div class="section-header">UTILIZACIÓN DEL MOTOR</div>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Estado</th>
+                        <th>Horas</th>
+                        <th>Porcentaje</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for dato in categoria.datos %}
+                    <tr>
+                        <td>{{ dato.serie }}</td>
+                        <td>{{ dato.valor|floatformat:2 }} hr</td>
+                        <td>{{ dato.valor|div:reporte.total_horas_analizadas|mul:100|floatformat:1 }}%</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+    {% endfor %}
 
     <!-- Modos de Funcionamiento -->
-    {% if 'Modos de funcionamiento' in datos_por_categoria %}
-    <div class="data-section">
-        <div class="section-header">MODOS DE FUNCIONAMIENTO</div>
-        <table class="data-table">
-            <thead>
-                <tr>
-                    <th>Modo</th>
-                    <th>Horas</th>
-                    <th>Porcentaje</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for dato in datos_por_categoria.Modos de funcionamiento %}
-                <tr>
-                    <td>{{ dato.serie }}</td>
-                    <td>{{ dato.valor|floatformat:2 }} hr</td>
-                    <td>{{ dato.valor|div:reporte.total_horas_analizadas|mul:100|floatformat:1 }}%</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-    {% endif %}
+    {% for categoria in categorias %}
+        {% if categoria.nombre == 'Modos de funcionamiento' %}
+        <div class="data-section">
+            <div class="section-header">MODOS DE FUNCIONAMIENTO</div>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Modo</th>
+                        <th>Horas</th>
+                        <th>Porcentaje</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for dato in categoria.datos %}
+                    <tr>
+                        <td>{{ dato.serie }}</td>
+                        <td>{{ dato.valor|floatformat:2 }} hr</td>
+                        <td>{{ dato.valor|div:reporte.total_horas_analizadas|mul:100|floatformat:1 }}%</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+    {% endfor %}
 
     <!-- PÁGINA 2 -->
     <div class="page-break">
         <div class="section-header">ANÁLISIS DETALLADO Y RECOMENDACIONES</div>
         
         <!-- MFWD Utilization -->
-        {% if 'MFWD Utilization per gear' in datos_por_categoria %}
-        <div class="data-section">
-            <div class="section-header">UTILIZACIÓN MFWD POR MARCHA</div>
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>Marcha</th>
-                        <th>Horas</th>
-                        <th>Porcentaje</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for dato in datos_por_categoria.MFWD Utilization per gear %}
-                    <tr>
-                        <td>{{ dato.serie }}</td>
-                        <td>{{ dato.valor|floatformat:2 }} hr</td>
-                        <td>{{ dato.valor|div:reporte.total_horas_analizadas|mul:100|floatformat:1 }}%</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-        {% endif %}
+        {% for categoria in categorias %}
+            {% if categoria.nombre == 'MFWD Utilization per gear' %}
+            <div class="data-section">
+                <div class="section-header">UTILIZACIÓN MFWD POR MARCHA</div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Marcha</th>
+                            <th>Horas</th>
+                            <th>Porcentaje</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for dato in categoria.datos %}
+                        <tr>
+                            <td>{{ dato.serie }}</td>
+                            <td>{{ dato.valor|floatformat:2 }} hr</td>
+                            <td>{{ dato.valor|div:reporte.total_horas_analizadas|mul:100|floatformat:1 }}%</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% endif %}
+        {% endfor %}
 
         <!-- Tiempo en Marcha -->
-        {% if 'Tiempo en marcha' in datos_por_categoria %}
-        <div class="data-section">
-            <div class="section-header">TIEMPO EN MARCHA</div>
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>Marcha</th>
-                        <th>Horas</th>
-                        <th>Porcentaje</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for dato in datos_por_categoria.Tiempo en marcha %}
-                    <tr>
-                        <td>{{ dato.serie }}</td>
-                        <td>{{ dato.valor|floatformat:2 }} hr</td>
-                        <td>{{ dato.valor|div:reporte.total_horas_analizadas|mul:100|floatformat:1 }}%</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-        {% endif %}
+        {% for categoria in categorias %}
+            {% if categoria.nombre == 'Tiempo en marcha' %}
+            <div class="data-section">
+                <div class="section-header">TIEMPO EN MARCHA</div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Marcha</th>
+                            <th>Horas</th>
+                            <th>Porcentaje</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for dato in categoria.datos %}
+                        <tr>
+                            <td>{{ dato.serie }}</td>
+                            <td>{{ dato.valor|floatformat:2 }} hr</td>
+                            <td>{{ dato.valor|div:reporte.total_horas_analizadas|mul:100|floatformat:1 }}%</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% endif %}
+        {% endfor %}
 
         <!-- Nivel de Combustible -->
-        {% if 'Nivel del depósito de combustible' in datos_por_categoria %}
-        <div class="data-section">
-            <div class="section-header">NIVEL DE COMBUSTIBLE</div>
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>Medición</th>
-                        <th>Valor</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for dato in datos_por_categoria.Nivel del depósito de combustible %}
-                    <tr>
-                        <td>{{ dato.serie }}</td>
-                        <td>{{ dato.valor|floatformat:1 }}%</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-        {% endif %}
+        {% for categoria in categorias %}
+            {% if categoria.nombre == 'Nivel del depósito de combustible' %}
+            <div class="data-section">
+                <div class="section-header">NIVEL DE COMBUSTIBLE</div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Medición</th>
+                            <th>Valor</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for dato in categoria.datos %}
+                        <tr>
+                            <td>{{ dato.serie }}</td>
+                            <td>{{ dato.valor|floatformat:1 }}%</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% endif %}
+        {% endfor %}
 
         <!-- Recomendaciones -->
         <div class="recommendations-section">

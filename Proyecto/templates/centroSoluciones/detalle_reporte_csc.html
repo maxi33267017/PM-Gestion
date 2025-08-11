@@ -97,52 +97,48 @@
         <!-- Gráficos -->
         <div class="col-lg-8">
             <!-- Utilización del Motor -->
-            {% if 'Utilización del motor' in datos_por_categoria %}
-            <div class="card shadow mb-4">
-                <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-primary">
-                        <i class="fas fa-tachometer-alt"></i> Utilización del Motor
-                    </h6>
-                </div>
-                <div class="card-body">
-                    <div class="chart-container">
-                        <canvas id="chartMotor"></canvas>
+            {% for categoria in categorias %}
+                {% if categoria.nombre == 'Utilización del motor' %}
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3">
+                        <h6 class="m-0 font-weight-bold text-primary">
+                            <i class="fas fa-tachometer-alt"></i> Utilización del Motor
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="chartMotor"></canvas>
+                        </div>
                     </div>
                 </div>
-            </div>
-            {% endif %}
-
-            <!-- Modos de Funcionamiento -->
-            {% if 'Modos de funcionamiento' in datos_por_categoria %}
-            <div class="card shadow mb-4">
-                <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-primary">
-                        <i class="fas fa-cogs"></i> Modos de Funcionamiento
-                    </h6>
-                </div>
-                <div class="card-body">
-                    <div class="chart-container">
-                        <canvas id="chartModos"></canvas>
+                {% elif categoria.nombre == 'Modos de funcionamiento' %}
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3">
+                        <h6 class="m-0 font-weight-bold text-primary">
+                            <i class="fas fa-cogs"></i> Modos de Funcionamiento
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="chartModos"></canvas>
+                        </div>
                     </div>
                 </div>
-            </div>
-            {% endif %}
-
-            <!-- MFWD Utilization -->
-            {% if 'MFWD Utilization per gear' in datos_por_categoria %}
-            <div class="card shadow mb-4">
-                <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-primary">
-                        <i class="fas fa-cog"></i> Utilización MFWD por Marcha
-                    </h6>
-                </div>
-                <div class="card-body">
-                    <div class="chart-container">
-                        <canvas id="chartMFWD"></canvas>
+                {% elif categoria.nombre == 'MFWD Utilization per gear' %}
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3">
+                        <h6 class="m-0 font-weight-bold text-primary">
+                            <i class="fas fa-cog"></i> Utilización MFWD por Marcha
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="chartMFWD"></canvas>
+                        </div>
                     </div>
                 </div>
-            </div>
-            {% endif %}
+                {% endif %}
+            {% endfor %}
         </div>
 
         <!-- Sidebar -->
@@ -231,8 +227,8 @@
             </h6>
         </div>
         <div class="card-body">
-            {% for categoria, datos in datos_por_categoria.items %}
-            <h6 class="text-primary mb-3">{{ categoria }}</h6>
+            {% for categoria in categorias %}
+            <h6 class="text-primary mb-3">{{ categoria.nombre }}</h6>
             <div class="table-responsive mb-4">
                 <table class="table table-sm table-bordered">
                     <thead class="table-light">
@@ -245,7 +241,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        {% for dato in datos %}
+                        {% for dato in categoria.datos %}
                         <tr>
                             <td>{{ dato.serie }}</td>
                             <td><strong>{{ dato.valor }}</strong></td>
@@ -293,24 +289,30 @@
 <script>
 // Datos para los gráficos
 const datosMotor = {
-    {% if 'Utilización del motor' in datos_por_categoria %}
-    labels: [{% for dato in datos_por_categoria.Utilización del motor %}'{{ dato.serie }}'{% if not forloop.last %}, {% endif %}{% endfor %}],
-    data: [{% for dato in datos_por_categoria.Utilización del motor %}{{ dato.valor }}{% if not forloop.last %}, {% endif %}{% endfor %}]
-    {% endif %}
+    {% for categoria in categorias %}
+        {% if categoria.nombre == 'Utilización del motor' %}
+        labels: [{% for dato in categoria.datos %}'{{ dato.serie }}'{% if not forloop.last %}, {% endif %}{% endfor %}],
+        data: [{% for dato in categoria.datos %}{{ dato.valor }}{% if not forloop.last %}, {% endif %}{% endfor %}]
+        {% endif %}
+    {% endfor %}
 };
 
 const datosModos = {
-    {% if 'Modos de funcionamiento' in datos_por_categoria %}
-    labels: [{% for dato in datos_por_categoria.Modos de funcionamiento %}'{{ dato.serie }}'{% if not forloop.last %}, {% endif %}{% endfor %}],
-    data: [{% for dato in datos_por_categoria.Modos de funcionamiento %}{{ dato.valor }}{% if not forloop.last %}, {% endif %}{% endfor %}]
-    {% endif %}
+    {% for categoria in categorias %}
+        {% if categoria.nombre == 'Modos de funcionamiento' %}
+        labels: [{% for dato in categoria.datos %}'{{ dato.serie }}'{% if not forloop.last %}, {% endif %}{% endfor %}],
+        data: [{% for dato in categoria.datos %}{{ dato.valor }}{% if not forloop.last %}, {% endif %}{% endfor %}]
+        {% endif %}
+    {% endfor %}
 };
 
 const datosMFWD = {
-    {% if 'MFWD Utilization per gear' in datos_por_categoria %}
-    labels: [{% for dato in datos_por_categoria.MFWD Utilization per gear %}'{{ dato.serie }}'{% if not forloop.last %}, {% endif %}{% endfor %}],
-    data: [{% for dato in datos_por_categoria.MFWD Utilization per gear %}{{ dato.valor }}{% if not forloop.last %}, {% endif %}{% endfor %}]
-    {% endif %}
+    {% for categoria in categorias %}
+        {% if categoria.nombre == 'MFWD Utilization per gear' %}
+        labels: [{% for dato in categoria.datos %}'{{ dato.serie }}'{% if not forloop.last %}, {% endif %}{% endfor %}],
+        data: [{% for dato in categoria.datos %}{{ dato.valor }}{% if not forloop.last %}, {% endif %}{% endfor %}]
+        {% endif %}
+    {% endfor %}
 };
 
 // Configuración de colores

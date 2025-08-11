@@ -824,9 +824,17 @@ def detalle_reporte_csc(request, reporte_id):
             datos_por_categoria[dato.categoria] = []
         datos_por_categoria[dato.categoria].append(dato)
     
+    # Convertir a lista para evitar problemas con espacios en nombres
+    categorias_lista = []
+    for categoria, datos_categoria in datos_por_categoria.items():
+        categorias_lista.append({
+            'nombre': categoria,
+            'datos': datos_categoria
+        })
+    
     context = {
         'reporte': reporte,
-        'datos_por_categoria': datos_por_categoria,
+        'categorias': categorias_lista,
     }
     return render(request, 'centroSoluciones/detalle_reporte_csc.html', context)
 
@@ -845,9 +853,17 @@ def generar_pdf_reporte_csc(request, reporte_id):
             datos_por_categoria[dato.categoria] = []
         datos_por_categoria[dato.categoria].append(dato)
     
+    # Convertir a lista para evitar problemas con espacios en nombres
+    categorias_lista = []
+    for categoria, datos_categoria in datos_por_categoria.items():
+        categorias_lista.append({
+            'nombre': categoria,
+            'datos': datos_categoria
+        })
+    
     context = {
         'reporte': reporte,
-        'datos_por_categoria': datos_por_categoria,
+        'categorias': categorias_lista,
     }
     
     # Generar HTML
@@ -918,29 +934,7 @@ def buscar_o_crear_equipo(pin_equipo, usuario):
         equipo = Equipo.objects.get(numero_serie=pin_equipo)
         return equipo, False  # False = no fue creado
     except Equipo.DoesNotExist:
-        # Crear el equipo con datos mínimos
-        # Usar el cliente de la sucursal del usuario como cliente por defecto
-        cliente_por_defecto = None
-        
-        # Buscar un cliente activo de la sucursal del usuario
-        if usuario.sucursal:
-            cliente_por_defecto = Cliente.objects.filter(
-                activo=True,
-                sucursal=usuario.sucursal
-            ).first()
-        
-        # Si no hay cliente en la sucursal, usar el primer cliente activo
-        if not cliente_por_defecto:
-            cliente_por_defecto = Cliente.objects.filter(activo=True).first()
-        
-        # Si no hay ningún cliente, crear uno genérico
-        if not cliente_por_defecto:
-            cliente_por_defecto = Cliente.objects.create(
-                razon_social=f"Cliente Auto-Generado - {pin_equipo}",
-                activo=True,
-                sucursal=usuario.sucursal
-            )
-        
+        # Crear el equipo con datos mínimos sin asignar cliente
         # Buscar un modelo de equipo por defecto (310L si existe)
         modelo_por_defecto = None
         try:
@@ -955,10 +949,9 @@ def buscar_o_crear_equipo(pin_equipo, usuario):
         if not modelo_por_defecto:
             modelo_por_defecto = ModeloEquipo.objects.filter(activo=True).first()
         
-        # Crear el equipo
+        # Crear el equipo sin cliente (se asignará después)
         equipo = Equipo.objects.create(
             numero_serie=pin_equipo,
-            cliente=cliente_por_defecto,
             modelo=modelo_por_defecto,
             activo=True
         )
