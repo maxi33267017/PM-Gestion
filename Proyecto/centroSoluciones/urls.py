@@ -31,4 +31,5 @@ urlpatterns = [
     path('reportes-csc/importar/', views.importar_reporte_csc, name='importar_reporte_csc'),
     path('reportes-csc/<int:reporte_id>/', views.detalle_reporte_csc, name='detalle_reporte_csc'),
     path('reportes-csc/<int:reporte_id>/pdf/', views.generar_pdf_reporte_csc, name='generar_pdf_reporte_csc'),
+    path('reportes-csc/<int:reporte_id>/comentarios/', views.actualizar_comentarios_csc, name='actualizar_comentarios_csc'),
 ] 

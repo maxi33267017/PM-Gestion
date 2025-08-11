@@ -1,0 +1,415 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Detalle Reporte CSC - {{ reporte.equipo.numero_serie }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .chart-container {
+        position: relative;
+        height: 300px;
+        margin-bottom: 20px;
+    }
+    .kpi-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+    .kpi-value {
+        font-size: 2rem;
+        font-weight: bold;
+        margin-bottom: 5px;
+    }
+    .kpi-label {
+        font-size: 0.9rem;
+        opacity: 0.9;
+    }
+    .recommendation-item {
+        border-left: 4px solid #007bff;
+        padding-left: 15px;
+        margin-bottom: 10px;
+    }
+    .recommendation-item.warning {
+        border-left-color: #ffc107;
+    }
+    .recommendation-item.success {
+        border-left-color: #28a745;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0 text-gray-800">
+                <i class="fas fa-chart-line text-primary"></i>
+                Reporte CSC - {{ reporte.equipo.numero_serie }}
+            </h1>
+            <p class="text-muted">
+                {{ reporte.equipo.cliente.razon_social }} | 
+                {{ reporte.fecha_reporte|date:"d/m/Y" }} | 
+                {{ reporte.get_estado_display }}
+            </p>
+        </div>
+        <div>
+            <a href="{% url 'centroSoluciones:lista_reportes_csc' %}" class="btn btn-outline-secondary me-2">
+                <i class="fas fa-arrow-left"></i> Volver
+            </a>
+            <a href="{% url 'centroSoluciones:generar_pdf_reporte_csc' reporte.id %}" class="btn btn-success">
+                <i class="fas fa-file-pdf"></i> Descargar PDF
+            </a>
+        </div>
+    </div>
+
+    <!-- KPIs Principales -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="kpi-card">
+                <div class="kpi-value">{{ reporte.total_horas_analizadas|default:"0"|floatformat:1 }}</div>
+                <div class="kpi-label">Total Horas Analizadas</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="kpi-card">
+                <div class="kpi-value">{{ reporte.eficiencia_general|default:"0"|floatformat:1 }}%</div>
+                <div class="kpi-label">Eficiencia General</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="kpi-card">
+                <div class="kpi-value">{{ reporte.datos.count }}</div>
+                <div class="kpi-label">Métricas Analizadas</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="kpi-card">
+                <div class="kpi-value">{{ reporte.fecha_importacion|date:"d/m/Y" }}</div>
+                <div class="kpi-label">Fecha de Importación</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Gráficos -->
+        <div class="col-lg-8">
+            <!-- Utilización del Motor -->
+            {% if 'Utilización del motor' in datos_por_categoria %}
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-tachometer-alt"></i> Utilización del Motor
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="chartMotor"></canvas>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Modos de Funcionamiento -->
+            {% if 'Modos de funcionamiento' in datos_por_categoria %}
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-cogs"></i> Modos de Funcionamiento
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="chartModos"></canvas>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- MFWD Utilization -->
+            {% if 'MFWD Utilization per gear' in datos_por_categoria %}
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-cog"></i> Utilización MFWD por Marcha
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="chartMFWD"></canvas>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Información del Equipo -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-info-circle"></i> Información del Equipo
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <table class="table table-sm">
+                        <tr>
+                            <td><strong>PIN:</strong></td>
+                            <td>{{ reporte.equipo.numero_serie }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Modelo:</strong></td>
+                            <td>{{ reporte.equipo.modelo.nombre }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Cliente:</strong></td>
+                            <td>{{ reporte.equipo.cliente.razon_social }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Período:</strong></td>
+                            <td>{{ reporte.fecha_reporte|date:"d/m/Y" }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Creado por:</strong></td>
+                            <td>{{ reporte.creado_por.get_nombre_completo }}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Recomendaciones Automáticas -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-lightbulb"></i> Recomendaciones Automáticas
+                    </h6>
+                </div>
+                <div class="card-body">
+                    {% if reporte.recomendaciones_automaticas %}
+                        {% for recomendacion in reporte.recomendaciones_automaticas.splitlines %}
+                            {% if recomendacion.strip %}
+                                <div class="recommendation-item {% if '⚠️' in recomendacion %}warning{% elif '✅' in recomendacion %}success{% endif %}">
+                                    {{ recomendacion }}
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted">No hay recomendaciones automáticas disponibles.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Comentarios Manuales -->
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-comment"></i> Comentarios Adicionales
+                    </h6>
+                </div>
+                <div class="card-body">
+                    {% if reporte.comentarios_manuales %}
+                        <p>{{ reporte.comentarios_manuales|linebreaks }}</p>
+                    {% else %}
+                        <p class="text-muted">No hay comentarios adicionales.</p>
+                    {% endif %}
+                    <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#modalComentarios">
+                        <i class="fas fa-edit"></i> Agregar Comentario
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Datos Detallados -->
+    <div class="card shadow">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">
+                <i class="fas fa-table"></i> Datos Detallados
+            </h6>
+        </div>
+        <div class="card-body">
+            {% for categoria, datos in datos_por_categoria.items %}
+            <h6 class="text-primary mb-3">{{ categoria }}</h6>
+            <div class="table-responsive mb-4">
+                <table class="table table-sm table-bordered">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Serie</th>
+                            <th>Valor</th>
+                            <th>Unidad</th>
+                            <th>Fecha Inicio</th>
+                            <th>Fecha Fin</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for dato in datos %}
+                        <tr>
+                            <td>{{ dato.serie }}</td>
+                            <td><strong>{{ dato.valor }}</strong></td>
+                            <td>{{ dato.unidad }}</td>
+                            <td>{{ dato.fecha_inicio|date:"d/m/Y" }}</td>
+                            <td>{{ dato.fecha_fin|date:"d/m/Y" }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- Modal para Comentarios -->
+<div class="modal fade" id="modalComentarios" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Agregar Comentarios</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{% url 'centroSoluciones:actualizar_comentarios_csc' reporte.id %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="comentarios" class="form-label">Comentarios Adicionales</label>
+                        <textarea name="comentarios" id="comentarios" class="form-control" rows="4">{{ reporte.comentarios_manuales }}</textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Datos para los gráficos
+const datosMotor = {
+    {% if 'Utilización del motor' in datos_por_categoria %}
+    labels: [{% for dato in datos_por_categoria.Utilización del motor %}'{{ dato.serie }}'{% if not forloop.last %}, {% endif %}{% endfor %}],
+    data: [{% for dato in datos_por_categoria.Utilización del motor %}{{ dato.valor }}{% if not forloop.last %}, {% endif %}{% endfor %}]
+    {% endif %}
+};
+
+const datosModos = {
+    {% if 'Modos de funcionamiento' in datos_por_categoria %}
+    labels: [{% for dato in datos_por_categoria.Modos de funcionamiento %}'{{ dato.serie }}'{% if not forloop.last %}, {% endif %}{% endfor %}],
+    data: [{% for dato in datos_por_categoria.Modos de funcionamiento %}{{ dato.valor }}{% if not forloop.last %}, {% endif %}{% endfor %}]
+    {% endif %}
+};
+
+const datosMFWD = {
+    {% if 'MFWD Utilization per gear' in datos_por_categoria %}
+    labels: [{% for dato in datos_por_categoria.MFWD Utilization per gear %}'{{ dato.serie }}'{% if not forloop.last %}, {% endif %}{% endfor %}],
+    data: [{% for dato in datos_por_categoria.MFWD Utilization per gear %}{{ dato.valor }}{% if not forloop.last %}, {% endif %}{% endfor %}]
+    {% endif %}
+};
+
+// Configuración de colores
+const colors = ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40'];
+
+// Gráfico de Utilización del Motor
+{% if 'Utilización del motor' in datos_por_categoria %}
+const ctxMotor = document.getElementById('chartMotor').getContext('2d');
+new Chart(ctxMotor, {
+    type: 'doughnut',
+    data: {
+        labels: datosMotor.labels,
+        datasets: [{
+            data: datosMotor.data,
+            backgroundColor: colors,
+            borderWidth: 2,
+            borderColor: '#fff'
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'bottom'
+            }
+        }
+    }
+});
+{% endif %}
+
+// Gráfico de Modos de Funcionamiento
+{% if 'Modos de funcionamiento' in datos_por_categoria %}
+const ctxModos = document.getElementById('chartModos').getContext('2d');
+new Chart(ctxModos, {
+    type: 'bar',
+    data: {
+        labels: datosModos.labels,
+        datasets: [{
+            label: 'Horas',
+            data: datosModos.data,
+            backgroundColor: colors,
+            borderWidth: 1
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+            y: {
+                beginAtZero: true,
+                title: {
+                    display: true,
+                    text: 'Horas'
+                }
+            }
+        },
+        plugins: {
+            legend: {
+                display: false
+            }
+        }
+    }
+});
+{% endif %}
+
+// Gráfico de MFWD
+{% if 'MFWD Utilization per gear' in datos_por_categoria %}
+const ctxMFWD = document.getElementById('chartMFWD').getContext('2d');
+new Chart(ctxMFWD, {
+    type: 'bar',
+    data: {
+        labels: datosMFWD.labels,
+        datasets: [{
+            label: 'Horas',
+            data: datosMFWD.data,
+            backgroundColor: colors,
+            borderWidth: 1
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+            y: {
+                beginAtZero: true,
+                title: {
+                    display: true,
+                    text: 'Horas'
+                }
+            }
+        },
+        plugins: {
+            legend: {
+                display: false
+            }
+        }
+    }
+});
+{% endif %}
+</script>
+{% endblock %}

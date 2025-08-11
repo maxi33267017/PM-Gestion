@@ -852,6 +852,19 @@ def generar_pdf_reporte_csc(request, reporte_id):
     
     return response
 
+@login_required
+@require_http_methods(["POST"])
+def actualizar_comentarios_csc(request, reporte_id):
+    """Actualizar comentarios manuales del reporte CSC"""
+    reporte = get_object_or_404(ReporteCSC, id=reporte_id)
+    
+    comentarios = request.POST.get('comentarios', '').strip()
+    reporte.comentarios_manuales = comentarios
+    reporte.save()
+    
+    messages.success(request, 'Comentarios actualizados correctamente.')
+    return redirect('centroSoluciones:detalle_reporte_csc', reporte_id=reporte.id)
+
 # Funciones auxiliares
 def extraer_fecha_desde_nombre(nombre_archivo):
     """Extraer fecha del nombre del archivo CSV"""
