@@ -2,6 +2,7 @@ from django.db import models
 from django.utils import timezone
 from clientes.models import Cliente, Equipo
 from recursosHumanos.models import Usuario, Sucursal
+import os
 
 class AlertaEquipo(models.Model):
     """Modelo para las alertas de equipos recibidas del Centro de Soluciones Conectadas"""
@@ -332,3 +333,56 @@ class CodigoAlerta(models.Model):
             'BAJA': 'success',
         }
         return colors.get(self.clasificacion, 'secondary')
+
+# Modelos para Reportes CSC
+class ReporteCSC(models.Model):
+    ESTADO_CHOICES = [
+        ('BORRADOR', 'Borrador'),
+        ('GENERADO', 'Generado'),
+        ('ENVIADO', 'Enviado'),
+    ]
+    
+    equipo = models.ForeignKey('clientes.Equipo', on_delete=models.CASCADE, related_name='reportes_csc')
+    fecha_importacion = models.DateTimeField(auto_now_add=True)
+    fecha_reporte = models.DateField(help_text="Fecha extraída del nombre del archivo CSV")
+    archivo_csv = models.FileField(upload_to='reportes_csc/', help_text="Archivo CSV original")
+    estado = models.CharField(max_length=20, choices=ESTADO_CHOICES, default='BORRADOR')
+    recomendaciones_automaticas = models.TextField(blank=True, help_text="Recomendaciones generadas automáticamente")
+    comentarios_manuales = models.TextField(blank=True, help_text="Comentarios adicionales del usuario")
+    creado_por = models.ForeignKey('recursosHumanos.Usuario', on_delete=models.CASCADE)
+    
+    # Datos calculados del reporte
+    total_horas_analizadas = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)
+    eficiencia_general = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True, help_text="Porcentaje de eficiencia")
+    
+    class Meta:
+        verbose_name = "Reporte CSC"
+        verbose_name_plural = "Reportes CSC"
+        ordering = ['-fecha_importacion']
+    
+    def __str__(self):
+        return f"Reporte CSC - {self.equipo.numero_serie} ({self.fecha_reporte})"
+    
+    @property
+    def nombre_archivo_original(self):
+        """Extraer nombre original del archivo CSV"""
+        if self.archivo_csv:
+            return os.path.basename(self.archivo_csv.name)
+        return ""
+
+class DatosReporteCSC(models.Model):
+    reporte = models.ForeignKey(ReporteCSC, on_delete=models.CASCADE, related_name='datos')
+    categoria = models.CharField(max_length=100, help_text="Ej: Utilización del motor, MFWD Utilization per gear")
+    serie = models.CharField(max_length=100, help_text="Ej: Carga baja, Activado - F1")
+    valor = models.DecimalField(max_digits=10, decimal_places=2)
+    unidad = models.CharField(max_length=20, help_text="hr, %, etc.")
+    fecha_inicio = models.DateField()
+    fecha_fin = models.DateField()
+    
+    class Meta:
+        verbose_name = "Dato Reporte CSC"
+        verbose_name_plural = "Datos Reporte CSC"
+        unique_together = ['reporte', 'categoria', 'serie']
+    
+    def __str__(self):
+        return f"{self.categoria} - {self.serie}: {self.valor} {self.unidad}"

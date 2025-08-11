@@ -11,6 +11,17 @@ from clientes.models import Cliente, Equipo
 from recursosHumanos.models import Usuario, Sucursal
 from crm.models import EmbudoVentas, ContactoCliente
 
+# Importaciones para Reportes CSC
+import pandas as pd
+import os
+from datetime import datetime
+from django.core.files.storage import default_storage
+from django.contrib import messages
+from django.http import JsonResponse
+from django.template.loader import render_to_string
+from xhtml2pdf import pisa
+import io
+
 # Create your views here.
 
 @login_required
@@ -719,3 +730,243 @@ def obtener_lista_codigos_alerta(request):
         })
     except Exception as e:
         return JsonResponse({'success': False, 'message': f'Error al obtener códigos: {str(e)}'})
+
+# Vistas para Reportes CSC
+@login_required
+def lista_reportes_csc(request):
+    """Lista de todos los reportes CSC"""
+    reportes = ReporteCSC.objects.select_related('equipo', 'equipo__cliente', 'creado_por').all()
+    
+    # Filtros
+    equipo_id = request.GET.get('equipo')
+    if equipo_id:
+        reportes = reportes.filter(equipo_id=equipo_id)
+    
+    estado = request.GET.get('estado')
+    if estado:
+        reportes = reportes.filter(estado=estado)
+    
+    context = {
+        'reportes': reportes,
+        'equipos': Equipo.objects.filter(activo=True).select_related('cliente'),
+    }
+    return render(request, 'centroSoluciones/lista_reportes_csc.html', context)
+
+@login_required
+def importar_reporte_csc(request):
+    """Importar archivo CSV y crear reporte CSC"""
+    if request.method == 'POST':
+        archivo = request.FILES.get('archivo_csv')
+        equipo_id = request.POST.get('equipo')
+        
+        if not archivo or not equipo_id:
+            messages.error(request, 'Debe seleccionar un archivo CSV y un equipo.')
+            return redirect('centroSoluciones:lista_reportes_csc')
+        
+        try:
+            equipo = Equipo.objects.get(id=equipo_id)
+            
+            # Extraer fecha del nombre del archivo
+            nombre_archivo = archivo.name
+            fecha_reporte = extraer_fecha_desde_nombre(nombre_archivo)
+            
+            # Crear reporte
+            reporte = ReporteCSC.objects.create(
+                equipo=equipo,
+                fecha_reporte=fecha_reporte,
+                archivo_csv=archivo,
+                creado_por=request.user
+            )
+            
+            # Procesar CSV
+            procesar_csv_reporte(reporte)
+            
+            # Generar recomendaciones automáticas
+            generar_recomendaciones_automaticas(reporte)
+            
+            messages.success(request, f'Reporte CSC importado exitosamente para {equipo.numero_serie}')
+            return redirect('centroSoluciones:detalle_reporte_csc', reporte_id=reporte.id)
+            
+        except Exception as e:
+            messages.error(request, f'Error al importar reporte: {str(e)}')
+            return redirect('centroSoluciones:lista_reportes_csc')
+    
+    context = {
+        'equipos': Equipo.objects.filter(activo=True).select_related('cliente'),
+    }
+    return render(request, 'centroSoluciones/importar_reporte_csc.html', context)
+
+@login_required
+def detalle_reporte_csc(request, reporte_id):
+    """Ver detalles de un reporte CSC"""
+    reporte = get_object_or_404(
+        ReporteCSC.objects.select_related('equipo', 'equipo__cliente', 'creado_por'),
+        id=reporte_id
+    )
+    
+    # Agrupar datos por categoría
+    datos_por_categoria = {}
+    for dato in reporte.datos.all():
+        if dato.categoria not in datos_por_categoria:
+            datos_por_categoria[dato.categoria] = []
+        datos_por_categoria[dato.categoria].append(dato)
+    
+    context = {
+        'reporte': reporte,
+        'datos_por_categoria': datos_por_categoria,
+    }
+    return render(request, 'centroSoluciones/detalle_reporte_csc.html', context)
+
+@login_required
+def generar_pdf_reporte_csc(request, reporte_id):
+    """Generar PDF del reporte CSC"""
+    reporte = get_object_or_404(
+        ReporteCSC.objects.select_related('equipo', 'equipo__cliente', 'creado_por'),
+        id=reporte_id
+    )
+    
+    # Agrupar datos por categoría
+    datos_por_categoria = {}
+    for dato in reporte.datos.all():
+        if dato.categoria not in datos_por_categoria:
+            datos_por_categoria[dato.categoria] = []
+        datos_por_categoria[dato.categoria].append(dato)
+    
+    context = {
+        'reporte': reporte,
+        'datos_por_categoria': datos_por_categoria,
+    }
+    
+    # Generar HTML
+    html = render_to_string('centroSoluciones/reporte_csc_pdf.html', context)
+    
+    # Crear respuesta PDF
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="reporte_csc_{reporte.equipo.numero_serie}_{reporte.fecha_reporte}.pdf"'
+    
+    # Convertir HTML a PDF
+    pisa_status = pisa.CreatePDF(io.StringIO(html), dest=response, link_callback=link_callback)
+    
+    if pisa_status.err:
+        return HttpResponse("Hubo un error al generar el PDF", status=400)
+    
+    return response
+
+# Funciones auxiliares
+def extraer_fecha_desde_nombre(nombre_archivo):
+    """Extraer fecha del nombre del archivo CSV"""
+    try:
+        # Formato esperado: 1BZ310LAANA008321_08_11_2025.csv
+        partes = nombre_archivo.replace('.csv', '').split('_')
+        if len(partes) >= 4:
+            dia = int(partes[-3])
+            mes = int(partes[-2])
+            año = int(partes[-1])
+            return datetime(año, mes, dia).date()
+    except:
+        pass
+    
+    # Si no se puede extraer, usar fecha actual
+    return datetime.now().date()
+
+def procesar_csv_reporte(reporte):
+    """Procesar archivo CSV y guardar datos"""
+    try:
+        # Leer CSV
+        df = pd.read_csv(reporte.archivo_csv.path)
+        
+        # Procesar cada fila
+        for _, row in df.iterrows():
+            DatosReporteCSC.objects.create(
+                reporte=reporte,
+                categoria=row['Categoría'],
+                serie=row['Serie'],
+                valor=float(row['Valor']),
+                unidad=row['Unidades de medida'],
+                fecha_inicio=datetime.strptime(row['Fecha de inicio'], '%d %b %Y').date(),
+                fecha_fin=datetime.strptime(row['Fecha de terminación'], '%d %b %Y').date(),
+            )
+        
+        # Calcular total de horas
+        total_horas = df[df['Unidades de medida'] == 'hr']['Valor'].sum()
+        reporte.total_horas_analizadas = total_horas
+        
+        # Calcular eficiencia
+        if 'Utilización del motor' in df['Categoría'].values:
+            motor_data = df[df['Categoría'] == 'Utilización del motor']
+            carga_alta = motor_data[motor_data['Serie'] == 'Carga alta']['Valor'].iloc[0] if len(motor_data[motor_data['Serie'] == 'Carga alta']) > 0 else 0
+            carga_mediana = motor_data[motor_data['Serie'] == 'Carga mediana']['Valor'].iloc[0] if len(motor_data[motor_data['Serie'] == 'Carga mediana']) > 0 else 0
+            eficiencia = ((carga_alta + carga_mediana) / total_horas) * 100 if total_horas > 0 else 0
+            reporte.eficiencia_general = eficiencia
+        
+        reporte.save()
+        
+    except Exception as e:
+        raise Exception(f"Error procesando CSV: {str(e)}")
+
+def generar_recomendaciones_automaticas(reporte):
+    """Generar recomendaciones automáticas basadas en los datos"""
+    recomendaciones = []
+    
+    # Obtener datos principales
+    datos = {}
+    for dato in reporte.datos.all():
+        if dato.categoria not in datos:
+            datos[dato.categoria] = {}
+        datos[dato.categoria][dato.serie] = dato.valor
+    
+    # Análisis de utilización del motor
+    if 'Utilización del motor' in datos:
+        motor = datos['Utilización del motor']
+        en_reposo = motor.get('En reposo', 0)
+        carga_alta = motor.get('Carga alta', 0)
+        carga_mediana = motor.get('Carga mediana', 0)
+        
+        if en_reposo > reporte.total_horas_analizadas * 0.5:  # Más del 50% en reposo
+            recomendaciones.append(f"⚠️ Alto tiempo en reposo ({en_reposo} hr). Considerar optimizar horarios de trabajo.")
+        
+        tiempo_productivo = carga_alta + carga_mediana
+        eficiencia = (tiempo_productivo / reporte.total_horas_analizadas) * 100 if reporte.total_horas_analizadas > 0 else 0
+        
+        if eficiencia < 50:
+            recomendaciones.append(f"⚠️ Eficiencia baja ({eficiencia:.1f}%). Considerar optimización de operaciones.")
+        else:
+            recomendaciones.append(f"✅ Buena eficiencia del motor ({eficiencia:.1f}%).")
+    
+    # Análisis de modos de funcionamiento
+    if 'Modos de funcionamiento' in datos:
+        modos = datos['Modos de funcionamiento']
+        ralenti_cargadora = modos.get('Ralentí de pala cargadora', 0)
+        
+        if ralenti_cargadora > reporte.total_horas_analizadas * 0.4:  # Más del 40% en ralentí
+            recomendaciones.append(f"⚠️ Excesivo tiempo en ralentí de cargadora ({ralenti_cargadora} hr). Revisar procedimientos operativos.")
+    
+    # Análisis de marchas MFWD
+    if 'MFWD Utilization per gear' in datos:
+        mfwd = datos['MFWD Utilization per gear']
+        f5_uso = mfwd.get('Activado - F5', 0)
+        f4_uso = mfwd.get('Activado - F4', 0)
+        
+        if f5_uso == 0 and f4_uso == 0:
+            recomendaciones.append("💡 Marchas F4 y F5 no utilizadas. Considerar entrenamiento en uso de marchas altas para mayor eficiencia.")
+    
+    # Guardar recomendaciones
+    reporte.recomendaciones_automaticas = '\n'.join(recomendaciones)
+    reporte.save()
+
+def link_callback(uri, rel):
+    """Callback para manejar archivos estáticos en PDF"""
+    if uri.startswith('/static/'):
+        static_path = uri.replace('/static/', '')
+        path = os.path.join(settings.BASE_DIR, 'static', static_path)
+    elif uri.startswith('/media/'):
+        media_path = uri.replace('/media/', '')
+        path = os.path.join(settings.MEDIA_ROOT, media_path)
+    else:
+        return uri
+    
+    if not os.path.isfile(path):
+        print(f"ADVERTENCIA: Archivo no encontrado: {path}")
+        return uri
+    
+    return path

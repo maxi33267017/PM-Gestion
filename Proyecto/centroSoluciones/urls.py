@@ -25,4 +25,10 @@ urlpatterns = [
     path('obtener-codigo-alerta/', views.obtener_codigo_alerta, name='obtener_codigo_alerta'),
     path('obtener-lista-codigos-alerta/', views.obtener_lista_codigos_alerta, name='obtener_lista_codigos_alerta'),
     path('obtener-modelos-equipos/', views.obtener_modelos_equipos, name='obtener_modelos_equipos'),
+
+    # URLs para Reportes CSC
+    path('reportes-csc/', views.lista_reportes_csc, name='lista_reportes_csc'),
+    path('reportes-csc/importar/', views.importar_reporte_csc, name='importar_reporte_csc'),
+    path('reportes-csc/<int:reporte_id>/', views.detalle_reporte_csc, name='detalle_reporte_csc'),
+    path('reportes-csc/<int:reporte_id>/pdf/', views.generar_pdf_reporte_csc, name='generar_pdf_reporte_csc'),
 ] 

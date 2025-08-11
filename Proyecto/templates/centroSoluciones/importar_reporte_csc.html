@@ -1,0 +1,130 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Importar Reporte CSC - Centro de Soluciones{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0 text-gray-800">
+                <i class="fas fa-upload text-primary"></i>
+                Importar Reporte CSC
+            </h1>
+            <p class="text-muted">Sube un archivo CSV para generar un reporte de análisis</p>
+        </div>
+        <div>
+            <a href="{% url 'centroSoluciones:lista_reportes_csc' %}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> Volver
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- Formulario de Importación -->
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Importar Archivo CSV</h6>
+                </div>
+                <div class="card-body">
+                    <form method="POST" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label for="equipo" class="form-label">Equipo <span class="text-danger">*</span></label>
+                            <select name="equipo" id="equipo" class="form-select" required>
+                                <option value="">Selecciona un equipo</option>
+                                {% for equipo in equipos %}
+                                <option value="{{ equipo.id }}">
+                                    {{ equipo.numero_serie }} - {{ equipo.cliente.razon_social }} ({{ equipo.modelo.nombre }})
+                                </option>
+                                {% endfor %}
+                            </select>
+                            <div class="form-text">Selecciona el equipo al que corresponde el reporte</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="archivo_csv" class="form-label">Archivo CSV <span class="text-danger">*</span></label>
+                            <input type="file" name="archivo_csv" id="archivo_csv" class="form-control" accept=".csv" required>
+                            <div class="form-text">
+                                Formato esperado: PIN_FECHA.csv (ej: 1BZ310LAANA008321_08_11_2025.csv)
+                            </div>
+                        </div>
+
+                        <div class="alert alert-info">
+                            <h6><i class="fas fa-info-circle"></i> Información sobre el formato CSV</h6>
+                            <p class="mb-0">
+                                El archivo debe contener las siguientes columnas:
+                                <strong>Número de serie de la máquina, Nombre de máquina, Categoría, Serie, 
+                                Fecha de inicio, Hora de inicio, Fecha de terminación, Tiempo final, Valor, Unidades de medida</strong>
+                            </p>
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{% url 'centroSoluciones:lista_reportes_csc' %}" class="btn btn-outline-secondary me-md-2">
+                                Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-upload"></i> Importar Reporte
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <!-- Información de Ayuda -->
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-question-circle"></i> Cómo funciona
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <h6 class="text-primary">1. Selecciona el equipo</h6>
+                        <p class="small text-muted">Elige el equipo John Deere al que corresponde el reporte de datos.</p>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <h6 class="text-primary">2. Sube el archivo CSV</h6>
+                        <p class="small text-muted">El archivo debe tener el formato estándar de John Deere con datos de utilización.</p>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <h6 class="text-primary">3. Análisis automático</h6>
+                        <p class="small text-muted">El sistema procesará los datos y generará recomendaciones automáticas.</p>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <h6 class="text-primary">4. Genera el reporte</h6>
+                        <p class="small text-muted">Obtén un PDF profesional con análisis y recomendaciones para el cliente.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Ejemplo de Datos -->
+            <div class="card shadow mt-3">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-table"></i> Ejemplo de datos
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <p class="small text-muted">El CSV debe contener datos como:</p>
+                    <ul class="small text-muted">
+                        <li>Utilización del motor (Carga alta, mediana, baja)</li>
+                        <li>MFWD Utilization per gear</li>
+                        <li>Modos de funcionamiento</li>
+                        <li>Tiempo en marcha</li>
+                        <li>Nivel del depósito de combustible</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
