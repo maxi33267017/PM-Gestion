@@ -769,8 +769,13 @@ def importar_reporte_csc(request):
         try:
             # Extraer PIN y fecha del nombre del archivo
             nombre_archivo = archivo.name
+            print(f"DEBUG: Procesando archivo: {nombre_archivo}")
+            
             pin_equipo = extraer_pin_desde_nombre(nombre_archivo)
             fecha_reporte = extraer_fecha_desde_nombre(nombre_archivo)
+            
+            print(f"DEBUG: PIN extraído: {pin_equipo}")
+            print(f"DEBUG: Fecha extraída: {fecha_reporte}")
             
             if not pin_equipo:
                 messages.error(request, 'No se pudo extraer el PIN del equipo del nombre del archivo.')
@@ -782,6 +787,12 @@ def importar_reporte_csc(request):
             print(f"DEBUG: Equipo {'creado' if creado else 'encontrado'}: {equipo.numero_serie}")
             print(f"DEBUG: Cliente del equipo: {equipo.cliente.razon_social if equipo.cliente else 'Sin cliente'}")
             print(f"DEBUG: Modelo del equipo: {equipo.modelo.nombre if equipo.modelo else 'Sin modelo'}")
+            
+            # Verificar si el equipo existe en la base de datos
+            equipos_existentes = Equipo.objects.filter(numero_serie__icontains=pin_equipo[:8])
+            print(f"DEBUG: Equipos similares encontrados: {equipos_existentes.count()}")
+            for eq in equipos_existentes:
+                print(f"  - {eq.numero_serie}: {eq.cliente.razon_social if eq.cliente else 'Sin cliente'}")
             
             # Crear reporte
             reporte = ReporteCSC.objects.create(
@@ -1066,15 +1077,32 @@ def procesar_csv_reporte(reporte):
         # Calcular eficiencia
         if datos_guardados.filter(categoria__icontains='motor').exists():
             motor_data = datos_guardados.filter(categoria__icontains='motor')
+            
+            # Buscar diferentes tipos de carga
             carga_alta = motor_data.filter(serie__icontains='alta').first()
             carga_mediana = motor_data.filter(serie__icontains='mediana').first()
+            carga_baja = motor_data.filter(serie__icontains='baja').first()
+            en_reposo = motor_data.filter(serie__icontains='reposo').first()
             
             carga_alta_valor = carga_alta.valor if carga_alta else 0
             carga_mediana_valor = carga_mediana.valor if carga_mediana else 0
+            carga_baja_valor = carga_baja.valor if carga_baja else 0
+            en_reposo_valor = en_reposo.valor if en_reposo else 0
             
-            eficiencia = ((carga_alta_valor + carga_mediana_valor) / total_horas) * 100 if total_horas > 0 else 0
+            # Calcular eficiencia: (carga alta + carga mediana) / total horas
+            tiempo_productivo = carga_alta_valor + carga_mediana_valor
+            eficiencia = (tiempo_productivo / total_horas) * 100 if total_horas > 0 else 0
+            
+            print(f"DEBUG: Cálculo de eficiencia:")
+            print(f"  - Carga alta: {carga_alta_valor} hr")
+            print(f"  - Carga mediana: {carga_mediana_valor} hr")
+            print(f"  - Carga baja: {carga_baja_valor} hr")
+            print(f"  - En reposo: {en_reposo_valor} hr")
+            print(f"  - Tiempo productivo: {tiempo_productivo} hr")
+            print(f"  - Total horas: {total_horas} hr")
+            print(f"  - Eficiencia: {eficiencia:.2f}%")
+            
             reporte.eficiencia_general = eficiencia
-            print(f"DEBUG: Eficiencia calculada: {eficiencia}%")
         
         reporte.save()
         print(f"DEBUG: Reporte guardado exitosamente")

@@ -216,6 +216,43 @@
             border-radius: 8px; 
             border-left: 4px solid #28A745; 
         }
+        
+        /* Gráficos simplificados */
+        .chart-container { 
+            margin: 15px 0; 
+        }
+        
+        .chart-bar { 
+            margin-bottom: 10px; 
+            display: flex; 
+            align-items: center; 
+        }
+        
+        .bar-label { 
+            width: 120px; 
+            font-size: 10px; 
+            font-weight: bold; 
+            color: #333; 
+        }
+        
+        .bar-container { 
+            flex: 1; 
+            height: 20px; 
+            background-color: #f0f0f0; 
+            border-radius: 3px; 
+            overflow: hidden; 
+        }
+        
+        .bar-fill { 
+            height: 100%; 
+            color: white; 
+            font-size: 8px; 
+            font-weight: bold; 
+            text-align: center; 
+            line-height: 20px; 
+            padding: 0 5px; 
+            min-width: 30px; 
+        }
     </style>
 </head>
 <body>
@@ -409,6 +446,27 @@
                         {% endfor %}
                     </tbody>
                 </table>
+            </div>
+            {% endif %}
+        {% endfor %}
+
+        <!-- Gráficos Simplificados -->
+        {% for categoria in categorias %}
+            {% if categoria.nombre == 'Utilización del motor' %}
+            <div class="data-section">
+                <div class="section-header">GRÁFICO - UTILIZACIÓN DEL MOTOR</div>
+                <div class="chart-container">
+                    {% for dato in categoria.datos %}
+                    <div class="chart-bar">
+                        <div class="bar-label">{{ dato.serie }}</div>
+                        <div class="bar-container">
+                            <div class="bar-fill" style="width: {% widthratio dato.valor reporte.total_horas_analizadas 100 %}%; background-color: {% if 'alta' in dato.serie.lower %}green{% elif 'mediana' in dato.serie.lower %}orange{% elif 'baja' in dato.serie.lower %}yellow{% else %}gray{% endif %};">
+                                {{ dato.valor|floatformat:1 }} hr ({% widthratio dato.valor reporte.total_horas_analizadas 100 %}%)
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
             </div>
             {% endif %}
         {% endfor %}
