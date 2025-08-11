@@ -783,7 +783,7 @@ def importar_reporte_csc(request):
             
             # Buscar o crear el equipo
             print("DEBUG: Buscando o creando equipo...")
-            equipo, creado = buscar_o_crear_equipo(pin_equipo)
+            equipo, creado = buscar_o_crear_equipo(pin_equipo, request.user)
             
             print(f"DEBUG: Equipo {'creado' if creado else 'encontrado'}: {equipo.numero_serie}")
             print(f"DEBUG: Cliente del equipo: {equipo.cliente.razon_social if equipo.cliente else 'Sin cliente'}")
