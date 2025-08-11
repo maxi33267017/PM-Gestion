@@ -7,7 +7,7 @@ from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
 from django.utils import timezone
 from .models import AlertaEquipo, LeadJohnDeere, AsignacionAlerta, CodigoAlerta, ReporteCSC, DatosReporteCSC
-from clientes.models import Cliente, Equipo
+from clientes.models import Cliente, Equipo, ModeloEquipo
 from recursosHumanos.models import Usuario, Sucursal
 from crm.models import EmbudoVentas, ContactoCliente
 
@@ -763,18 +763,23 @@ def importar_reporte_csc(request):
     """Importar archivo CSV y crear reporte CSC"""
     if request.method == 'POST':
         archivo = request.FILES.get('archivo_csv')
-        equipo_id = request.POST.get('equipo')
         
-        if not archivo or not equipo_id:
-            messages.error(request, 'Debe seleccionar un archivo CSV y un equipo.')
+        if not archivo:
+            messages.error(request, 'Debe seleccionar un archivo CSV.')
             return redirect('centroSoluciones:lista_reportes_csc')
         
         try:
-            equipo = Equipo.objects.get(id=equipo_id)
-            
-            # Extraer fecha del nombre del archivo
+            # Extraer PIN y fecha del nombre del archivo
             nombre_archivo = archivo.name
+            pin_equipo = extraer_pin_desde_nombre(nombre_archivo)
             fecha_reporte = extraer_fecha_desde_nombre(nombre_archivo)
+            
+            if not pin_equipo:
+                messages.error(request, 'No se pudo extraer el PIN del equipo del nombre del archivo.')
+                return redirect('centroSoluciones:lista_reportes_csc')
+            
+            # Buscar o crear el equipo
+            equipo, creado = buscar_o_crear_equipo(pin_equipo, request.user)
             
             # Crear reporte
             reporte = ReporteCSC.objects.create(
@@ -790,17 +795,19 @@ def importar_reporte_csc(request):
             # Generar recomendaciones automáticas
             generar_recomendaciones_automaticas(reporte)
             
-            messages.success(request, f'Reporte CSC importado exitosamente para {equipo.numero_serie}')
+            if creado:
+                messages.success(request, f'Reporte CSC importado exitosamente. Se creó automáticamente el equipo {pin_equipo} y se generó el reporte.')
+            else:
+                messages.success(request, f'Reporte CSC importado exitosamente para el equipo {equipo.numero_serie}')
+            
             return redirect('centroSoluciones:detalle_reporte_csc', reporte_id=reporte.id)
             
         except Exception as e:
             messages.error(request, f'Error al importar reporte: {str(e)}')
             return redirect('centroSoluciones:lista_reportes_csc')
     
-    context = {
-        'equipos': Equipo.objects.filter(activo=True).select_related('cliente'),
-    }
-    return render(request, 'centroSoluciones/importar_reporte_csc.html', context)
+    # Para GET, mostrar formulario simple
+    return render(request, 'centroSoluciones/importar_reporte_csc.html')
 
 @login_required
 def detalle_reporte_csc(request, reporte_id):
@@ -872,6 +879,22 @@ def actualizar_comentarios_csc(request, reporte_id):
     return redirect('centroSoluciones:detalle_reporte_csc', reporte_id=reporte.id)
 
 # Funciones auxiliares
+def extraer_pin_desde_nombre(nombre_archivo):
+    """Extraer PIN del equipo del nombre del archivo CSV"""
+    try:
+        # Formato esperado: 1BZ310LAANA008321_08_11_2025.csv
+        # El PIN es la primera parte antes del primer guión bajo
+        partes = nombre_archivo.replace('.csv', '').split('_')
+        if len(partes) >= 1:
+            pin = partes[0]
+            # Validar que el PIN tenga el formato correcto (al menos 10 caracteres)
+            if len(pin) >= 10:
+                return pin
+    except:
+        pass
+    
+    return None
+
 def extraer_fecha_desde_nombre(nombre_archivo):
     """Extraer fecha del nombre del archivo CSV"""
     try:
@@ -887,6 +910,60 @@ def extraer_fecha_desde_nombre(nombre_archivo):
     
     # Si no se puede extraer, usar fecha actual
     return datetime.now().date()
+
+def buscar_o_crear_equipo(pin_equipo, usuario):
+    """Buscar un equipo por PIN o crearlo si no existe"""
+    try:
+        # Buscar si el equipo ya existe
+        equipo = Equipo.objects.get(numero_serie=pin_equipo)
+        return equipo, False  # False = no fue creado
+    except Equipo.DoesNotExist:
+        # Crear el equipo con datos mínimos
+        # Usar el cliente de la sucursal del usuario como cliente por defecto
+        cliente_por_defecto = None
+        
+        # Buscar un cliente activo de la sucursal del usuario
+        if usuario.sucursal:
+            cliente_por_defecto = Cliente.objects.filter(
+                activo=True,
+                sucursal=usuario.sucursal
+            ).first()
+        
+        # Si no hay cliente en la sucursal, usar el primer cliente activo
+        if not cliente_por_defecto:
+            cliente_por_defecto = Cliente.objects.filter(activo=True).first()
+        
+        # Si no hay ningún cliente, crear uno genérico
+        if not cliente_por_defecto:
+            cliente_por_defecto = Cliente.objects.create(
+                razon_social=f"Cliente Auto-Generado - {pin_equipo}",
+                activo=True,
+                sucursal=usuario.sucursal
+            )
+        
+        # Buscar un modelo de equipo por defecto (310L si existe)
+        modelo_por_defecto = None
+        try:
+            modelo_por_defecto = ModeloEquipo.objects.filter(
+                nombre__icontains='310L',
+                activo=True
+            ).first()
+        except:
+            pass
+        
+        # Si no hay modelo 310L, usar el primer modelo activo
+        if not modelo_por_defecto:
+            modelo_por_defecto = ModeloEquipo.objects.filter(activo=True).first()
+        
+        # Crear el equipo
+        equipo = Equipo.objects.create(
+            numero_serie=pin_equipo,
+            cliente=cliente_por_defecto,
+            modelo=modelo_por_defecto,
+            activo=True
+        )
+        
+        return equipo, True  # True = fue creado
 
 def procesar_csv_reporte(reporte):
     """Procesar archivo CSV y guardar datos"""

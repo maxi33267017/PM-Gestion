@@ -33,23 +33,12 @@
                         {% csrf_token %}
                         
                         <div class="mb-3">
-                            <label for="equipo" class="form-label">Equipo <span class="text-danger">*</span></label>
-                            <select name="equipo" id="equipo" class="form-select" required>
-                                <option value="">Selecciona un equipo</option>
-                                {% for equipo in equipos %}
-                                <option value="{{ equipo.id }}">
-                                    {{ equipo.numero_serie }} - {{ equipo.cliente.razon_social }} ({{ equipo.modelo.nombre }})
-                                </option>
-                                {% endfor %}
-                            </select>
-                            <div class="form-text">Selecciona el equipo al que corresponde el reporte</div>
-                        </div>
-
-                        <div class="mb-3">
                             <label for="archivo_csv" class="form-label">Archivo CSV <span class="text-danger">*</span></label>
                             <input type="file" name="archivo_csv" id="archivo_csv" class="form-control" accept=".csv" required>
                             <div class="form-text">
                                 Formato esperado: PIN_FECHA.csv (ej: 1BZ310LAANA008321_08_11_2025.csv)
+                                <br>
+                                <strong>El sistema extraerá automáticamente el PIN del equipo del nombre del archivo.</strong>
                             </div>
                         </div>
 
@@ -85,22 +74,27 @@
                 </div>
                 <div class="card-body">
                     <div class="mb-3">
-                        <h6 class="text-primary">1. Selecciona el equipo</h6>
-                        <p class="small text-muted">Elige el equipo John Deere al que corresponde el reporte de datos.</p>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <h6 class="text-primary">2. Sube el archivo CSV</h6>
+                        <h6 class="text-primary">1. Sube el archivo CSV</h6>
                         <p class="small text-muted">El archivo debe tener el formato estándar de John Deere con datos de utilización.</p>
                     </div>
                     
                     <div class="mb-3">
-                        <h6 class="text-primary">3. Análisis automático</h6>
+                        <h6 class="text-primary">2. Extracción automática</h6>
+                        <p class="small text-muted">El sistema extraerá automáticamente el PIN del equipo del nombre del archivo.</p>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <h6 class="text-primary">3. Creación automática de equipo</h6>
+                        <p class="small text-muted">Si el equipo no existe, se creará automáticamente con datos básicos.</p>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <h6 class="text-primary">4. Análisis automático</h6>
                         <p class="small text-muted">El sistema procesará los datos y generará recomendaciones automáticas.</p>
                     </div>
                     
                     <div class="mb-3">
-                        <h6 class="text-primary">4. Genera el reporte</h6>
+                        <h6 class="text-primary">5. Genera el reporte</h6>
                         <p class="small text-muted">Obtén un PDF profesional con análisis y recomendaciones para el cliente.</p>
                     </div>
                 </div>
