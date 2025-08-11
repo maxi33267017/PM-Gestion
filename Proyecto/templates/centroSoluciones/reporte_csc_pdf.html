@@ -276,59 +276,59 @@
         </div>
     </div>
 
-    <!-- Utilización del Motor -->
-    {% for categoria in categorias %}
-        {% if categoria.nombre == 'Utilización del motor' %}
-        <div class="data-section">
-            <div class="section-header">UTILIZACIÓN DEL MOTOR</div>
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>Estado</th>
-                        <th>Horas</th>
-                        <th>Porcentaje</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for dato in categoria.datos %}
-                    <tr>
-                        <td>{{ dato.serie }}</td>
-                        <td>{{ dato.valor|floatformat:2 }} hr</td>
-                        <td>{{ dato.valor|div:reporte.total_horas_analizadas|mul:100|floatformat:1 }}%</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-        {% endif %}
-    {% endfor %}
+            <!-- Utilización del Motor -->
+        {% for categoria in categorias %}
+            {% if categoria.nombre == 'Utilización del motor' %}
+            <div class="data-section">
+                <div class="section-header">UTILIZACIÓN DEL MOTOR</div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Estado</th>
+                            <th>Horas</th>
+                            <th>Porcentaje</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for dato in categoria.datos %}
+                        <tr>
+                            <td>{{ dato.serie }}</td>
+                            <td>{{ dato.valor|floatformat:2 }} hr</td>
+                            <td>{% widthratio dato.valor reporte.total_horas_analizadas 100 %}%</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% endif %}
+        {% endfor %}
 
-    <!-- Modos de Funcionamiento -->
-    {% for categoria in categorias %}
-        {% if categoria.nombre == 'Modos de funcionamiento' %}
-        <div class="data-section">
-            <div class="section-header">MODOS DE FUNCIONAMIENTO</div>
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>Modo</th>
-                        <th>Horas</th>
-                        <th>Porcentaje</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for dato in categoria.datos %}
-                    <tr>
-                        <td>{{ dato.serie }}</td>
-                        <td>{{ dato.valor|floatformat:2 }} hr</td>
-                        <td>{{ dato.valor|div:reporte.total_horas_analizadas|mul:100|floatformat:1 }}%</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-        {% endif %}
-    {% endfor %}
+            <!-- Modos de Funcionamiento -->
+        {% for categoria in categorias %}
+            {% if categoria.nombre == 'Modos de funcionamiento' %}
+            <div class="data-section">
+                <div class="section-header">MODOS DE FUNCIONAMIENTO</div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Modo</th>
+                            <th>Horas</th>
+                            <th>Porcentaje</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for dato in categoria.datos %}
+                        <tr>
+                            <td>{{ dato.serie }}</td>
+                            <td>{{ dato.valor|floatformat:2 }} hr</td>
+                            <td>{% widthratio dato.valor reporte.total_horas_analizadas 100 %}%</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% endif %}
+        {% endfor %}
 
     <!-- PÁGINA 2 -->
     <div class="page-break">
@@ -352,7 +352,7 @@
                         <tr>
                             <td>{{ dato.serie }}</td>
                             <td>{{ dato.valor|floatformat:2 }} hr</td>
-                            <td>{{ dato.valor|div:reporte.total_horas_analizadas|mul:100|floatformat:1 }}%</td>
+                            <td>{% widthratio dato.valor reporte.total_horas_analizadas 100 %}%</td>
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -379,7 +379,7 @@
                         <tr>
                             <td>{{ dato.serie }}</td>
                             <td>{{ dato.valor|floatformat:2 }} hr</td>
-                            <td>{{ dato.valor|div:reporte.total_horas_analizadas|mul:100|floatformat:1 }}%</td>
+                            <td>{% widthratio dato.valor reporte.total_horas_analizadas 100 %}%</td>
                         </tr>
                         {% endfor %}
                     </tbody>
