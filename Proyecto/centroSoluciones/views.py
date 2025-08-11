@@ -964,12 +964,18 @@ def buscar_o_crear_equipo(pin_equipo, usuario):
                 razon_social__icontains='Alfa 80',
                 activo=True
             ).first()
-        except:
-            pass
+            print(f"DEBUG: Cliente Alfa 80 encontrado: {cliente_por_defecto.razon_social if cliente_por_defecto else 'No encontrado'}")
+        except Exception as e:
+            print(f"DEBUG: Error buscando cliente Alfa 80: {e}")
         
         # Si no hay cliente Alfa 80, usar el primer cliente activo
         if not cliente_por_defecto:
             cliente_por_defecto = Cliente.objects.filter(activo=True).first()
+            print(f"DEBUG: Usando primer cliente activo: {cliente_por_defecto.razon_social if cliente_por_defecto else 'No hay clientes activos'}")
+        
+        # Mostrar todos los clientes activos para referencia
+        clientes_activos = Cliente.objects.filter(activo=True).values_list('razon_social', flat=True)[:5]
+        print(f"DEBUG: Primeros 5 clientes activos: {list(clientes_activos)}")
         
         # Buscar un modelo de equipo por defecto (310L si existe)
         modelo_por_defecto = None
