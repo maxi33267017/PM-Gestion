@@ -33,12 +33,30 @@
                         {% csrf_token %}
                         
                         <div class="mb-3">
+                            <label for="cliente" class="form-label">Cliente <span class="text-danger">*</span></label>
+                            <select class="form-control" id="cliente" name="cliente" required>
+                                <option value="">Seleccione un cliente</option>
+                                {% for cliente in clientes %}
+                                    <option value="{{ cliente.id }}">{{ cliente.razon_social }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="equipo" class="form-label">Equipo <span class="text-danger">*</span></label>
+                            <select class="form-control" id="equipo" name="equipo" required disabled>
+                                <option value="">Primero seleccione un cliente</option>
+                            </select>
+                            <div class="form-text">
+                                Si el equipo no aparece en la lista, debe agregarlo manualmente desde la gestión de clientes.
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
                             <label for="archivo_csv" class="form-label">Archivo CSV <span class="text-danger">*</span></label>
                             <input type="file" name="archivo_csv" id="archivo_csv" class="form-control" accept=".csv" required>
                             <div class="form-text">
                                 Formato esperado: PIN_FECHA.csv (ej: 1BZ310LAANA008321_08_11_2025.csv)
-                                <br>
-                                <strong>El sistema extraerá automáticamente el PIN del equipo del nombre del archivo.</strong>
                             </div>
                         </div>
 
@@ -74,18 +92,18 @@
                 </div>
                 <div class="card-body">
                     <div class="mb-3">
-                        <h6 class="text-primary">1. Sube el archivo CSV</h6>
+                        <h6 class="text-primary">1. Selecciona el cliente</h6>
+                        <p class="small text-muted">Elige el cliente al que pertenece el equipo del reporte.</p>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <h6 class="text-primary">2. Selecciona el equipo</h6>
+                        <p class="small text-muted">Elige el equipo específico de la lista del cliente seleccionado.</p>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <h6 class="text-primary">3. Sube el archivo CSV</h6>
                         <p class="small text-muted">El archivo debe tener el formato estándar de John Deere con datos de utilización.</p>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <h6 class="text-primary">2. Extracción automática</h6>
-                        <p class="small text-muted">El sistema extraerá automáticamente el PIN del equipo del nombre del archivo.</p>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <h6 class="text-primary">3. Creación automática de equipo</h6>
-                        <p class="small text-muted">Si el equipo no existe, se creará automáticamente con datos básicos.</p>
                     </div>
                     
                     <div class="mb-3">
@@ -100,25 +118,67 @@
                 </div>
             </div>
 
-            <!-- Ejemplo de Datos -->
+            <!-- Equipos no encontrados -->
             <div class="card shadow mt-3">
                 <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-primary">
-                        <i class="fas fa-table"></i> Ejemplo de datos
+                    <h6 class="m-0 font-weight-bold text-warning">
+                        <i class="fas fa-exclamation-triangle"></i> Equipo no encontrado
                     </h6>
                 </div>
                 <div class="card-body">
-                    <p class="small text-muted">El CSV debe contener datos como:</p>
-                    <ul class="small text-muted">
-                        <li>Utilización del motor (Carga alta, mediana, baja)</li>
-                        <li>MFWD Utilization per gear</li>
-                        <li>Modos de funcionamiento</li>
-                        <li>Tiempo en marcha</li>
-                        <li>Nivel del depósito de combustible</li>
-                    </ul>
+                    <p class="small text-muted">Si el equipo no aparece en la lista:</p>
+                    <ol class="small text-muted">
+                        <li>Ve a la gestión de clientes</li>
+                        <li>Selecciona el cliente correspondiente</li>
+                        <li>Agrega el nuevo equipo manualmente</li>
+                        <li>Vuelve aquí para importar el reporte</li>
+                    </ol>
                 </div>
             </div>
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.getElementById('cliente').addEventListener('change', function() {
+    const clienteId = this.value;
+    const equipoSelect = document.getElementById('equipo');
+    
+    // Limpiar y deshabilitar el select de equipos
+    equipoSelect.innerHTML = '<option value="">Cargando equipos...</option>';
+    equipoSelect.disabled = true;
+    
+    if (clienteId) {
+        // Hacer petición AJAX para obtener equipos del cliente
+        fetch(`/centro-soluciones/obtener-equipos-cliente-csc/?cliente_id=${clienteId}`)
+            .then(response => response.json())
+            .then(data => {
+                equipoSelect.innerHTML = '<option value="">Seleccione un equipo</option>';
+                
+                if (data.equipos && data.equipos.length > 0) {
+                    data.equipos.forEach(equipo => {
+                        const option = document.createElement('option');
+                        option.value = equipo.id;
+                        option.textContent = `${equipo.numero_serie} - ${equipo.modelo__nombre}`;
+                        equipoSelect.appendChild(option);
+                    });
+                    equipoSelect.disabled = false;
+                } else {
+                    equipoSelect.innerHTML = '<option value="">No hay equipos para este cliente</option>';
+                    equipoSelect.disabled = true;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                equipoSelect.innerHTML = '<option value="">Error al cargar equipos</option>';
+                equipoSelect.disabled = true;
+            });
+    } else {
+        equipoSelect.innerHTML = '<option value="">Primero seleccione un cliente</option>';
+        equipoSelect.disabled = true;
+    }
+});
+</script>
 {% endblock %}

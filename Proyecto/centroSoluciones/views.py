@@ -761,39 +761,36 @@ def importar_reporte_csc(request):
     """Importar archivo CSV y crear reporte CSC"""
     if request.method == 'POST':
         archivo = request.FILES.get('archivo_csv')
+        cliente_id = request.POST.get('cliente')
+        equipo_id = request.POST.get('equipo')
         
         if not archivo:
             messages.error(request, 'Debe seleccionar un archivo CSV.')
             return redirect('centroSoluciones:lista_reportes_csc')
         
+        if not cliente_id:
+            messages.error(request, 'Debe seleccionar un cliente.')
+            return redirect('centroSoluciones:lista_reportes_csc')
+        
+        if not equipo_id:
+            messages.error(request, 'Debe seleccionar un equipo.')
+            return redirect('centroSoluciones:lista_reportes_csc')
+        
         try:
-            # Extraer PIN y fecha del nombre del archivo
+            # Obtener cliente y equipo seleccionados
+            cliente = get_object_or_404(Cliente, id=cliente_id)
+            equipo = get_object_or_404(Equipo, id=equipo_id, cliente=cliente)
+            
+            # Extraer fecha del nombre del archivo
             nombre_archivo = archivo.name
             print(f"DEBUG: Procesando archivo: {nombre_archivo}")
             
-            pin_equipo = extraer_pin_desde_nombre(nombre_archivo)
             fecha_reporte = extraer_fecha_desde_nombre(nombre_archivo)
-            
-            print(f"DEBUG: PIN extraído: {pin_equipo}")
             print(f"DEBUG: Fecha extraída: {fecha_reporte}")
             
-            if not pin_equipo:
-                messages.error(request, 'No se pudo extraer el PIN del equipo del nombre del archivo.')
+            if not fecha_reporte:
+                messages.error(request, 'No se pudo extraer la fecha del reporte del nombre del archivo.')
                 return redirect('centroSoluciones:lista_reportes_csc')
-            
-            # Buscar o crear el equipo
-            print("DEBUG: Buscando o creando equipo...")
-            equipo, creado = buscar_o_crear_equipo(pin_equipo, request.user)
-            
-            print(f"DEBUG: Equipo {'creado' if creado else 'encontrado'}: {equipo.numero_serie}")
-            print(f"DEBUG: Cliente del equipo: {equipo.cliente.razon_social if equipo.cliente else 'Sin cliente'}")
-            print(f"DEBUG: Modelo del equipo: {equipo.modelo.nombre if equipo.modelo else 'Sin modelo'}")
-            
-            # Verificar si el equipo existe en la base de datos
-            equipos_existentes = Equipo.objects.filter(numero_serie__icontains=pin_equipo[:8])
-            print(f"DEBUG: Equipos similares encontrados: {equipos_existentes.count()}")
-            for eq in equipos_existentes:
-                print(f"  - {eq.numero_serie}: {eq.cliente.razon_social if eq.cliente else 'Sin cliente'}")
             
             # Crear reporte
             print("DEBUG: Creando reporte en la base de datos...")
@@ -815,11 +812,7 @@ def importar_reporte_csc(request):
             generar_recomendaciones_automaticas(reporte)
             print("DEBUG: Recomendaciones generadas")
             
-            if creado:
-                messages.success(request, f'Reporte CSC importado exitosamente. Se creó automáticamente el equipo {pin_equipo} y se generó el reporte.')
-            else:
-                messages.success(request, f'Reporte CSC importado exitosamente para el equipo {equipo.numero_serie}')
-            
+            messages.success(request, f'Reporte CSC importado exitosamente para el equipo {equipo.numero_serie}')
             return redirect('centroSoluciones:detalle_reporte_csc', reporte_id=reporte.id)
             
         except Exception as e:
@@ -829,8 +822,12 @@ def importar_reporte_csc(request):
             messages.error(request, f'Error al procesar el archivo: {str(e)}')
             return redirect('centroSoluciones:lista_reportes_csc')
     
-    # Para GET, mostrar formulario simple
-    return render(request, 'centroSoluciones/importar_reporte_csc.html')
+    # Para GET, mostrar formulario con selects
+    clientes = Cliente.objects.filter(activo=True).order_by('razon_social')
+    context = {
+        'clientes': clientes,
+    }
+    return render(request, 'centroSoluciones/importar_reporte_csc.html', context)
 
 @login_required
 def detalle_reporte_csc(request, reporte_id):
@@ -917,6 +914,18 @@ def actualizar_comentarios_csc(request, reporte_id):
     messages.success(request, 'Comentarios actualizados correctamente.')
     return redirect('centroSoluciones:detalle_reporte_csc', reporte_id=reporte.id)
 
+@login_required
+def obtener_equipos_cliente_csc(request):
+    """Obtener equipos de un cliente para el formulario de importación CSC"""
+    cliente_id = request.GET.get('cliente_id')
+    if cliente_id:
+        equipos = Equipo.objects.filter(
+            cliente_id=cliente_id, 
+            activo=True
+        ).values('id', 'numero_serie', 'modelo__nombre')
+        return JsonResponse({'equipos': list(equipos)})
+    return JsonResponse({'equipos': []})
+
 # Funciones auxiliares
 def extraer_pin_desde_nombre(nombre_archivo):
     """Extraer PIN del equipo del nombre del archivo CSV"""
@@ -957,21 +966,17 @@ def buscar_o_crear_equipo(pin_equipo, usuario):
         equipo = Equipo.objects.get(numero_serie=pin_equipo)
         return equipo, False  # False = no fue creado
     except Equipo.DoesNotExist:
-        # Buscar un cliente por defecto (Alfa 80 si existe)
-        cliente_por_defecto = None
-        try:
-            cliente_por_defecto = Cliente.objects.filter(
-                razon_social__icontains='Alfa 80',
-                activo=True
-            ).first()
-            print(f"DEBUG: Cliente Alfa 80 encontrado: {cliente_por_defecto.razon_social if cliente_por_defecto else 'No encontrado'}")
-        except Exception as e:
-            print(f"DEBUG: Error buscando cliente Alfa 80: {e}")
+        # Para equipos nuevos que no existen en la base de datos, usar "SinCliente"
+        cliente_por_defecto = Cliente.objects.filter(
+            razon_social__icontains='SinCliente',
+            activo=True
+        ).first()
+        print(f"DEBUG: Cliente SinCliente encontrado: {cliente_por_defecto.razon_social if cliente_por_defecto else 'No encontrado'}")
         
-        # Si no hay cliente Alfa 80, usar el primer cliente activo
+        # Si no hay SinCliente, usar el primer cliente activo como último recurso
         if not cliente_por_defecto:
             cliente_por_defecto = Cliente.objects.filter(activo=True).first()
-            print(f"DEBUG: Usando primer cliente activo: {cliente_por_defecto.razon_social if cliente_por_defecto else 'No hay clientes activos'}")
+            print(f"DEBUG: Usando primer cliente activo como último recurso: {cliente_por_defecto.razon_social if cliente_por_defecto else 'No hay clientes activos'}")
         
         # Mostrar todos los clientes activos para referencia
         clientes_activos = Cliente.objects.filter(activo=True).values_list('razon_social', flat=True)[:5]
@@ -1166,7 +1171,7 @@ def generar_recomendaciones_automaticas(reporte):
         carga_alta = motor.get('Carga alta', 0)
         carga_mediana = motor.get('Carga mediana', 0)
         
-        if en_reposo > reporte.total_horas_analizadas * 0.5:  # Más del 50% en reposo
+        if en_reposo > float(reporte.total_horas_analizadas) * 0.5:  # Más del 50% en reposo
             recomendaciones.append(f"⚠️ Alto tiempo en reposo ({en_reposo} hr). Considerar optimizar horarios de trabajo.")
         
         tiempo_productivo = carga_alta + carga_mediana
