@@ -962,33 +962,114 @@ def procesar_csv_reporte(reporte):
         # Leer CSV
         df = pd.read_csv(reporte.archivo_csv.path)
         
+        # Debug: imprimir información del CSV
+        print(f"DEBUG: CSV cargado - {len(df)} filas, columnas: {list(df.columns)}")
+        print(f"DEBUG: Primeras 3 filas:")
+        print(df.head(3))
+        
+        # Mapear nombres de columnas (flexible)
+        column_mapping = {
+            'categoria': ['Categoría', 'Category', 'categoria', 'category'],
+            'serie': ['Serie', 'Series', 'serie', 'series'],
+            'valor': ['Valor', 'Value', 'valor', 'value'],
+            'unidad': ['Unidades de medida', 'Unit', 'Units', 'unidad', 'unit', 'units'],
+            'fecha_inicio': ['Fecha de inicio', 'Start Date', 'Start date', 'fecha_inicio', 'start_date'],
+            'fecha_fin': ['Fecha de terminación', 'End Date', 'End date', 'fecha_fin', 'end_date']
+        }
+        
+        # Encontrar las columnas correctas
+        actual_columns = {}
+        for key, possible_names in column_mapping.items():
+            for name in possible_names:
+                if name in df.columns:
+                    actual_columns[key] = name
+                    break
+            if key not in actual_columns:
+                print(f"ERROR: No se encontró columna para {key}. Columnas disponibles: {list(df.columns)}")
+                raise Exception(f"No se encontró columna para {key}")
+        
+        print(f"DEBUG: Mapeo de columnas: {actual_columns}")
+        
         # Procesar cada fila
-        for _, row in df.iterrows():
-            DatosReporteCSC.objects.create(
-                reporte=reporte,
-                categoria=row['Categoría'],
-                serie=row['Serie'],
-                valor=float(row['Valor']),
-                unidad=row['Unidades de medida'],
-                fecha_inicio=datetime.strptime(row['Fecha de inicio'], '%d %b %Y').date(),
-                fecha_fin=datetime.strptime(row['Fecha de terminación'], '%d %b %Y').date(),
-            )
+        for index, row in df.iterrows():
+            try:
+                # Extraer valores con manejo de errores
+                categoria = str(row[actual_columns['categoria']]).strip()
+                serie = str(row[actual_columns['serie']]).strip()
+                valor = float(row[actual_columns['valor']])
+                unidad = str(row[actual_columns['unidad']]).strip()
+                
+                # Procesar fechas con múltiples formatos
+                fecha_inicio_str = str(row[actual_columns['fecha_inicio']]).strip()
+                fecha_fin_str = str(row[actual_columns['fecha_fin']]).strip()
+                
+                # Intentar diferentes formatos de fecha
+                fecha_inicio = None
+                fecha_fin = None
+                
+                date_formats = ['%d %b %Y', '%d/%m/%Y', '%Y-%m-%d', '%d-%m-%Y', '%m/%d/%Y']
+                
+                for fmt in date_formats:
+                    try:
+                        fecha_inicio = datetime.strptime(fecha_inicio_str, fmt).date()
+                        break
+                    except:
+                        continue
+                
+                for fmt in date_formats:
+                    try:
+                        fecha_fin = datetime.strptime(fecha_fin_str, fmt).date()
+                        break
+                    except:
+                        continue
+                
+                if fecha_inicio is None or fecha_fin is None:
+                    print(f"ERROR: No se pudo parsear fecha en fila {index}: inicio='{fecha_inicio_str}', fin='{fecha_fin_str}'")
+                    continue
+                
+                # Crear registro
+                DatosReporteCSC.objects.create(
+                    reporte=reporte,
+                    categoria=categoria,
+                    serie=serie,
+                    valor=valor,
+                    unidad=unidad,
+                    fecha_inicio=fecha_inicio,
+                    fecha_fin=fecha_fin,
+                )
+                
+                print(f"DEBUG: Procesada fila {index}: {categoria} - {serie} = {valor} {unidad}")
+                
+            except Exception as row_error:
+                print(f"ERROR procesando fila {index}: {row_error}")
+                continue
         
         # Calcular total de horas
-        total_horas = df[df['Unidades de medida'] == 'hr']['Valor'].sum()
+        datos_guardados = reporte.datos.all()
+        print(f"DEBUG: Datos guardados: {datos_guardados.count()} registros")
+        
+        total_horas = sum([d.valor for d in datos_guardados if 'hr' in d.unidad.lower()])
         reporte.total_horas_analizadas = total_horas
+        print(f"DEBUG: Total horas calculadas: {total_horas}")
         
         # Calcular eficiencia
-        if 'Utilización del motor' in df['Categoría'].values:
-            motor_data = df[df['Categoría'] == 'Utilización del motor']
-            carga_alta = motor_data[motor_data['Serie'] == 'Carga alta']['Valor'].iloc[0] if len(motor_data[motor_data['Serie'] == 'Carga alta']) > 0 else 0
-            carga_mediana = motor_data[motor_data['Serie'] == 'Carga mediana']['Valor'].iloc[0] if len(motor_data[motor_data['Serie'] == 'Carga mediana']) > 0 else 0
-            eficiencia = ((carga_alta + carga_mediana) / total_horas) * 100 if total_horas > 0 else 0
+        if datos_guardados.filter(categoria__icontains='motor').exists():
+            motor_data = datos_guardados.filter(categoria__icontains='motor')
+            carga_alta = motor_data.filter(serie__icontains='alta').first()
+            carga_mediana = motor_data.filter(serie__icontains='mediana').first()
+            
+            carga_alta_valor = carga_alta.valor if carga_alta else 0
+            carga_mediana_valor = carga_mediana.valor if carga_mediana else 0
+            
+            eficiencia = ((carga_alta_valor + carga_mediana_valor) / total_horas) * 100 if total_horas > 0 else 0
             reporte.eficiencia_general = eficiencia
+            print(f"DEBUG: Eficiencia calculada: {eficiencia}%")
         
         reporte.save()
+        print(f"DEBUG: Reporte guardado exitosamente")
         
     except Exception as e:
+        print(f"ERROR general procesando CSV: {str(e)}")
         raise Exception(f"Error procesando CSV: {str(e)}")
 
 def generar_recomendaciones_automaticas(reporte):
