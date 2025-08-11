@@ -782,7 +782,8 @@ def importar_reporte_csc(request):
                 return redirect('centroSoluciones:lista_reportes_csc')
             
             # Buscar o crear el equipo
-            equipo, creado = buscar_o_crear_equipo(pin_equipo, request.user)
+            print("DEBUG: Buscando o creando equipo...")
+            equipo, creado = buscar_o_crear_equipo(pin_equipo)
             
             print(f"DEBUG: Equipo {'creado' if creado else 'encontrado'}: {equipo.numero_serie}")
             print(f"DEBUG: Cliente del equipo: {equipo.cliente.razon_social if equipo.cliente else 'Sin cliente'}")
@@ -795,18 +796,24 @@ def importar_reporte_csc(request):
                 print(f"  - {eq.numero_serie}: {eq.cliente.razon_social if eq.cliente else 'Sin cliente'}")
             
             # Crear reporte
+            print("DEBUG: Creando reporte en la base de datos...")
             reporte = ReporteCSC.objects.create(
                 equipo=equipo,
                 fecha_reporte=fecha_reporte,
                 archivo_csv=archivo,
                 creado_por=request.user
             )
+            print(f"DEBUG: Reporte creado con ID: {reporte.id}")
             
             # Procesar CSV
+            print("DEBUG: Procesando CSV...")
             procesar_csv_reporte(reporte)
+            print("DEBUG: CSV procesado exitosamente")
             
             # Generar recomendaciones automáticas
+            print("DEBUG: Generando recomendaciones...")
             generar_recomendaciones_automaticas(reporte)
+            print("DEBUG: Recomendaciones generadas")
             
             if creado:
                 messages.success(request, f'Reporte CSC importado exitosamente. Se creó automáticamente el equipo {pin_equipo} y se generó el reporte.')
@@ -816,7 +823,10 @@ def importar_reporte_csc(request):
             return redirect('centroSoluciones:detalle_reporte_csc', reporte_id=reporte.id)
             
         except Exception as e:
-            messages.error(request, f'Error al importar reporte: {str(e)}')
+            print(f"ERROR general procesando CSV: {str(e)}")
+            import traceback
+            traceback.print_exc()
+            messages.error(request, f'Error al procesar el archivo: {str(e)}')
             return redirect('centroSoluciones:lista_reportes_csc')
     
     # Para GET, mostrar formulario simple
