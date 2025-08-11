@@ -779,6 +779,10 @@ def importar_reporte_csc(request):
             # Buscar o crear el equipo
             equipo, creado = buscar_o_crear_equipo(pin_equipo, request.user)
             
+            print(f"DEBUG: Equipo {'creado' if creado else 'encontrado'}: {equipo.numero_serie}")
+            print(f"DEBUG: Cliente del equipo: {equipo.cliente.razon_social if equipo.cliente else 'Sin cliente'}")
+            print(f"DEBUG: Modelo del equipo: {equipo.modelo.nombre if equipo.modelo else 'Sin modelo'}")
+            
             # Crear reporte
             reporte = ReporteCSC.objects.create(
                 equipo=equipo,
@@ -947,10 +951,9 @@ def buscar_o_crear_equipo(pin_equipo, usuario):
         if not modelo_por_defecto:
             modelo_por_defecto = ModeloEquipo.objects.filter(activo=True).first()
         
-        # Crear el equipo sin cliente (se asignará después)
+        # Crear el equipo sin cliente ni modelo (se asignarán después)
         equipo = Equipo.objects.create(
             numero_serie=pin_equipo,
-            modelo=modelo_por_defecto,
             activo=True
         )
         
@@ -959,13 +962,21 @@ def buscar_o_crear_equipo(pin_equipo, usuario):
 def procesar_csv_reporte(reporte):
     """Procesar archivo CSV y guardar datos"""
     try:
-        # Leer CSV
-        df = pd.read_csv(reporte.archivo_csv.path)
+        # Leer CSV usando el archivo directamente
+        with reporte.archivo_csv.open('r') as file:
+            df = pd.read_csv(file)
         
         # Debug: imprimir información del CSV
         print(f"DEBUG: CSV cargado - {len(df)} filas, columnas: {list(df.columns)}")
         print(f"DEBUG: Primeras 3 filas:")
         print(df.head(3))
+        print(f"DEBUG: Tipos de datos:")
+        print(df.dtypes)
+        print(f"DEBUG: Valores únicos en columnas:")
+        for col in df.columns:
+            print(f"  {col}: {df[col].nunique()} valores únicos")
+            if df[col].nunique() < 10:
+                print(f"    Valores: {df[col].unique()}")
         
         # Mapear nombres de columnas (flexible)
         column_mapping = {
@@ -1070,6 +1081,9 @@ def procesar_csv_reporte(reporte):
         
     except Exception as e:
         print(f"ERROR general procesando CSV: {str(e)}")
+        print(f"ERROR tipo: {type(e).__name__}")
+        import traceback
+        print(f"ERROR traceback: {traceback.format_exc()}")
         raise Exception(f"Error procesando CSV: {str(e)}")
 
 def generar_recomendaciones_automaticas(reporte):
