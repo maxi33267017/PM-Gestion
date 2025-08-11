@@ -3,7 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db.models import Q
 from django.core.paginator import Paginator
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.views.decorators.http import require_http_methods
 from django.utils import timezone
 from .models import AlertaEquipo, LeadJohnDeere, AsignacionAlerta, CodigoAlerta, ReporteCSC, DatosReporteCSC
@@ -16,8 +16,6 @@ import pandas as pd
 import os
 from datetime import datetime
 from django.core.files.storage import default_storage
-from django.contrib import messages
-from django.http import JsonResponse
 from django.template.loader import render_to_string
 from xhtml2pdf import pisa
 import io
