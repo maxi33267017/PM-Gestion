@@ -957,7 +957,20 @@ def buscar_o_crear_equipo(pin_equipo, usuario):
         equipo = Equipo.objects.get(numero_serie=pin_equipo)
         return equipo, False  # False = no fue creado
     except Equipo.DoesNotExist:
-        # Crear el equipo con datos mínimos sin asignar cliente
+        # Buscar un cliente por defecto (Alfa 80 si existe)
+        cliente_por_defecto = None
+        try:
+            cliente_por_defecto = Cliente.objects.filter(
+                razon_social__icontains='Alfa 80',
+                activo=True
+            ).first()
+        except:
+            pass
+        
+        # Si no hay cliente Alfa 80, usar el primer cliente activo
+        if not cliente_por_defecto:
+            cliente_por_defecto = Cliente.objects.filter(activo=True).first()
+        
         # Buscar un modelo de equipo por defecto (310L si existe)
         modelo_por_defecto = None
         try:
@@ -972,11 +985,16 @@ def buscar_o_crear_equipo(pin_equipo, usuario):
         if not modelo_por_defecto:
             modelo_por_defecto = ModeloEquipo.objects.filter(activo=True).first()
         
-        # Crear el equipo sin cliente ni modelo (se asignarán después)
+        # Crear el equipo con cliente y modelo por defecto
         equipo = Equipo.objects.create(
             numero_serie=pin_equipo,
+            cliente=cliente_por_defecto,
+            modelo=modelo_por_defecto,
             activo=True
         )
+        
+        print(f"DEBUG: Equipo creado con cliente: {cliente_por_defecto.razon_social if cliente_por_defecto else 'Sin cliente'}")
+        print(f"DEBUG: Equipo creado con modelo: {modelo_por_defecto.nombre if modelo_por_defecto else 'Sin modelo'}")
         
         return equipo, True  # True = fue creado
 
