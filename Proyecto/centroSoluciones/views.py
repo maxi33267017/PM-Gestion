@@ -6,7 +6,7 @@ from django.core.paginator import Paginator
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
 from django.utils import timezone
-from .models import AlertaEquipo, LeadJohnDeere, AsignacionAlerta, CodigoAlerta
+from .models import AlertaEquipo, LeadJohnDeere, AsignacionAlerta, CodigoAlerta, ReporteCSC, DatosReporteCSC
 from clientes.models import Cliente, Equipo
 from recursosHumanos.models import Usuario, Sucursal
 from crm.models import EmbudoVentas, ContactoCliente
@@ -57,7 +57,6 @@ def dashboard(request):
     # Contar reportes CSC (solo para gerentes/administrativos)
     reportes_csc = 0
     if request.user.rol in ['GERENTE', 'ADMINISTRATIVO']:
-        from .models import ReporteCSC
         reportes_csc = ReporteCSC.objects.count()
     
     context = {
