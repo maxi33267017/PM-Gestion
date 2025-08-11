@@ -5023,14 +5023,14 @@ def descargar_checklist_pdf(request, checklist_id):
         elementos_por_seccion[seccion_nombre].append(elemento)
     
     # Obtener rutas absolutas de las imágenes
-    logo_jd_path = os.path.join(settings.BASE_DIR, 'static', 'img', 'logoJohnDeere.png')
     logo_jd_horizontal_path = os.path.join(settings.BASE_DIR, 'static', 'img', 'JDLOGOHORIZONTAL.png')
+    logo_pm_path = os.path.join(settings.BASE_DIR, 'static', 'img', 'logo_pm_fondo_blanco.png')
     
     context = {
         'checklist': checklist,
         'elementos_por_seccion': elementos_por_seccion,
-        'logo_jd_path': logo_jd_path,
         'logo_jd_horizontal_path': logo_jd_horizontal_path,
+        'logo_pm_path': logo_pm_path,
     }
     
     # Generar HTML

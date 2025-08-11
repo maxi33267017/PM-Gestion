@@ -7,10 +7,11 @@
     <style>
         @page { size: A4; margin: 1.7cm; }
         body { font-family: Arial, sans-serif; font-size: 11px; line-height: 1.35; color: #333; margin: 0; padding: 0; }
-        .header { text-align: center; margin-bottom: 20px; border-bottom: 2px solid #000; padding-bottom: 12px; }
-        .header-logos { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-        .logo { height: 42px; width: auto; }
-        .header h1 { color: #000; font-size: 18px; margin: 0; font-weight: bold; text-transform: uppercase; }
+        .header { text-align: center; margin-bottom: 20px; }
+        .header h1 { color: #000; font-size: 18px; margin: 0 0 12px 0; font-weight: bold; text-transform: uppercase; }
+        .separator { border-top: 2px solid #000; margin: 8px 0; }
+        .logos-section { display: flex; justify-content: space-between; align-items: center; margin: 12px 0; }
+        .logo { height: 45px; width: auto; }
         .header .subtitle { color: #666; font-size: 11px; margin-top: 4px; }
         .info-section { margin-bottom: 14px; }
         .info-grid { display: table; width: 100%; margin-bottom: 12px; font-size: 10px; }
@@ -35,11 +36,13 @@
 </head>
 <body>
     <div class="header">
-        <div class="header-logos">
-            <img src="{{ logo_jd_path }}" alt="John Deere" class="logo">
-            <img src="{{ logo_jd_horizontal_path }}" alt="John Deere Construction" class="logo">
-        </div>
         <h1>CHECKLIST DE INSPECCIÓN JOHN DEERE PROTECT</h1>
+        <div class="separator"></div>
+        <div class="logos-section">
+            <img src="{{ logo_jd_horizontal_path }}" alt="John Deere Construction" class="logo">
+            <img src="{{ logo_pm_path }}" alt="Patagonia Maquinarias" class="logo">
+        </div>
+        <div class="separator"></div>
     </div>
 
     <div class="info-section">
