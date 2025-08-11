@@ -1,3 +1,4 @@
+import os
 from django.shortcuts import render, redirect, get_object_or_404
 from clientes.models import Equipo
 from gestionDeTaller.models import Servicio, PreOrden, Evidencia, PedidoRepuestosTerceros, EncuestaServicio, RespuestaEncuesta
@@ -834,14 +835,25 @@ from gestionDeTaller.models import Servicio
 
 # Función de utilidad para construir la URL absoluta de archivos estáticos
 def link_callback(uri, rel):
+    """
+    Convertir URIs de archivos estáticos a rutas absolutas del sistema
+    """
     if uri.startswith('/static/'):
-        path = os.path.join(settings.BASE_DIR, uri.replace('/static/', 'static/'))
+        # Remover /static/ del inicio y construir ruta absoluta
+        static_path = uri.replace('/static/', '')
+        path = os.path.join(settings.BASE_DIR, 'static', static_path)
     elif uri.startswith('/media/'):
-        path = os.path.join(settings.MEDIA_ROOT, uri.replace('/media/', ''))
+        # Remover /media/ del inicio y construir ruta absoluta
+        media_path = uri.replace('/media/', '')
+        path = os.path.join(settings.MEDIA_ROOT, media_path)
     else:
         return uri
+    
+    # Verificar que el archivo existe
     if not os.path.isfile(path):
-        raise Exception(f"El archivo {path} no se encuentra en el sistema.")
+        print(f"ADVERTENCIA: Archivo no encontrado: {path}")
+        return uri
+    
     return path
 
 @login_required
