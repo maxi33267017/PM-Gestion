@@ -54,10 +54,17 @@ def dashboard(request):
         ).count()
         leads_nuevos = 0  # Los técnicos no ven leads
     
+    # Contar reportes CSC (solo para gerentes/administrativos)
+    reportes_csc = 0
+    if request.user.rol in ['GERENTE', 'ADMINISTRATIVO']:
+        from .models import ReporteCSC
+        reportes_csc = ReporteCSC.objects.count()
+    
     context = {
         'alertas_pendientes': alertas_pendientes,
         'alertas_asignadas': alertas_asignadas,
         'leads_nuevos': leads_nuevos,
+        'reportes_csc': reportes_csc,
     }
     
     return render(request, 'centroSoluciones/dashboard.html', context)

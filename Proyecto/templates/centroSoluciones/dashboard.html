@@ -143,7 +143,7 @@
             </div>
         </div>
         {% if user.rol == 'GERENTE' or user.rol == 'ADMINISTRATIVO' %}
-        <div class="col-md-4">
+        <div class="col-md-3">
             <div class="card shadow-sm border-success">
                 <div class="card-body">
                     <h5 class="card-title">
@@ -155,6 +155,22 @@
                     </a>
                     <a href="{% url 'crm:embudo_ventas_origen' 'LEAD_JD' %}" class="btn btn-outline-primary btn-sm">
                         <i class="bi bi-funnel me-1"></i>Embudo de Leads
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm border-warning">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="bi bi-chart-line text-warning me-2"></i>Reportes CSC
+                    </h5>
+                    <p class="card-text display-6 text-warning">{{ reportes_csc }}</p>
+                    <a href="{% url 'centroSoluciones:lista_reportes_csc' %}" class="btn btn-outline-warning btn-sm">
+                        Ver reportes
+                    </a>
+                    <a href="{% url 'centroSoluciones:importar_reporte_csc' %}" class="btn btn-outline-primary btn-sm">
+                        <i class="bi bi-upload me-1"></i>Importar CSV
                     </a>
                 </div>
             </div>
@@ -202,6 +218,13 @@
                                 <i class="bi bi-database me-2"></i>Base de Códigos
                             </a>
                         </div>
+                        {% if user.rol == 'GERENTE' or user.rol == 'ADMINISTRATIVO' %}
+                        <div class="col-md-3">
+                            <a href="{% url 'centroSoluciones:lista_reportes_csc' %}" class="btn btn-warning w-100">
+                                <i class="bi bi-chart-line me-2"></i>Reportes CSC
+                            </a>
+                        </div>
+                        {% endif %}
                     </div>
                 </div>
             </div>
