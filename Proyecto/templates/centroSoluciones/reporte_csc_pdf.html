@@ -23,7 +23,7 @@
         .header { 
             text-align: center; 
             margin-bottom: 25px; 
-            border-bottom: 3px solid #0066CC; 
+            border-bottom: 3px solid #000000; 
             padding-bottom: 20px; 
         }
         
@@ -40,7 +40,7 @@
         }
         
         .header h1 { 
-            color: #0066CC; 
+            color: #000000; 
             font-size: 24px; 
             margin: 0; 
             font-weight: bold; 
@@ -59,7 +59,7 @@
             background-color: #f8f9fa; 
             padding: 20px; 
             border-radius: 8px; 
-            border-left: 5px solid #0066CC; 
+            border-left: 5px solid #000000; 
         }
         
         .info-grid { 
@@ -84,7 +84,7 @@
             font-weight: bold; 
             background-color: #e9ecef; 
             width: 35%; 
-            color: #0066CC; 
+            color: #000000; 
         }
         
         /* KPIs Cards */
@@ -103,8 +103,8 @@
             width: 33.33%; 
             text-align: center; 
             padding: 20px 15px; 
-            border: 2px solid #0066CC; 
-            background: linear-gradient(135deg, #0066CC 0%, #004499 100%); 
+            border: 2px solid #000000; 
+            background: linear-gradient(135deg, #333333 0%, #000000 100%); 
             color: white; 
         }
         
@@ -132,7 +132,7 @@
         }
         
         .section-header { 
-            background-color: #0066CC; 
+            background-color: #000000; 
             color: white; 
             padding: 12px 15px; 
             margin: 20px 0 15px 0; 
@@ -144,7 +144,7 @@
         .recommendation-item { 
             margin-bottom: 10px; 
             padding: 10px 15px; 
-            border-left: 4px solid #0066CC; 
+            border-left: 4px solid #000000; 
             background-color: #f8f9fa; 
         }
         
@@ -187,7 +187,7 @@
             background-color: #f8f9fa; 
             padding: 10px 15px; 
             font-weight: bold; 
-            color: #0066CC; 
+            color: #000000; 
             border-radius: 5px; 
             margin-bottom: 15px; 
         }
@@ -256,7 +256,7 @@
             padding: 8px 10px; 
             font-weight: bold; 
             text-align: left; 
-            color: #0066CC; 
+            color: #000000; 
         }
         
         .data-table td { 
@@ -304,12 +304,12 @@
 
     <!-- KPIs Principales -->
     <div class="kpi-section">
-        <div class="section-header">RESUMEN EJECUTIVO</div>
+        <div class="section-header">MÉTRICAS PRINCIPALES</div>
         <div class="kpi-grid">
             <div class="kpi-item">
                 <div class="kpi-value">{{ reporte.total_horas_analizadas|default:"0"|floatformat:1 }}</div>
-                <div class="kpi-label">Total Horas Analizadas</div>
-                <div class="kpi-description">Tiempo productivo / Total horas</div>
+                <div class="kpi-label">Total Horas Utilizadas</div>
+                <div class="kpi-description">Horas totales de operación</div>
             </div>
             <div class="kpi-item">
                 <div class="kpi-value">{{ reporte.eficiencia_general|default:"0"|floatformat:1 }}%</div>
@@ -327,6 +327,25 @@
             {% endfor %}
         </div>
     </div>
+
+    <!-- Alertas del Reporte -->
+    {% if reporte.alertas.all %}
+    <div class="recommendations-section">
+        <div class="section-header">ALERTAS REGISTRADAS</div>
+        {% for alerta in reporte.alertas.all %}
+            <div class="recommendation-item {% if alerta.severidad == 'CRITICA' %}warning{% elif alerta.severidad == 'ALTA' %}warning{% elif alerta.severidad == 'MEDIANA' %}success{% else %}success{% endif %}">
+                <strong>{{ alerta.nombre }}</strong><br>
+                <small>
+                    {{ alerta.fecha_hora|date:"d/m/Y H:i" }} | 
+                    <strong>Severidad: {{ alerta.get_severidad_display }}</strong>
+                </small>
+                {% if alerta.descripcion %}
+                <br>{{ alerta.descripcion }}
+                {% endif %}
+            </div>
+        {% endfor %}
+    </div>
+    {% endif %}
 
     <!-- Recomendaciones -->
     <div class="recommendations-section">
@@ -346,25 +365,6 @@
         {% endif %}
     </div>
 
-    <!-- Alertas del Reporte -->
-    {% if reporte.alertas.all %}
-    <div class="recommendations-section">
-        <div class="section-header">ALERTAS REGISTRADAS</div>
-        {% for alerta in reporte.alertas.all %}
-            <div class="recommendation-item {% if alerta.severidad == 'CRITICA' %}warning{% elif alerta.severidad == 'ALTA' %}warning{% elif alerta.severidad == 'MEDIANA' %}success{% else %}success{% endif %}">
-                <strong>{{ alerta.nombre }}</strong><br>
-                <small>
-                    <i class="fas fa-calendar"></i> {{ alerta.fecha_hora|date:"d/m/Y H:i" }} | 
-                    <strong>Severidad: {{ alerta.get_severidad_display }}</strong>
-                </small>
-                {% if alerta.descripcion %}
-                <br>{{ alerta.descripcion }}
-                {% endif %}
-            </div>
-        {% endfor %}
-    </div>
-    {% endif %}
-
     <!-- Comentarios Adicionales -->
     {% if reporte.comentarios_manuales %}
     <div class="comments-section">
@@ -377,83 +377,52 @@
     <div class="charts-section">
         <div class="section-header">ANÁLISIS GRÁFICO DE DATOS</div>
         
-        <!-- Gráficos para categorías principales -->
+        <!-- Gráficos para todas las categorías -->
         {% for categoria in categorias %}
-            {% if categoria.nombre == 'Utilización del motor' or categoria.nombre == 'Modos de funcionamiento' %}
-            <div class="chart-container">
-                <div class="chart-title">{{ categoria.nombre|upper }} ({{ categoria.total_valor|floatformat:1 }} {{ categoria.unidades }})</div>
-                
-                <!-- Gráfico de barras -->
-                {% for dato in categoria.datos_tabla %}
-                <div class="chart-bar">
-                    <div class="bar-label">{{ dato.serie }}</div>
-                    <div class="bar-container">
-                        <div class="bar-fill" style="width: {% widthratio dato.valor reporte.total_horas_analizadas 100 %}%; background-color: {% if 'alta' in dato.serie.lower %}green{% elif 'mediana' in dato.serie.lower %}orange{% elif 'baja' in dato.serie.lower %}yellow{% elif 'reposo' in dato.serie.lower %}red{% else %}gray{% endif %};">
-                            {% widthratio dato.valor reporte.total_horas_analizadas 100 %}%
-                        </div>
+        <div class="chart-container">
+            <div class="chart-title">{{ categoria.nombre|upper }} ({{ categoria.total_valor|floatformat:1 }} {{ categoria.unidades }})</div>
+            
+            <!-- Gráfico de barras para categorías con horas -->
+            {% if 'hr' in categoria.unidades.lower %}
+            {% for dato in categoria.datos_tabla %}
+            <div class="chart-bar">
+                <div class="bar-label">{{ dato.serie }}</div>
+                <div class="bar-container">
+                    <div class="bar-fill" style="width: {% widthratio dato.valor reporte.total_horas_analizadas 100 %}%; background-color: {% if 'alta' in dato.serie.lower %}green{% elif 'mediana' in dato.serie.lower %}orange{% elif 'baja' in dato.serie.lower %}yellow{% elif 'reposo' in dato.serie.lower %}red{% elif 'utilización' in dato.serie.lower or 'motor' in dato.serie.lower %}blue{% else %}gray{% endif %};">
+                        {% widthratio dato.valor reporte.total_horas_analizadas 100 %}%
                     </div>
-                    <div class="bar-value">{{ dato.valor|floatformat:1 }} {{ dato.unidad }}</div>
                 </div>
-                {% endfor %}
-                
-                <!-- Tabla de datos -->
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>Serie</th>
-                            <th>Valor</th>
-                            <th>Unidad</th>
-                            <th>Porcentaje</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for dato in categoria.datos_tabla %}
-                        <tr>
-                            <td>{{ dato.serie }}</td>
-                            <td><strong>{{ dato.valor|floatformat:2 }}</strong></td>
-                            <td>{{ dato.unidad }}</td>
-                            <td>{% widthratio dato.valor reporte.total_horas_analizadas 100 %}%</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+                <div class="bar-value">{{ dato.valor|floatformat:1 }} {{ dato.unidad }}</div>
             </div>
+            {% endfor %}
             {% endif %}
-        {% endfor %}
-        
-        <!-- Otras categorías -->
-        {% for categoria in categorias %}
-            {% if categoria.nombre != 'Utilización del motor' and categoria.nombre != 'Modos de funcionamiento' %}
-            <div class="chart-container">
-                <div class="chart-title">{{ categoria.nombre|upper }} ({{ categoria.total_valor|floatformat:1 }} {{ categoria.unidades }})</div>
-                
-                <!-- Tabla de datos -->
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>Serie</th>
-                            <th>Valor</th>
-                            <th>Unidad</th>
-                            {% if 'hr' in categoria.unidades.lower %}
-                            <th>Porcentaje</th>
-                            {% endif %}
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for dato in categoria.datos_tabla %}
-                        <tr>
-                            <td>{{ dato.serie }}</td>
-                            <td><strong>{{ dato.valor|floatformat:2 }}</strong></td>
-                            <td>{{ dato.unidad }}</td>
-                            {% if 'hr' in categoria.unidades.lower %}
-                            <td>{% widthratio dato.valor reporte.total_horas_analizadas 100 %}%</td>
-                            {% endif %}
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-            {% endif %}
+            
+            <!-- Tabla de datos -->
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Serie</th>
+                        <th>Valor</th>
+                        <th>Unidad</th>
+                        {% if 'hr' in categoria.unidades.lower %}
+                        <th>Porcentaje</th>
+                        {% endif %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for dato in categoria.datos_tabla %}
+                    <tr>
+                        <td>{{ dato.serie }}</td>
+                        <td><strong>{{ dato.valor|floatformat:2 }}</strong></td>
+                        <td>{{ dato.unidad }}</td>
+                        {% if 'hr' in categoria.unidades.lower %}
+                        <td>{% widthratio dato.valor reporte.total_horas_analizadas 100 %}%</td>
+                        {% endif %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
         {% endfor %}
     </div>
 
