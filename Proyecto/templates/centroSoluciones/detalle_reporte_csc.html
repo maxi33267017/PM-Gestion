@@ -187,22 +187,8 @@
                             </td>
                         </tr>
                         <tr>
-                            <td><strong>Total Horas Analizadas:</strong></td>
-                            <td><strong>{{ reporte.total_horas_analizadas|default:"0"|floatformat:1 }} hr</strong></td>
-                        </tr>
-                        <tr>
                             <td><strong>Total Horas Utilizadas:</strong></td>
-                            <td><strong>
-                                {% if reporte.comentarios_manuales and "Horas utilizadas:" in reporte.comentarios_manuales %}
-                                    {% for linea in reporte.comentarios_manuales.splitlines %}
-                                        {% if "Horas utilizadas:" in linea %}
-                                            {{ linea|slice:"18:" }}
-                                        {% endif %}
-                                    {% endfor %}
-                                {% else %}
-                                    0.0 hr
-                                {% endif %}
-                            </strong></td>
+                            <td><strong>{{ reporte.total_horas_analizadas|default:"0"|floatformat:1 }} hr</strong></td>
                         </tr>
                         <tr>
                             <td><strong>Eficiencia:</strong></td>

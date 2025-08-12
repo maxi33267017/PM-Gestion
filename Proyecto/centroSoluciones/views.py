@@ -1189,8 +1189,8 @@ def procesar_csv_reporte(reporte):
         tiempo_productivo = carga_alta_valor + carga_mediana_valor
         eficiencia = (tiempo_productivo / total_horas) * 100 if total_horas > 0 else 0
         
-        # Calcular horas utilizadas (excluyendo reposo)
-        horas_utilizadas = total_horas - en_reposo_valor
+        # Calcular horas utilizadas (tiempo total de uso del equipo)
+        horas_utilizadas = total_horas  # El total ya incluye todas las horas de uso
         
         print(f"DEBUG: Cálculo de eficiencia:")
         print(f"  - Carga alta: {carga_alta_valor} hr")
@@ -1199,7 +1199,7 @@ def procesar_csv_reporte(reporte):
         print(f"  - En reposo: {en_reposo_valor} hr")
         print(f"  - Tiempo productivo: {tiempo_productivo} hr")
         print(f"  - Total horas: {total_horas} hr")
-        print(f"  - Horas utilizadas (sin reposo): {horas_utilizadas} hr")
+        print(f"  - Horas utilizadas (tiempo total): {horas_utilizadas} hr")
         print(f"  - Eficiencia: {eficiencia:.2f}%")
         
         reporte.eficiencia_general = eficiencia
