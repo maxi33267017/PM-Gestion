@@ -1185,20 +1185,29 @@ def procesar_csv_reporte(reporte):
             carga_baja_valor = carga_baja.valor if carga_baja else 0
             en_reposo_valor = en_reposo.valor if en_reposo else 0
             
-            # Calcular eficiencia: (carga alta + carga mediana) / total horas
-            tiempo_productivo = carga_alta_valor + carga_mediana_valor
-            eficiencia = (tiempo_productivo / total_horas) * 100 if total_horas > 0 else 0
-            
-            print(f"DEBUG: Cálculo de eficiencia:")
-            print(f"  - Carga alta: {carga_alta_valor} hr")
-            print(f"  - Carga mediana: {carga_mediana_valor} hr")
-            print(f"  - Carga baja: {carga_baja_valor} hr")
-            print(f"  - En reposo: {en_reposo_valor} hr")
-            print(f"  - Tiempo productivo: {tiempo_productivo} hr")
-            print(f"  - Total horas: {total_horas} hr")
-            print(f"  - Eficiencia: {eficiencia:.2f}%")
-            
-            reporte.eficiencia_general = eficiencia
+                    # Calcular eficiencia: (carga alta + carga mediana) / total horas
+        tiempo_productivo = carga_alta_valor + carga_mediana_valor
+        eficiencia = (tiempo_productivo / total_horas) * 100 if total_horas > 0 else 0
+        
+        # Calcular horas utilizadas (excluyendo reposo)
+        horas_utilizadas = total_horas - en_reposo_valor
+        
+        print(f"DEBUG: Cálculo de eficiencia:")
+        print(f"  - Carga alta: {carga_alta_valor} hr")
+        print(f"  - Carga mediana: {carga_mediana_valor} hr")
+        print(f"  - Carga baja: {carga_baja_valor} hr")
+        print(f"  - En reposo: {en_reposo_valor} hr")
+        print(f"  - Tiempo productivo: {tiempo_productivo} hr")
+        print(f"  - Total horas: {total_horas} hr")
+        print(f"  - Horas utilizadas (sin reposo): {horas_utilizadas} hr")
+        print(f"  - Eficiencia: {eficiencia:.2f}%")
+        
+        reporte.eficiencia_general = eficiencia
+        # Guardar horas utilizadas en comentarios_manuales temporalmente
+        if reporte.comentarios_manuales:
+            reporte.comentarios_manuales += f"\nHoras utilizadas: {horas_utilizadas:.1f} hr"
+        else:
+            reporte.comentarios_manuales = f"Horas utilizadas: {horas_utilizadas:.1f} hr"
         
         reporte.save()
         print(f"DEBUG: Reporte guardado exitosamente")
