@@ -261,43 +261,7 @@
         </div>
     </div>
 
-    <!-- Datos Detallados -->
-    <div class="card shadow">
-        <div class="card-header py-3">
-            <h6 class="m-0 font-weight-bold text-primary">
-                <i class="fas fa-table"></i> Datos Detallados
-            </h6>
-        </div>
-        <div class="card-body">
-            {% for categoria in categorias %}
-            <h6 class="text-primary mb-3">{{ categoria.nombre }}</h6>
-            <div class="table-responsive mb-4">
-                <table class="table table-sm table-bordered">
-                    <thead class="table-light">
-                        <tr>
-                            <th>Serie</th>
-                            <th>Valor</th>
-                            <th>Unidad</th>
-                            <th>Fecha Inicio</th>
-                            <th>Fecha Fin</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for dato in categoria.datos %}
-                        <tr>
-                            <td>{{ dato.serie }}</td>
-                            <td><strong>{{ dato.valor }}</strong></td>
-                            <td>{{ dato.unidad }}</td>
-                            <td>{{ dato.fecha_inicio|date:"d/m/Y" }}</td>
-                            <td>{{ dato.fecha_fin|date:"d/m/Y" }}</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-            {% endfor %}
-        </div>
-    </div>
+
 </div>
 
 <!-- Modal para Comentarios -->
