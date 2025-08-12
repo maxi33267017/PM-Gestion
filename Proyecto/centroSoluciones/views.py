@@ -1182,24 +1182,34 @@ def procesar_csv_reporte(reporte):
         
         print(f"DEBUG: Categorías de motor encontradas: {categorias_motor}")
         
-        # Sumar horas de categorías de motor
-        total_horas = 0
-        if categorias_motor:
-            motor_data = datos_guardados.filter(categoria__in=categorias_motor)
-            total_horas = sum([d.valor for d in motor_data])
-            print(f"DEBUG: Total horas de motor (tiempo total de uso): {total_horas}")
-        else:
-            # Fallback: sumar todas las horas
-            total_horas = sum([d.valor for d in datos_guardados if 'hr' in d.unidad.lower()])
-            print(f"DEBUG: Total horas calculadas (fallback): {total_horas}")
+        # ELEGIR SOLO UNA CATEGORÍA como referencia para el total de horas
+        # Prioridad: 1. "Utilización del motor", 2. Primera categoría de motor encontrada
+        categoria_referencia = None
+        if 'Utilización del motor' in categorias_motor:
+            categoria_referencia = 'Utilización del motor'
+        elif categorias_motor:
+            categoria_referencia = categorias_motor[0]
         
-        # Verificar que el total sea razonable (no más de 744 horas en un mes)
-        if total_horas > 744:
-            print(f"DEBUG: Total horas muy alto ({total_horas}), recalculando solo categorías de motor...")
-            if categorias_motor:
-                motor_data = datos_guardados.filter(categoria__in=categorias_motor)
+        print(f"DEBUG: Categoría de referencia seleccionada: {categoria_referencia}")
+        
+        # Sumar horas SOLO de la categoría de referencia
+        total_horas = 0
+        if categoria_referencia:
+            motor_data = datos_guardados.filter(categoria=categoria_referencia)
+            total_horas = sum([d.valor for d in motor_data])
+            print(f"DEBUG: Total horas de {categoria_referencia}: {total_horas}")
+        else:
+            # Fallback: buscar cualquier categoría con horas
+            categorias_con_horas = []
+            for dato in datos_guardados:
+                if 'hr' in dato.unidad.lower() and dato.categoria not in categorias_con_horas:
+                    categorias_con_horas.append(dato.categoria)
+            
+            if categorias_con_horas:
+                categoria_referencia = categorias_con_horas[0]
+                motor_data = datos_guardados.filter(categoria=categoria_referencia)
                 total_horas = sum([d.valor for d in motor_data])
-                print(f"DEBUG: Total horas recalculado (solo motor): {total_horas}")
+                print(f"DEBUG: Total horas de {categoria_referencia} (fallback): {total_horas}")
         
         reporte.total_horas_analizadas = total_horas
         
