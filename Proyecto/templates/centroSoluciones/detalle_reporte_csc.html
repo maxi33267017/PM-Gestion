@@ -77,6 +77,11 @@
             <div class="kpi-card">
                 <div class="kpi-value">{{ reporte.eficiencia_general|default:"0"|floatformat:1 }}%</div>
                 <div class="kpi-label">Eficiencia General</div>
+                <div class="kpi-description">
+                    <small class="text-muted">
+                        Tiempo productivo / Total horas
+                    </small>
+                </div>
             </div>
         </div>
         <div class="col-md-3">
@@ -187,7 +192,14 @@
                         </tr>
                         <tr>
                             <td><strong>Eficiencia:</strong></td>
-                            <td><strong>{{ reporte.eficiencia_general|default:"0"|floatformat:1 }}%</strong></td>
+                            <td>
+                                <strong>{{ reporte.eficiencia_general|default:"0"|floatformat:1 }}%</strong>
+                                <br>
+                                <small class="text-muted">
+                                    <i class="fas fa-info-circle"></i> 
+                                    (Carga alta + Carga mediana) / Total horas utilizadas
+                                </small>
+                            </td>
                         </tr>
                         <tr>
                             <td><strong>Creado por:</strong></td>
@@ -202,6 +214,10 @@
                 <div class="card-header py-3 d-flex justify-content-between align-items-center">
                     <h6 class="m-0 font-weight-bold text-primary">
                         <i class="fas fa-lightbulb"></i> Recomendaciones Automáticas
+                        <i class="fas fa-info-circle text-muted ms-2" 
+                           data-bs-toggle="tooltip" 
+                           data-bs-placement="top" 
+                           title="Basadas en análisis de eficiencia: (Carga alta + Carga mediana) / Total horas utilizadas"></i>
                     </h6>
                     <a href="{% url 'centroSoluciones:regenerar_recomendaciones_csc' reporte.id %}" 
                        class="btn btn-sm btn-outline-primary">
@@ -320,9 +336,15 @@ const categorias = {{ categorias|safe }};
 // Colores para gráficos
 const colors = ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40', '#C9CBCF', '#4BC0C0', '#FF6384', '#36A2EB'];
 
-// Generar gráficos dinámicamente
-document.addEventListener('DOMContentLoaded', function() {
-    categorias.forEach(function(categoria, index) {
+        // Generar gráficos dinámicamente
+        document.addEventListener('DOMContentLoaded', function() {
+            // Inicializar tooltips
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+            
+            categorias.forEach(function(categoria, index) {
         const chartId = 'chart_' + (index + 1);
         const ctx = document.getElementById(chartId);
         
