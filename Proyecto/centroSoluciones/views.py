@@ -874,12 +874,21 @@ def detalle_reporte_csc(request, reporte_id):
     for categoria, config in categorias_ordenadas:
         # Solo incluir categorías con datos
         if config['datos']:
+            # Preparar datos para la tabla
+            datos_tabla = []
+            for dato in config['datos']:
+                datos_tabla.append({
+                    'serie': dato.serie,
+                    'valor': float(dato.valor),
+                    'unidad': dato.unidad
+                })
+            
             categorias_lista.append({
                 'nombre': categoria,
-                'datos': config['datos'],
+                'datos_tabla': datos_tabla,
                 'tipo_grafico': config['tipo_grafico'],
                 'prioridad': config['prioridad'],
-                'total_valor': config['total_valor'],
+                'total_valor': float(config['total_valor']),
                 'unidades': config['unidades']
             })
             

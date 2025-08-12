@@ -134,7 +134,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                {% for dato in categoria.datos %}
+                                {% for dato in categoria.datos_tabla %}
                                 <tr>
                                     <td>{{ dato.serie }}</td>
                                     <td><strong>{{ dato.valor|floatformat:2 }}</strong></td>
