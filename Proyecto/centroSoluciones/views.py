@@ -868,17 +868,11 @@ def detalle_reporte_csc(request, reporte_id):
     # Analizar categorías disponibles dinámicamente
     categorias_disponibles = analizar_categorias_disponibles(datos_por_categoria)
     
-    # Ordenar categorías por prioridad
-    categorias_ordenadas = sorted(
-        categorias_disponibles.items(), 
-        key=lambda x: x[1]['prioridad']
-    )
-    
     # Convertir a formato para template
     categorias_lista = []
     datos_por_categoria_js = {}
     
-    for categoria, config in categorias_ordenadas:
+    for config in categorias_disponibles:
         # Solo incluir categorías con datos
         if config['datos']:
             # Preparar datos para la tabla
@@ -891,7 +885,7 @@ def detalle_reporte_csc(request, reporte_id):
                 })
             
             categorias_lista.append({
-                'nombre': categoria,
+                'nombre': config['nombre'],
                 'datos_tabla': datos_tabla,
                 'tipo_grafico': config['tipo_grafico'],
                 'prioridad': config['prioridad'],
@@ -900,7 +894,7 @@ def detalle_reporte_csc(request, reporte_id):
             })
             
             # Preparar datos para JavaScript
-            datos_por_categoria_js[categoria] = {
+            datos_por_categoria_js[config['nombre']] = {
                 'labels': [d.serie for d in config['datos']],
                 'data': [float(d.valor) for d in config['datos']],
                 'tipo_grafico': config['tipo_grafico']
