@@ -1278,16 +1278,9 @@ def procesar_csv_reporte(reporte):
         print(f"ERROR traceback: {traceback.format_exc()}")
         raise Exception(f"Error procesando CSV: {str(e)}")
 
-def analizar_categorias_disponibles(reporte):
+def analizar_categorias_disponibles(datos_por_categoria):
     """Analizar las categorías disponibles en el reporte y determinar tipos de gráficos"""
-    categorias = {}
-    
-    # Agrupar datos por categoría
-    datos_por_categoria = {}
-    for dato in reporte.datos.all():
-        if dato.categoria not in datos_por_categoria:
-            datos_por_categoria[dato.categoria] = []
-        datos_por_categoria[dato.categoria].append(dato)
+    categorias = []
     
     print(f"DEBUG: Analizando {len(datos_por_categoria)} categorías")
     
@@ -1296,15 +1289,31 @@ def analizar_categorias_disponibles(reporte):
         tipo_grafico = determinar_tipo_grafico(categoria, datos)
         prioridad = calcular_prioridad_categoria(categoria)
         
-        categorias[categoria] = {
+        # Preparar datos para tabla
+        datos_tabla = []
+        for dato in datos:
+            datos_tabla.append({
+                'serie': dato.serie,
+                'valor': float(dato.valor),
+                'unidad': dato.unidad,
+                'fecha_inicio': dato.fecha_inicio,
+                'fecha_fin': dato.fecha_fin
+            })
+        
+        categorias.append({
+            'nombre': categoria,
             'tipo_grafico': tipo_grafico,
             'prioridad': prioridad,
             'datos': datos,
+            'datos_tabla': datos_tabla,
             'total_valor': sum(d.valor for d in datos),
             'unidades': datos[0].unidad if datos else 'hr'
-        }
+        })
         
         print(f"DEBUG: Categoría '{categoria}' - Tipo: {tipo_grafico}, Prioridad: {prioridad}")
+    
+    # Ordenar por prioridad
+    categorias.sort(key=lambda x: x['prioridad'])
     
     return categorias
 

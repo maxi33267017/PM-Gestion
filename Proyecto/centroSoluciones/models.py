@@ -386,3 +386,39 @@ class DatosReporteCSC(models.Model):
     
     def __str__(self):
         return f"{self.categoria} - {self.serie}: {self.valor} {self.unidad}"
+
+class AlertaReporteCSC(models.Model):
+    """Modelo para alertas específicas de reportes CSC"""
+    
+    SEVERIDAD_CHOICES = [
+        ('INFO', 'Info'),
+        ('MEDIANA', 'Mediana'),
+        ('ALTA', 'Alta'),
+        ('CRITICA', 'Crítica'),
+    ]
+    
+    reporte = models.ForeignKey(ReporteCSC, on_delete=models.CASCADE, related_name='alertas')
+    fecha_hora = models.DateTimeField(verbose_name="Fecha y Hora")
+    severidad = models.CharField(max_length=10, choices=SEVERIDAD_CHOICES, verbose_name="Severidad")
+    nombre = models.CharField(max_length=200, verbose_name="Nombre de la Alerta")
+    descripcion = models.TextField(blank=True, verbose_name="Descripción adicional")
+    creado_por = models.ForeignKey('recursosHumanos.Usuario', on_delete=models.CASCADE)
+    fecha_creacion = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        verbose_name = "Alerta Reporte CSC"
+        verbose_name_plural = "Alertas Reporte CSC"
+        ordering = ['-fecha_hora', '-severidad']
+    
+    def __str__(self):
+        return f"{self.nombre} - {self.get_severidad_display()} ({self.fecha_hora.strftime('%d/%m/%Y %H:%M')})"
+    
+    def get_severidad_color(self):
+        """Retorna el color CSS para la severidad"""
+        colors = {
+            'INFO': 'info',
+            'MEDIANA': 'warning',
+            'ALTA': 'danger',
+            'CRITICA': 'dark',
+        }
+        return colors.get(self.severidad, 'secondary')
