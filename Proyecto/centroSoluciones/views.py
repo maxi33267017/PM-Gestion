@@ -1174,6 +1174,14 @@ def procesar_csv_reporte(reporte):
             total_horas = sum([d.valor for d in datos_guardados if 'hr' in d.unidad.lower()])
             print(f"DEBUG: Total horas calculadas (fallback): {total_horas}")
         
+        # Verificar que el total sea razonable (no más de 744 horas en un mes)
+        if total_horas > 744:
+            print(f"DEBUG: Total horas muy alto ({total_horas}), recalculando solo motor...")
+            motor_data = datos_guardados.filter(categoria__icontains='motor')
+            if motor_data.exists():
+                total_horas = sum([d.valor for d in motor_data])
+                print(f"DEBUG: Total horas recalculado (solo motor): {total_horas}")
+        
         reporte.total_horas_analizadas = total_horas
         
         # Calcular eficiencia
