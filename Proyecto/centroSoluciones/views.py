@@ -935,14 +935,20 @@ def generar_pdf_reporte_csc(request, reporte_id):
             'tipo_grafico': categoria['tipo_grafico']
         }
     
+    # Rutas de logos para el PDF
+    logo_jd_horizontal_path = os.path.join(settings.BASE_DIR, 'static', 'img', 'JDLOGOHORIZONTAL.png')
+    logo_pm_path = os.path.join(settings.BASE_DIR, 'static', 'img', 'logo_pm_fondo_blanco.png')
+    
     context = {
         'reporte': reporte,
         'categorias': categorias,
         'datos_por_categoria_js': datos_por_categoria_js,
+        'logo_jd_horizontal_path': logo_jd_horizontal_path,
+        'logo_pm_path': logo_pm_path,
     }
     
-    # Generar HTML usando el template principal
-    html = render_to_string('centroSoluciones/detalle_reporte_csc.html', context)
+    # Generar HTML usando el template PDF específico
+    html = render_to_string('centroSoluciones/reporte_csc_pdf.html', context)
     
     # Crear respuesta PDF
     response = HttpResponse(content_type='application/pdf')
