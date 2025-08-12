@@ -1163,10 +1163,20 @@ def procesar_csv_reporte(reporte):
         datos_guardados = reporte.datos.all()
         print(f"DEBUG: Datos guardados: {datos_guardados.count()} registros")
         
-        # Sumar todas las horas de utilización del motor (que representa el tiempo total de uso)
+        # Buscar categorías de motor/engine (diferentes variaciones)
+        categorias_motor = []
+        for dato in datos_guardados:
+            categoria_lower = dato.categoria.lower()
+            if any(palabra in categoria_lower for palabra in ['motor', 'engine', 'utilización']):
+                if dato.categoria not in categorias_motor:
+                    categorias_motor.append(dato.categoria)
+        
+        print(f"DEBUG: Categorías de motor encontradas: {categorias_motor}")
+        
+        # Sumar horas de categorías de motor
         total_horas = 0
-        if datos_guardados.filter(categoria__icontains='motor').exists():
-            motor_data = datos_guardados.filter(categoria__icontains='motor')
+        if categorias_motor:
+            motor_data = datos_guardados.filter(categoria__in=categorias_motor)
             total_horas = sum([d.valor for d in motor_data])
             print(f"DEBUG: Total horas de motor (tiempo total de uso): {total_horas}")
         else:
@@ -1176,9 +1186,9 @@ def procesar_csv_reporte(reporte):
         
         # Verificar que el total sea razonable (no más de 744 horas en un mes)
         if total_horas > 744:
-            print(f"DEBUG: Total horas muy alto ({total_horas}), recalculando solo motor...")
-            motor_data = datos_guardados.filter(categoria__icontains='motor')
-            if motor_data.exists():
+            print(f"DEBUG: Total horas muy alto ({total_horas}), recalculando solo categorías de motor...")
+            if categorias_motor:
+                motor_data = datos_guardados.filter(categoria__in=categorias_motor)
                 total_horas = sum([d.valor for d in motor_data])
                 print(f"DEBUG: Total horas recalculado (solo motor): {total_horas}")
         
