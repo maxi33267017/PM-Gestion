@@ -96,6 +96,14 @@
     <div class="row">
         <!-- Gráficos -->
         <div class="col-lg-8">
+            <!-- Debug: Mostrar categorías disponibles -->
+            <div class="alert alert-info">
+                <strong>Categorías disponibles:</strong>
+                {% for categoria in categorias %}
+                    {{ categoria.nombre }}{% if not forloop.last %}, {% endif %}
+                {% endfor %}
+            </div>
+            
             <!-- Gráficos dinámicos -->
             {% for categoria in categorias %}
                 {% if categoria.nombre == 'Utilización del motor' or categoria.nombre == 'Utilización del motor' %}
