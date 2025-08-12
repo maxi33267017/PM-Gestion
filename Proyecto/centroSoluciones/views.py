@@ -1119,13 +1119,22 @@ def procesar_csv_reporte(reporte):
                 print(f"ERROR procesando fila {index}: {row_error}")
                 continue
         
-        # Calcular total de horas
+        # Calcular total de horas utilizadas del equipo
         datos_guardados = reporte.datos.all()
         print(f"DEBUG: Datos guardados: {datos_guardados.count()} registros")
         
-        total_horas = sum([d.valor for d in datos_guardados if 'hr' in d.unidad.lower()])
+        # Sumar todas las horas de utilización del motor (que representa el tiempo total de uso)
+        total_horas = 0
+        if datos_guardados.filter(categoria__icontains='motor').exists():
+            motor_data = datos_guardados.filter(categoria__icontains='motor')
+            total_horas = sum([d.valor for d in motor_data])
+            print(f"DEBUG: Total horas de motor (tiempo total de uso): {total_horas}")
+        else:
+            # Fallback: sumar todas las horas
+            total_horas = sum([d.valor for d in datos_guardados if 'hr' in d.unidad.lower()])
+            print(f"DEBUG: Total horas calculadas (fallback): {total_horas}")
+        
         reporte.total_horas_analizadas = total_horas
-        print(f"DEBUG: Total horas calculadas: {total_horas}")
         
         # Calcular eficiencia
         if datos_guardados.filter(categoria__icontains='motor').exists():
@@ -1171,6 +1180,9 @@ def generar_recomendaciones_automaticas(reporte):
     """Generar recomendaciones automáticas basadas en los datos"""
     recomendaciones = []
     
+    print(f"DEBUG: Generando recomendaciones para reporte {reporte.id}")
+    print(f"DEBUG: Total horas analizadas: {reporte.total_horas_analizadas}")
+    
     # Obtener datos principales
     datos = {}
     for dato in reporte.datos.all():
@@ -1178,44 +1190,80 @@ def generar_recomendaciones_automaticas(reporte):
             datos[dato.categoria] = {}
         datos[dato.categoria][dato.serie] = dato.valor
     
+    print(f"DEBUG: Categorías disponibles: {list(datos.keys())}")
+    
     # Análisis de utilización del motor
     if 'Utilización del motor' in datos:
         motor = datos['Utilización del motor']
+        print(f"DEBUG: Datos de motor: {motor}")
+        
         en_reposo = motor.get('En reposo', 0)
         carga_alta = motor.get('Carga alta', 0)
         carga_mediana = motor.get('Carga mediana', 0)
+        carga_baja = motor.get('Carga baja', 0)
         
-        if en_reposo > float(reporte.total_horas_analizadas) * 0.5:  # Más del 50% en reposo
-            recomendaciones.append(f"⚠️ Alto tiempo en reposo ({en_reposo} hr). Considerar optimizar horarios de trabajo.")
+        print(f"DEBUG: En reposo: {en_reposo}, Carga alta: {carga_alta}, Carga mediana: {carga_mediana}")
         
+        # Recomendación por tiempo en reposo
+        if en_reposo > 0:
+            porcentaje_reposo = (en_reposo / reporte.total_horas_analizadas) * 100 if reporte.total_horas_analizadas > 0 else 0
+            if porcentaje_reposo > 50:
+                recomendaciones.append(f"⚠️ Alto tiempo en reposo ({en_reposo:.1f} hr, {porcentaje_reposo:.1f}%). Considerar optimizar horarios de trabajo.")
+            elif porcentaje_reposo > 30:
+                recomendaciones.append(f"⚠️ Tiempo significativo en reposo ({en_reposo:.1f} hr, {porcentaje_reposo:.1f}%). Revisar eficiencia operativa.")
+        
+        # Recomendación por eficiencia
         tiempo_productivo = carga_alta + carga_mediana
         eficiencia = (tiempo_productivo / reporte.total_horas_analizadas) * 100 if reporte.total_horas_analizadas > 0 else 0
         
-        if eficiencia < 50:
+        if eficiencia < 30:
+            recomendaciones.append(f"⚠️ Eficiencia muy baja ({eficiencia:.1f}%). Urgente optimización de operaciones.")
+        elif eficiencia < 50:
             recomendaciones.append(f"⚠️ Eficiencia baja ({eficiencia:.1f}%). Considerar optimización de operaciones.")
+        elif eficiencia < 70:
+            recomendaciones.append(f"⚠️ Eficiencia moderada ({eficiencia:.1f}%). Hay espacio para mejoras.")
         else:
             recomendaciones.append(f"✅ Buena eficiencia del motor ({eficiencia:.1f}%).")
     
-    # Análisis de modos de funcionamiento
-    if 'Modos de funcionamiento' in datos:
-        modos = datos['Modos de funcionamiento']
-        ralenti_cargadora = modos.get('Ralentí de pala cargadora', 0)
+    # Análisis de modos de potencia de motor
+    if 'Utilización de modos de potencia de motor' in datos:
+        modos = datos['Utilización de modos de potencia de motor']
+        print(f"DEBUG: Datos de modos de potencia: {modos}")
         
-        if ralenti_cargadora > reporte.total_horas_analizadas * 0.4:  # Más del 40% en ralentí
-            recomendaciones.append(f"⚠️ Excesivo tiempo en ralentí de cargadora ({ralenti_cargadora} hr). Revisar procedimientos operativos.")
+        modo_economico = modos.get('E', 0)
+        modo_power = modos.get('P', 0)
+        modo_high_power = modos.get('HP', 0)
+        
+        if modo_economico > 0:
+            porcentaje_economico = (modo_economico / reporte.total_horas_analizadas) * 100
+            if porcentaje_economico > 70:
+                recomendaciones.append(f"✅ Excelente uso del modo económico ({modo_economico:.1f} hr, {porcentaje_economico:.1f}%).")
+            elif porcentaje_economico < 30:
+                recomendaciones.append(f"💡 Bajo uso del modo económico ({modo_economico:.1f} hr, {porcentaje_economico:.1f}%). Considerar mayor uso para ahorro de combustible.")
     
-    # Análisis de marchas MFWD
-    if 'MFWD Utilization per gear' in datos:
-        mfwd = datos['MFWD Utilization per gear']
-        f5_uso = mfwd.get('Activado - F5', 0)
-        f4_uso = mfwd.get('Activado - F4', 0)
+    # Análisis de utilización de excavadora
+    if 'Utilización de excavadora' in datos:
+        excavadora = datos['Utilización de excavadora']
+        print(f"DEBUG: Datos de excavadora: {excavadora}")
         
-        if f5_uso == 0 and f4_uso == 0:
-            recomendaciones.append("💡 Marchas F4 y F5 no utilizadas. Considerar entrenamiento en uso de marchas altas para mayor eficiencia.")
+        sin_actividad = excavadora.get('Sin actividad', 0)
+        if sin_actividad > 0:
+            porcentaje_inactividad = (sin_actividad / reporte.total_horas_analizadas) * 100
+            if porcentaje_inactividad > 40:
+                recomendaciones.append(f"⚠️ Alta inactividad de excavadora ({sin_actividad:.1f} hr, {porcentaje_inactividad:.1f}%). Revisar planificación de tareas.")
+    
+    # Si no hay recomendaciones específicas, agregar una general
+    if not recomendaciones:
+        recomendaciones.append("📊 Análisis completado. Los datos muestran un uso estándar del equipo.")
+    
+    print(f"DEBUG: Recomendaciones generadas: {len(recomendaciones)}")
+    for i, rec in enumerate(recomendaciones, 1):
+        print(f"  {i}. {rec}")
     
     # Guardar recomendaciones
     reporte.recomendaciones_automaticas = '\n'.join(recomendaciones)
     reporte.save()
+    print(f"DEBUG: Recomendaciones guardadas en el reporte")
 
 def link_callback(uri, rel):
     """Callback para manejar archivos estáticos en PDF"""
