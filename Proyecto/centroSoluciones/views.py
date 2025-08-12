@@ -1231,20 +1231,33 @@ def generar_recomendaciones_automaticas(reporte):
         motor = datos['Utilización del motor']
         print(f"DEBUG: Datos de motor: {motor}")
         
-        en_reposo = motor.get('En reposo', 0)
+        # Buscar diferentes variaciones del nombre "En reposo"
+        en_reposo = 0
+        for key in motor.keys():
+            if 'reposo' in key.lower():
+                en_reposo = motor[key]
+                print(f"DEBUG: Encontrado tiempo en reposo en '{key}': {en_reposo}")
+                break
+        
         carga_alta = motor.get('Carga alta', 0)
         carga_mediana = motor.get('Carga mediana', 0)
         carga_baja = motor.get('Carga baja', 0)
         
         print(f"DEBUG: En reposo: {en_reposo}, Carga alta: {carga_alta}, Carga mediana: {carga_mediana}")
         
-        # Recomendación por tiempo en reposo
+        # Recomendación por tiempo en reposo (umbral del 15% como máximo aceptable)
         if en_reposo > 0:
             porcentaje_reposo = (en_reposo / reporte.total_horas_analizadas) * 100 if reporte.total_horas_analizadas > 0 else 0
+            print(f"DEBUG: Porcentaje en reposo: {porcentaje_reposo:.1f}%")
+            
             if porcentaje_reposo > 50:
-                recomendaciones.append(f"⚠️ Alto tiempo en reposo ({en_reposo:.1f} hr, {porcentaje_reposo:.1f}%). Considerar optimizar horarios de trabajo.")
+                recomendaciones.append(f"🚨 CRÍTICO: Tiempo excesivo en reposo ({en_reposo:.1f} hr, {porcentaje_reposo:.1f}%). Máximo aceptable: 15%. Urgente optimización de horarios de trabajo.")
             elif porcentaje_reposo > 30:
-                recomendaciones.append(f"⚠️ Tiempo significativo en reposo ({en_reposo:.1f} hr, {porcentaje_reposo:.1f}%). Revisar eficiencia operativa.")
+                recomendaciones.append(f"⚠️ Alto tiempo en reposo ({en_reposo:.1f} hr, {porcentaje_reposo:.1f}%). Máximo aceptable: 15%. Considerar optimizar horarios de trabajo.")
+            elif porcentaje_reposo > 15:
+                recomendaciones.append(f"⚠️ Tiempo en reposo superior al recomendado ({en_reposo:.1f} hr, {porcentaje_reposo:.1f}%). Máximo aceptable: 15%. Revisar eficiencia operativa.")
+            else:
+                recomendaciones.append(f"✅ Tiempo en reposo dentro de parámetros aceptables ({en_reposo:.1f} hr, {porcentaje_reposo:.1f}%).")
         
         # Recomendación por eficiencia
         tiempo_productivo = carga_alta + carga_mediana
