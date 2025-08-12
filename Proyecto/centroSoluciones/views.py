@@ -858,8 +858,15 @@ def detalle_reporte_csc(request, reporte_id):
         id=reporte_id
     )
     
+    # Agrupar datos por categoría
+    datos_por_categoria = {}
+    for dato in reporte.datos.all():
+        if dato.categoria not in datos_por_categoria:
+            datos_por_categoria[dato.categoria] = []
+        datos_por_categoria[dato.categoria].append(dato)
+    
     # Analizar categorías disponibles dinámicamente
-    categorias_disponibles = analizar_categorias_disponibles(reporte)
+    categorias_disponibles = analizar_categorias_disponibles(datos_por_categoria)
     
     # Ordenar categorías por prioridad
     categorias_ordenadas = sorted(
@@ -936,6 +943,7 @@ def generar_pdf_reporte_csc(request, reporte_id):
         }
     
     # Rutas de logos para el PDF
+    from django.conf import settings
     logo_jd_horizontal_path = os.path.join(settings.BASE_DIR, 'static', 'img', 'JDLOGOHORIZONTAL.png')
     logo_pm_path = os.path.join(settings.BASE_DIR, 'static', 'img', 'logo_pm_fondo_blanco.png')
     
