@@ -910,34 +910,39 @@ def detalle_reporte_csc(request, reporte_id):
 
 @login_required
 def generar_pdf_reporte_csc(request, reporte_id):
-    """Generar PDF del reporte CSC"""
+    """Generar PDF del reporte CSC usando el template principal con estilos de print"""
     reporte = get_object_or_404(
         ReporteCSC.objects.select_related('equipo', 'equipo__cliente', 'creado_por'),
         id=reporte_id
     )
     
-    # Agrupar datos por categoría
+    # Usar la misma lógica que detalle_reporte_csc para preparar los datos
     datos_por_categoria = {}
     for dato in reporte.datos.all():
         if dato.categoria not in datos_por_categoria:
             datos_por_categoria[dato.categoria] = []
         datos_por_categoria[dato.categoria].append(dato)
     
-    # Convertir a lista para evitar problemas con espacios en nombres
-    categorias_lista = []
-    for categoria, datos_categoria in datos_por_categoria.items():
-        categorias_lista.append({
-            'nombre': categoria,
-            'datos': datos_categoria
-        })
+    # Analizar categorías disponibles
+    categorias = analizar_categorias_disponibles(datos_por_categoria)
+    
+    # Preparar datos para gráficos
+    datos_por_categoria_js = {}
+    for categoria in categorias:
+        datos_por_categoria_js[categoria['nombre']] = {
+            'labels': [dato['serie'] for dato in categoria['datos_tabla']],
+            'data': [float(dato['valor']) for dato in categoria['datos_tabla']],
+            'tipo_grafico': categoria['tipo_grafico']
+        }
     
     context = {
         'reporte': reporte,
-        'categorias': categorias_lista,
+        'categorias': categorias,
+        'datos_por_categoria_js': datos_por_categoria_js,
     }
     
-    # Generar HTML
-    html = render_to_string('centroSoluciones/reporte_csc_pdf.html', context)
+    # Generar HTML usando el template principal
+    html = render_to_string('centroSoluciones/detalle_reporte_csc.html', context)
     
     # Crear respuesta PDF
     response = HttpResponse(content_type='application/pdf')

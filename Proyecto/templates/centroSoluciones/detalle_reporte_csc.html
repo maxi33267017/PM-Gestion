@@ -11,7 +11,7 @@
         margin-bottom: 20px;
     }
     .kpi-card {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(135deg, #495057 0%, #343a40 100%);
         color: white;
         border-radius: 10px;
         padding: 20px;
@@ -37,6 +37,88 @@
     .recommendation-item.success {
         border-left-color: #28a745;
     }
+    
+    /* Estilos para impresión */
+    @media print {
+        /* Ocultar elementos no necesarios para impresión */
+        .navbar, 
+        .btn, 
+        .no-print {
+            display: none !important;
+        }
+        
+        /* Ajustar márgenes y tamaños */
+        body {
+            margin: 0;
+            padding: 20px;
+            font-size: 12px;
+        }
+        
+        .container-fluid {
+            width: 100%;
+            max-width: none;
+        }
+        
+        /* Asegurar que los gráficos se impriman */
+        .chart-container {
+            height: 250px !important;
+            page-break-inside: avoid;
+        }
+        
+        /* Ajustar cards para impresión */
+        .card {
+            border: 1px solid #ddd;
+            margin-bottom: 15px;
+            page-break-inside: avoid;
+        }
+        
+        .card-header {
+            background-color: #f8f9fa !important;
+            color: #333 !important;
+        }
+        
+        /* Asegurar que las tablas se impriman correctamente */
+        .table {
+            font-size: 10px;
+        }
+        
+        .table th,
+        .table td {
+            padding: 4px 6px;
+        }
+        
+        /* Ajustar KPIs para impresión */
+        .kpi-card {
+            background: #495057 !important;
+            color: white !important;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .kpi-value {
+            font-size: 1.5rem;
+        }
+        
+        .kpi-label {
+            font-size: 0.8rem;
+        }
+        
+        /* Forzar salto de página después de KPIs */
+        .row.mb-4 {
+            page-break-after: always;
+        }
+        
+        /* Ajustar recomendaciones */
+        .recommendation-item {
+            margin-bottom: 8px;
+            padding: 8px 12px;
+        }
+        
+        /* Ocultar tooltips en impresión */
+        [data-bs-toggle="tooltip"] {
+            display: none !important;
+        }
+    }
 </style>
 {% endblock %}
 
@@ -55,13 +137,16 @@
                 {{ reporte.get_estado_display }}
             </p>
         </div>
-        <div>
+        <div class="no-print">
             <a href="{% url 'centroSoluciones:lista_reportes_csc' %}" class="btn btn-outline-secondary me-2">
                 <i class="fas fa-arrow-left"></i> Volver
             </a>
             <a href="{% url 'centroSoluciones:generar_pdf_reporte_csc' reporte.id %}" class="btn btn-success">
                 <i class="fas fa-file-pdf"></i> Descargar PDF
             </a>
+            <button onclick="window.print()" class="btn btn-primary">
+                <i class="fas fa-print"></i> Imprimir
+            </button>
         </div>
     </div>
 
@@ -101,13 +186,7 @@
     <div class="row">
         <!-- Gráficos -->
         <div class="col-lg-8">
-            <!-- Debug: Mostrar categorías disponibles -->
-            <div class="alert alert-info">
-                <strong>Categorías detectadas dinámicamente:</strong>
-                {% for categoria in categorias %}
-                    {{ categoria.nombre }} ({{ categoria.tipo_grafico }}, prioridad: {{ categoria.prioridad }}){% if not forloop.last %}, {% endif %}
-                {% endfor %}
-            </div>
+
             
             <!-- Gráficos dinámicos -->
             {% for categoria in categorias %}
