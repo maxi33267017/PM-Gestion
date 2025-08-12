@@ -33,5 +33,6 @@ urlpatterns = [
     path('reportes-csc/<int:reporte_id>/pdf/', views.generar_pdf_reporte_csc, name='generar_pdf_reporte_csc'),
     path('reportes-csc/<int:reporte_id>/comentarios/', views.actualizar_comentarios_csc, name='actualizar_comentarios_csc'),
     path('reportes-csc/<int:reporte_id>/regenerar-recomendaciones/', views.regenerar_recomendaciones_csc, name='regenerar_recomendaciones_csc'),
+    path('reportes-csc/<int:reporte_id>/agregar-alerta/', views.agregar_alerta_csc, name='agregar_alerta_csc'),
     path('obtener-equipos-cliente-csc/', views.obtener_equipos_cliente_csc, name='obtener_equipos_cliente_csc'),
 ] 

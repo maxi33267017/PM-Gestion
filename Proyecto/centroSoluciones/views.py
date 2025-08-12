@@ -1000,6 +1000,59 @@ def regenerar_recomendaciones_csc(request, reporte_id):
     
     return redirect('centroSoluciones:detalle_reporte_csc', reporte_id=reporte_id)
 
+@login_required
+@require_http_methods(["POST"])
+def agregar_alerta_csc(request, reporte_id):
+    """Agregar una nueva alerta a un reporte CSC"""
+    reporte = get_object_or_404(ReporteCSC, id=reporte_id)
+    
+    try:
+        from .models import AlertaReporteCSC
+        from datetime import datetime
+        
+        # Obtener datos del formulario
+        nombre = request.POST.get('nombre', '').strip()
+        fecha_hora_str = request.POST.get('fecha_hora', '')
+        severidad = request.POST.get('severidad', '')
+        descripcion = request.POST.get('descripcion', '').strip()
+        
+        # Validaciones
+        if not nombre:
+            messages.error(request, 'El nombre de la alerta es obligatorio.')
+            return redirect('centroSoluciones:detalle_reporte_csc', reporte_id=reporte_id)
+        
+        if not fecha_hora_str:
+            messages.error(request, 'La fecha y hora son obligatorias.')
+            return redirect('centroSoluciones:detalle_reporte_csc', reporte_id=reporte_id)
+        
+        if not severidad:
+            messages.error(request, 'La severidad es obligatoria.')
+            return redirect('centroSoluciones:detalle_reporte_csc', reporte_id=reporte_id)
+        
+        # Convertir fecha y hora
+        try:
+            fecha_hora = datetime.fromisoformat(fecha_hora_str.replace('T', ' '))
+        except ValueError:
+            messages.error(request, 'Formato de fecha y hora inválido.')
+            return redirect('centroSoluciones:detalle_reporte_csc', reporte_id=reporte_id)
+        
+        # Crear la alerta
+        alerta = AlertaReporteCSC.objects.create(
+            reporte=reporte,
+            nombre=nombre,
+            fecha_hora=fecha_hora,
+            severidad=severidad,
+            descripcion=descripcion,
+            creado_por=request.user
+        )
+        
+        messages.success(request, f'Alerta "{nombre}" agregada correctamente.')
+        
+    except Exception as e:
+        messages.error(request, f'Error al agregar la alerta: {str(e)}')
+    
+    return redirect('centroSoluciones:detalle_reporte_csc', reporte_id=reporte_id)
+
 # Funciones auxiliares
 def extraer_pin_desde_nombre(nombre_archivo):
     """Extraer PIN del equipo del nombre del archivo CSV"""

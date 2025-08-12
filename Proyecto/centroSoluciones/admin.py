@@ -5,7 +5,7 @@ from django.utils.safestring import mark_safe
 from django.db.models import Count, Q
 from django.utils import timezone
 from datetime import timedelta
-from .models import AlertaEquipo, LeadJohnDeere, AsignacionAlerta, CodigoAlerta, ReporteCSC, DatosReporteCSC
+from .models import AlertaEquipo, LeadJohnDeere, AsignacionAlerta, CodigoAlerta, ReporteCSC, DatosReporteCSC, AlertaReporteCSC
 
 @admin.register(AlertaEquipo)
 class AlertaEquipoAdmin(admin.ModelAdmin):
@@ -513,6 +513,67 @@ class DatosReporteCSCAdmin(admin.ModelAdmin):
         queryset.delete()
         self.message_user(request, f'{count} datos eliminados exitosamente.')
     eliminar_datos.short_description = "Eliminar datos seleccionados"
+
+
+@admin.register(AlertaReporteCSC)
+class AlertaReporteCSCAdmin(admin.ModelAdmin):
+    list_display = [
+        'reporte', 
+        'nombre', 
+        'severidad_badge', 
+        'fecha_hora',
+        'creado_por',
+        'fecha_creacion'
+    ]
+    list_filter = [
+        'severidad', 
+        'fecha_hora',
+        'fecha_creacion',
+        'reporte__equipo__modelo',
+        'creado_por'
+    ]
+    search_fields = [
+        'nombre',
+        'descripcion',
+        'reporte__equipo__numero_serie',
+        'reporte__equipo__cliente__razon_social'
+    ]
+    date_hierarchy = 'fecha_hora'
+    list_per_page = 25
+    
+    fieldsets = (
+        ('Información de la Alerta', {
+            'fields': ('reporte', 'nombre', 'descripcion', 'severidad', 'fecha_hora')
+        }),
+        ('Información de Auditoría', {
+            'fields': ('creado_por', 'fecha_creacion'),
+            'classes': ('collapse',)
+        }),
+    )
+    
+    readonly_fields = ['fecha_creacion', 'creado_por']
+    
+    actions = ['eliminar_alertas']
+    
+    def severidad_badge(self, obj):
+        color = obj.get_severidad_color()
+        return format_html(
+            '<span class="badge bg-{}">{}</span>',
+            color,
+            obj.get_severidad_display()
+        )
+    severidad_badge.short_description = 'Severidad'
+    
+    def eliminar_alertas(self, request, queryset):
+        count = queryset.count()
+        queryset.delete()
+        self.message_user(request, f'{count} alertas eliminadas exitosamente.')
+    eliminar_alertas.short_description = "Eliminar alertas seleccionadas"
+    
+    def save_model(self, request, obj, form, change):
+        if not change:  # Si es una nueva alerta
+            obj.creado_por = request.user
+        super().save_model(request, obj, form, change)
 
 
 # Personalización del sitio de administración

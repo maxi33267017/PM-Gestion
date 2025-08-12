@@ -346,6 +346,25 @@
         {% endif %}
     </div>
 
+    <!-- Alertas del Reporte -->
+    {% if reporte.alertas.all %}
+    <div class="recommendations-section">
+        <div class="section-header">ALERTAS REGISTRADAS</div>
+        {% for alerta in reporte.alertas.all %}
+            <div class="recommendation-item {% if alerta.severidad == 'CRITICA' %}warning{% elif alerta.severidad == 'ALTA' %}warning{% elif alerta.severidad == 'MEDIANA' %}success{% else %}success{% endif %}">
+                <strong>{{ alerta.nombre }}</strong><br>
+                <small>
+                    <i class="fas fa-calendar"></i> {{ alerta.fecha_hora|date:"d/m/Y H:i" }} | 
+                    <strong>Severidad: {{ alerta.get_severidad_display }}</strong>
+                </small>
+                {% if alerta.descripcion %}
+                <br>{{ alerta.descripcion }}
+                {% endif %}
+            </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
     <!-- Comentarios Adicionales -->
     {% if reporte.comentarios_manuales %}
     <div class="comments-section">

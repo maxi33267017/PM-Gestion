@@ -319,6 +319,43 @@
                 </div>
             </div>
 
+            <!-- Alertas del Reporte -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-exclamation-triangle"></i> Alertas
+                    </h6>
+                    <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#modalAlerta">
+                        <i class="fas fa-plus"></i> Agregar
+                    </button>
+                </div>
+                <div class="card-body">
+                    {% if reporte.alertas.all %}
+                        {% for alerta in reporte.alertas.all %}
+                        <div class="alert alert-{{ alerta.get_severidad_color }} alert-dismissible fade show" role="alert">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <strong>{{ alerta.nombre }}</strong>
+                                    <br>
+                                    <small class="text-muted">
+                                        <i class="fas fa-calendar"></i> {{ alerta.fecha_hora|date:"d/m/Y H:i" }}
+                                        <span class="badge bg-{{ alerta.get_severidad_color }} ms-2">{{ alerta.get_severidad_display }}</span>
+                                    </small>
+                                    {% if alerta.descripcion %}
+                                    <br>
+                                    <small>{{ alerta.descripcion }}</small>
+                                    {% endif %}
+                                </div>
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted">No hay alertas registradas para este reporte.</p>
+                    {% endif %}
+                </div>
+            </div>
+
             <!-- Comentarios Manuales -->
             <div class="card shadow">
                 <div class="card-header py-3">
@@ -362,6 +399,49 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
                     <button type="submit" class="btn btn-primary">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para Alertas -->
+<div class="modal fade" id="modalAlerta" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Agregar Alerta</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{% url 'centroSoluciones:agregar_alerta_csc' reporte.id %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="nombre_alerta" class="form-label">Nombre de la Alerta *</label>
+                        <input type="text" name="nombre" id="nombre_alerta" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="fecha_hora_alerta" class="form-label">Fecha y Hora *</label>
+                        <input type="datetime-local" name="fecha_hora" id="fecha_hora_alerta" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="severidad_alerta" class="form-label">Severidad *</label>
+                        <select name="severidad" id="severidad_alerta" class="form-select" required>
+                            <option value="">Seleccionar severidad...</option>
+                            <option value="INFO">Info</option>
+                            <option value="MEDIANA">Mediana</option>
+                            <option value="ALTA">Alta</option>
+                            <option value="CRITICA">Crítica</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="descripcion_alerta" class="form-label">Descripción</label>
+                        <textarea name="descripcion" id="descripcion_alerta" class="form-control" rows="3" placeholder="Descripción adicional de la alerta (opcional)"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Guardar Alerta</button>
                 </div>
             </form>
         </div>
