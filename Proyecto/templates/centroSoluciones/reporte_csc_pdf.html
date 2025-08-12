@@ -270,7 +270,7 @@
     <div class="info-section">
         <div class="info-grid">
             <div class="info-row">
-                <div class="info-cell info-label">Equipo:</div>
+                <div class="info-cell info-label">PIN:</div>
                 <div class="info-cell">{{ reporte.equipo.numero_serie }}</div>
                 <div class="info-cell info-label">Modelo:</div>
                 <div class="info-cell">{{ reporte.equipo.modelo.nombre }}</div>
@@ -278,14 +278,27 @@
             <div class="info-row">
                 <div class="info-cell info-label">Cliente:</div>
                 <div class="info-cell">{{ reporte.equipo.cliente.razon_social }}</div>
-                <div class="info-cell info-label">Período:</div>
-                <div class="info-cell">{{ reporte.fecha_reporte|date:"d/m/Y" }}</div>
+                <div class="info-cell info-label">Período Analizado:</div>
+                <div class="info-cell">
+                    {% if reporte.comentarios_manuales and "Período analizado:" in reporte.comentarios_manuales %}
+                        {% for linea in reporte.comentarios_manuales.splitlines %}
+                            {% if "Período analizado:" in linea %}
+                                {{ linea|slice:"18:" }}
+                            {% endif %}
+                        {% endfor %}
+                    {% else %}
+                        {{ reporte.fecha_reporte|date:"d/m/Y" }}
+                    {% endif %}
+                </div>
             </div>
             <div class="info-row">
-                <div class="info-cell info-label">Total Horas:</div>
+                <div class="info-cell info-label">Total Horas Utilizadas:</div>
                 <div class="info-cell">{{ reporte.total_horas_analizadas|default:"0"|floatformat:1 }} hr</div>
                 <div class="info-cell info-label">Eficiencia:</div>
-                <div class="info-cell">{{ reporte.eficiencia_general|default:"0"|floatformat:1 }}%</div>
+                <div class="info-cell">
+                    {{ reporte.eficiencia_general|default:"0"|floatformat:1 }}%
+                    <br><small style="color: #666;">(Carga alta + Carga mediana) / Total horas</small>
+                </div>
             </div>
         </div>
     </div>
@@ -296,172 +309,71 @@
         <div class="kpi-grid">
             <div class="kpi-item">
                 <div class="kpi-value">{{ reporte.total_horas_analizadas|default:"0"|floatformat:1 }}</div>
-                <div class="kpi-label">Total Horas</div>
+                <div class="kpi-label">Total Horas Analizadas</div>
+                <div class="kpi-description" style="font-size: 8px; opacity: 0.8; margin-top: 3px;">Tiempo productivo / Total horas</div>
             </div>
             <div class="kpi-item">
                 <div class="kpi-value">{{ reporte.eficiencia_general|default:"0"|floatformat:1 }}%</div>
-                <div class="kpi-label">Eficiencia</div>
+                <div class="kpi-label">Eficiencia General</div>
             </div>
             <div class="kpi-item">
-                <div class="kpi-value">{{ reporte.datos.count }}</div>
-                <div class="kpi-label">Métricas</div>
+                <div class="kpi-value">{{ categorias|length }}</div>
+                <div class="kpi-label">Métricas Analizadas</div>
             </div>
             <div class="kpi-item">
-                <div class="kpi-value">{{ reporte.fecha_importacion|date:"d/m" }}</div>
-                <div class="kpi-label">Generado</div>
+                <div class="kpi-value">{{ reporte.fecha_importacion|date:"d/m/Y" }}</div>
+                <div class="kpi-label">Fecha de Importación</div>
             </div>
         </div>
     </div>
 
-            <!-- Utilización del Motor -->
-        {% for categoria in categorias %}
-            {% if categoria.nombre == 'Utilización del motor' %}
-            <div class="data-section">
-                <div class="section-header">UTILIZACIÓN DEL MOTOR</div>
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>Estado</th>
-                            <th>Horas</th>
-                            <th>Porcentaje</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for dato in categoria.datos %}
-                        <tr>
-                            <td>{{ dato.serie }}</td>
-                            <td>{{ dato.valor|floatformat:2 }} hr</td>
-                            <td>{% widthratio dato.valor reporte.total_horas_analizadas 100 %}%</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-            {% endif %}
-        {% endfor %}
-
-            <!-- Modos de Funcionamiento -->
-        {% for categoria in categorias %}
-            {% if categoria.nombre == 'Modos de funcionamiento' %}
-            <div class="data-section">
-                <div class="section-header">MODOS DE FUNCIONAMIENTO</div>
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>Modo</th>
-                            <th>Horas</th>
-                            <th>Porcentaje</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for dato in categoria.datos %}
-                        <tr>
-                            <td>{{ dato.serie }}</td>
-                            <td>{{ dato.valor|floatformat:2 }} hr</td>
-                            <td>{% widthratio dato.valor reporte.total_horas_analizadas 100 %}%</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-            {% endif %}
-        {% endfor %}
+    <!-- Datos Dinámicos por Categoría -->
+    {% for categoria in categorias %}
+    <div class="data-section">
+        <div class="section-header">{{ categoria.nombre|upper }} ({{ categoria.total_valor|floatformat:1 }} {{ categoria.unidades }})</div>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Serie</th>
+                    <th>Valor</th>
+                    <th>Unidad</th>
+                    {% if 'hr' in categoria.unidades.lower %}
+                    <th>Porcentaje</th>
+                    {% endif %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for dato in categoria.datos_tabla %}
+                <tr>
+                    <td>{{ dato.serie }}</td>
+                    <td><strong>{{ dato.valor|floatformat:2 }}</strong></td>
+                    <td>{{ dato.unidad }}</td>
+                    {% if 'hr' in categoria.unidades.lower %}
+                    <td>{% widthratio dato.valor reporte.total_horas_analizadas 100 %}%</td>
+                    {% endif %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endfor %}
 
     <!-- PÁGINA 2 -->
     <div class="page-break">
         <div class="section-header">ANÁLISIS DETALLADO Y RECOMENDACIONES</div>
         
-        <!-- MFWD Utilization -->
+        <!-- Gráficos Simplificados para Categorías Principales -->
         {% for categoria in categorias %}
-            {% if categoria.nombre == 'MFWD Utilization per gear' %}
+            {% if categoria.nombre == 'Utilización del motor' or categoria.nombre == 'Modos de funcionamiento' %}
             <div class="data-section">
-                <div class="section-header">UTILIZACIÓN MFWD POR MARCHA</div>
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>Marcha</th>
-                            <th>Horas</th>
-                            <th>Porcentaje</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for dato in categoria.datos %}
-                        <tr>
-                            <td>{{ dato.serie }}</td>
-                            <td>{{ dato.valor|floatformat:2 }} hr</td>
-                            <td>{% widthratio dato.valor reporte.total_horas_analizadas 100 %}%</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-            {% endif %}
-        {% endfor %}
-
-        <!-- Tiempo en Marcha -->
-        {% for categoria in categorias %}
-            {% if categoria.nombre == 'Tiempo en marcha' %}
-            <div class="data-section">
-                <div class="section-header">TIEMPO EN MARCHA</div>
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>Marcha</th>
-                            <th>Horas</th>
-                            <th>Porcentaje</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for dato in categoria.datos %}
-                        <tr>
-                            <td>{{ dato.serie }}</td>
-                            <td>{{ dato.valor|floatformat:2 }} hr</td>
-                            <td>{% widthratio dato.valor reporte.total_horas_analizadas 100 %}%</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-            {% endif %}
-        {% endfor %}
-
-        <!-- Nivel de Combustible -->
-        {% for categoria in categorias %}
-            {% if categoria.nombre == 'Nivel del depósito de combustible' %}
-            <div class="data-section">
-                <div class="section-header">NIVEL DE COMBUSTIBLE</div>
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>Medición</th>
-                            <th>Valor</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for dato in categoria.datos %}
-                        <tr>
-                            <td>{{ dato.serie }}</td>
-                            <td>{{ dato.valor|floatformat:1 }}%</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-            {% endif %}
-        {% endfor %}
-
-        <!-- Gráficos Simplificados -->
-        {% for categoria in categorias %}
-            {% if categoria.nombre == 'Utilización del motor' %}
-            <div class="data-section">
-                <div class="section-header">GRÁFICO - UTILIZACIÓN DEL MOTOR</div>
+                <div class="section-header">GRÁFICO - {{ categoria.nombre|upper }}</div>
                 <div class="chart-container">
-                    {% for dato in categoria.datos %}
+                    {% for dato in categoria.datos_tabla %}
                     <div class="chart-bar">
                         <div class="bar-label">{{ dato.serie }}</div>
                         <div class="bar-container">
-                            <div class="bar-fill" style="width: {% widthratio dato.valor reporte.total_horas_analizadas 100 %}%; background-color: {% if 'alta' in dato.serie.lower %}green{% elif 'mediana' in dato.serie.lower %}orange{% elif 'baja' in dato.serie.lower %}yellow{% else %}gray{% endif %};">
-                                {{ dato.valor|floatformat:1 }} hr ({% widthratio dato.valor reporte.total_horas_analizadas 100 %}%)
+                            <div class="bar-fill" style="width: {% widthratio dato.valor reporte.total_horas_analizadas 100 %}%; background-color: {% if 'alta' in dato.serie.lower %}green{% elif 'mediana' in dato.serie.lower %}orange{% elif 'baja' in dato.serie.lower %}yellow{% elif 'reposo' in dato.serie.lower %}red{% else %}gray{% endif %};">
+                                {{ dato.valor|floatformat:1 }} {{ dato.unidad }} ({% widthratio dato.valor reporte.total_horas_analizadas 100 %}%)
                             </div>
                         </div>
                     </div>
