@@ -852,9 +852,23 @@ def detalle_reporte_csc(request, reporte_id):
             'datos': datos_categoria
         })
     
+    # Preparar datos para gráficos
+    datos_por_categoria_js = {}
+    for categoria, datos_categoria in datos_por_categoria.items():
+        labels = []
+        data = []
+        for dato in datos_categoria:
+            labels.append(dato.serie)
+            data.append(float(dato.valor))
+        datos_por_categoria_js[categoria] = {
+            'labels': labels,
+            'data': data
+        }
+    
     context = {
         'reporte': reporte,
         'categorias': categorias_lista,
+        'datos_por_categoria': datos_por_categoria_js,
     }
     return render(request, 'centroSoluciones/detalle_reporte_csc.html', context)
 

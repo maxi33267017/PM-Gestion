@@ -96,13 +96,13 @@
     <div class="row">
         <!-- Gráficos -->
         <div class="col-lg-8">
-            <!-- Utilización del Motor -->
+            <!-- Gráficos dinámicos -->
             {% for categoria in categorias %}
-                {% if categoria.nombre == 'Utilización del motor' %}
+                {% if categoria.nombre == 'Utilización del motor' or categoria.nombre == 'Utilización del motor' %}
                 <div class="card shadow mb-4">
                     <div class="card-header py-3">
                         <h6 class="m-0 font-weight-bold text-primary">
-                            <i class="fas fa-tachometer-alt"></i> Utilización del Motor
+                            <i class="fas fa-tachometer-alt"></i> {{ categoria.nombre }}
                         </h6>
                     </div>
                     <div class="card-body">
@@ -111,7 +111,7 @@
                         </div>
                     </div>
                 </div>
-                {% elif categoria.nombre == 'Modos de funcionamiento' %}
+                {% elif categoria.nombre == 'Modos de funcionamiento' or categoria.nombre == 'Utilización de modos de potencia de motor' %}
                 <div class="card shadow mb-4">
                     <div class="card-header py-3">
                         <h6 class="m-0 font-weight-bold text-primary">
@@ -321,6 +321,7 @@ const colors = ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40'
 // Gráfico de Utilización del Motor
 {% if 'Utilización del motor' in datos_por_categoria %}
 const ctxMotor = document.getElementById('chartMotor').getContext('2d');
+const datosMotor = {{ datos_por_categoria|safe }}['Utilización del motor'];
 new Chart(ctxMotor, {
     type: 'doughnut',
     data: {
@@ -345,8 +346,9 @@ new Chart(ctxMotor, {
 {% endif %}
 
 // Gráfico de Modos de Funcionamiento
-{% if 'Modos de funcionamiento' in datos_por_categoria %}
+{% if 'Utilización de modos de potencia de motor' in datos_por_categoria %}
 const ctxModos = document.getElementById('chartModos').getContext('2d');
+const datosModos = {{ datos_por_categoria|safe }}['Utilización de modos de potencia de motor'];
 new Chart(ctxModos, {
     type: 'bar',
     data: {
