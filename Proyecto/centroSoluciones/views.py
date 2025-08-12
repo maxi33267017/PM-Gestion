@@ -858,38 +858,44 @@ def detalle_reporte_csc(request, reporte_id):
         id=reporte_id
     )
     
-    # Agrupar datos por categoría
-    datos_por_categoria = {}
-    for dato in reporte.datos.all():
-        if dato.categoria not in datos_por_categoria:
-            datos_por_categoria[dato.categoria] = []
-        datos_por_categoria[dato.categoria].append(dato)
+    # Analizar categorías disponibles dinámicamente
+    categorias_disponibles = analizar_categorias_disponibles(reporte)
     
-    # Convertir a lista para evitar problemas con espacios en nombres
+    # Ordenar categorías por prioridad
+    categorias_ordenadas = sorted(
+        categorias_disponibles.items(), 
+        key=lambda x: x[1]['prioridad']
+    )
+    
+    # Convertir a formato para template
     categorias_lista = []
-    for categoria, datos_categoria in datos_por_categoria.items():
-        categorias_lista.append({
-            'nombre': categoria,
-            'datos': datos_categoria
-        })
-    
-    # Preparar datos para gráficos
     datos_por_categoria_js = {}
-    for categoria, datos_categoria in datos_por_categoria.items():
-        labels = []
-        data = []
-        for dato in datos_categoria:
-            labels.append(dato.serie)
-            data.append(float(dato.valor))
-        datos_por_categoria_js[categoria] = {
-            'labels': labels,
-            'data': data
-        }
+    
+    for categoria, config in categorias_ordenadas:
+        # Solo incluir categorías con datos
+        if config['datos']:
+            categorias_lista.append({
+                'nombre': categoria,
+                'datos': config['datos'],
+                'tipo_grafico': config['tipo_grafico'],
+                'prioridad': config['prioridad'],
+                'total_valor': config['total_valor'],
+                'unidades': config['unidades']
+            })
+            
+            # Preparar datos para JavaScript
+            datos_por_categoria_js[categoria] = {
+                'labels': [d.serie for d in config['datos']],
+                'data': [float(d.valor) for d in config['datos']],
+                'tipo_grafico': config['tipo_grafico']
+            }
+    
+    print(f"DEBUG: Categorías para template: {[c['nombre'] for c in categorias_lista]}")
     
     context = {
         'reporte': reporte,
         'categorias': categorias_lista,
-        'datos_por_categoria': datos_por_categoria_js,
+        'datos_por_categoria_js': datos_por_categoria_js,
     }
     return render(request, 'centroSoluciones/detalle_reporte_csc.html', context)
 
@@ -1209,8 +1215,13 @@ def procesar_csv_reporte(reporte):
         else:
             reporte.comentarios_manuales = f"Horas utilizadas: {horas_utilizadas:.1f} hr"
         
+        # Analizar categorías disponibles para gráficos dinámicos
+        categorias_disponibles = analizar_categorias_disponibles(reporte)
+        reporte.comentarios_manuales += f"\nCategorías detectadas: {', '.join(categorias_disponibles.keys())}"
+        
         reporte.save()
         print(f"DEBUG: Reporte guardado exitosamente")
+        print(f"DEBUG: Categorías detectadas: {list(categorias_disponibles.keys())}")
         
     except Exception as e:
         print(f"ERROR general procesando CSV: {str(e)}")
@@ -1218,6 +1229,71 @@ def procesar_csv_reporte(reporte):
         import traceback
         print(f"ERROR traceback: {traceback.format_exc()}")
         raise Exception(f"Error procesando CSV: {str(e)}")
+
+def analizar_categorias_disponibles(reporte):
+    """Analizar las categorías disponibles en el reporte y determinar tipos de gráficos"""
+    categorias = {}
+    
+    # Agrupar datos por categoría
+    datos_por_categoria = {}
+    for dato in reporte.datos.all():
+        if dato.categoria not in datos_por_categoria:
+            datos_por_categoria[dato.categoria] = []
+        datos_por_categoria[dato.categoria].append(dato)
+    
+    print(f"DEBUG: Analizando {len(datos_por_categoria)} categorías")
+    
+    for categoria, datos in datos_por_categoria.items():
+        # Determinar tipo de gráfico basado en la categoría y datos
+        tipo_grafico = determinar_tipo_grafico(categoria, datos)
+        prioridad = calcular_prioridad_categoria(categoria)
+        
+        categorias[categoria] = {
+            'tipo_grafico': tipo_grafico,
+            'prioridad': prioridad,
+            'datos': datos,
+            'total_valor': sum(d.valor for d in datos),
+            'unidades': datos[0].unidad if datos else 'hr'
+        }
+        
+        print(f"DEBUG: Categoría '{categoria}' - Tipo: {tipo_grafico}, Prioridad: {prioridad}")
+    
+    return categorias
+
+def determinar_tipo_grafico(categoria, datos):
+    """Determinar el tipo de gráfico más apropiado para una categoría"""
+    categoria_lower = categoria.lower()
+    
+    # Gráficos de torta para distribución de tiempo/uso
+    if any(palabra in categoria_lower for palabra in ['utilización', 'uso', 'modos', 'tiempo']):
+        return 'pie'
+    
+    # Gráficos de barras para comparaciones
+    elif any(palabra in categoria_lower for palabra in ['marcha', 'gear', 'velocidad', 'carga']):
+        return 'bar'
+    
+    # Gráficos de líneas para tendencias
+    elif any(palabra in categoria_lower for palabra in ['temperatura', 'presión', 'consumo']):
+        return 'line'
+    
+    # Por defecto, gráfico de barras
+    return 'bar'
+
+def calcular_prioridad_categoria(categoria):
+    """Calcular la prioridad de una categoría para mostrar en el reporte"""
+    categoria_lower = categoria.lower()
+    
+    # Alta prioridad: métricas principales
+    if any(palabra in categoria_lower for palabra in ['motor', 'combustible', 'utilización']):
+        return 1
+    
+    # Media prioridad: métricas específicas del equipo
+    elif any(palabra in categoria_lower for palabra in ['marcha', 'gear', 'modos', 'tiempo']):
+        return 2
+    
+    # Baja prioridad: métricas secundarias
+    else:
+        return 3
 
 def generar_recomendaciones_automaticas(reporte):
     """Generar recomendaciones automáticas basadas en los datos"""

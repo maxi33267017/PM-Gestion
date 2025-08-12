@@ -98,54 +98,49 @@
         <div class="col-lg-8">
             <!-- Debug: Mostrar categorías disponibles -->
             <div class="alert alert-info">
-                <strong>Categorías disponibles:</strong>
+                <strong>Categorías detectadas dinámicamente:</strong>
                 {% for categoria in categorias %}
-                    {{ categoria.nombre }}{% if not forloop.last %}, {% endif %}
+                    {{ categoria.nombre }} ({{ categoria.tipo_grafico }}, prioridad: {{ categoria.prioridad }}){% if not forloop.last %}, {% endif %}
                 {% endfor %}
             </div>
             
             <!-- Gráficos dinámicos -->
             {% for categoria in categorias %}
-                {% if categoria.nombre == 'Utilización del motor' or categoria.nombre == 'Utilización del motor' %}
-                <div class="card shadow mb-4">
-                    <div class="card-header py-3">
-                        <h6 class="m-0 font-weight-bold text-primary">
-                            <i class="fas fa-tachometer-alt"></i> {{ categoria.nombre }}
-                        </h6>
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-chart-{{ categoria.tipo_grafico }}"></i> {{ categoria.nombre }}
+                        <small class="text-muted">({{ categoria.total_valor|floatformat:1 }} {{ categoria.unidades }})</small>
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="chart_{{ forloop.counter }}"></canvas>
                     </div>
-                    <div class="card-body">
-                        <div class="chart-container">
-                            <canvas id="chartMotor"></canvas>
-                        </div>
+                    
+                    <!-- Tabla de datos -->
+                    <div class="table-responsive mt-3">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Serie</th>
+                                    <th>Valor</th>
+                                    <th>Unidad</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for dato in categoria.datos %}
+                                <tr>
+                                    <td>{{ dato.serie }}</td>
+                                    <td><strong>{{ dato.valor|floatformat:2 }}</strong></td>
+                                    <td>{{ dato.unidad }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
                     </div>
                 </div>
-                {% elif categoria.nombre == 'Modos de funcionamiento' or categoria.nombre == 'Utilización de modos de potencia de motor' or categoria.nombre == 'Modos de funcionamiento' %}
-                <div class="card shadow mb-4">
-                    <div class="card-header py-3">
-                        <h6 class="m-0 font-weight-bold text-primary">
-                            <i class="fas fa-cogs"></i> Modos de Funcionamiento
-                        </h6>
-                    </div>
-                    <div class="card-body">
-                        <div class="chart-container">
-                            <canvas id="chartModos"></canvas>
-                        </div>
-                    </div>
-                </div>
-                {% elif categoria.nombre == 'MFWD Utilization per gear' %}
-                <div class="card shadow mb-4">
-                    <div class="card-header py-3">
-                        <h6 class="m-0 font-weight-bold text-primary">
-                            <i class="fas fa-cog"></i> Utilización MFWD por Marcha
-                        </h6>
-                    </div>
-                    <div class="card-body">
-                        <div class="chart-container">
-                            <canvas id="chartMFWD"></canvas>
-                        </div>
-                    </div>
-                </div>
-                {% endif %}
+            </div>
             {% endfor %}
         </div>
 
@@ -318,115 +313,68 @@
 {% block extra_js %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
 <script>
-// Configuración de colores
-const colors = ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40'];
+// Datos para gráficos dinámicos
+const datosGraficos = {{ datos_por_categoria_js|safe }};
+const categorias = {{ categorias|safe }};
 
-// Datos de los gráficos desde el servidor
-const datosGraficos = {{ datos_por_categoria|safe }};
+// Colores para gráficos
+const colors = ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40', '#C9CBCF', '#4BC0C0', '#FF6384', '#36A2EB'];
 
-// Gráfico de Utilización del Motor
-{% if 'Utilización del motor' in datos_por_categoria %}
-const ctxMotor = document.getElementById('chartMotor');
-if (ctxMotor) {
-    const datosMotor = datosGraficos['Utilización del motor'];
-    new Chart(ctxMotor, {
-        type: 'doughnut',
-        data: {
-            labels: datosMotor.labels,
-            datasets: [{
-                data: datosMotor.data,
-                backgroundColor: colors,
-                borderWidth: 2,
-                borderColor: '#fff'
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    position: 'bottom'
-                }
-            }
-        }
-    });
-}
-{% endif %}
-
-// Gráfico de Modos de Funcionamiento
-{% if 'Modos de funcionamiento' in datos_por_categoria %}
-const ctxModos = document.getElementById('chartModos');
-if (ctxModos) {
-    const datosModos = datosGraficos['Modos de funcionamiento'];
-    new Chart(ctxModos, {
-        type: 'bar',
-        data: {
-            labels: datosModos.labels,
-            datasets: [{
-                label: 'Horas',
-                data: datosModos.data,
-                backgroundColor: colors,
-                borderWidth: 1
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    title: {
-                        display: true,
-                        text: 'Horas'
+// Generar gráficos dinámicamente
+document.addEventListener('DOMContentLoaded', function() {
+    categorias.forEach(function(categoria, index) {
+        const chartId = 'chart_' + (index + 1);
+        const ctx = document.getElementById(chartId);
+        
+        if (ctx && datosGraficos[categoria.nombre]) {
+            const config = datosGraficos[categoria.nombre];
+            
+            // Configuración base del gráfico
+            const chartConfig = {
+                type: config.tipo_grafico,
+                data: {
+                    labels: config.labels,
+                    datasets: [{
+                        label: categoria.nombre,
+                        data: config.data,
+                        backgroundColor: colors.slice(0, config.data.length),
+                        borderColor: config.tipo_grafico === 'line' ? '#36A2EB' : undefined,
+                        borderWidth: config.tipo_grafico === 'line' ? 2 : 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        },
+                        title: {
+                            display: true,
+                            text: categoria.nombre
+                        }
                     }
                 }
-            },
-            plugins: {
-                legend: {
-                    display: false
-                }
-            }
-        }
-    });
-}
-{% endif %}
-
-// Gráfico de MFWD
-{% if 'MFWD Utilization per gear' in datos_por_categoria %}
-const ctxMFWD = document.getElementById('chartMFWD');
-if (ctxMFWD) {
-    const datosMFWD = datosGraficos['MFWD Utilization per gear'];
-    new Chart(ctxMFWD, {
-        type: 'bar',
-        data: {
-            labels: datosMFWD.labels,
-            datasets: [{
-                label: 'Horas',
-                data: datosMFWD.data,
-                backgroundColor: colors,
-                borderWidth: 1
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    title: {
-                        display: true,
-                        text: 'Horas'
+            };
+            
+            // Configuraciones específicas por tipo de gráfico
+            if (config.tipo_grafico === 'bar') {
+                chartConfig.options.scales = {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: categoria.unidades || 'Valor'
+                        }
                     }
-                }
-            },
-            plugins: {
-                legend: {
-                    display: false
-                }
+                };
+                chartConfig.options.plugins.legend.display = false;
             }
+            
+            // Crear el gráfico
+            new Chart(ctx, chartConfig);
         }
     });
-}
-{% endif %}
+});
 </script>
 {% endblock %}
