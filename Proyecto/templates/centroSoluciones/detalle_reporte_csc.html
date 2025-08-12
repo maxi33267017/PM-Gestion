@@ -119,7 +119,7 @@
                         </div>
                     </div>
                 </div>
-                {% elif categoria.nombre == 'Modos de funcionamiento' or categoria.nombre == 'Utilización de modos de potencia de motor' %}
+                {% elif categoria.nombre == 'Modos de funcionamiento' or categoria.nombre == 'Utilización de modos de potencia de motor' or categoria.nombre == 'Modos de funcionamiento' %}
                 <div class="card shadow mb-4">
                     <div class="card-header py-3">
                         <h6 class="m-0 font-weight-bold text-primary">
@@ -177,6 +177,14 @@
                             <td>{{ reporte.fecha_reporte|date:"d/m/Y" }}</td>
                         </tr>
                         <tr>
+                            <td><strong>Total Horas:</strong></td>
+                            <td><strong>{{ reporte.total_horas_analizadas|default:"0"|floatformat:1 }} hr</strong></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Eficiencia:</strong></td>
+                            <td><strong>{{ reporte.eficiencia_general|default:"0"|floatformat:1 }}%</strong></td>
+                        </tr>
+                        <tr>
                             <td><strong>Creado por:</strong></td>
                             <td>{{ reporte.creado_por.get_nombre_completo }}</td>
                         </tr>
@@ -186,10 +194,14 @@
 
             <!-- Recomendaciones Automáticas -->
             <div class="card shadow mb-4">
-                <div class="card-header py-3">
+                <div class="card-header py-3 d-flex justify-content-between align-items-center">
                     <h6 class="m-0 font-weight-bold text-primary">
                         <i class="fas fa-lightbulb"></i> Recomendaciones Automáticas
                     </h6>
+                    <a href="{% url 'centroSoluciones:regenerar_recomendaciones_csc' reporte.id %}" 
+                       class="btn btn-sm btn-outline-primary">
+                        <i class="fas fa-sync-alt"></i> Regenerar
+                    </a>
                 </div>
                 <div class="card-body">
                     {% if reporte.recomendaciones_automaticas %}
@@ -202,6 +214,7 @@
                         {% endfor %}
                     {% else %}
                         <p class="text-muted">No hay recomendaciones automáticas disponibles.</p>
+                        <small class="text-muted">Haz clic en "Regenerar" para generar recomendaciones basadas en los datos actuales.</small>
                     {% endif %}
                 </div>
             </div>
@@ -331,10 +344,10 @@ if (ctxMotor) {
 {% endif %}
 
 // Gráfico de Modos de Funcionamiento
-{% if 'Utilización de modos de potencia de motor' in datos_por_categoria %}
+{% if 'Modos de funcionamiento' in datos_por_categoria %}
 const ctxModos = document.getElementById('chartModos');
 if (ctxModos) {
-    const datosModos = datosGraficos['Utilización de modos de potencia de motor'];
+    const datosModos = datosGraficos['Modos de funcionamiento'];
     new Chart(ctxModos, {
         type: 'bar',
         data: {

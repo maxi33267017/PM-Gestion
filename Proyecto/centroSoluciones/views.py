@@ -792,6 +792,23 @@ def importar_reporte_csc(request):
                 messages.error(request, 'No se pudo extraer la fecha del reporte del nombre del archivo.')
                 return redirect('centroSoluciones:lista_reportes_csc')
             
+            # Calcular período analizado (mes completo)
+            from datetime import datetime, timedelta
+            import calendar
+            
+            # Si la fecha es el día 8, asumimos que es el reporte del mes anterior
+            if fecha_reporte.day <= 15:
+                # Es reporte del mes anterior
+                primer_dia = fecha_reporte.replace(day=1)
+                ultimo_dia = fecha_reporte.replace(day=calendar.monthrange(fecha_reporte.year, fecha_reporte.month)[1])
+            else:
+                # Es reporte del mes actual
+                primer_dia = fecha_reporte.replace(day=1)
+                ultimo_dia = fecha_reporte.replace(day=calendar.monthrange(fecha_reporte.year, fecha_reporte.month)[1])
+            
+            periodo_analizado = f"{primer_dia.strftime('%d/%m/%Y')} - {ultimo_dia.strftime('%d/%m/%Y')}"
+            print(f"DEBUG: Período analizado: {periodo_analizado}")
+            
             # Crear reporte
             print("DEBUG: Creando reporte en la base de datos...")
             reporte = ReporteCSC.objects.create(
@@ -800,6 +817,10 @@ def importar_reporte_csc(request):
                 archivo_csv=archivo,
                 creado_por=request.user
             )
+            
+            # Guardar período analizado en comentarios manuales temporalmente
+            reporte.comentarios_manuales = f"Período analizado: {periodo_analizado}"
+            reporte.save()
             print(f"DEBUG: Reporte creado con ID: {reporte.id}")
             
             # Procesar CSV
@@ -939,6 +960,19 @@ def obtener_equipos_cliente_csc(request):
         ).values('id', 'numero_serie', 'modelo__nombre')
         return JsonResponse({'equipos': list(equipos)})
     return JsonResponse({'equipos': []})
+
+@login_required
+def regenerar_recomendaciones_csc(request, reporte_id):
+    """Regenerar recomendaciones automáticas para un reporte CSC"""
+    reporte = get_object_or_404(ReporteCSC, id=reporte_id)
+    
+    try:
+        generar_recomendaciones_automaticas(reporte)
+        messages.success(request, 'Recomendaciones regeneradas correctamente.')
+    except Exception as e:
+        messages.error(request, f'Error al regenerar recomendaciones: {str(e)}')
+    
+    return redirect('centroSoluciones:detalle_reporte_csc', reporte_id=reporte_id)
 
 # Funciones auxiliares
 def extraer_pin_desde_nombre(nombre_archivo):
