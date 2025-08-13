@@ -922,6 +922,22 @@ def detalle_reporte_csc(request, reporte_id):
                 periodo_analizado = linea[18:].strip()  # Remover "Período analizado: "
                 break
     
+    # Si no se encontró en comentarios, extraer desde los datos del CSV
+    if not periodo_analizado:
+        fechas_inicio = []
+        fechas_fin = []
+        for dato in reporte.datos.all():
+            if dato.fecha_inicio:
+                fechas_inicio.append(dato.fecha_inicio)
+            if dato.fecha_fin:
+                fechas_fin.append(dato.fecha_fin)
+        
+        if fechas_inicio and fechas_fin:
+            # Tomar la primera fecha de inicio y la primera fecha de fin
+            fecha_inicio = min(fechas_inicio)
+            fecha_fin = max(fechas_fin)
+            periodo_analizado = f"{fecha_inicio.strftime('%d/%m/%Y')} - {fecha_fin.strftime('%d/%m/%Y')}"
+    
     context = {
         'reporte': reporte,
         'categorias': categorias_lista,
@@ -979,6 +995,22 @@ def generar_pdf_reporte_csc(request, reporte_id):
             if "Período analizado:" in linea:
                 periodo_analizado = linea[18:].strip()  # Remover "Período analizado: "
                 break
+    
+    # Si no se encontró en comentarios, extraer desde los datos del CSV
+    if not periodo_analizado:
+        fechas_inicio = []
+        fechas_fin = []
+        for dato in reporte.datos.all():
+            if dato.fecha_inicio:
+                fechas_inicio.append(dato.fecha_inicio)
+            if dato.fecha_fin:
+                fechas_fin.append(dato.fecha_fin)
+        
+        if fechas_inicio and fechas_fin:
+            # Tomar la primera fecha de inicio y la primera fecha de fin
+            fecha_inicio = min(fechas_inicio)
+            fecha_fin = max(fechas_fin)
+            periodo_analizado = f"{fecha_inicio.strftime('%d/%m/%Y')} - {fecha_fin.strftime('%d/%m/%Y')}"
     
     context = {
         'reporte': reporte,
