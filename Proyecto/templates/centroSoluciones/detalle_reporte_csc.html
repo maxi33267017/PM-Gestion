@@ -10,6 +10,19 @@
         height: 300px;
         margin-bottom: 20px;
     }
+    
+    /* Corregir interferencia de gráficos con tablas */
+    .chart-container canvas {
+        max-height: 250px !important;
+        margin-bottom: 15px;
+    }
+    
+    /* Separar gráfico de tabla */
+    .chart-table-separator {
+        margin-top: 20px;
+        border-top: 1px solid #eee;
+        padding-top: 15px;
+    }
     .kpi-card {
         background: linear-gradient(135deg, #495057 0%, #343a40 100%);
         color: white;
@@ -331,54 +344,10 @@
         </div>
     </div>
 
-    <div class="row">
-        <!-- Gráficos -->
-        <div class="col-lg-8">
-
-            
-            <!-- Gráficos dinámicos -->
-            {% for categoria in categorias %}
-            <div class="card shadow mb-4">
-                <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-primary">
-                        <i class="fas fa-chart-{{ categoria.tipo_grafico }}"></i> {{ categoria.nombre }}
-                        <small class="text-muted">({{ categoria.total_valor|floatformat:1 }} {{ categoria.unidades }})</small>
-                    </h6>
-                </div>
-                <div class="card-body">
-                    <div class="chart-container">
-                        <canvas id="chart_{{ forloop.counter }}"></canvas>
-                    </div>
-                    
-                    <!-- Tabla de datos -->
-                    <div class="table-responsive mt-3">
-                        <table class="table table-sm">
-                            <thead>
-                                <tr>
-                                    <th>Serie</th>
-                                    <th>Valor</th>
-                                    <th>Unidad</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for dato in categoria.datos_tabla %}
-                                <tr>
-                                    <td>{{ dato.serie }}</td>
-                                    <td><strong>{{ dato.valor|floatformat:2 }}</strong></td>
-                                    <td>{{ dato.unidad }}</td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-            {% endfor %}
-        </div>
-
-        <!-- Sidebar -->
-        <div class="col-lg-4">
-            <!-- Información del Equipo -->
+    <!-- Información del Equipo y Datos Adicionales -->
+    <div class="row mb-4">
+        <!-- Información del Equipo -->
+        <div class="col-lg-6">
             <div class="card shadow mb-4">
                 <div class="card-header py-3">
                     <h6 class="m-0 font-weight-bold text-primary">
@@ -435,8 +404,10 @@
                     </table>
                 </div>
             </div>
+        </div>
 
-            <!-- Recomendaciones Automáticas -->
+        <!-- Recomendaciones Automáticas -->
+        <div class="col-lg-6">
             <div class="card shadow mb-4">
                 <div class="card-header py-3 d-flex justify-content-between align-items-center">
                     <h6 class="m-0 font-weight-bold text-primary">
@@ -466,8 +437,13 @@
                     {% endif %}
                 </div>
             </div>
+        </div>
+    </div>
 
-            <!-- Alertas del Reporte -->
+    <!-- Alertas y Comentarios -->
+    <div class="row mb-4">
+        <!-- Alertas del Reporte -->
+        <div class="col-lg-6">
             <div class="card shadow mb-4">
                 <div class="card-header py-3 d-flex justify-content-between align-items-center">
                     <h6 class="m-0 font-weight-bold text-primary">
@@ -503,9 +479,11 @@
                     {% endif %}
                 </div>
             </div>
+        </div>
 
-            <!-- Comentarios Manuales -->
-            <div class="card shadow">
+        <!-- Comentarios Manuales -->
+        <div class="col-lg-6">
+            <div class="card shadow mb-4">
                 <div class="card-header py-3">
                     <h6 class="m-0 font-weight-bold text-primary">
                         <i class="fas fa-comment"></i> Comentarios Adicionales
@@ -524,6 +502,56 @@
             </div>
         </div>
     </div>
+
+    <!-- Gráficos Dinámicos -->
+    <div class="row">
+        <div class="col-12">
+            {% for categoria in categorias %}
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-chart-{{ categoria.tipo_grafico }}"></i> {{ categoria.nombre }}
+                        <small class="text-muted">({{ categoria.total_valor|floatformat:1 }} {{ categoria.unidades }})</small>
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <!-- Gráfico -->
+                    <div class="chart-container">
+                        <canvas id="chart_{{ forloop.counter }}"></canvas>
+                    </div>
+                    
+                    <!-- Separador -->
+                    <div class="chart-table-separator"></div>
+                    
+                    <!-- Tabla de datos -->
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Serie</th>
+                                    <th>Valor</th>
+                                    <th>Unidad</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for dato in categoria.datos_tabla %}
+                                <tr>
+                                    <td>{{ dato.serie }}</td>
+                                    <td><strong>{{ dato.valor|floatformat:2 }}</strong></td>
+                                    <td>{{ dato.unidad }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+
+</div>
 
 
 </div>
