@@ -246,11 +246,26 @@
             height: 180px !important;
             width: 100% !important;
             max-width: 100% !important;
-            page-break-inside: avoid;
+            page-break-inside: avoid !important;
+            page-break-before: auto !important;
+            page-break-after: auto !important;
             margin: 10px 0;
             border: 1px solid #eee;
             border-radius: 4px;
             padding: 8px;
+        }
+        
+        /* Evitar cortes en cards que contienen gráficos */
+        .card {
+            page-break-inside: avoid !important;
+            page-break-before: auto !important;
+            page-break-after: auto !important;
+        }
+        
+        /* Forzar salto de página antes del primer gráfico si es necesario */
+        .chart-section {
+            page-break-before: auto !important;
+            page-break-inside: avoid !important;
         }
         
         .chart-container canvas {
@@ -330,7 +345,24 @@
         .card,
         .chart-container,
         .kpi-card {
-            page-break-inside: avoid;
+            page-break-inside: avoid !important;
+            page-break-before: auto !important;
+            page-break-after: auto !important;
+        }
+        
+        /* Reglas específicas para evitar cortes de gráficos */
+        .chart-container {
+            page-break-inside: avoid !important;
+            page-break-before: auto !important;
+            page-break-after: auto !important;
+            orphans: 1 !important;
+            widows: 1 !important;
+        }
+        
+        /* Asegurar que el primer gráfico no se corte */
+        .chart-section .card:first-child {
+            page-break-before: auto !important;
+            page-break-inside: avoid !important;
         }
         
         /* Footer del reporte */
@@ -557,7 +589,7 @@
     </div>
 
     <!-- Gráficos Dinámicos - Compactos -->
-    <div class="row">
+    <div class="row chart-section">
         <div class="col-12">
             {% for categoria in categorias %}
             <div class="card shadow compact-card">
