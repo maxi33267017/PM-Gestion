@@ -7,21 +7,56 @@
 <style>
     .chart-container {
         position: relative;
-        height: 300px;
-        margin-bottom: 20px;
+        height: 250px;
+        margin-bottom: 15px;
     }
     
     /* Corregir interferencia de gráficos con tablas */
     .chart-container canvas {
-        max-height: 250px !important;
-        margin-bottom: 15px;
+        max-height: 200px !important;
+        margin-bottom: 10px;
     }
     
     /* Separar gráfico de tabla */
     .chart-table-separator {
-        margin-top: 20px;
+        margin-top: 10px;
         border-top: 1px solid #eee;
-        padding-top: 15px;
+        padding-top: 10px;
+    }
+    
+    /* Optimizar para menos páginas */
+    .compact-card {
+        margin-bottom: 15px;
+    }
+    
+    .compact-card .card-body {
+        padding: 12px;
+    }
+    
+    .compact-card .card-header {
+        padding: 8px 12px;
+    }
+    
+    .compact-table {
+        font-size: 0.85rem;
+    }
+    
+    .compact-table td,
+    .compact-table th {
+        padding: 4px 6px;
+    }
+    
+    .compact-kpi {
+        padding: 15px;
+        margin-bottom: 15px;
+    }
+    
+    .compact-kpi .kpi-value {
+        font-size: 1.5rem;
+    }
+    
+    .compact-kpi .kpi-label {
+        font-size: 0.8rem;
     }
     .kpi-card {
         background: linear-gradient(135deg, #495057 0%, #343a40 100%);
@@ -103,51 +138,51 @@
             margin-bottom: 20px;
         }
         
-        /* KPIs - Diseño mejorado */
+        /* KPIs - Diseño compacto para impresión */
         .kpi-card {
             background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%) !important;
             color: white !important;
-            padding: 15px;
-            margin-bottom: 15px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 6px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
             page-break-inside: avoid;
         }
         
         .kpi-value {
-            font-size: 1.8rem;
+            font-size: 1.4rem;
             font-weight: bold;
-            margin-bottom: 5px;
+            margin-bottom: 3px;
         }
         
         .kpi-label {
-            font-size: 0.9rem;
+            font-size: 0.8rem;
             opacity: 0.9;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.3px;
         }
         
-        /* Cards mejoradas */
+        /* Cards compactas para impresión */
         .card {
             border: 1px solid #ddd;
-            margin-bottom: 20px;
+            margin-bottom: 12px;
             page-break-inside: avoid;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            border-radius: 6px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+            border-radius: 4px;
         }
         
         .card-header {
             background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%) !important;
             color: #2c3e50 !important;
             font-weight: bold;
-            font-size: 12px;
-            padding: 12px 15px;
+            font-size: 11px;
+            padding: 8px 12px;
             border-bottom: 1px solid #ddd;
-            border-radius: 6px 6px 0 0;
+            border-radius: 4px 4px 0 0;
         }
         
         .card-body {
-            padding: 15px;
+            padding: 10px;
         }
         
         /* Tablas mejoradas */
@@ -311,51 +346,46 @@
         </div>
     </div>
 
-    <!-- KPIs Principales -->
-    <div class="row mb-4">
+    <!-- KPIs Principales - Compactos -->
+    <div class="row mb-3">
         <div class="col-md-3">
-            <div class="kpi-card">
+            <div class="kpi-card compact-kpi">
                 <div class="kpi-value">{{ reporte.total_horas_analizadas|default:"0"|floatformat:1 }}</div>
-                <div class="kpi-label">Total Horas Analizadas</div>
+                <div class="kpi-label">Total Horas</div>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="kpi-card">
+            <div class="kpi-card compact-kpi">
                 <div class="kpi-value">{{ reporte.eficiencia_general|default:"0"|floatformat:1 }}%</div>
-                <div class="kpi-label">Eficiencia General</div>
-                <div class="kpi-description">
-                    <small class="text-muted">
-                        Tiempo productivo / Total horas
-                    </small>
-                </div>
+                <div class="kpi-label">Eficiencia</div>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="kpi-card">
+            <div class="kpi-card compact-kpi">
                 <div class="kpi-value">{{ reporte.datos.count }}</div>
-                <div class="kpi-label">Métricas Analizadas</div>
+                <div class="kpi-label">Métricas</div>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="kpi-card">
+            <div class="kpi-card compact-kpi">
                 <div class="kpi-value">{{ reporte.fecha_importacion|date:"d/m/Y" }}</div>
-                <div class="kpi-label">Fecha de Importación</div>
+                <div class="kpi-label">Importación</div>
             </div>
         </div>
     </div>
 
-    <!-- Información del Equipo y Datos Adicionales -->
-    <div class="row mb-4">
+    <!-- Información del Equipo y Datos Adicionales - Compactos -->
+    <div class="row mb-3">
         <!-- Información del Equipo -->
         <div class="col-lg-6">
-            <div class="card shadow mb-4">
-                <div class="card-header py-3">
+            <div class="card shadow compact-card">
+                <div class="card-header py-2">
                     <h6 class="m-0 font-weight-bold text-primary">
                         <i class="fas fa-info-circle"></i> Información del Equipo
                     </h6>
                 </div>
                 <div class="card-body">
-                    <table class="table table-sm">
+                    <table class="table table-sm compact-table">
                         <tr>
                             <td><strong>PIN:</strong></td>
                             <td>{{ reporte.equipo.numero_serie }}</td>
@@ -369,7 +399,7 @@
                             <td>{{ reporte.equipo.cliente.razon_social }}</td>
                         </tr>
                         <tr>
-                            <td><strong>Período Analizado:</strong></td>
+                            <td><strong>Período:</strong></td>
                             <td>
                                 {% if reporte.comentarios_manuales and "Período analizado:" in reporte.comentarios_manuales %}
                                     {% for linea in reporte.comentarios_manuales.splitlines %}
@@ -383,22 +413,15 @@
                             </td>
                         </tr>
                         <tr>
-                            <td><strong>Total Horas Utilizadas:</strong></td>
+                            <td><strong>Horas:</strong></td>
                             <td><strong>{{ reporte.total_horas_analizadas|default:"0"|floatformat:1 }} hr</strong></td>
                         </tr>
                         <tr>
                             <td><strong>Eficiencia:</strong></td>
-                            <td>
-                                <strong>{{ reporte.eficiencia_general|default:"0"|floatformat:1 }}%</strong>
-                                <br>
-                                <small class="text-muted">
-                                    <i class="fas fa-info-circle"></i> 
-                                    (Carga alta + Carga mediana) / Total horas utilizadas
-                                </small>
-                            </td>
+                            <td><strong>{{ reporte.eficiencia_general|default:"0"|floatformat:1 }}%</strong></td>
                         </tr>
                         <tr>
-                            <td><strong>Creado por:</strong></td>
+                            <td><strong>Creado:</strong></td>
                             <td>{{ reporte.creado_por.get_nombre_completo }}</td>
                         </tr>
                     </table>
@@ -408,14 +431,10 @@
 
         <!-- Recomendaciones Automáticas -->
         <div class="col-lg-6">
-            <div class="card shadow mb-4">
-                <div class="card-header py-3 d-flex justify-content-between align-items-center">
+            <div class="card shadow compact-card">
+                <div class="card-header py-2 d-flex justify-content-between align-items-center">
                     <h6 class="m-0 font-weight-bold text-primary">
-                        <i class="fas fa-lightbulb"></i> Recomendaciones Automáticas
-                        <i class="fas fa-info-circle text-muted ms-2" 
-                           data-bs-toggle="tooltip" 
-                           data-bs-placement="top" 
-                           title="Basadas en análisis de eficiencia: (Carga alta + Carga mediana) / Total horas utilizadas"></i>
+                        <i class="fas fa-lightbulb"></i> Recomendaciones
                     </h6>
                     <a href="{% url 'centroSoluciones:regenerar_recomendaciones_csc' reporte.id %}" 
                        class="btn btn-sm btn-outline-primary">
@@ -432,20 +451,19 @@
                             {% endif %}
                         {% endfor %}
                     {% else %}
-                        <p class="text-muted">No hay recomendaciones automáticas disponibles.</p>
-                        <small class="text-muted">Haz clic en "Regenerar" para generar recomendaciones basadas en los datos actuales.</small>
+                        <p class="text-muted">No hay recomendaciones disponibles.</p>
                     {% endif %}
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Alertas y Comentarios -->
-    <div class="row mb-4">
+    <!-- Alertas y Comentarios - Compactos -->
+    <div class="row mb-3">
         <!-- Alertas del Reporte -->
         <div class="col-lg-6">
-            <div class="card shadow mb-4">
-                <div class="card-header py-3 d-flex justify-content-between align-items-center">
+            <div class="card shadow compact-card">
+                <div class="card-header py-2 d-flex justify-content-between align-items-center">
                     <h6 class="m-0 font-weight-bold text-primary">
                         <i class="fas fa-exclamation-triangle"></i> Alertas
                     </h6>
@@ -456,18 +474,15 @@
                 <div class="card-body">
                     {% if reporte.alertas.all %}
                         {% for alerta in reporte.alertas.all %}
-                        <div class="alert alert-{{ alerta.get_severidad_color }} alert-dismissible fade show" role="alert">
+                        <div class="alert alert-{{ alerta.get_severidad_color }} alert-dismissible fade show py-2" role="alert">
                             <div class="d-flex justify-content-between align-items-start">
                                 <div>
                                     <strong>{{ alerta.nombre }}</strong>
-                                    <br>
-                                    <small class="text-muted">
-                                        <i class="fas fa-calendar"></i> {{ alerta.fecha_hora|date:"d/m/Y H:i" }}
-                                        <span class="badge bg-{{ alerta.get_severidad_color }} ms-2">{{ alerta.get_severidad_display }}</span>
+                                    <small class="text-muted d-block">
+                                        {{ alerta.fecha_hora|date:"d/m/Y H:i" }} - {{ alerta.get_severidad_display }}
                                     </small>
                                     {% if alerta.descripcion %}
-                                    <br>
-                                    <small>{{ alerta.descripcion }}</small>
+                                    <small class="d-block">{{ alerta.descripcion }}</small>
                                     {% endif %}
                                 </div>
                                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
@@ -475,7 +490,7 @@
                         </div>
                         {% endfor %}
                     {% else %}
-                        <p class="text-muted">No hay alertas registradas para este reporte.</p>
+                        <p class="text-muted">No hay alertas registradas.</p>
                     {% endif %}
                 </div>
             </div>
@@ -483,32 +498,32 @@
 
         <!-- Comentarios Manuales -->
         <div class="col-lg-6">
-            <div class="card shadow mb-4">
-                <div class="card-header py-3">
+            <div class="card shadow compact-card">
+                <div class="card-header py-2">
                     <h6 class="m-0 font-weight-bold text-primary">
-                        <i class="fas fa-comment"></i> Comentarios Adicionales
+                        <i class="fas fa-comment"></i> Comentarios
                     </h6>
                 </div>
                 <div class="card-body">
                     {% if reporte.comentarios_manuales %}
-                        <p>{{ reporte.comentarios_manuales|linebreaks }}</p>
+                        <p class="mb-2">{{ reporte.comentarios_manuales|linebreaks }}</p>
                     {% else %}
-                        <p class="text-muted">No hay comentarios adicionales.</p>
+                        <p class="text-muted mb-2">No hay comentarios adicionales.</p>
                     {% endif %}
                     <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#modalComentarios">
-                        <i class="fas fa-edit"></i> Agregar Comentario
+                        <i class="fas fa-edit"></i> Agregar
                     </button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Gráficos Dinámicos -->
+    <!-- Gráficos Dinámicos - Compactos -->
     <div class="row">
         <div class="col-12">
             {% for categoria in categorias %}
-            <div class="card shadow mb-4">
-                <div class="card-header py-3">
+            <div class="card shadow compact-card">
+                <div class="card-header py-2">
                     <h6 class="m-0 font-weight-bold text-primary">
                         <i class="fas fa-chart-{{ categoria.tipo_grafico }}"></i> {{ categoria.nombre }}
                         <small class="text-muted">({{ categoria.total_valor|floatformat:1 }} {{ categoria.unidades }})</small>
@@ -525,7 +540,7 @@
                     
                     <!-- Tabla de datos -->
                     <div class="table-responsive">
-                        <table class="table table-sm">
+                        <table class="table table-sm compact-table">
                             <thead>
                                 <tr>
                                     <th>Serie</th>
