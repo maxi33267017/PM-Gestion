@@ -84,6 +84,15 @@
         font-size: 0.9rem;
         opacity: 0.9;
     }
+    
+    /* Clase específica para período analizado con letra más pequeña */
+    .kpi-card.periodo-analizado .kpi-value {
+        font-size: 1.6rem;
+    }
+    
+    .kpi-card.periodo-analizado .kpi-label {
+        font-size: 0.8rem;
+    }
     .recommendation-item {
         border-left: 4px solid #007bff;
         padding-left: 15px;
@@ -443,7 +452,7 @@
             </div>
         </div>
         <div class="col-md-3">
-            <div class="kpi-card compact-kpi">
+            <div class="kpi-card compact-kpi periodo-analizado">
                 <div class="kpi-value">
                     {% if periodo_analizado %}
                         {{ periodo_analizado }}
