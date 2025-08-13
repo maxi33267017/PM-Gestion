@@ -1318,13 +1318,21 @@ def procesar_csv_reporte(reporte):
         else:
             reporte.comentarios_manuales = f"Horas utilizadas: {horas_utilizadas:.1f} hr"
         
+        # Construir datos por categoría para análisis
+        datos_por_categoria = {}
+        for dato in datos_guardados:
+            if dato.categoria not in datos_por_categoria:
+                datos_por_categoria[dato.categoria] = []
+            datos_por_categoria[dato.categoria].append(dato)
+        
         # Analizar categorías disponibles para gráficos dinámicos
-        categorias_disponibles = analizar_categorias_disponibles(reporte)
-        reporte.comentarios_manuales += f"\nCategorías detectadas: {', '.join(categorias_disponibles.keys())}"
+        categorias_disponibles = analizar_categorias_disponibles(datos_por_categoria)
+        categorias_nombres = [cat['nombre'] for cat in categorias_disponibles]
+        reporte.comentarios_manuales += f"\nCategorías detectadas: {', '.join(categorias_nombres)}"
         
         reporte.save()
         print(f"DEBUG: Reporte guardado exitosamente")
-        print(f"DEBUG: Categorías detectadas: {list(categorias_disponibles.keys())}")
+        print(f"DEBUG: Categorías detectadas: {categorias_nombres}")
         
     except Exception as e:
         print(f"ERROR general procesando CSV: {str(e)}")
