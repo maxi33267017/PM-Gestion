@@ -1485,6 +1485,41 @@ def generar_recomendaciones_automaticas(reporte):
             elif porcentaje_economico < 30:
                 recomendaciones.append(f"💡 Bajo uso del modo económico ({modo_economico:.1f} hr, {porcentaje_economico:.1f}%). Considerar mayor uso para ahorro de combustible.")
     
+    # Análisis específico del modo ECO (para excavadoras, motoniveladores, etc.)
+    if 'Utilización del combustible del motor' in datos:
+        combustible = datos['Utilización del combustible del motor']
+        print(f"DEBUG: Datos de combustible: {combustible}")
+        
+        # Buscar modo ECO en diferentes variaciones
+        modo_eco = 0
+        eco_keys = ['ECO', 'Eco', 'eco', 'Modo ECO', 'Modo Eco', 'Económico', 'Económica']
+        
+        for key in combustible.keys():
+            if any(eco_term in key for eco_term in eco_keys):
+                modo_eco = combustible[key]
+                print(f"DEBUG: Encontrado modo ECO en '{key}': {modo_eco}")
+                break
+        
+        if modo_eco > 0:
+            porcentaje_eco = (modo_eco / reporte.total_horas_analizadas) * 100
+            print(f"DEBUG: Porcentaje modo ECO: {porcentaje_eco:.1f}%")
+            
+            if porcentaje_eco < 20:
+                recomendaciones.append(f"🚨 CRÍTICO: Uso muy bajo del modo ECO ({modo_eco:.1f} hr, {porcentaje_eco:.1f}%). El modo ECO reduce significativamente el consumo de combustible. Recomendado: mínimo 40% de uso para excavadoras y motoniveladores.")
+            elif porcentaje_eco < 40:
+                recomendaciones.append(f"⚠️ Uso bajo del modo ECO ({modo_eco:.1f} hr, {porcentaje_eco:.1f}%). Incrementar el uso del modo ECO puede reducir el consumo de combustible hasta en un 25%. Recomendado: mínimo 40% de uso.")
+            elif porcentaje_eco < 60:
+                recomendaciones.append(f"💡 Uso moderado del modo ECO ({modo_eco:.1f} hr, {porcentaje_eco:.1f}%). Hay oportunidad de mejorar el ahorro de combustible aumentando el uso del modo ECO.")
+            else:
+                recomendaciones.append(f"✅ Excelente uso del modo ECO ({modo_eco:.1f} hr, {porcentaje_eco:.1f}%). Esto contribuye significativamente al ahorro de combustible.")
+        else:
+            # Si no se encuentra modo ECO, verificar si es un equipo que debería tenerlo
+            equipo_tipo = reporte.equipo.modelo.nombre.lower()
+            equipos_con_eco = ['excavadora', 'excavador', 'motonivelador', 'motoniveladora', 'cargador', 'loader']
+            
+            if any(tipo in equipo_tipo for tipo in equipos_con_eco):
+                recomendaciones.append(f"💡 EQUIPO CON CAPACIDAD ECO: Este {reporte.equipo.modelo.nombre} debería tener modo ECO disponible. Verificar configuración del equipo y capacitar al operador sobre el uso del modo ECO para ahorro de combustible.")
+    
     # Análisis de utilización de excavadora
     if 'Utilización de excavadora' in datos:
         excavadora = datos['Utilización de excavadora']
