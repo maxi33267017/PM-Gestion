@@ -433,14 +433,11 @@
         <div class="col-md-3">
             <div class="kpi-card compact-kpi">
                 <div class="kpi-value">
-                    {% for dato in reporte.datos.all %}
-                        {% if dato.categoria == "Consumo promedio combustible" %}
-                            {{ dato.valor|floatformat:1 }} l/hr
-                            {% break %}
-                        {% endif %}
-                    {% empty %}
+                    {% if consumo_promedio %}
+                        {{ consumo_promedio|floatformat:1 }} l/hr
+                    {% else %}
                         Sin datos
-                    {% endfor %}
+                    {% endif %}
                 </div>
                 <div class="kpi-label">Consumo Promedio</div>
             </div>
@@ -448,13 +445,8 @@
         <div class="col-md-3">
             <div class="kpi-card compact-kpi">
                 <div class="kpi-value">
-                    {% if reporte.comentarios_manuales and "Período analizado:" in reporte.comentarios_manuales %}
-                        {% for linea in reporte.comentarios_manuales.splitlines %}
-                            {% if "Período analizado:" in linea %}
-                                {{ linea|slice:"18:" }}
-                                {% break %}
-                            {% endif %}
-                        {% endfor %}
+                    {% if periodo_analizado %}
+                        {{ periodo_analizado }}
                     {% else %}
                         {{ reporte.fecha_reporte|date:"d/m/Y" }}
                     {% endif %}

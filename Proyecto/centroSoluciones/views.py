@@ -902,10 +902,34 @@ def detalle_reporte_csc(request, reporte_id):
     
     print(f"DEBUG: Categorías para template: {[c['nombre'] for c in categorias_lista]}")
     
+    # Rutas de logos para el PDF
+    from django.conf import settings
+    logo_jd_horizontal_path = os.path.join(settings.BASE_DIR, 'static', 'img', 'JDLOGOHORIZONTAL.png')
+    logo_pm_path = os.path.join(settings.BASE_DIR, 'static', 'img', 'logo_pm_fondo_blanco.png')
+    
+    # Procesar consumo promedio de combustible
+    consumo_promedio = None
+    for dato in reporte.datos.all():
+        if dato.categoria == "Consumo promedio combustible":
+            consumo_promedio = dato.valor
+            break
+    
+    # Procesar período analizado desde comentarios
+    periodo_analizado = None
+    if reporte.comentarios_manuales:
+        for linea in reporte.comentarios_manuales.splitlines():
+            if "Período analizado:" in linea:
+                periodo_analizado = linea[18:].strip()  # Remover "Período analizado: "
+                break
+    
     context = {
         'reporte': reporte,
         'categorias': categorias_lista,
         'datos_por_categoria_js': datos_por_categoria_js,
+        'logo_jd_horizontal_path': logo_jd_horizontal_path,
+        'logo_pm_path': logo_pm_path,
+        'consumo_promedio': consumo_promedio,
+        'periodo_analizado': periodo_analizado,
     }
     return render(request, 'centroSoluciones/detalle_reporte_csc.html', context)
 
@@ -941,12 +965,29 @@ def generar_pdf_reporte_csc(request, reporte_id):
     logo_jd_horizontal_path = os.path.join(settings.BASE_DIR, 'static', 'img', 'JDLOGOHORIZONTAL.png')
     logo_pm_path = os.path.join(settings.BASE_DIR, 'static', 'img', 'logo_pm_fondo_blanco.png')
     
+    # Procesar consumo promedio de combustible
+    consumo_promedio = None
+    for dato in reporte.datos.all():
+        if dato.categoria == "Consumo promedio combustible":
+            consumo_promedio = dato.valor
+            break
+    
+    # Procesar período analizado desde comentarios
+    periodo_analizado = None
+    if reporte.comentarios_manuales:
+        for linea in reporte.comentarios_manuales.splitlines():
+            if "Período analizado:" in linea:
+                periodo_analizado = linea[18:].strip()  # Remover "Período analizado: "
+                break
+    
     context = {
         'reporte': reporte,
         'categorias': categorias,
         'datos_por_categoria_js': datos_por_categoria_js,
         'logo_jd_horizontal_path': logo_jd_horizontal_path,
         'logo_pm_path': logo_pm_path,
+        'consumo_promedio': consumo_promedio,
+        'periodo_analizado': periodo_analizado,
     }
     
     # Generar HTML usando el template PDF específico
