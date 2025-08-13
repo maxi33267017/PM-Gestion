@@ -40,83 +40,231 @@
     
     /* Estilos para impresión */
     @media print {
+        /* Configuración de página */
+        @page {
+            size: A4;
+            margin: 1.5cm;
+        }
+        
         /* Ocultar elementos no necesarios para impresión */
         .navbar, 
         .btn, 
-        .no-print {
+        .no-print,
+        .modal,
+        [data-bs-toggle="tooltip"] {
             display: none !important;
         }
         
-        /* Ajustar márgenes y tamaños */
+        /* Configuración general del body */
         body {
             margin: 0;
-            padding: 20px;
-            font-size: 12px;
+            padding: 0;
+            font-family: 'Arial', sans-serif;
+            font-size: 11px;
+            line-height: 1.4;
+            color: #333;
+            background: white !important;
         }
         
+        /* Header del reporte */
         .container-fluid {
             width: 100%;
             max-width: none;
+            padding: 0;
         }
         
-        /* Asegurar que los gráficos se impriman */
-        .chart-container {
-            height: 250px !important;
-            page-break-inside: avoid;
+        /* Título principal */
+        h1.h3 {
+            font-size: 18px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 5px;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 8px;
         }
         
-        /* Ajustar cards para impresión */
-        .card {
-            border: 1px solid #ddd;
-            margin-bottom: 15px;
-            page-break-inside: avoid;
-        }
-        
-        .card-header {
-            background-color: #f8f9fa !important;
-            color: #333 !important;
-        }
-        
-        /* Asegurar que las tablas se impriman correctamente */
-        .table {
+        /* Información del reporte */
+        .text-muted {
+            color: #666 !important;
             font-size: 10px;
+            margin-bottom: 20px;
         }
         
-        .table th,
-        .table td {
-            padding: 4px 6px;
-        }
-        
-        /* Ajustar KPIs para impresión */
+        /* KPIs - Diseño mejorado */
         .kpi-card {
-            background: #495057 !important;
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%) !important;
             color: white !important;
             padding: 15px;
             margin-bottom: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            page-break-inside: avoid;
         }
         
         .kpi-value {
-            font-size: 1.5rem;
+            font-size: 1.8rem;
+            font-weight: bold;
+            margin-bottom: 5px;
         }
         
         .kpi-label {
-            font-size: 0.8rem;
+            font-size: 0.9rem;
+            opacity: 0.9;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
         
-        /* Forzar salto de página después de KPIs */
+        /* Cards mejoradas */
+        .card {
+            border: 1px solid #ddd;
+            margin-bottom: 20px;
+            page-break-inside: avoid;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            border-radius: 6px;
+        }
+        
+        .card-header {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%) !important;
+            color: #2c3e50 !important;
+            font-weight: bold;
+            font-size: 12px;
+            padding: 12px 15px;
+            border-bottom: 1px solid #ddd;
+            border-radius: 6px 6px 0 0;
+        }
+        
+        .card-body {
+            padding: 15px;
+        }
+        
+        /* Tablas mejoradas */
+        .table {
+            font-size: 10px;
+            border-collapse: collapse;
+            width: 100%;
+            margin-bottom: 0;
+        }
+        
+        .table th {
+            background-color: #f8f9fa !important;
+            color: #2c3e50 !important;
+            font-weight: bold;
+            padding: 8px 6px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+        
+        .table td {
+            padding: 6px;
+            border: 1px solid #ddd;
+            vertical-align: middle;
+        }
+        
+        .table tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        
+        /* Gráficos */
+        .chart-container {
+            height: 200px !important;
+            page-break-inside: avoid;
+            margin: 15px 0;
+            border: 1px solid #eee;
+            border-radius: 4px;
+            padding: 10px;
+        }
+        
+        /* Recomendaciones mejoradas */
+        .recommendation-item {
+            margin-bottom: 10px;
+            padding: 10px 15px;
+            border-left: 4px solid #3498db;
+            background-color: #f8f9fa;
+            border-radius: 0 4px 4px 0;
+            font-size: 10px;
+        }
+        
+        .recommendation-item.warning {
+            border-left-color: #f39c12;
+            background-color: #fef9e7;
+        }
+        
+        .recommendation-item.success {
+            border-left-color: #27ae60;
+            background-color: #e8f5e8;
+        }
+        
+        /* Alertas mejoradas */
+        .alert {
+            border: 1px solid #ddd;
+            padding: 10px 15px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-size: 10px;
+        }
+        
+        .alert-info {
+            background-color: #d1ecf1;
+            border-color: #bee5eb;
+        }
+        
+        .alert-warning {
+            background-color: #fff3cd;
+            border-color: #ffeaa7;
+        }
+        
+        .alert-danger {
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+        }
+        
+        /* Badges */
+        .badge {
+            font-size: 8px;
+            padding: 2px 6px;
+            border-radius: 3px;
+        }
+        
+        /* Información del equipo */
+        .table-sm td {
+            padding: 4px 6px;
+            font-size: 9px;
+        }
+        
+        .table-sm strong {
+            color: #2c3e50;
+        }
+        
+        /* Salto de página después de KPIs */
         .row.mb-4 {
             page-break-after: always;
         }
         
-        /* Ajustar recomendaciones */
-        .recommendation-item {
-            margin-bottom: 8px;
-            padding: 8px 12px;
+        /* Evitar cortes en elementos importantes */
+        .card,
+        .chart-container,
+        .kpi-card {
+            page-break-inside: avoid;
         }
         
-        /* Ocultar tooltips en impresión */
-        [data-bs-toggle="tooltip"] {
-            display: none !important;
+        /* Footer del reporte */
+        .text-muted small {
+            font-size: 8px;
+            color: #999;
+        }
+        
+        /* Iconos */
+        .fas {
+            display: inline-block;
+            margin-right: 5px;
+        }
+        
+        /* Responsive para impresión */
+        .col-md-3,
+        .col-lg-8,
+        .col-lg-4 {
+            width: 100% !important;
+            float: none !important;
         }
     }
 </style>
