@@ -1,4 +1,3 @@
-import os
 from django.shortcuts import render, redirect, get_object_or_404
 from clientes.models import Equipo
 from gestionDeTaller.models import Servicio, PreOrden, Evidencia, PedidoRepuestosTerceros, EncuestaServicio, RespuestaEncuesta
@@ -835,25 +834,14 @@ from gestionDeTaller.models import Servicio
 
 # Función de utilidad para construir la URL absoluta de archivos estáticos
 def link_callback(uri, rel):
-    """
-    Convertir URIs de archivos estáticos a rutas absolutas del sistema
-    """
     if uri.startswith('/static/'):
-        # Remover /static/ del inicio y construir ruta absoluta
-        static_path = uri.replace('/static/', '')
-        path = os.path.join(settings.BASE_DIR, 'static', static_path)
+        path = os.path.join(settings.BASE_DIR, uri.replace('/static/', 'static/'))
     elif uri.startswith('/media/'):
-        # Remover /media/ del inicio y construir ruta absoluta
-        media_path = uri.replace('/media/', '')
-        path = os.path.join(settings.MEDIA_ROOT, media_path)
+        path = os.path.join(settings.MEDIA_ROOT, uri.replace('/media/', ''))
     else:
         return uri
-    
-    # Verificar que el archivo existe
     if not os.path.isfile(path):
-        print(f"ADVERTENCIA: Archivo no encontrado: {path}")
-        return uri
-    
+        raise Exception(f"El archivo {path} no se encuentra en el sistema.")
     return path
 
 @login_required
@@ -5022,15 +5010,9 @@ def descargar_checklist_pdf(request, checklist_id):
             elementos_por_seccion[seccion_nombre] = []
         elementos_por_seccion[seccion_nombre].append(elemento)
     
-    # Obtener rutas absolutas de las imágenes
-    logo_jd_horizontal_path = os.path.join(settings.BASE_DIR, 'static', 'img', 'JDLOGOHORIZONTAL.png')
-    logo_pm_path = os.path.join(settings.BASE_DIR, 'static', 'img', 'logo_pm_fondo_blanco.png')
-    
     context = {
         'checklist': checklist,
         'elementos_por_seccion': elementos_por_seccion,
-        'logo_jd_horizontal_path': logo_jd_horizontal_path,
-        'logo_pm_path': logo_pm_path,
     }
     
     # Generar HTML

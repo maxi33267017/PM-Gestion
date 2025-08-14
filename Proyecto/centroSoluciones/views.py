@@ -3,24 +3,306 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db.models import Q
 from django.core.paginator import Paginator
-from django.http import JsonResponse, HttpResponse
+from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
 from django.utils import timezone
-from .models import AlertaEquipo, LeadJohnDeere, AsignacionAlerta, CodigoAlerta, ReporteCSC, DatosReporteCSC
-from clientes.models import Cliente, Equipo, ModeloEquipo
+from .models import AlertaEquipo, LeadJohnDeere, AsignacionAlerta, CodigoAlerta
+from clientes.models import Cliente, Equipo
 from recursosHumanos.models import Usuario, Sucursal
 from crm.models import EmbudoVentas, ContactoCliente
-
-# Importaciones para Reportes CSC
-import pandas as pd
 import os
-from datetime import datetime
-from django.core.files.storage import default_storage
-from django.template.loader import render_to_string
-from xhtml2pdf import pisa
-import io
 
 # Create your views here.
+
+def limpiar_valor_numerico(valor):
+    """Convertir valores NaN a None para campos DecimalField"""
+    import math
+    if valor is None or (isinstance(valor, float) and math.isnan(valor)):
+        return None
+    return valor
+
+def procesar_datos_utilizacion(archivo, df):
+    """Procesar datos de utilización del archivo Analizador_de_máquina"""
+    from .models import DatosUtilizacionMensual
+    from clientes.models import Equipo
+    from datetime import datetime
+    from django.utils import timezone
+    
+    print(f"DEBUG: Procesando archivo {archivo.nombre_archivo}")
+    print(f"DEBUG: Columnas disponibles: {list(df.columns)}")
+    print(f"DEBUG: Primera fila: {df.iloc[0].to_dict()}")
+    
+    registros_procesados = 0
+    
+    for index, row in df.iterrows():
+        try:
+            # Extraer datos básicos - usar nombres exactos de columnas
+            maquina = row.get('Máquina', '')
+            modelo = row.get('Modelo', '')
+            tipo = row.get('Tipo', '')
+            numero_serie = row.get('Número de serie de la máquina', '')
+            organizacion = row.get('Organización', '')
+            identificador_org = str(row.get('Identificador de organización', ''))
+            
+            # Procesar fechas
+            fecha_inicio_str = row.get('Fecha de inicio', '')
+            fecha_fin_str = row.get('Fecha de terminación', '')
+            
+            fecha_inicio = None
+            fecha_fin = None
+            
+            if fecha_inicio_str and str(fecha_inicio_str) != 'nan':
+                try:
+                    fecha_inicio = datetime.strptime(str(fecha_inicio_str).split()[0], '%d/%m/%Y').date()
+                except:
+                    pass
+            
+            if fecha_fin_str and str(fecha_fin_str) != 'nan':
+                try:
+                    fecha_fin = datetime.strptime(str(fecha_fin_str).split()[0], '%d/%m/%Y').date()
+                except:
+                    pass
+            
+            # Buscar equipo por número de serie
+            equipo = None
+            if numero_serie and str(numero_serie) != 'nan':
+                try:
+                    equipo = Equipo.objects.get(numero_serie=numero_serie)
+                except Equipo.DoesNotExist:
+                    pass
+            
+            # Crear registro de datos de utilización
+            datos_utilizacion = DatosUtilizacionMensual(
+                archivo=archivo,
+                equipo=equipo,
+                maquina=maquina,
+                modelo=modelo,
+                tipo=tipo,
+                numero_serie=numero_serie,
+                organizacion=organizacion,
+                identificador_organizacion=identificador_org,
+                fecha_inicio=fecha_inicio,
+                fecha_fin=fecha_fin,
+                
+                # Datos de combustible
+                combustible_consumido_periodo=limpiar_valor_numerico(row.get('Combustible consumido Período (l)', 0)),
+                consumo_promedio_periodo=limpiar_valor_numerico(row.get('Consumo promedio de combustible Período (l/h)', 0)),
+                combustible_funcionamiento=limpiar_valor_numerico(row.get('Combustible en funcionamiento Período (l)', 0)),
+                combustible_ralenti=limpiar_valor_numerico(row.get('Combustible en ralentí Período (l)', 0)),
+                
+                # Datos de motor
+                horas_trabajo_motor_periodo=limpiar_valor_numerico(row.get('Horas de trabajo del motor Período (h)', 0)),
+                horas_trabajo_motor_vida_util=limpiar_valor_numerico(row.get('Horas de trabajo del motor Vida útil (h)', 0)),
+                
+                # Datos de temperatura
+                temp_max_aceite_transmision=limpiar_valor_numerico(row.get('Temperatura máxima de aceite de transmisión Período (°C)', 0)),
+                temp_max_aceite_hidraulico=limpiar_valor_numerico(row.get('Temperatura máxima de aceite hidráulico Período (°C)', 0)),
+                temp_max_refrigerante=limpiar_valor_numerico(row.get('Temperatura máxima de refrigerante Período (°C)', 0)),
+                
+                # Datos de modo ECO
+                modo_eco_activado_porcentaje=limpiar_valor_numerico(row.get('Modo ECO Activado (%)', 0)),
+                modo_eco_activado_horas=limpiar_valor_numerico(row.get('Modo ECO Activado (h)', 0)),
+                modo_eco_desactivado_horas=limpiar_valor_numerico(row.get('Modo ECO Desactivado (h)', 0)),
+                
+                # Datos de utilización (C&F)
+                utilizacion_alta_horas=limpiar_valor_numerico(row.get('Utilización (C&F) Alta (h)', 0)),
+                utilizacion_media_horas=limpiar_valor_numerico(row.get('Utilización (C&F) Media (h)', 0)),
+                utilizacion_baja_horas=limpiar_valor_numerico(row.get('Utilización (C&F) Baja (h)', 0)),
+                utilizacion_ralenti_horas=limpiar_valor_numerico(row.get('Utilización (C&F) Ralentí (h)', 0)),
+                
+                # Datos de tiempo en marcha
+                tiempo_avan_1=limpiar_valor_numerico(row.get('Tiempo en marcha Avan 1 (h)', 0)),
+                tiempo_avan_2=limpiar_valor_numerico(row.get('Tiempo en marcha Avan 2 (h)', 0)),
+                tiempo_avan_3=limpiar_valor_numerico(row.get('Tiempo en marcha Avan 3 (h)', 0)),
+                tiempo_avan_4=limpiar_valor_numerico(row.get('Tiempo en marcha Avan 4 (h)', 0)),
+                tiempo_avan_5=limpiar_valor_numerico(row.get('Tiempo en marcha Avan 5 (h)', 0)),
+                tiempo_avan_6=limpiar_valor_numerico(row.get('Tiempo en marcha Avan 6 (h)', 0)),
+                tiempo_avan_7=limpiar_valor_numerico(row.get('Tiempo en marcha Avan 7 (h)', 0)),
+                tiempo_avan_8=limpiar_valor_numerico(row.get('Tiempo en marcha Avan 8 (h)', 0)),
+                tiempo_estacionamiento=limpiar_valor_numerico(row.get('Tiempo en marcha Estacionamiento (h)', 0)),
+                tiempo_punto_muerto=limpiar_valor_numerico(row.get('Tiempo en marcha Punto muerto (h)', 0)),
+                tiempo_ret_1=limpiar_valor_numerico(row.get('Tiempo en marcha Ret 1 (h)', 0)),
+                tiempo_ret_2=limpiar_valor_numerico(row.get('Tiempo en marcha Ret 2 (h)', 0)),
+                tiempo_ret_3=limpiar_valor_numerico(row.get('Tiempo en marcha Ret 3 (h)', 0)),
+                tiempo_ret_4=limpiar_valor_numerico(row.get('Tiempo en marcha Ret 4 (h)', 0)),
+                tiempo_ret_5=limpiar_valor_numerico(row.get('Tiempo en marcha Ret 5 (h)', 0)),
+                tiempo_ret_6=limpiar_valor_numerico(row.get('Tiempo en marcha Ret 6 (h)', 0)),
+                tiempo_ret_7=limpiar_valor_numerico(row.get('Tiempo en marcha Ret 7 (h)', 0)),
+                tiempo_ret_8=limpiar_valor_numerico(row.get('Tiempo en marcha Ret 8 (h)', 0)),
+                
+                # Datos adicionales
+                nivel_tanque_combustible=limpiar_valor_numerico(row.get('Nivel del tanque de combustible (%)', 0)),
+                odometro_vida_util=limpiar_valor_numerico(row.get('Odómetro Vida útil (km)', 0)),
+                ano_modelo=limpiar_valor_numerico(row.get('Año del modelo', '')),
+                estado_maquina=row.get('Estado de máquina', ''),
+                ultima_latitud=limpiar_valor_numerico(row.get('Última latitud conocida', 0)),
+                ultima_longitud=limpiar_valor_numerico(row.get('Última longitud conocida', 0)),
+                
+                # Datos originales
+                datos_originales=row.to_dict()
+            )
+            
+            datos_utilizacion.save()
+            registros_procesados += 1
+            
+            if registros_procesados % 50 == 0:
+                print(f"DEBUG: Procesados {registros_procesados} registros...")
+            
+        except Exception as e:
+            print(f"ERROR procesando fila {index}: {str(e)}")
+            continue
+    
+    print(f"DEBUG: Total registros procesados: {registros_procesados}")
+    
+    # Actualizar archivo
+    archivo.total_registros = len(df)
+    archivo.registros_procesados = registros_procesados
+    archivo.periodo = f"{fecha_inicio.strftime('%d/%m/%Y')} - {fecha_fin.strftime('%d/%m/%Y')}" if fecha_inicio and fecha_fin else ""
+    archivo.log_procesamiento = f"Procesados {registros_procesados} de {len(df)} registros"
+    archivo.save()
+
+def procesar_archivo_excel(archivo_id):
+    """Procesar archivo Excel en segundo plano"""
+    from .models import ArchivoDatosMensual, DatosUtilizacionMensual, NotificacionMensual
+    from clientes.models import Equipo
+    import pandas as pd
+    from datetime import datetime
+    import traceback
+    
+    print(f"DEBUG: Iniciando procesamiento del archivo ID: {archivo_id}")
+    
+    try:
+        archivo = ArchivoDatosMensual.objects.get(id=archivo_id)
+        print(f"DEBUG: Archivo encontrado: {archivo.nombre_archivo}")
+        print(f"DEBUG: Tipo: {archivo.tipo}")
+        print(f"DEBUG: Estado actual: {archivo.estado}")
+        
+        archivo.estado = 'PROCESANDO'
+        archivo.save()
+        print(f"DEBUG: Estado cambiado a PROCESANDO")
+        
+        print(f"DEBUG: Ruta del archivo: {archivo.archivo.path}")
+        print(f"DEBUG: Archivo existe: {os.path.exists(archivo.archivo.path)}")
+        
+        # Leer el archivo Excel
+        print(f"DEBUG: Leyendo archivo Excel...")
+        df = pd.read_excel(archivo.archivo.path)
+        print(f"DEBUG: Archivo leído exitosamente")
+        print(f"DEBUG: Dimensiones del DataFrame: {df.shape}")
+        print(f"DEBUG: Columnas: {list(df.columns)}")
+        
+        if archivo.tipo == 'UTILIZACION':
+            print(f"DEBUG: Procesando como UTILIZACION")
+            procesar_datos_utilizacion(archivo, df)
+        elif archivo.tipo == 'NOTIFICACIONES':
+            print(f"DEBUG: Procesando como NOTIFICACIONES")
+            procesar_notificaciones(archivo, df)
+        else:
+            print(f"ERROR: Tipo de archivo no reconocido: {archivo.tipo}")
+            raise Exception(f"Tipo de archivo no reconocido: {archivo.tipo}")
+        
+        archivo.estado = 'COMPLETADO'
+        archivo.fecha_procesamiento = timezone.now()
+        archivo.save()
+        
+        print(f"DEBUG: Archivo procesado exitosamente: {archivo.nombre_archivo}")
+        
+    except Exception as e:
+        print(f"ERROR procesando archivo {archivo_id}: {str(e)}")
+        print(f"ERROR traceback: {traceback.format_exc()}")
+        
+        try:
+            archivo = ArchivoDatosMensual.objects.get(id=archivo_id)
+            archivo.estado = 'ERROR'
+            archivo.errores = f"Error: {str(e)}\n\nTraceback:\n{traceback.format_exc()}"
+            archivo.save()
+            print(f"DEBUG: Estado cambiado a ERROR")
+        except Exception as save_error:
+            print(f"ERROR guardando estado de error: {str(save_error)}")
+
+def procesar_notificaciones(archivo, df):
+    """Procesar notificaciones del archivo Notificaciones"""
+    from .models import NotificacionMensual
+    from clientes.models import Equipo
+    from datetime import datetime
+    
+    registros_procesados = 0
+    
+    for index, row in df.iterrows():
+        try:
+            # Extraer datos básicos
+            nombre_organizacion = row.get('Nombre de organización', '')
+            nombre = row.get('Nombre', '')
+            pin_maquina = row.get('PIN de máquina', '')
+            marca_maquina = row.get('Marca de máquina', '')
+            tipo_maquina = row.get('Tipo de máquina', '')
+            modelo_maquina = row.get('Modelo de máquina', '')
+            
+            # Procesar fecha y hora
+            fecha_str = row.get('Fecha', '')
+            codigo_hora_str = row.get('Código de hora', '')
+            
+            fecha = None
+            codigo_hora = None
+            
+            if fecha_str and str(fecha_str) != 'nan':
+                try:
+                    fecha = datetime.strptime(str(fecha_str), '%Y/%m/%d').date()
+                except:
+                    pass
+            
+            if codigo_hora_str and str(codigo_hora_str) != 'nan':
+                try:
+                    codigo_hora = datetime.strptime(str(codigo_hora_str), '%H:%M:%S').time()
+                except:
+                    pass
+            
+            # Buscar equipo por PIN
+            equipo = None
+            if pin_maquina and str(pin_maquina) != 'nan':
+                try:
+                    equipo = Equipo.objects.get(numero_serie=pin_maquina)
+                except Equipo.DoesNotExist:
+                    pass
+            
+            # Crear registro de notificación
+            notificacion = NotificacionMensual(
+                archivo=archivo,
+                equipo=equipo,
+                nombre_organizacion=nombre_organizacion,
+                nombre=nombre,
+                fecha=fecha,
+                codigo_hora=codigo_hora,
+                pin_maquina=pin_maquina,
+                marca_maquina=marca_maquina,
+                tipo_maquina=tipo_maquina,
+                modelo_maquina=modelo_maquina,
+                severidad=row.get('Severidad', ''),
+                categoria=row.get('Categoría', ''),
+                codigos_diagnostico=row.get('Códigos de diagnóstico', ''),
+                descripcion=row.get('Descripción', ''),
+                texto=row.get('Texto', ''),
+                latitud=limpiar_valor_numerico(row.get('Latitud', 0)),
+                longitud=limpiar_valor_numerico(row.get('Longitud', 0)),
+                incidencias=row.get('Incidencias', ''),
+                duracion=row.get('Duración', ''),
+                horas_trabajo_motor=limpiar_valor_numerico(row.get('Horas de trabajo del motor', 0)),
+                resuelta=False,
+                datos_originales=row.to_dict()
+            )
+            
+            notificacion.save()
+            registros_procesados += 1
+            
+        except Exception as e:
+            print(f"ERROR procesando notificación fila {index}: {str(e)}")
+            continue
+    
+    # Actualizar archivo
+    archivo.total_registros = len(df)
+    archivo.registros_procesados = registros_procesados
+    archivo.log_procesamiento = f"Procesadas {registros_procesados} de {len(df)} notificaciones"
+    archivo.save()
 
 @login_required
 def dashboard(request):
@@ -52,20 +334,10 @@ def dashboard(request):
         ).count()
         leads_nuevos = 0  # Los técnicos no ven leads
     
-    # Contar reportes CSC (solo para gerentes/administrativos)
-    reportes_csc = 0
-    total_archivos_mensuales = 0
-    if request.user.rol in ['GERENTE', 'ADMINISTRATIVO']:
-        reportes_csc = ReporteCSC.objects.count()
-        from .models import ArchivoDatosMensual
-        total_archivos_mensuales = ArchivoDatosMensual.objects.count()
-    
     context = {
         'alertas_pendientes': alertas_pendientes,
         'alertas_asignadas': alertas_asignadas,
         'leads_nuevos': leads_nuevos,
-        'reportes_csc': reportes_csc,
-        'total_archivos_mensuales': total_archivos_mensuales,
     }
     
     return render(request, 'centroSoluciones/dashboard.html', context)
@@ -738,1374 +1010,3 @@ def obtener_lista_codigos_alerta(request):
         })
     except Exception as e:
         return JsonResponse({'success': False, 'message': f'Error al obtener códigos: {str(e)}'})
-
-# Vistas para Reportes CSC
-@login_required
-def lista_reportes_csc(request):
-    """Lista de todos los reportes CSC"""
-    reportes = ReporteCSC.objects.select_related('equipo', 'equipo__cliente', 'creado_por').all()
-    
-    # Filtros
-    equipo_id = request.GET.get('equipo')
-    if equipo_id:
-        reportes = reportes.filter(equipo_id=equipo_id)
-    
-    estado = request.GET.get('estado')
-    if estado:
-        reportes = reportes.filter(estado=estado)
-    
-    context = {
-        'reportes': reportes,
-        'equipos': Equipo.objects.filter(activo=True).select_related('cliente'),
-    }
-    return render(request, 'centroSoluciones/lista_reportes_csc.html', context)
-
-@login_required
-def importar_reporte_csc(request):
-    """Importar archivo CSV y crear reporte CSC"""
-    if request.method == 'POST':
-        archivo = request.FILES.get('archivo_csv')
-        cliente_id = request.POST.get('cliente')
-        equipo_id = request.POST.get('equipo')
-        
-        if not archivo:
-            messages.error(request, 'Debe seleccionar un archivo CSV.')
-            return redirect('centroSoluciones:lista_reportes_csc')
-        
-        if not cliente_id:
-            messages.error(request, 'Debe seleccionar un cliente.')
-            return redirect('centroSoluciones:lista_reportes_csc')
-        
-        if not equipo_id:
-            messages.error(request, 'Debe seleccionar un equipo.')
-            return redirect('centroSoluciones:lista_reportes_csc')
-        
-        try:
-            # Obtener cliente y equipo seleccionados
-            cliente = get_object_or_404(Cliente, id=cliente_id)
-            equipo = get_object_or_404(Equipo, id=equipo_id, cliente=cliente)
-            
-            # Extraer fecha del nombre del archivo
-            nombre_archivo = archivo.name
-            print(f"DEBUG: Procesando archivo: {nombre_archivo}")
-            
-            fecha_reporte = extraer_fecha_desde_nombre(nombre_archivo)
-            print(f"DEBUG: Fecha extraída: {fecha_reporte}")
-            
-            if not fecha_reporte:
-                messages.error(request, 'No se pudo extraer la fecha del reporte del nombre del archivo.')
-                return redirect('centroSoluciones:lista_reportes_csc')
-            
-            # Calcular período analizado (mes completo)
-            from datetime import datetime, timedelta
-            import calendar
-            
-            # Si la fecha es el día 8, asumimos que es el reporte del mes anterior
-            if fecha_reporte.day <= 15:
-                # Es reporte del mes anterior
-                primer_dia = fecha_reporte.replace(day=1)
-                ultimo_dia = fecha_reporte.replace(day=calendar.monthrange(fecha_reporte.year, fecha_reporte.month)[1])
-            else:
-                # Es reporte del mes actual
-                primer_dia = fecha_reporte.replace(day=1)
-                ultimo_dia = fecha_reporte.replace(day=calendar.monthrange(fecha_reporte.year, fecha_reporte.month)[1])
-            
-            periodo_analizado = f"{primer_dia.strftime('%d/%m/%Y')} - {ultimo_dia.strftime('%d/%m/%Y')}"
-            print(f"DEBUG: Período analizado: {periodo_analizado}")
-            
-            # Crear reporte
-            print("DEBUG: Creando reporte en la base de datos...")
-            reporte = ReporteCSC.objects.create(
-                equipo=equipo,
-                fecha_reporte=fecha_reporte,
-                archivo_csv=archivo,
-                creado_por=request.user
-            )
-            
-            # Guardar período analizado en comentarios manuales temporalmente
-            reporte.comentarios_manuales = f"Período analizado: {periodo_analizado}"
-            reporte.save()
-            print(f"DEBUG: Reporte creado con ID: {reporte.id}")
-            
-            # Procesar CSV
-            print("DEBUG: Procesando CSV...")
-            procesar_csv_reporte(reporte)
-            print("DEBUG: CSV procesado exitosamente")
-            
-            # Generar recomendaciones automáticas
-            print("DEBUG: Generando recomendaciones...")
-            generar_recomendaciones_automaticas(reporte)
-            print("DEBUG: Recomendaciones generadas")
-            
-            messages.success(request, f'Reporte CSC importado exitosamente para el equipo {equipo.numero_serie}')
-            return redirect('centroSoluciones:detalle_reporte_csc', reporte_id=reporte.id)
-            
-        except Exception as e:
-            print(f"ERROR general procesando CSV: {str(e)}")
-            import traceback
-            traceback.print_exc()
-            messages.error(request, f'Error al procesar el archivo: {str(e)}')
-            return redirect('centroSoluciones:lista_reportes_csc')
-    
-    # Para GET, mostrar formulario con selects
-    clientes = Cliente.objects.filter(activo=True).order_by('razon_social')
-    context = {
-        'clientes': clientes,
-    }
-    return render(request, 'centroSoluciones/importar_reporte_csc.html', context)
-
-@login_required
-def detalle_reporte_csc(request, reporte_id):
-    """Ver detalles de un reporte CSC"""
-    reporte = get_object_or_404(
-        ReporteCSC.objects.select_related('equipo', 'equipo__cliente', 'creado_por'),
-        id=reporte_id
-    )
-    
-    # Agrupar datos por categoría
-    datos_por_categoria = {}
-    for dato in reporte.datos.all():
-        if dato.categoria not in datos_por_categoria:
-            datos_por_categoria[dato.categoria] = []
-        datos_por_categoria[dato.categoria].append(dato)
-    
-    # Analizar categorías disponibles dinámicamente
-    categorias_disponibles = analizar_categorias_disponibles(datos_por_categoria)
-    
-    # Convertir a formato para template
-    categorias_lista = []
-    datos_por_categoria_js = {}
-    
-    for config in categorias_disponibles:
-        # Solo incluir categorías con datos
-        if config['datos']:
-            # Preparar datos para la tabla
-            datos_tabla = []
-            for dato in config['datos']:
-                datos_tabla.append({
-                    'serie': dato.serie,
-                    'valor': float(dato.valor),
-                    'unidad': dato.unidad
-                })
-            
-            categorias_lista.append({
-                'nombre': config['nombre'],
-                'datos_tabla': datos_tabla,
-                'tipo_grafico': config['tipo_grafico'],
-                'prioridad': config['prioridad'],
-                'total_valor': float(config['total_valor']),
-                'unidades': config['unidades']
-            })
-            
-            # Preparar datos para JavaScript
-            datos_por_categoria_js[config['nombre']] = {
-                'labels': [d.serie for d in config['datos']],
-                'data': [float(d.valor) for d in config['datos']],
-                'tipo_grafico': config['tipo_grafico']
-            }
-    
-    print(f"DEBUG: Categorías para template: {[c['nombre'] for c in categorias_lista]}")
-    
-    # Rutas de logos para el PDF
-    from django.conf import settings
-    logo_jd_horizontal_path = os.path.join(settings.BASE_DIR, 'static', 'img', 'JDLOGOHORIZONTAL.png')
-    logo_pm_path = os.path.join(settings.BASE_DIR, 'static', 'img', 'logo_pm_fondo_blanco.png')
-    
-    # Procesar consumo promedio de combustible
-    consumo_promedio = None
-    for dato in reporte.datos.all():
-        if dato.categoria == "Consumo promedio combustible":
-            consumo_promedio = dato.valor
-            break
-    
-    # Procesar período analizado desde comentarios
-    periodo_analizado = None
-    if reporte.comentarios_manuales:
-        for linea in reporte.comentarios_manuales.splitlines():
-            if "Período analizado:" in linea:
-                periodo_analizado = linea[18:].strip()  # Remover "Período analizado: "
-                break
-    
-    # Si no se encontró en comentarios, extraer desde los datos del CSV
-    if not periodo_analizado:
-        fechas_inicio = []
-        fechas_fin = []
-        for dato in reporte.datos.all():
-            if dato.fecha_inicio:
-                fechas_inicio.append(dato.fecha_inicio)
-            if dato.fecha_fin:
-                fechas_fin.append(dato.fecha_fin)
-        
-        if fechas_inicio and fechas_fin:
-            # Tomar la primera fecha de inicio y la primera fecha de fin
-            fecha_inicio = min(fechas_inicio)
-            fecha_fin = max(fechas_fin)
-            periodo_analizado = f"{fecha_inicio.strftime('%d/%m/%Y')} - {fecha_fin.strftime('%d/%m/%Y')}"
-    
-    context = {
-        'reporte': reporte,
-        'categorias': categorias_lista,
-        'datos_por_categoria_js': datos_por_categoria_js,
-        'logo_jd_horizontal_path': logo_jd_horizontal_path,
-        'logo_pm_path': logo_pm_path,
-        'consumo_promedio': consumo_promedio,
-        'periodo_analizado': periodo_analizado,
-    }
-    return render(request, 'centroSoluciones/detalle_reporte_csc.html', context)
-
-@login_required
-def generar_pdf_reporte_csc(request, reporte_id):
-    """Generar PDF del reporte CSC usando el template principal con estilos de print"""
-    reporte = get_object_or_404(
-        ReporteCSC.objects.select_related('equipo', 'equipo__cliente', 'creado_por'),
-        id=reporte_id
-    )
-    
-    # Usar la misma lógica que detalle_reporte_csc para preparar los datos
-    datos_por_categoria = {}
-    for dato in reporte.datos.all():
-        if dato.categoria not in datos_por_categoria:
-            datos_por_categoria[dato.categoria] = []
-        datos_por_categoria[dato.categoria].append(dato)
-    
-    # Analizar categorías disponibles
-    categorias = analizar_categorias_disponibles(datos_por_categoria)
-    
-    # Preparar datos para gráficos
-    datos_por_categoria_js = {}
-    for categoria in categorias:
-        datos_por_categoria_js[categoria['nombre']] = {
-            'labels': [dato['serie'] for dato in categoria['datos_tabla']],
-            'data': [float(dato['valor']) for dato in categoria['datos_tabla']],
-            'tipo_grafico': categoria['tipo_grafico']
-        }
-    
-    # Rutas de logos para el PDF
-    from django.conf import settings
-    logo_jd_horizontal_path = os.path.join(settings.BASE_DIR, 'static', 'img', 'JDLOGOHORIZONTAL.png')
-    logo_pm_path = os.path.join(settings.BASE_DIR, 'static', 'img', 'logo_pm_fondo_blanco.png')
-    
-    # Procesar consumo promedio de combustible
-    consumo_promedio = None
-    for dato in reporte.datos.all():
-        if dato.categoria == "Consumo promedio combustible":
-            consumo_promedio = dato.valor
-            break
-    
-    # Procesar período analizado desde comentarios
-    periodo_analizado = None
-    if reporte.comentarios_manuales:
-        for linea in reporte.comentarios_manuales.splitlines():
-            if "Período analizado:" in linea:
-                periodo_analizado = linea[18:].strip()  # Remover "Período analizado: "
-                break
-    
-    # Si no se encontró en comentarios, extraer desde los datos del CSV
-    if not periodo_analizado:
-        fechas_inicio = []
-        fechas_fin = []
-        for dato in reporte.datos.all():
-            if dato.fecha_inicio:
-                fechas_inicio.append(dato.fecha_inicio)
-            if dato.fecha_fin:
-                fechas_fin.append(dato.fecha_fin)
-        
-        if fechas_inicio and fechas_fin:
-            # Tomar la primera fecha de inicio y la primera fecha de fin
-            fecha_inicio = min(fechas_inicio)
-            fecha_fin = max(fechas_fin)
-            periodo_analizado = f"{fecha_inicio.strftime('%d/%m/%Y')} - {fecha_fin.strftime('%d/%m/%Y')}"
-    
-    context = {
-        'reporte': reporte,
-        'categorias': categorias,
-        'datos_por_categoria_js': datos_por_categoria_js,
-        'logo_jd_horizontal_path': logo_jd_horizontal_path,
-        'logo_pm_path': logo_pm_path,
-        'consumo_promedio': consumo_promedio,
-        'periodo_analizado': periodo_analizado,
-    }
-    
-    # Generar HTML usando el template PDF específico
-    html = render_to_string('centroSoluciones/reporte_csc_pdf.html', context)
-    
-    # Crear respuesta PDF
-    response = HttpResponse(content_type='application/pdf')
-    response['Content-Disposition'] = f'attachment; filename="reporte_csc_{reporte.equipo.numero_serie}_{reporte.fecha_reporte}.pdf"'
-    
-    # Convertir HTML a PDF
-    pisa_status = pisa.CreatePDF(io.StringIO(html), dest=response, link_callback=link_callback)
-    
-    if pisa_status.err:
-        return HttpResponse("Hubo un error al generar el PDF", status=400)
-    
-    return response
-
-@login_required
-@require_http_methods(["POST"])
-def actualizar_comentarios_csc(request, reporte_id):
-    """Actualizar comentarios manuales del reporte CSC"""
-    reporte = get_object_or_404(ReporteCSC, id=reporte_id)
-    
-    comentarios = request.POST.get('comentarios', '').strip()
-    reporte.comentarios_manuales = comentarios
-    reporte.save()
-    
-    messages.success(request, 'Comentarios actualizados correctamente.')
-    return redirect('centroSoluciones:detalle_reporte_csc', reporte_id=reporte.id)
-
-@login_required
-def obtener_equipos_cliente_csc(request):
-    """Obtener equipos de un cliente para el formulario de importación CSC"""
-    cliente_id = request.GET.get('cliente_id')
-    if cliente_id:
-        equipos = Equipo.objects.filter(
-            cliente_id=cliente_id, 
-            activo=True
-        ).values('id', 'numero_serie', 'modelo__nombre')
-        return JsonResponse({'equipos': list(equipos)})
-    return JsonResponse({'equipos': []})
-
-@login_required
-def regenerar_recomendaciones_csc(request, reporte_id):
-    """Regenerar recomendaciones automáticas para un reporte CSC"""
-    reporte = get_object_or_404(ReporteCSC, id=reporte_id)
-    
-    try:
-        generar_recomendaciones_automaticas(reporte)
-        messages.success(request, 'Recomendaciones regeneradas correctamente.')
-    except Exception as e:
-        messages.error(request, f'Error al regenerar recomendaciones: {str(e)}')
-    
-    return redirect('centroSoluciones:detalle_reporte_csc', reporte_id=reporte_id)
-
-@login_required
-@require_http_methods(["POST"])
-def agregar_alerta_csc(request, reporte_id):
-    """Agregar una nueva alerta a un reporte CSC"""
-    reporte = get_object_or_404(ReporteCSC, id=reporte_id)
-    
-    try:
-        from .models import AlertaReporteCSC
-        from datetime import datetime
-        
-        # Obtener datos del formulario
-        nombre = request.POST.get('nombre', '').strip()
-        fecha_hora_str = request.POST.get('fecha_hora', '')
-        severidad = request.POST.get('severidad', '')
-        descripcion = request.POST.get('descripcion', '').strip()
-        
-        # Validaciones
-        if not nombre:
-            messages.error(request, 'El nombre de la alerta es obligatorio.')
-            return redirect('centroSoluciones:detalle_reporte_csc', reporte_id=reporte_id)
-        
-        if not fecha_hora_str:
-            messages.error(request, 'La fecha y hora son obligatorias.')
-            return redirect('centroSoluciones:detalle_reporte_csc', reporte_id=reporte_id)
-        
-        if not severidad:
-            messages.error(request, 'La severidad es obligatoria.')
-            return redirect('centroSoluciones:detalle_reporte_csc', reporte_id=reporte_id)
-        
-        # Convertir fecha y hora
-        try:
-            fecha_hora = datetime.fromisoformat(fecha_hora_str.replace('T', ' '))
-        except ValueError:
-            messages.error(request, 'Formato de fecha y hora inválido.')
-            return redirect('centroSoluciones:detalle_reporte_csc', reporte_id=reporte_id)
-        
-        # Crear la alerta
-        alerta = AlertaReporteCSC.objects.create(
-            reporte=reporte,
-            nombre=nombre,
-            fecha_hora=fecha_hora,
-            severidad=severidad,
-            descripcion=descripcion,
-            creado_por=request.user
-        )
-        
-        messages.success(request, f'Alerta "{nombre}" agregada correctamente.')
-        
-    except Exception as e:
-        messages.error(request, f'Error al agregar la alerta: {str(e)}')
-    
-    return redirect('centroSoluciones:detalle_reporte_csc', reporte_id=reporte_id)
-
-# Funciones auxiliares
-def extraer_pin_desde_nombre(nombre_archivo):
-    """Extraer PIN del equipo del nombre del archivo CSV"""
-    try:
-        # Formato esperado: 1BZ310LAANA008321_08_11_2025.csv
-        # El PIN es la primera parte antes del primer guión bajo
-        partes = nombre_archivo.replace('.csv', '').split('_')
-        if len(partes) >= 1:
-            pin = partes[0]
-            # Validar que el PIN tenga el formato correcto (al menos 10 caracteres)
-            if len(pin) >= 10:
-                return pin
-    except:
-        pass
-    
-    return None
-
-def extraer_fecha_desde_nombre(nombre_archivo):
-    """Extraer fecha del nombre del archivo CSV"""
-    try:
-        # Formato esperado: 1BZ310LAANA008321_08_11_2025.csv
-        partes = nombre_archivo.replace('.csv', '').split('_')
-        if len(partes) >= 4:
-            dia = int(partes[-3])
-            mes = int(partes[-2])
-            año = int(partes[-1])
-            return datetime(año, mes, dia).date()
-    except:
-        pass
-    
-    # Si no se puede extraer, usar fecha actual
-    return datetime.now().date()
-
-def buscar_o_crear_equipo(pin_equipo, usuario):
-    """Buscar un equipo por PIN o crearlo si no existe"""
-    try:
-        # Buscar si el equipo ya existe
-        equipo = Equipo.objects.get(numero_serie=pin_equipo)
-        return equipo, False  # False = no fue creado
-    except Equipo.DoesNotExist:
-        # Para equipos nuevos que no existen en la base de datos, usar "SinCliente"
-        cliente_por_defecto = Cliente.objects.filter(
-            razon_social__icontains='SinCliente',
-            activo=True
-        ).first()
-        print(f"DEBUG: Cliente SinCliente encontrado: {cliente_por_defecto.razon_social if cliente_por_defecto else 'No encontrado'}")
-        
-        # Si no hay SinCliente, usar el primer cliente activo como último recurso
-        if not cliente_por_defecto:
-            cliente_por_defecto = Cliente.objects.filter(activo=True).first()
-            print(f"DEBUG: Usando primer cliente activo como último recurso: {cliente_por_defecto.razon_social if cliente_por_defecto else 'No hay clientes activos'}")
-        
-        # Mostrar todos los clientes activos para referencia
-        clientes_activos = Cliente.objects.filter(activo=True).values_list('razon_social', flat=True)[:5]
-        print(f"DEBUG: Primeros 5 clientes activos: {list(clientes_activos)}")
-        
-        # Buscar un modelo de equipo por defecto (310L si existe)
-        modelo_por_defecto = None
-        try:
-            modelo_por_defecto = ModeloEquipo.objects.filter(
-                nombre__icontains='310L',
-                activo=True
-            ).first()
-        except:
-            pass
-        
-        # Si no hay modelo 310L, usar el primer modelo activo
-        if not modelo_por_defecto:
-            modelo_por_defecto = ModeloEquipo.objects.filter(activo=True).first()
-        
-        # Crear el equipo con cliente y modelo por defecto
-        equipo = Equipo.objects.create(
-            numero_serie=pin_equipo,
-            cliente=cliente_por_defecto,
-            modelo=modelo_por_defecto,
-            activo=True
-        )
-        
-        print(f"DEBUG: Equipo creado con cliente: {cliente_por_defecto.razon_social if cliente_por_defecto else 'Sin cliente'}")
-        print(f"DEBUG: Equipo creado con modelo: {modelo_por_defecto.nombre if modelo_por_defecto else 'Sin modelo'}")
-        
-        return equipo, True  # True = fue creado
-
-def procesar_csv_reporte(reporte):
-    """Procesar archivo CSV y guardar datos"""
-    try:
-        # Leer CSV usando el archivo directamente
-        with reporte.archivo_csv.open('r') as file:
-            df = pd.read_csv(file)
-        
-        # Debug: imprimir información del CSV
-        print(f"DEBUG: CSV cargado - {len(df)} filas, columnas: {list(df.columns)}")
-        print(f"DEBUG: Primeras 3 filas:")
-        print(df.head(3))
-        print(f"DEBUG: Tipos de datos:")
-        print(df.dtypes)
-        print(f"DEBUG: Valores únicos en columnas:")
-        for col in df.columns:
-            print(f"  {col}: {df[col].nunique()} valores únicos")
-            if df[col].nunique() < 10:
-                print(f"    Valores: {df[col].unique()}")
-        
-        # Mapear nombres de columnas (flexible)
-        column_mapping = {
-            'categoria': ['Categoría', 'Category', 'categoria', 'category'],
-            'serie': ['Serie', 'Series', 'serie', 'series'],
-            'valor': ['Valor', 'Value', 'valor', 'value'],
-            'unidad': ['Unidades de medida', 'Unit', 'Units', 'unidad', 'unit', 'units'],
-            'fecha_inicio': ['Fecha de inicio', 'Start Date', 'Start date', 'fecha_inicio', 'start_date'],
-            'fecha_fin': ['Fecha de terminación', 'End Date', 'End date', 'fecha_fin', 'end_date']
-        }
-        
-        # Encontrar las columnas correctas
-        actual_columns = {}
-        for key, possible_names in column_mapping.items():
-            for name in possible_names:
-                if name in df.columns:
-                    actual_columns[key] = name
-                    break
-            if key not in actual_columns:
-                print(f"ERROR: No se encontró columna para {key}. Columnas disponibles: {list(df.columns)}")
-                raise Exception(f"No se encontró columna para {key}")
-        
-        print(f"DEBUG: Mapeo de columnas: {actual_columns}")
-        
-        # Procesar cada fila
-        for index, row in df.iterrows():
-            try:
-                # Extraer valores con manejo de errores
-                categoria = str(row[actual_columns['categoria']]).strip()
-                serie = str(row[actual_columns['serie']]).strip()
-                valor = float(row[actual_columns['valor']])
-                unidad = str(row[actual_columns['unidad']]).strip()
-                
-                # Procesar fechas con múltiples formatos
-                fecha_inicio_str = str(row[actual_columns['fecha_inicio']]).strip()
-                fecha_fin_str = str(row[actual_columns['fecha_fin']]).strip()
-                
-                # Intentar diferentes formatos de fecha
-                fecha_inicio = None
-                fecha_fin = None
-                
-                date_formats = ['%d %b %Y', '%d/%m/%Y', '%Y-%m-%d', '%d-%m-%Y', '%m/%d/%Y']
-                
-                for fmt in date_formats:
-                    try:
-                        fecha_inicio = datetime.strptime(fecha_inicio_str, fmt).date()
-                        break
-                    except:
-                        continue
-                
-                for fmt in date_formats:
-                    try:
-                        fecha_fin = datetime.strptime(fecha_fin_str, fmt).date()
-                        break
-                    except:
-                        continue
-                
-                if fecha_inicio is None or fecha_fin is None:
-                    print(f"ERROR: No se pudo parsear fecha en fila {index}: inicio='{fecha_inicio_str}', fin='{fecha_fin_str}'")
-                    continue
-                
-                # Crear registro
-                DatosReporteCSC.objects.create(
-                    reporte=reporte,
-                    categoria=categoria,
-                    serie=serie,
-                    valor=valor,
-                    unidad=unidad,
-                    fecha_inicio=fecha_inicio,
-                    fecha_fin=fecha_fin,
-                )
-                
-                print(f"DEBUG: Procesada fila {index}: {categoria} - {serie} = {valor} {unidad}")
-                
-            except Exception as row_error:
-                print(f"ERROR procesando fila {index}: {row_error}")
-                continue
-        
-        # Calcular total de horas utilizadas del equipo
-        datos_guardados = reporte.datos.all()
-        print(f"DEBUG: Datos guardados: {datos_guardados.count()} registros")
-        
-        # Buscar categorías de motor/engine (diferentes variaciones)
-        categorias_motor = []
-        for dato in datos_guardados:
-            categoria_lower = dato.categoria.lower()
-            if any(palabra in categoria_lower for palabra in ['motor', 'engine', 'utilización']):
-                if dato.categoria not in categorias_motor:
-                    categorias_motor.append(dato.categoria)
-        
-        print(f"DEBUG: Categorías de motor encontradas: {categorias_motor}")
-        
-        # ELEGIR SOLO UNA CATEGORÍA como referencia para el total de horas
-        # Prioridad: 1. "Utilización del motor", 2. Primera categoría de motor encontrada
-        categoria_referencia = None
-        if 'Utilización del motor' in categorias_motor:
-            categoria_referencia = 'Utilización del motor'
-        elif categorias_motor:
-            categoria_referencia = categorias_motor[0]
-        
-        print(f"DEBUG: Categoría de referencia seleccionada: {categoria_referencia}")
-        
-        # Sumar horas SOLO de la categoría de referencia
-        total_horas = 0
-        if categoria_referencia:
-            motor_data = datos_guardados.filter(categoria=categoria_referencia)
-            total_horas = sum([d.valor for d in motor_data])
-            print(f"DEBUG: Total horas de {categoria_referencia}: {total_horas}")
-        else:
-            # Fallback: buscar cualquier categoría con horas
-            categorias_con_horas = []
-            for dato in datos_guardados:
-                if 'hr' in dato.unidad.lower() and dato.categoria not in categorias_con_horas:
-                    categorias_con_horas.append(dato.categoria)
-            
-            if categorias_con_horas:
-                categoria_referencia = categorias_con_horas[0]
-                motor_data = datos_guardados.filter(categoria=categoria_referencia)
-                total_horas = sum([d.valor for d in motor_data])
-                print(f"DEBUG: Total horas de {categoria_referencia} (fallback): {total_horas}")
-        
-        reporte.total_horas_analizadas = total_horas
-        
-        # Calcular eficiencia
-        if datos_guardados.filter(categoria__icontains='motor').exists():
-            motor_data = datos_guardados.filter(categoria__icontains='motor')
-            
-            # Buscar diferentes tipos de carga
-            carga_alta = motor_data.filter(serie__icontains='alta').first()
-            carga_mediana = motor_data.filter(serie__icontains='mediana').first()
-            carga_baja = motor_data.filter(serie__icontains='baja').first()
-            en_reposo = motor_data.filter(serie__icontains='reposo').first()
-            
-            carga_alta_valor = carga_alta.valor if carga_alta else 0
-            carga_mediana_valor = carga_mediana.valor if carga_mediana else 0
-            carga_baja_valor = carga_baja.valor if carga_baja else 0
-            en_reposo_valor = en_reposo.valor if en_reposo else 0
-            
-                    # Calcular eficiencia: (carga alta + carga mediana) / total horas
-        tiempo_productivo = carga_alta_valor + carga_mediana_valor
-        eficiencia = (tiempo_productivo / total_horas) * 100 if total_horas > 0 else 0
-        
-        # Calcular horas utilizadas (tiempo total de uso del equipo)
-        horas_utilizadas = total_horas  # El total ya incluye todas las horas de uso
-        
-        print(f"DEBUG: Cálculo de eficiencia:")
-        print(f"  - Carga alta: {carga_alta_valor} hr")
-        print(f"  - Carga mediana: {carga_mediana_valor} hr")
-        print(f"  - Carga baja: {carga_baja_valor} hr")
-        print(f"  - En reposo: {en_reposo_valor} hr")
-        print(f"  - Tiempo productivo: {tiempo_productivo} hr")
-        print(f"  - Total horas: {total_horas} hr")
-        print(f"  - Horas utilizadas (tiempo total): {horas_utilizadas} hr")
-        print(f"  - Eficiencia: {eficiencia:.2f}%")
-        
-        reporte.eficiencia_general = eficiencia
-        # Guardar horas utilizadas en comentarios_manuales temporalmente
-        if reporte.comentarios_manuales:
-            reporte.comentarios_manuales += f"\nHoras utilizadas: {horas_utilizadas:.1f} hr"
-        else:
-            reporte.comentarios_manuales = f"Horas utilizadas: {horas_utilizadas:.1f} hr"
-        
-        # Construir datos por categoría para análisis
-        datos_por_categoria = {}
-        for dato in datos_guardados:
-            if dato.categoria not in datos_por_categoria:
-                datos_por_categoria[dato.categoria] = []
-            datos_por_categoria[dato.categoria].append(dato)
-        
-        # Analizar categorías disponibles para gráficos dinámicos
-        categorias_disponibles = analizar_categorias_disponibles(datos_por_categoria)
-        categorias_nombres = [cat['nombre'] for cat in categorias_disponibles]
-        reporte.comentarios_manuales += f"\nCategorías detectadas: {', '.join(categorias_nombres)}"
-        
-        reporte.save()
-        print(f"DEBUG: Reporte guardado exitosamente")
-        print(f"DEBUG: Categorías detectadas: {categorias_nombres}")
-        
-    except Exception as e:
-        print(f"ERROR general procesando CSV: {str(e)}")
-        print(f"ERROR tipo: {type(e).__name__}")
-        import traceback
-        print(f"ERROR traceback: {traceback.format_exc()}")
-        raise Exception(f"Error procesando CSV: {str(e)}")
-
-def analizar_categorias_disponibles(datos_por_categoria):
-    """Analizar las categorías disponibles en el reporte y determinar tipos de gráficos"""
-    categorias = []
-    
-    print(f"DEBUG: Analizando {len(datos_por_categoria)} categorías")
-    
-    for categoria, datos in datos_por_categoria.items():
-        # Determinar tipo de gráfico basado en la categoría y datos
-        tipo_grafico = determinar_tipo_grafico(categoria, datos)
-        prioridad = calcular_prioridad_categoria(categoria)
-        
-        # Preparar datos para tabla
-        datos_tabla = []
-        for dato in datos:
-            datos_tabla.append({
-                'serie': dato.serie,
-                'valor': float(dato.valor),
-                'unidad': dato.unidad,
-                'fecha_inicio': dato.fecha_inicio,
-                'fecha_fin': dato.fecha_fin
-            })
-        
-        categorias.append({
-            'nombre': categoria,
-            'tipo_grafico': tipo_grafico,
-            'prioridad': prioridad,
-            'datos': datos,
-            'datos_tabla': datos_tabla,
-            'total_valor': sum(d.valor for d in datos),
-            'unidades': datos[0].unidad if datos else 'hr'
-        })
-        
-        print(f"DEBUG: Categoría '{categoria}' - Tipo: {tipo_grafico}, Prioridad: {prioridad}")
-    
-    # Ordenar por prioridad
-    categorias.sort(key=lambda x: x['prioridad'])
-    
-    return categorias
-
-def determinar_tipo_grafico(categoria, datos):
-    """Determinar el tipo de gráfico más apropiado para una categoría"""
-    categoria_lower = categoria.lower()
-    
-    # Gráficos de torta para distribución de tiempo/uso
-    if any(palabra in categoria_lower for palabra in ['utilización', 'uso', 'modos', 'tiempo']):
-        return 'pie'
-    
-    # Gráficos de barras para comparaciones
-    elif any(palabra in categoria_lower for palabra in ['marcha', 'gear', 'velocidad', 'carga']):
-        return 'bar'
-    
-    # Gráficos de líneas para tendencias
-    elif any(palabra in categoria_lower for palabra in ['temperatura', 'presión', 'consumo']):
-        return 'line'
-    
-    # Por defecto, gráfico de barras
-    return 'bar'
-
-def calcular_prioridad_categoria(categoria):
-    """Calcular la prioridad de una categoría para mostrar en el reporte"""
-    categoria_lower = categoria.lower()
-    
-    # Alta prioridad: métricas principales
-    if any(palabra in categoria_lower for palabra in ['motor', 'combustible', 'utilización']):
-        return 1
-    
-    # Media prioridad: métricas específicas del equipo
-    elif any(palabra in categoria_lower for palabra in ['marcha', 'gear', 'modos', 'tiempo']):
-        return 2
-    
-    # Baja prioridad: métricas secundarias
-    else:
-        return 3
-
-def generar_recomendaciones_automaticas(reporte):
-    """Generar recomendaciones automáticas basadas en los datos"""
-    recomendaciones = []
-    
-    print(f"DEBUG: Generando recomendaciones para reporte {reporte.id}")
-    print(f"DEBUG: Total horas analizadas: {reporte.total_horas_analizadas}")
-    
-    # Obtener datos principales
-    datos = {}
-    for dato in reporte.datos.all():
-        if dato.categoria not in datos:
-            datos[dato.categoria] = {}
-        datos[dato.categoria][dato.serie] = dato.valor
-    
-    print(f"DEBUG: Categorías disponibles: {list(datos.keys())}")
-    
-    # Análisis de utilización del motor
-    if 'Utilización del motor' in datos:
-        motor = datos['Utilización del motor']
-        print(f"DEBUG: Datos de motor: {motor}")
-        
-        # Buscar diferentes variaciones del nombre "En reposo"
-        en_reposo = 0
-        for key in motor.keys():
-            if 'reposo' in key.lower():
-                en_reposo = motor[key]
-                print(f"DEBUG: Encontrado tiempo en reposo en '{key}': {en_reposo}")
-                break
-        
-        carga_alta = motor.get('Carga alta', 0)
-        carga_mediana = motor.get('Carga mediana', 0)
-        carga_baja = motor.get('Carga baja', 0)
-        
-        print(f"DEBUG: En reposo: {en_reposo}, Carga alta: {carga_alta}, Carga mediana: {carga_mediana}")
-        
-        # Recomendación por tiempo en reposo (umbral del 15% como máximo aceptable)
-        if en_reposo > 0:
-            porcentaje_reposo = (en_reposo / reporte.total_horas_analizadas) * 100 if reporte.total_horas_analizadas > 0 else 0
-            print(f"DEBUG: Porcentaje en reposo: {porcentaje_reposo:.1f}%")
-            
-            if porcentaje_reposo > 50:
-                recomendaciones.append(f"🚨 CRÍTICO: Tiempo excesivo en reposo ({en_reposo:.1f} hr, {porcentaje_reposo:.1f}%). Máximo aceptable: 15%. Urgente optimización de horarios de trabajo.")
-            elif porcentaje_reposo > 30:
-                recomendaciones.append(f"⚠️ Alto tiempo en reposo ({en_reposo:.1f} hr, {porcentaje_reposo:.1f}%). Máximo aceptable: 15%. Considerar optimizar horarios de trabajo.")
-            elif porcentaje_reposo > 15:
-                recomendaciones.append(f"⚠️ Tiempo en reposo superior al recomendado ({en_reposo:.1f} hr, {porcentaje_reposo:.1f}%). Máximo aceptable: 15%. Revisar eficiencia operativa.")
-            else:
-                recomendaciones.append(f"✅ Tiempo en reposo dentro de parámetros aceptables ({en_reposo:.1f} hr, {porcentaje_reposo:.1f}%).")
-        
-        # Recomendación por eficiencia
-        tiempo_productivo = carga_alta + carga_mediana
-        eficiencia = (tiempo_productivo / reporte.total_horas_analizadas) * 100 if reporte.total_horas_analizadas > 0 else 0
-        
-        if eficiencia < 30:
-            recomendaciones.append(f"⚠️ Eficiencia muy baja ({eficiencia:.1f}%). Urgente optimización de operaciones.")
-        elif eficiencia < 50:
-            recomendaciones.append(f"⚠️ Eficiencia baja ({eficiencia:.1f}%). Considerar optimización de operaciones.")
-        elif eficiencia < 70:
-            recomendaciones.append(f"⚠️ Eficiencia moderada ({eficiencia:.1f}%). Hay espacio para mejoras.")
-        else:
-            recomendaciones.append(f"✅ Buena eficiencia del motor ({eficiencia:.1f}%).")
-    
-    # Análisis de modos de potencia de motor
-    if 'Utilización de modos de potencia de motor' in datos:
-        modos = datos['Utilización de modos de potencia de motor']
-        print(f"DEBUG: Datos de modos de potencia: {modos}")
-        
-        modo_economico = modos.get('E', 0)
-        modo_power = modos.get('P', 0)
-        modo_high_power = modos.get('HP', 0)
-        
-        if modo_economico > 0:
-            porcentaje_economico = (modo_economico / reporte.total_horas_analizadas) * 100
-            if porcentaje_economico > 70:
-                recomendaciones.append(f"✅ Excelente uso del modo económico ({modo_economico:.1f} hr, {porcentaje_economico:.1f}%).")
-            elif porcentaje_economico < 30:
-                recomendaciones.append(f"💡 Bajo uso del modo económico ({modo_economico:.1f} hr, {porcentaje_economico:.1f}%). Considerar mayor uso para ahorro de combustible.")
-    
-    # Análisis específico del modo ECO (para excavadoras, motoniveladores, etc.)
-    if 'Utilización del combustible del motor' in datos:
-        combustible = datos['Utilización del combustible del motor']
-        print(f"DEBUG: Datos de combustible: {combustible}")
-        
-        # Buscar modo ECO en diferentes variaciones
-        modo_eco = 0
-        eco_keys = ['ECO', 'Eco', 'eco', 'Modo ECO', 'Modo Eco', 'Económico', 'Económica']
-        
-        for key in combustible.keys():
-            if any(eco_term in key for eco_term in eco_keys):
-                modo_eco = combustible[key]
-                print(f"DEBUG: Encontrado modo ECO en '{key}': {modo_eco}")
-                break
-        
-        if modo_eco > 0:
-            porcentaje_eco = (modo_eco / reporte.total_horas_analizadas) * 100
-            print(f"DEBUG: Porcentaje modo ECO: {porcentaje_eco:.1f}%")
-            
-            if porcentaje_eco < 20:
-                recomendaciones.append(f"🚨 CRÍTICO: Uso muy bajo del modo ECO ({modo_eco:.1f} hr, {porcentaje_eco:.1f}%). El modo ECO reduce significativamente el consumo de combustible. Recomendado: mínimo 40% de uso para excavadoras y motoniveladores.")
-            elif porcentaje_eco < 40:
-                recomendaciones.append(f"⚠️ Uso bajo del modo ECO ({modo_eco:.1f} hr, {porcentaje_eco:.1f}%). Incrementar el uso del modo ECO puede reducir el consumo de combustible hasta en un 25%. Recomendado: mínimo 40% de uso.")
-            elif porcentaje_eco < 60:
-                recomendaciones.append(f"💡 Uso moderado del modo ECO ({modo_eco:.1f} hr, {porcentaje_eco:.1f}%). Hay oportunidad de mejorar el ahorro de combustible aumentando el uso del modo ECO.")
-            else:
-                recomendaciones.append(f"✅ Excelente uso del modo ECO ({modo_eco:.1f} hr, {porcentaje_eco:.1f}%). Esto contribuye significativamente al ahorro de combustible.")
-        else:
-            # Si no se encuentra modo ECO, verificar si es un equipo que debería tenerlo
-            equipo_tipo = reporte.equipo.modelo.nombre.lower()
-            equipos_con_eco = ['excavadora', 'excavador', 'motonivelador', 'motoniveladora', 'cargador', 'loader']
-            
-            if any(tipo in equipo_tipo for tipo in equipos_con_eco):
-                recomendaciones.append(f"💡 EQUIPO CON CAPACIDAD ECO: Este {reporte.equipo.modelo.nombre} debería tener modo ECO disponible. Verificar configuración del equipo y capacitar al operador sobre el uso del modo ECO para ahorro de combustible.")
-    
-    # Análisis específico de "Uso de modo ECO" (categoría específica en CSV)
-    if 'Uso de modo ECO' in datos:
-        modo_eco_data = datos['Uso de modo ECO']
-        print(f"DEBUG: Datos de Uso de modo ECO: {modo_eco_data}")
-        
-        # Buscar valores de modo ECO habilitado/inhabilitado
-        habilitado = modo_eco_data.get('Habilitado', 0)
-        inhabilitado = modo_eco_data.get('Inhabilitado', 0)
-        
-        print(f"DEBUG: Modo ECO - Habilitado: {habilitado} hr, Inhabilitado: {inhabilitado} hr")
-        
-        if habilitado > 0 or inhabilitado > 0:
-            total_eco = habilitado + inhabilitado
-            porcentaje_habilitado = (habilitado / total_eco) * 100 if total_eco > 0 else 0
-            porcentaje_inhabilitado = (inhabilitado / total_eco) * 100 if total_eco > 0 else 0
-            
-            print(f"DEBUG: Porcentaje ECO habilitado: {porcentaje_habilitado:.1f}%, inhabilitado: {porcentaje_inhabilitado:.1f}%")
-            
-            if porcentaje_habilitado == 0:
-                recomendaciones.append(f"🚨 CRÍTICO: Modo ECO completamente inhabilitado ({inhabilitado:.1f} hr, 100%). El modo ECO reduce significativamente el consumo de combustible. URGENTE: Habilitar el modo ECO y capacitar al operador para su uso.")
-            elif porcentaje_habilitado < 20:
-                recomendaciones.append(f"🚨 CRÍTICO: Uso muy bajo del modo ECO ({habilitado:.1f} hr, {porcentaje_habilitado:.1f}%). El modo ECO reduce significativamente el consumo de combustible. Recomendado: mínimo 40% de uso para excavadoras y motoniveladores.")
-            elif porcentaje_habilitado < 40:
-                recomendaciones.append(f"⚠️ Uso bajo del modo ECO ({habilitado:.1f} hr, {porcentaje_habilitado:.1f}%). Incrementar el uso del modo ECO puede reducir el consumo de combustible hasta en un 25%. Recomendado: mínimo 40% de uso.")
-            elif porcentaje_habilitado < 60:
-                recomendaciones.append(f"💡 Uso moderado del modo ECO ({habilitado:.1f} hr, {porcentaje_habilitado:.1f}%). Hay oportunidad de mejorar el ahorro de combustible aumentando el uso del modo ECO.")
-            else:
-                recomendaciones.append(f"✅ Excelente uso del modo ECO ({habilitado:.1f} hr, {porcentaje_habilitado:.1f}%). Esto contribuye significativamente al ahorro de combustible.")
-    
-    # Análisis de utilización de excavadora
-    if 'Utilización de excavadora' in datos:
-        excavadora = datos['Utilización de excavadora']
-        print(f"DEBUG: Datos de excavadora: {excavadora}")
-        
-        sin_actividad = excavadora.get('Sin actividad', 0)
-        if sin_actividad > 0:
-            porcentaje_inactividad = (sin_actividad / reporte.total_horas_analizadas) * 100
-            if porcentaje_inactividad > 40:
-                recomendaciones.append(f"⚠️ Alta inactividad de excavadora ({sin_actividad:.1f} hr, {porcentaje_inactividad:.1f}%). Revisar planificación de tareas.")
-    
-    # Si no hay recomendaciones específicas, agregar una general
-    if not recomendaciones:
-        recomendaciones.append("📊 Análisis completado. Los datos muestran un uso estándar del equipo.")
-    
-    print(f"DEBUG: Recomendaciones generadas: {len(recomendaciones)}")
-    for i, rec in enumerate(recomendaciones, 1):
-        print(f"  {i}. {rec}")
-    
-    # Guardar recomendaciones
-    reporte.recomendaciones_automaticas = '\n'.join(recomendaciones)
-    reporte.save()
-    print(f"DEBUG: Recomendaciones guardadas en el reporte")
-
-def link_callback(uri, rel):
-    """Callback para manejar archivos estáticos en PDF"""
-    if uri.startswith('/static/'):
-        static_path = uri.replace('/static/', '')
-        path = os.path.join(settings.BASE_DIR, 'static', static_path)
-    elif uri.startswith('/media/'):
-        media_path = uri.replace('/media/', '')
-        path = os.path.join(settings.MEDIA_ROOT, media_path)
-    else:
-        return uri
-    
-    if not os.path.isfile(path):
-        print(f"ADVERTENCIA: Archivo no encontrado: {path}")
-        return uri
-    
-    return path
-
-@login_required
-def cargar_archivos_mensuales(request):
-    """Vista para cargar archivos Excel mensuales"""
-    if request.method == 'POST':
-        try:
-            archivo = request.FILES.get('archivo')
-            tipo = request.POST.get('tipo')
-            
-            if not archivo or not tipo:
-                messages.error(request, 'Por favor seleccione un archivo y tipo.')
-                return redirect('centroSoluciones:cargar_archivos_mensuales')
-            
-            # Crear registro del archivo
-            from .models import ArchivoDatosMensual
-            archivo_registro = ArchivoDatosMensual.objects.create(
-                nombre_archivo=archivo.name,
-                archivo=archivo,
-                tipo=tipo,
-                cargado_por=request.user
-            )
-            
-            # Procesar el archivo inmediatamente
-            procesar_archivo_excel(archivo_registro.id)
-            
-            messages.success(request, f'Archivo "{archivo.name}" cargado y procesado exitosamente.')
-            return redirect('centroSoluciones:archivos_mensuales')
-            
-        except Exception as e:
-            messages.error(request, f'Error al cargar el archivo: {str(e)}')
-    
-    return render(request, 'centroSoluciones/cargar_archivos_mensuales.html')
-
-@login_required
-def archivos_mensuales(request):
-    """Vista para listar archivos mensuales cargados"""
-    from .models import ArchivoDatosMensual
-    
-    archivos = ArchivoDatosMensual.objects.all().order_by('-fecha_carga')
-    
-    # Estadísticas
-    total_archivos = archivos.count()
-    archivos_pendientes = archivos.filter(estado='PENDIENTE').count()
-    archivos_procesando = archivos.filter(estado='PROCESANDO').count()
-    archivos_completados = archivos.filter(estado='COMPLETADO').count()
-    archivos_con_error = archivos.filter(estado='ERROR').count()
-    
-    context = {
-        'archivos': archivos,
-        'total_archivos': total_archivos,
-        'archivos_pendientes': archivos_pendientes,
-        'archivos_procesando': archivos_procesando,
-        'archivos_completados': archivos_completados,
-        'archivos_con_error': archivos_con_error,
-    }
-    
-    return render(request, 'centroSoluciones/archivos_mensuales.html', context)
-
-@login_required
-def detalle_archivo_mensual(request, archivo_id):
-    """Vista para ver detalles de un archivo mensual"""
-    from .models import ArchivoDatosMensual, DatosUtilizacionMensual, NotificacionMensual
-    
-    archivo = get_object_or_404(ArchivoDatosMensual, id=archivo_id)
-    
-    # Obtener datos procesados según el tipo
-    if archivo.tipo == 'UTILIZACION':
-        datos = DatosUtilizacionMensual.objects.filter(archivo=archivo).order_by('-fecha_inicio')
-    else:
-        datos = NotificacionMensual.objects.filter(archivo=archivo).order_by('-fecha', '-codigo_hora')
-    
-    context = {
-        'archivo': archivo,
-        'datos': datos,
-    }
-    
-    return render(request, 'centroSoluciones/detalle_archivo_mensual.html', context)
-
-@login_required
-def reprocesar_archivo_mensual(request, archivo_id):
-    """Reprocesar un archivo mensual"""
-    from .models import ArchivoDatosMensual
-    
-    archivo = get_object_or_404(ArchivoDatosMensual, id=archivo_id)
-    
-    try:
-        # Resetear estado
-        archivo.estado = 'PENDIENTE'
-        archivo.fecha_procesamiento = None
-        archivo.log_procesamiento = ''
-        archivo.errores = ''
-        archivo.save()
-        
-        # Reprocesar
-        procesar_archivo_excel(archivo.id)
-        
-        messages.success(request, f'Archivo "{archivo.nombre_archivo}" enviado para reprocesamiento.')
-        
-    except Exception as e:
-        messages.error(request, f'Error al reprocesar: {str(e)}')
-    
-    return redirect('centroSoluciones:detalle_archivo_mensual', archivo_id=archivo_id)
-
-@login_required
-def reportes_mensuales(request):
-    """Vista para generar reportes mensuales"""
-    from .models import DatosUtilizacionMensual, NotificacionMensual
-    from django.db.models import Avg, Sum, Count
-    from datetime import datetime, timedelta
-    
-    # Parámetros del reporte
-    fecha_inicio = request.GET.get('fecha_inicio')
-    fecha_fin = request.GET.get('fecha_fin')
-    equipo_id = request.GET.get('equipo_id')
-    
-    # Filtros base
-    datos_utilizacion = DatosUtilizacionMensual.objects.all()
-    notificaciones = NotificacionMensual.objects.all()
-    
-    if fecha_inicio:
-        datos_utilizacion = datos_utilizacion.filter(fecha_inicio__gte=fecha_inicio)
-        notificaciones = notificaciones.filter(fecha__gte=fecha_inicio)
-    
-    if fecha_fin:
-        datos_utilizacion = datos_utilizacion.filter(fecha_fin__lte=fecha_fin)
-        notificaciones = notificaciones.filter(fecha__lte=fecha_fin)
-    
-    if equipo_id:
-        datos_utilizacion = datos_utilizacion.filter(equipo_id=equipo_id)
-        notificaciones = notificaciones.filter(equipo_id=equipo_id)
-    
-    # Estadísticas
-    stats_utilizacion = datos_utilizacion.aggregate(
-        total_horas=Sum('horas_trabajo_motor_periodo'),
-        total_consumo=Sum('combustible_consumido_periodo'),
-        promedio_consumo=Avg('consumo_promedio_periodo')
-    )
-    
-    stats_notificaciones = notificaciones.aggregate(
-        total_notificaciones=Count('id'),
-        notificaciones_resueltas=Count('id', filter={'resuelta': True}),
-        notificaciones_pendientes=Count('id', filter={'resuelta': False})
-    )
-    
-    # Datos por equipo
-    datos_por_equipo = datos_utilizacion.values('equipo__numero_serie', 'equipo__modelo__nombre').annotate(
-        total_horas=Sum('horas_trabajo_motor_periodo'),
-        total_consumo=Sum('combustible_consumido_periodo')
-    ).order_by('-total_horas')
-    
-    context = {
-        'stats_utilizacion': stats_utilizacion,
-        'stats_notificaciones': stats_notificaciones,
-        'datos_por_equipo': datos_por_equipo,
-        'fecha_inicio': fecha_inicio,
-        'fecha_fin': fecha_fin,
-        'equipo_id': equipo_id,
-    }
-    
-    return render(request, 'centroSoluciones/reportes_mensuales.html', context)
-
-def procesar_archivo_excel(archivo_id):
-    """Procesar archivo Excel en segundo plano"""
-    from .models import ArchivoDatosMensual, DatosUtilizacionMensual, NotificacionMensual
-    from clientes.models import Equipo
-    import pandas as pd
-    from datetime import datetime
-    import traceback
-    
-    try:
-        archivo = ArchivoDatosMensual.objects.get(id=archivo_id)
-        archivo.estado = 'PROCESANDO'
-        archivo.save()
-        
-        print(f"Procesando archivo: {archivo.nombre_archivo}")
-        
-        # Leer el archivo Excel
-        df = pd.read_excel(archivo.archivo.path)
-        
-        if archivo.tipo == 'UTILIZACION':
-            procesar_datos_utilizacion(archivo, df)
-        elif archivo.tipo == 'NOTIFICACIONES':
-            procesar_notificaciones(archivo, df)
-        
-        archivo.estado = 'COMPLETADO'
-        archivo.fecha_procesamiento = datetime.now()
-        archivo.save()
-        
-        print(f"Archivo procesado exitosamente: {archivo.nombre_archivo}")
-        
-    except Exception as e:
-        print(f"Error procesando archivo {archivo_id}: {str(e)}")
-        print(traceback.format_exc())
-        
-        archivo.estado = 'ERROR'
-        archivo.errores = f"Error: {str(e)}\n\nTraceback:\n{traceback.format_exc()}"
-        archivo.save()
-
-def procesar_datos_utilizacion(archivo, df):
-    """Procesar datos de utilización del archivo Analizador_de_máquina"""
-    from .models import DatosUtilizacionMensual
-    from clientes.models import Equipo
-    from datetime import datetime
-    
-    print(f"DEBUG: Procesando archivo {archivo.nombre_archivo}")
-    print(f"DEBUG: Columnas disponibles: {list(df.columns)}")
-    print(f"DEBUG: Primera fila: {df.iloc[0].to_dict()}")
-    
-    registros_procesados = 0
-    
-    for index, row in df.iterrows():
-        try:
-            # Extraer datos básicos - usar nombres exactos de columnas
-            maquina = row.get('Máquina', '')
-            modelo = row.get('Modelo', '')
-            tipo = row.get('Tipo', '')
-            numero_serie = row.get('Número de serie de la máquina', '')
-            organizacion = row.get('Organización', '')
-            identificador_org = str(row.get('Identificador de organización', ''))
-            
-            # Procesar fechas
-            fecha_inicio_str = row.get('Fecha de inicio', '')
-            fecha_fin_str = row.get('Fecha de terminación', '')
-            
-            fecha_inicio = None
-            fecha_fin = None
-            
-            if fecha_inicio_str:
-                try:
-                    fecha_inicio = datetime.strptime(fecha_inicio_str.split()[0], '%d/%m/%Y').date()
-                except:
-                    pass
-            
-            if fecha_fin_str:
-                try:
-                    fecha_fin = datetime.strptime(fecha_fin_str.split()[0], '%d/%m/%Y').date()
-                except:
-                    pass
-            
-            # Buscar equipo por número de serie
-            equipo = None
-            if numero_serie:
-                try:
-                    equipo = Equipo.objects.get(numero_serie=numero_serie)
-                except Equipo.DoesNotExist:
-                    pass
-            
-            # Crear registro de datos de utilización
-            datos_utilizacion = DatosUtilizacionMensual(
-                archivo=archivo,
-                equipo=equipo,
-                maquina=maquina,
-                modelo=modelo,
-                tipo=tipo,
-                numero_serie=numero_serie,
-                organizacion=organizacion,
-                identificador_organizacion=identificador_org,
-                fecha_inicio=fecha_inicio,
-                fecha_fin=fecha_fin,
-                
-                # Datos de combustible
-                combustible_consumido_periodo=row.get('Combustible consumido Período (l)', 0),
-                consumo_promedio_periodo=row.get('Consumo promedio de combustible Período (l/h)', 0),
-                combustible_funcionamiento=row.get('Combustible en funcionamiento Período (l)', 0),
-                combustible_ralenti=row.get('Combustible en ralentí Período (l)', 0),
-                
-                # Datos de motor
-                horas_trabajo_motor_periodo=row.get('Horas de trabajo del motor Período (h)', 0),
-                horas_trabajo_motor_vida_util=row.get('Horas de trabajo del motor Vida útil (h)', 0),
-                
-                # Datos de temperatura
-                temp_max_aceite_transmision=row.get('Temperatura máxima de aceite de transmisión Período (°C)', 0),
-                temp_max_aceite_hidraulico=row.get('Temperatura máxima de aceite hidráulico Período (°C)', 0),
-                temp_max_refrigerante=row.get('Temperatura máxima de refrigerante Período (°C)', 0),
-                
-                # Datos de modo ECO
-                modo_eco_activado_porcentaje=row.get('Modo ECO Activado (%)', 0),
-                modo_eco_activado_horas=row.get('Modo ECO Activado (h)', 0),
-                modo_eco_desactivado_horas=row.get('Modo ECO Desactivado (h)', 0),
-                
-                # Datos de utilización (C&F)
-                utilizacion_alta_horas=row.get('Utilización (C&F) Alta (h)', 0),
-                utilizacion_media_horas=row.get('Utilización (C&F) Media (h)', 0),
-                utilizacion_baja_horas=row.get('Utilización (C&F) Baja (h)', 0),
-                utilizacion_ralenti_horas=row.get('Utilización (C&F) Ralentí (h)', 0),
-                
-                # Datos de tiempo en marcha
-                tiempo_avan_1=row.get('Tiempo en marcha Avan 1 (h)', 0),
-                tiempo_avan_2=row.get('Tiempo en marcha Avan 2 (h)', 0),
-                tiempo_avan_3=row.get('Tiempo en marcha Avan 3 (h)', 0),
-                tiempo_avan_4=row.get('Tiempo en marcha Avan 4 (h)', 0),
-                tiempo_avan_5=row.get('Tiempo en marcha Avan 5 (h)', 0),
-                tiempo_avan_6=row.get('Tiempo en marcha Avan 6 (h)', 0),
-                tiempo_avan_7=row.get('Tiempo en marcha Avan 7 (h)', 0),
-                tiempo_avan_8=row.get('Tiempo en marcha Avan 8 (h)', 0),
-                tiempo_estacionamiento=row.get('Tiempo en marcha Estacionamiento (h)', 0),
-                tiempo_punto_muerto=row.get('Tiempo en marcha Punto muerto (h)', 0),
-                tiempo_ret_1=row.get('Tiempo en marcha Ret 1 (h)', 0),
-                tiempo_ret_2=row.get('Tiempo en marcha Ret 2 (h)', 0),
-                tiempo_ret_3=row.get('Tiempo en marcha Ret 3 (h)', 0),
-                tiempo_ret_4=row.get('Tiempo en marcha Ret 4 (h)', 0),
-                tiempo_ret_5=row.get('Tiempo en marcha Ret 5 (h)', 0),
-                tiempo_ret_6=row.get('Tiempo en marcha Ret 6 (h)', 0),
-                tiempo_ret_7=row.get('Tiempo en marcha Ret 7 (h)', 0),
-                tiempo_ret_8=row.get('Tiempo en marcha Ret 8 (h)', 0),
-                
-                # Datos adicionales
-                nivel_tanque_combustible=row.get('Nivel del tanque de combustible (%)', 0),
-                odometro_vida_util=row.get('Odómetro Vida útil (km)', 0),
-                ano_modelo=row.get('Año del modelo', ''),
-                estado_maquina=row.get('Estado de máquina', ''),
-                ultima_latitud=row.get('Última latitud conocida', 0),
-                ultima_longitud=row.get('Última longitud conocida', 0),
-                
-                # Datos originales
-                datos_originales=row.to_dict()
-            )
-            
-            datos_utilizacion.save()
-            registros_procesados += 1
-            
-            if registros_procesados % 50 == 0:
-                print(f"DEBUG: Procesados {registros_procesados} registros...")
-            
-        except Exception as e:
-            print(f"ERROR procesando fila {index}: {str(e)}")
-            continue
-    
-    print(f"DEBUG: Total registros procesados: {registros_procesados}")
-    
-    # Actualizar archivo
-    archivo.total_registros = len(df)
-    archivo.registros_procesados = registros_procesados
-    archivo.periodo = f"{fecha_inicio.strftime('%d/%m/%Y')} - {fecha_fin.strftime('%d/%m/%Y')}" if fecha_inicio and fecha_fin else ""
-    archivo.log_procesamiento = f"Procesados {registros_procesados} de {len(df)} registros"
-    archivo.save()
-
-def procesar_notificaciones(archivo, df):
-    """Procesar notificaciones del archivo Notificaciones"""
-    from .models import NotificacionMensual
-    from clientes.models import Equipo
-    from datetime import datetime
-    
-    registros_procesados = 0
-    
-    for index, row in df.iterrows():
-        try:
-            # Extraer datos básicos
-            nombre_organizacion = row.get('Nombre de organización', '')
-            nombre = row.get('Nombre', '')
-            pin_maquina = row.get('PIN de máquina', '')
-            marca_maquina = row.get('Marca de máquina', '')
-            tipo_maquina = row.get('Tipo de máquina', '')
-            modelo_maquina = row.get('Modelo de máquina', '')
-            
-            # Procesar fecha y hora
-            fecha_str = row.get('Fecha', '')
-            codigo_hora_str = row.get('Código de hora', '')
-            
-            fecha = None
-            codigo_hora = None
-            
-            if fecha_str:
-                try:
-                    fecha = datetime.strptime(fecha_str, '%Y/%m/%d').date()
-                except:
-                    pass
-            
-            if codigo_hora_str:
-                try:
-                    codigo_hora = datetime.strptime(codigo_hora_str, '%H:%M:%S').time()
-                except:
-                    pass
-            
-            # Buscar equipo por PIN
-            equipo = None
-            if pin_maquina:
-                try:
-                    equipo = Equipo.objects.get(numero_serie=pin_maquina)
-                except Equipo.DoesNotExist:
-                    pass
-            
-            # Crear registro de notificación
-            notificacion = NotificacionMensual(
-                archivo=archivo,
-                equipo=equipo,
-                nombre_organizacion=nombre_organizacion,
-                nombre=nombre,
-                fecha=fecha,
-                codigo_hora=codigo_hora,
-                pin_maquina=pin_maquina,
-                marca_maquina=marca_maquina,
-                tipo_maquina=tipo_maquina,
-                modelo_maquina=modelo_maquina,
-                severidad=row.get('Severidad', ''),
-                categoria=row.get('Categoría', ''),
-                codigos_diagnostico=row.get('Códigos de diagnóstico', ''),
-                descripcion=row.get('Descripción', ''),
-                texto=row.get('Texto', ''),
-                latitud=row.get('LAT'),
-                longitud=row.get('LON'),
-                incidencias=row.get('Incidencias', 1),
-                duracion=row.get('Duración'),
-                horas_trabajo_motor=row.get('Horas de trabajo del motor'),
-                datos_originales=row.to_dict()
-            )
-            
-            notificacion.save()
-            registros_procesados += 1
-            
-        except Exception as e:
-            print(f"Error procesando fila {index}: {str(e)}")
-            continue
-    
-    # Actualizar archivo
-    archivo.total_registros = len(df)
-    archivo.registros_procesados = registros_procesados
-    archivo.log_procesamiento = f"Procesadas {registros_procesados} de {len(df)} notificaciones"
-    archivo.save()
-
-@login_required
-def cambiar_estado_archivo_mensual(request, archivo_id):
-    """Cambiar estado de un archivo mensual para poder reprocesarlo"""
-    from .models import ArchivoDatosMensual
-    
-    archivo = get_object_or_404(ArchivoDatosMensual, id=archivo_id)
-    
-    # Cambiar a estado ERROR para poder reprocesar
-    archivo.estado = 'ERROR'
-    archivo.errores = 'Archivo marcado para reprocesamiento manual'
-    archivo.save()
-    
-    messages.success(request, f'Archivo "{archivo.nombre_archivo}" marcado para reprocesamiento.')
-    
-    return redirect('centroSoluciones:detalle_archivo_mensual', archivo_id=archivo_id)
