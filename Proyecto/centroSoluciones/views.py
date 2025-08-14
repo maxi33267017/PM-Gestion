@@ -1696,10 +1696,10 @@ def cargar_archivos_mensuales(request):
                 cargado_por=request.user
             )
             
-            # Procesar el archivo en segundo plano
-            procesar_archivo_excel.delay(archivo_registro.id)
+            # Procesar el archivo inmediatamente
+            procesar_archivo_excel(archivo_registro.id)
             
-            messages.success(request, f'Archivo "{archivo.name}" cargado exitosamente. Se está procesando en segundo plano.')
+            messages.success(request, f'Archivo "{archivo.name}" cargado y procesado exitosamente.')
             return redirect('centroSoluciones:archivos_mensuales')
             
         except Exception as e:
@@ -1768,7 +1768,7 @@ def reprocesar_archivo_mensual(request, archivo_id):
         archivo.save()
         
         # Reprocesar
-        procesar_archivo_excel.delay(archivo.id)
+        procesar_archivo_excel(archivo.id)
         
         messages.success(request, f'Archivo "{archivo.nombre_archivo}" enviado para reprocesamiento.')
         
