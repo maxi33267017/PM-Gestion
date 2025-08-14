@@ -1741,9 +1741,9 @@ def detalle_archivo_mensual(request, archivo_id):
     
     # Obtener datos procesados según el tipo
     if archivo.tipo == 'UTILIZACION':
-        datos = DatosUtilizacionMensual.objects.filter(archivo=archivo).order_by('-fecha')
+        datos = DatosUtilizacionMensual.objects.filter(archivo=archivo).order_by('-fecha_inicio')
     else:
-        datos = NotificacionMensual.objects.filter(archivo=archivo).order_by('-fecha_hora')
+        datos = NotificacionMensual.objects.filter(archivo=archivo).order_by('-fecha', '-codigo_hora')
     
     context = {
         'archivo': archivo,
@@ -1794,12 +1794,12 @@ def reportes_mensuales(request):
     notificaciones = NotificacionMensual.objects.all()
     
     if fecha_inicio:
-        datos_utilizacion = datos_utilizacion.filter(fecha__gte=fecha_inicio)
-        notificaciones = notificaciones.filter(fecha_hora__date__gte=fecha_inicio)
+        datos_utilizacion = datos_utilizacion.filter(fecha_inicio__gte=fecha_inicio)
+        notificaciones = notificaciones.filter(fecha__gte=fecha_inicio)
     
     if fecha_fin:
-        datos_utilizacion = datos_utilizacion.filter(fecha__lte=fecha_fin)
-        notificaciones = notificaciones.filter(fecha_hora__date__lte=fecha_fin)
+        datos_utilizacion = datos_utilizacion.filter(fecha_fin__lte=fecha_fin)
+        notificaciones = notificaciones.filter(fecha__lte=fecha_fin)
     
     if equipo_id:
         datos_utilizacion = datos_utilizacion.filter(equipo_id=equipo_id)
@@ -1807,10 +1807,9 @@ def reportes_mensuales(request):
     
     # Estadísticas
     stats_utilizacion = datos_utilizacion.aggregate(
-        total_horas=Sum('horas_trabajo'),
-        promedio_eficiencia=Avg('eficiencia'),
-        total_consumo=Sum('consumo_combustible'),
-        promedio_consumo=Avg('consumo_promedio')
+        total_horas=Sum('horas_trabajo_motor_periodo'),
+        total_consumo=Sum('combustible_consumido_periodo'),
+        promedio_consumo=Avg('consumo_promedio_periodo')
     )
     
     stats_notificaciones = notificaciones.aggregate(
@@ -1821,9 +1820,8 @@ def reportes_mensuales(request):
     
     # Datos por equipo
     datos_por_equipo = datos_utilizacion.values('equipo__numero_serie', 'equipo__modelo__nombre').annotate(
-        total_horas=Sum('horas_trabajo'),
-        promedio_eficiencia=Avg('eficiencia'),
-        total_consumo=Sum('consumo_combustible')
+        total_horas=Sum('horas_trabajo_motor_periodo'),
+        total_consumo=Sum('combustible_consumido_periodo')
     ).order_by('-total_horas')
     
     context = {
