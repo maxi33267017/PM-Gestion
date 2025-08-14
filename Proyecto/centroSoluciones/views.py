@@ -1065,8 +1065,11 @@ def cargar_archivos_mensuales(request):
     
     if request.method == 'POST':
         try:
-            archivo_excel = request.FILES.get('archivo_excel')
-            tipo_archivo = request.POST.get('tipo_archivo')
+            archivo_excel = request.FILES.get('archivo')
+            tipo_archivo = request.POST.get('tipo')
+            
+            print(f"DEBUG: Archivo recibido: {archivo_excel}")
+            print(f"DEBUG: Tipo recibido: {tipo_archivo}")
             
             if not archivo_excel:
                 messages.error(request, 'Debe seleccionar un archivo.')
@@ -1081,6 +1084,7 @@ def cargar_archivos_mensuales(request):
                 messages.error(request, 'Solo se permiten archivos Excel (.xlsx).')
                 return redirect('centroSoluciones:cargar_archivos_mensuales')
             
+            print(f"DEBUG: Creando registro del archivo...")
             # Crear registro del archivo
             archivo_registro = ArchivoDatosMensual(
                 nombre_archivo=archivo_excel.name,
@@ -1090,9 +1094,12 @@ def cargar_archivos_mensuales(request):
                 estado='PENDIENTE'
             )
             archivo_registro.save()
+            print(f"DEBUG: Registro creado con ID: {archivo_registro.id}")
             
+            print(f"DEBUG: Iniciando procesamiento...")
             # Procesar el archivo
             procesar_archivo_excel(archivo_registro.id)
+            print(f"DEBUG: Procesamiento completado")
             
             messages.success(request, f'Archivo {archivo_excel.name} cargado y procesado exitosamente.')
             return redirect('centroSoluciones:archivos_mensuales')
