@@ -114,10 +114,10 @@
                     {% if archivo.total_registros > 0 %}
                         <div class="mb-3">
                             <label class="form-label">Progreso de procesamiento:</label>
-                            <div class="progress">
-                                <div class="progress-bar" role="progressbar" 
-                                     style="width: {{ archivo.registros_procesados|floatformat:0|add:0|div:archivo.total_registros|mul:100 }}%">
-                                    {{ archivo.registros_procesados|floatformat:0|add:0|div:archivo.total_registros|mul:100 }}%
+                                                            <div class="progress">
+                                    <div class="progress-bar" role="progressbar" 
+                                         style="width: {% widthratio archivo.registros_procesados archivo.total_registros 100 %}%">
+                                        {% widthratio archivo.registros_procesados archivo.total_registros 100 %}%
                                 </div>
                             </div>
                         </div>

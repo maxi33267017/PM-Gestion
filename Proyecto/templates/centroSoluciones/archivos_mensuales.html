@@ -163,7 +163,7 @@
                                                     </div>
                                                     <div class="progress flex-grow-1" style="height: 6px;">
                                                         <div class="progress-bar" role="progressbar" 
-                                                             style="width: {{ archivo.registros_procesados|floatformat:0|add:0|div:archivo.total_registros|mul:100 }}%">
+                                                             style="width: {% widthratio archivo.registros_procesados archivo.total_registros 100 %}%">
                                                         </div>
                                                     </div>
                                                 </div>
