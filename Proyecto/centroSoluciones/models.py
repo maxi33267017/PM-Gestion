@@ -422,3 +422,137 @@ class AlertaReporteCSC(models.Model):
             'CRITICA': 'dark',
         }
         return colors.get(self.severidad, 'secondary')
+
+class ArchivoDatosMensual(models.Model):
+    """Modelo para almacenar archivos Excel con datos de utilización mensual"""
+    TIPO_CHOICES = [
+        ('UTILIZACION', 'Datos de Utilización'),
+        ('NOTIFICACIONES', 'Notificaciones y Alertas'),
+    ]
+    
+    ESTADO_CHOICES = [
+        ('PENDIENTE', 'Pendiente de procesar'),
+        ('PROCESANDO', 'Procesando'),
+        ('COMPLETADO', 'Procesado exitosamente'),
+        ('ERROR', 'Error en procesamiento'),
+    ]
+    
+    nombre_archivo = models.CharField(max_length=255)
+    archivo = models.FileField(upload_to='datos_mensuales/')
+    tipo = models.CharField(max_length=20, choices=TIPO_CHOICES)
+    fecha_carga = models.DateTimeField(auto_now_add=True)
+    fecha_procesamiento = models.DateTimeField(null=True, blank=True)
+    estado = models.CharField(max_length=20, choices=ESTADO_CHOICES, default='PENDIENTE')
+    
+    # Metadatos del archivo
+    periodo_inicio = models.DateField(null=True, blank=True)
+    periodo_fin = models.DateField(null=True, blank=True)
+    total_registros = models.IntegerField(default=0)
+    registros_procesados = models.IntegerField(default=0)
+    
+    # Usuario que cargó el archivo
+    cargado_por = models.ForeignKey(
+        'recursosHumanos.Usuario',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True
+    )
+    
+    # Logs de procesamiento
+    log_procesamiento = models.TextField(blank=True, null=True)
+    errores = models.TextField(blank=True, null=True)
+    
+    class Meta:
+        verbose_name = "Archivo de Datos Mensual"
+        verbose_name_plural = "Archivos de Datos Mensuales"
+        ordering = ['-fecha_carga']
+    
+    def __str__(self):
+        return f"{self.nombre_archivo} - {self.get_tipo_display()} ({self.fecha_carga.strftime('%d/%m/%Y')})"
+    
+    @property
+    def porcentaje_procesado(self):
+        if self.total_registros > 0:
+            return (self.registros_procesados / self.total_registros) * 100
+        return 0
+
+class DatosUtilizacionMensual(models.Model):
+    """Modelo para almacenar datos de utilización procesados desde Excel"""
+    archivo = models.ForeignKey(ArchivoDatosMensual, on_delete=models.CASCADE, related_name='datos_utilizacion')
+    equipo = models.ForeignKey('clientes.Equipo', on_delete=models.CASCADE)
+    fecha = models.DateField()
+    
+    # Métricas de utilización
+    horas_trabajo = models.DecimalField(max_digits=8, decimal_places=2, default=0)
+    horas_reposo = models.DecimalField(max_digits=8, decimal_places=2, default=0)
+    eficiencia = models.DecimalField(max_digits=5, decimal_places=2, default=0)  # Porcentaje
+    consumo_combustible = models.DecimalField(max_digits=8, decimal_places=2, default=0)  # Litros
+    consumo_promedio = models.DecimalField(max_digits=6, decimal_places=2, default=0)  # l/hr
+    
+    # Métricas adicionales
+    temperatura_promedio = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+    presion_promedio = models.DecimalField(max_digits=6, decimal_places=2, null=True, blank=True)
+    modo_eco_habilitado = models.DecimalField(max_digits=8, decimal_places=2, default=0)
+    modo_eco_inhabilitado = models.DecimalField(max_digits=8, decimal_places=2, default=0)
+    
+    # Datos originales del Excel
+    datos_originales = models.JSONField(default=dict, blank=True)
+    
+    class Meta:
+        verbose_name = "Dato de Utilización Mensual"
+        verbose_name_plural = "Datos de Utilización Mensual"
+        ordering = ['-fecha', 'equipo']
+        unique_together = ['archivo', 'equipo', 'fecha']
+    
+    def __str__(self):
+        return f"{self.equipo.numero_serie} - {self.fecha} - {self.horas_trabajo}hr"
+
+class NotificacionMensual(models.Model):
+    """Modelo para almacenar notificaciones y alertas procesadas desde Excel"""
+    SEVERIDAD_CHOICES = [
+        ('BAJA', 'Baja'),
+        ('MEDIA', 'Media'),
+        ('ALTA', 'Alta'),
+        ('CRITICA', 'Crítica'),
+    ]
+    
+    TIPO_CHOICES = [
+        ('MANTENIMIENTO', 'Mantenimiento'),
+        ('ALERTA', 'Alerta'),
+        ('ERROR', 'Error'),
+        ('INFO', 'Información'),
+        ('ADVERTENCIA', 'Advertencia'),
+    ]
+    
+    archivo = models.ForeignKey(ArchivoDatosMensual, on_delete=models.CASCADE, related_name='notificaciones')
+    equipo = models.ForeignKey('clientes.Equipo', on_delete=models.CASCADE, null=True, blank=True)
+    fecha_hora = models.DateTimeField()
+    
+    # Información de la notificación
+    tipo = models.CharField(max_length=20, choices=TIPO_CHOICES, default='INFO')
+    severidad = models.CharField(max_length=10, choices=SEVERIDAD_CHOICES, default='MEDIA')
+    titulo = models.CharField(max_length=255)
+    descripcion = models.TextField()
+    codigo_error = models.CharField(max_length=50, blank=True, null=True)
+    
+    # Estado de la notificación
+    resuelta = models.BooleanField(default=False)
+    fecha_resolucion = models.DateTimeField(null=True, blank=True)
+    resuelta_por = models.ForeignKey(
+        'recursosHumanos.Usuario',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='notificaciones_resueltas'
+    )
+    
+    # Datos originales del Excel
+    datos_originales = models.JSONField(default=dict, blank=True)
+    
+    class Meta:
+        verbose_name = "Notificación Mensual"
+        verbose_name_plural = "Notificaciones Mensuales"
+        ordering = ['-fecha_hora']
+    
+    def __str__(self):
+        return f"{self.titulo} - {self.equipo.numero_serie if self.equipo else 'Sin equipo'} - {self.fecha_hora.strftime('%d/%m/%Y %H:%M')}"

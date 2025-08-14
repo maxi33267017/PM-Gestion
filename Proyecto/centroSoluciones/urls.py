@@ -35,4 +35,11 @@ urlpatterns = [
     path('reportes-csc/<int:reporte_id>/regenerar-recomendaciones/', views.regenerar_recomendaciones_csc, name='regenerar_recomendaciones_csc'),
     path('reportes-csc/<int:reporte_id>/agregar-alerta/', views.agregar_alerta_csc, name='agregar_alerta_csc'),
     path('obtener-equipos-cliente-csc/', views.obtener_equipos_cliente_csc, name='obtener_equipos_cliente_csc'),
+
+    # URLs para archivos mensuales
+    path('archivos-mensuales/', views.archivos_mensuales, name='archivos_mensuales'),
+    path('archivos-mensuales/cargar/', views.cargar_archivos_mensuales, name='cargar_archivos_mensuales'),
+    path('archivos-mensuales/<int:archivo_id>/', views.detalle_archivo_mensual, name='detalle_archivo_mensual'),
+    path('archivos-mensuales/<int:archivo_id>/reprocesar/', views.reprocesar_archivo_mensual, name='reprocesar_archivo_mensual'),
+    path('reportes-mensuales/', views.reportes_mensuales, name='reportes_mensuales'),
 ] 

@@ -1670,3 +1670,165 @@ def link_callback(uri, rel):
         return uri
     
     return path
+
+@login_required
+def cargar_archivos_mensuales(request):
+    """Vista para cargar archivos Excel mensuales"""
+    if request.method == 'POST':
+        try:
+            archivo = request.FILES.get('archivo')
+            tipo = request.POST.get('tipo')
+            
+            if not archivo or not tipo:
+                messages.error(request, 'Por favor seleccione un archivo y tipo.')
+                return redirect('centroSoluciones:cargar_archivos_mensuales')
+            
+            # Crear registro del archivo
+            from .models import ArchivoDatosMensual
+            archivo_registro = ArchivoDatosMensual.objects.create(
+                nombre_archivo=archivo.name,
+                archivo=archivo,
+                tipo=tipo,
+                cargado_por=request.user
+            )
+            
+            # Procesar el archivo en segundo plano
+            procesar_archivo_excel.delay(archivo_registro.id)
+            
+            messages.success(request, f'Archivo "{archivo.name}" cargado exitosamente. Se está procesando en segundo plano.')
+            return redirect('centroSoluciones:archivos_mensuales')
+            
+        except Exception as e:
+            messages.error(request, f'Error al cargar el archivo: {str(e)}')
+    
+    return render(request, 'centroSoluciones/cargar_archivos_mensuales.html')
+
+@login_required
+def archivos_mensuales(request):
+    """Vista para listar archivos mensuales cargados"""
+    from .models import ArchivoDatosMensual
+    
+    archivos = ArchivoDatosMensual.objects.all().order_by('-fecha_carga')
+    
+    # Estadísticas
+    total_archivos = archivos.count()
+    archivos_pendientes = archivos.filter(estado='PENDIENTE').count()
+    archivos_procesando = archivos.filter(estado='PROCESANDO').count()
+    archivos_completados = archivos.filter(estado='COMPLETADO').count()
+    archivos_con_error = archivos.filter(estado='ERROR').count()
+    
+    context = {
+        'archivos': archivos,
+        'total_archivos': total_archivos,
+        'archivos_pendientes': archivos_pendientes,
+        'archivos_procesando': archivos_procesando,
+        'archivos_completados': archivos_completados,
+        'archivos_con_error': archivos_con_error,
+    }
+    
+    return render(request, 'centroSoluciones/archivos_mensuales.html', context)
+
+@login_required
+def detalle_archivo_mensual(request, archivo_id):
+    """Vista para ver detalles de un archivo mensual"""
+    from .models import ArchivoDatosMensual, DatosUtilizacionMensual, NotificacionMensual
+    
+    archivo = get_object_or_404(ArchivoDatosMensual, id=archivo_id)
+    
+    # Obtener datos procesados según el tipo
+    if archivo.tipo == 'UTILIZACION':
+        datos = DatosUtilizacionMensual.objects.filter(archivo=archivo).order_by('-fecha')
+    else:
+        datos = NotificacionMensual.objects.filter(archivo=archivo).order_by('-fecha_hora')
+    
+    context = {
+        'archivo': archivo,
+        'datos': datos,
+    }
+    
+    return render(request, 'centroSoluciones/detalle_archivo_mensual.html', context)
+
+@login_required
+def reprocesar_archivo_mensual(request, archivo_id):
+    """Reprocesar un archivo mensual"""
+    from .models import ArchivoDatosMensual
+    
+    archivo = get_object_or_404(ArchivoDatosMensual, id=archivo_id)
+    
+    try:
+        # Resetear estado
+        archivo.estado = 'PENDIENTE'
+        archivo.fecha_procesamiento = None
+        archivo.log_procesamiento = ''
+        archivo.errores = ''
+        archivo.save()
+        
+        # Reprocesar
+        procesar_archivo_excel.delay(archivo.id)
+        
+        messages.success(request, f'Archivo "{archivo.nombre_archivo}" enviado para reprocesamiento.')
+        
+    except Exception as e:
+        messages.error(request, f'Error al reprocesar: {str(e)}')
+    
+    return redirect('centroSoluciones:detalle_archivo_mensual', archivo_id=archivo_id)
+
+@login_required
+def reportes_mensuales(request):
+    """Vista para generar reportes mensuales"""
+    from .models import DatosUtilizacionMensual, NotificacionMensual
+    from django.db.models import Avg, Sum, Count
+    from datetime import datetime, timedelta
+    
+    # Parámetros del reporte
+    fecha_inicio = request.GET.get('fecha_inicio')
+    fecha_fin = request.GET.get('fecha_fin')
+    equipo_id = request.GET.get('equipo_id')
+    
+    # Filtros base
+    datos_utilizacion = DatosUtilizacionMensual.objects.all()
+    notificaciones = NotificacionMensual.objects.all()
+    
+    if fecha_inicio:
+        datos_utilizacion = datos_utilizacion.filter(fecha__gte=fecha_inicio)
+        notificaciones = notificaciones.filter(fecha_hora__date__gte=fecha_inicio)
+    
+    if fecha_fin:
+        datos_utilizacion = datos_utilizacion.filter(fecha__lte=fecha_fin)
+        notificaciones = notificaciones.filter(fecha_hora__date__lte=fecha_fin)
+    
+    if equipo_id:
+        datos_utilizacion = datos_utilizacion.filter(equipo_id=equipo_id)
+        notificaciones = notificaciones.filter(equipo_id=equipo_id)
+    
+    # Estadísticas
+    stats_utilizacion = datos_utilizacion.aggregate(
+        total_horas=Sum('horas_trabajo'),
+        promedio_eficiencia=Avg('eficiencia'),
+        total_consumo=Sum('consumo_combustible'),
+        promedio_consumo=Avg('consumo_promedio')
+    )
+    
+    stats_notificaciones = notificaciones.aggregate(
+        total_notificaciones=Count('id'),
+        notificaciones_resueltas=Count('id', filter={'resuelta': True}),
+        notificaciones_pendientes=Count('id', filter={'resuelta': False})
+    )
+    
+    # Datos por equipo
+    datos_por_equipo = datos_utilizacion.values('equipo__numero_serie', 'equipo__modelo__nombre').annotate(
+        total_horas=Sum('horas_trabajo'),
+        promedio_eficiencia=Avg('eficiencia'),
+        total_consumo=Sum('consumo_combustible')
+    ).order_by('-total_horas')
+    
+    context = {
+        'stats_utilizacion': stats_utilizacion,
+        'stats_notificaciones': stats_notificaciones,
+        'datos_por_equipo': datos_por_equipo,
+        'fecha_inicio': fecha_inicio,
+        'fecha_fin': fecha_fin,
+        'equipo_id': equipo_id,
+    }
+    
+    return render(request, 'centroSoluciones/reportes_mensuales.html', context)
