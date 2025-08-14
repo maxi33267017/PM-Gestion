@@ -1016,3 +1016,239 @@ def obtener_lista_codigos_alerta(request):
         })
     except Exception as e:
         return JsonResponse({'success': False, 'message': f'Error al obtener códigos: {str(e)}'})
+
+# Vistas para archivos mensuales
+@login_required
+def archivos_mensuales(request):
+    """Lista de archivos mensuales cargados"""
+    from .models import ArchivoDatosMensual
+    
+    # Solo gerentes y administrativos pueden ver archivos mensuales
+    if request.user.rol not in ['GERENTE', 'ADMINISTRATIVO']:
+        messages.error(request, 'No tienes permisos para acceder a esta sección.')
+        return redirect('centroSoluciones:centro_soluciones_dashboard')
+    
+    archivos = ArchivoDatosMensual.objects.all().order_by('-fecha_carga')
+    
+    # Estadísticas
+    total_archivos = archivos.count()
+    archivos_completados = archivos.filter(estado='COMPLETADO').count()
+    archivos_procesando = archivos.filter(estado='PROCESANDO').count()
+    archivos_error = archivos.filter(estado='ERROR').count()
+    archivos_pendientes = archivos.filter(estado='PENDIENTE').count()
+    
+    # Paginación
+    paginator = Paginator(archivos, 10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    context = {
+        'page_obj': page_obj,
+        'total_archivos': total_archivos,
+        'archivos_completados': archivos_completados,
+        'archivos_procesando': archivos_procesando,
+        'archivos_error': archivos_error,
+        'archivos_pendientes': archivos_pendientes,
+    }
+    
+    return render(request, 'centroSoluciones/archivos_mensuales.html', context)
+
+@login_required
+def cargar_archivos_mensuales(request):
+    """Vista para cargar archivos mensuales"""
+    from .models import ArchivoDatosMensual
+    
+    # Solo gerentes y administrativos pueden cargar archivos
+    if request.user.rol not in ['GERENTE', 'ADMINISTRATIVO']:
+        messages.error(request, 'No tienes permisos para cargar archivos.')
+        return redirect('centroSoluciones:centro_soluciones_dashboard')
+    
+    if request.method == 'POST':
+        try:
+            archivo_excel = request.FILES.get('archivo_excel')
+            tipo_archivo = request.POST.get('tipo_archivo')
+            
+            if not archivo_excel:
+                messages.error(request, 'Debe seleccionar un archivo.')
+                return redirect('centroSoluciones:cargar_archivos_mensuales')
+            
+            if not tipo_archivo:
+                messages.error(request, 'Debe seleccionar el tipo de archivo.')
+                return redirect('centroSoluciones:cargar_archivos_mensuales')
+            
+            # Validar extensión
+            if not archivo_excel.name.endswith('.xlsx'):
+                messages.error(request, 'Solo se permiten archivos Excel (.xlsx).')
+                return redirect('centroSoluciones:cargar_archivos_mensuales')
+            
+            # Crear registro del archivo
+            archivo_registro = ArchivoDatosMensual(
+                nombre_archivo=archivo_excel.name,
+                tipo=tipo_archivo,
+                archivo=archivo_excel,
+                cargado_por=request.user,
+                estado='PENDIENTE'
+            )
+            archivo_registro.save()
+            
+            # Procesar el archivo
+            procesar_archivo_excel(archivo_registro.id)
+            
+            messages.success(request, f'Archivo {archivo_excel.name} cargado y procesado exitosamente.')
+            return redirect('centroSoluciones:archivos_mensuales')
+            
+        except Exception as e:
+            messages.error(request, f'Error al cargar el archivo: {str(e)}')
+            return redirect('centroSoluciones:cargar_archivos_mensuales')
+    
+    return render(request, 'centroSoluciones/cargar_archivos_mensuales.html')
+
+@login_required
+def detalle_archivo_mensual(request, archivo_id):
+    """Detalle de un archivo mensual específico"""
+    from .models import ArchivoDatosMensual, DatosUtilizacionMensual, NotificacionMensual
+    
+    # Solo gerentes y administrativos pueden ver detalles
+    if request.user.rol not in ['GERENTE', 'ADMINISTRATIVO']:
+        messages.error(request, 'No tienes permisos para acceder a esta sección.')
+        return redirect('centroSoluciones:centro_soluciones_dashboard')
+    
+    archivo = get_object_or_404(ArchivoDatosMensual, id=archivo_id)
+    
+    # Obtener datos procesados según el tipo
+    if archivo.tipo == 'UTILIZACION':
+        datos = DatosUtilizacionMensual.objects.filter(archivo=archivo).order_by('-fecha_inicio')
+    elif archivo.tipo == 'NOTIFICACIONES':
+        datos = NotificacionMensual.objects.filter(archivo=archivo).order_by('-fecha', '-codigo_hora')
+    else:
+        datos = []
+    
+    context = {
+        'archivo': archivo,
+        'datos': datos,
+        'tipo_datos': archivo.tipo,
+    }
+    
+    return render(request, 'centroSoluciones/detalle_archivo_mensual.html', context)
+
+@login_required
+def reprocesar_archivo_mensual(request, archivo_id):
+    """Reprocesar un archivo mensual"""
+    from .models import ArchivoDatosMensual
+    
+    # Solo gerentes y administrativos pueden reprocesar archivos
+    if request.user.rol not in ['GERENTE', 'ADMINISTRATIVO']:
+        messages.error(request, 'No tienes permisos para reprocesar archivos.')
+        return redirect('centroSoluciones:archivos_mensuales')
+    
+    archivo = get_object_or_404(ArchivoDatosMensual, id=archivo_id)
+    
+    try:
+        # Cambiar estado a PENDIENTE para permitir reprocesamiento
+        archivo.estado = 'PENDIENTE'
+        archivo.errores = ''
+        archivo.log_procesamiento = ''
+        archivo.registros_procesados = 0
+        archivo.save()
+        
+        # Reprocesar el archivo
+        procesar_archivo_excel(archivo.id)
+        
+        messages.success(request, f'Archivo {archivo.nombre_archivo} reprocesado exitosamente.')
+        
+    except Exception as e:
+        messages.error(request, f'Error al reprocesar el archivo: {str(e)}')
+    
+    return redirect('centroSoluciones:detalle_archivo_mensual', archivo_id=archivo_id)
+
+@login_required
+def cambiar_estado_archivo_mensual(request, archivo_id):
+    """Cambiar manualmente el estado de un archivo mensual"""
+    from .models import ArchivoDatosMensual
+    
+    # Solo gerentes y administrativos pueden cambiar estados
+    if request.user.rol not in ['GERENTE', 'ADMINISTRATIVO']:
+        messages.error(request, 'No tienes permisos para cambiar estados de archivos.')
+        return redirect('centroSoluciones:archivos_mensuales')
+    
+    archivo = get_object_or_404(ArchivoDatosMensual, id=archivo_id)
+    nuevo_estado = request.POST.get('nuevo_estado')
+    
+    if nuevo_estado in ['PENDIENTE', 'PROCESANDO', 'COMPLETADO', 'ERROR']:
+        archivo.estado = nuevo_estado
+        archivo.save()
+        messages.success(request, f'Estado del archivo cambiado a {nuevo_estado}.')
+    else:
+        messages.error(request, 'Estado no válido.')
+    
+    return redirect('centroSoluciones:detalle_archivo_mensual', archivo_id=archivo_id)
+
+@login_required
+def reportes_mensuales(request):
+    """Vista para generar reportes mensuales consolidados"""
+    from .models import DatosUtilizacionMensual, NotificacionMensual
+    from django.db.models import Sum, Avg, Count
+    from datetime import datetime, timedelta
+    
+    # Solo gerentes y administrativos pueden ver reportes
+    if request.user.rol not in ['GERENTE', 'ADMINISTRATIVO']:
+        messages.error(request, 'No tienes permisos para acceder a esta sección.')
+        return redirect('centroSoluciones:centro_soluciones_dashboard')
+    
+    # Obtener parámetros de filtro
+    fecha_inicio = request.GET.get('fecha_inicio')
+    fecha_fin = request.GET.get('fecha_fin')
+    equipo_id = request.GET.get('equipo')
+    
+    # Filtrar datos de utilización
+    datos_utilizacion = DatosUtilizacionMensual.objects.all()
+    notificaciones = NotificacionMensual.objects.all()
+    
+    if fecha_inicio:
+        try:
+            fecha_inicio = datetime.strptime(fecha_inicio, '%Y-%m-%d').date()
+            datos_utilizacion = datos_utilizacion.filter(fecha_inicio__gte=fecha_inicio)
+            notificaciones = notificaciones.filter(fecha__gte=fecha_inicio)
+        except:
+            pass
+    
+    if fecha_fin:
+        try:
+            fecha_fin = datetime.strptime(fecha_fin, '%Y-%m-%d').date()
+            datos_utilizacion = datos_utilizacion.filter(fecha_fin__lte=fecha_fin)
+            notificaciones = notificaciones.filter(fecha__lte=fecha_fin)
+        except:
+            pass
+    
+    if equipo_id:
+        datos_utilizacion = datos_utilizacion.filter(equipo_id=equipo_id)
+        notificaciones = notificaciones.filter(equipo_id=equipo_id)
+    
+    # Estadísticas de utilización
+    stats_utilizacion = datos_utilizacion.aggregate(
+        total_horas=Sum('horas_trabajo_motor_periodo'),
+        total_combustible=Sum('combustible_consumido_periodo'),
+        consumo_promedio=Avg('consumo_promedio_periodo'),
+        equipos_analizados=Count('equipo', distinct=True)
+    )
+    
+    # Estadísticas de notificaciones
+    stats_notificaciones = notificaciones.aggregate(
+        total_notificaciones=Count('id'),
+        notificaciones_resueltas=Count('id', filter=Q(resuelta=True)),
+        equipos_con_alertas=Count('equipo', distinct=True)
+    )
+    
+    # Obtener equipos para el filtro
+    equipos = Equipo.objects.all().order_by('numero_serie')
+    
+    context = {
+        'stats_utilizacion': stats_utilizacion,
+        'stats_notificaciones': stats_notificaciones,
+        'equipos': equipos,
+        'fecha_inicio': fecha_inicio,
+        'fecha_fin': fecha_fin,
+        'equipo_seleccionado': equipo_id,
+    }
+    
+    return render(request, 'centroSoluciones/reportes_mensuales.html', context)
