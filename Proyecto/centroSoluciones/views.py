@@ -1878,11 +1878,15 @@ def procesar_datos_utilizacion(archivo, df):
     from clientes.models import Equipo
     from datetime import datetime
     
+    print(f"DEBUG: Procesando archivo {archivo.nombre_archivo}")
+    print(f"DEBUG: Columnas disponibles: {list(df.columns)}")
+    print(f"DEBUG: Primera fila: {df.iloc[0].to_dict()}")
+    
     registros_procesados = 0
     
     for index, row in df.iterrows():
         try:
-            # Extraer datos básicos
+            # Extraer datos básicos - usar nombres exactos de columnas
             maquina = row.get('Máquina', '')
             modelo = row.get('Modelo', '')
             tipo = row.get('Tipo', '')
@@ -1931,58 +1935,58 @@ def procesar_datos_utilizacion(archivo, df):
                 fecha_fin=fecha_fin,
                 
                 # Datos de combustible
-                combustible_consumido_periodo=row.get('Combustible consumido Período (l)'),
-                consumo_promedio_periodo=row.get('Consumo promedio de combustible Período (l/h)'),
-                combustible_funcionamiento=row.get('Combustible en funcionamiento Período (l)'),
-                combustible_ralenti=row.get('Combustible en ralentí Período (l)'),
+                combustible_consumido_periodo=row.get('Combustible consumido Período (l)', 0),
+                consumo_promedio_periodo=row.get('Consumo promedio de combustible Período (l/h)', 0),
+                combustible_funcionamiento=row.get('Combustible en funcionamiento Período (l)', 0),
+                combustible_ralenti=row.get('Combustible en ralentí Período (l)', 0),
                 
                 # Datos de motor
-                horas_trabajo_motor_periodo=row.get('Horas de trabajo del motor Período (h)'),
-                horas_trabajo_motor_vida_util=row.get('Horas de trabajo del motor Vida útil (h)'),
+                horas_trabajo_motor_periodo=row.get('Horas de trabajo del motor Período (h)', 0),
+                horas_trabajo_motor_vida_util=row.get('Horas de trabajo del motor Vida útil (h)', 0),
                 
                 # Datos de temperatura
-                temp_max_aceite_transmision=row.get('Temperatura máxima de aceite de transmisión Período (°C)'),
-                temp_max_aceite_hidraulico=row.get('Temperatura máxima de aceite hidráulico Período (°C)'),
-                temp_max_refrigerante=row.get('Temperatura máxima de refrigerante Período (°C)'),
+                temp_max_aceite_transmision=row.get('Temperatura máxima de aceite de transmisión Período (°C)', 0),
+                temp_max_aceite_hidraulico=row.get('Temperatura máxima de aceite hidráulico Período (°C)', 0),
+                temp_max_refrigerante=row.get('Temperatura máxima de refrigerante Período (°C)', 0),
                 
                 # Datos de modo ECO
-                modo_eco_activado_porcentaje=row.get('Modo ECO Activado (%)'),
-                modo_eco_activado_horas=row.get('Modo ECO Activado (h)'),
-                modo_eco_desactivado_horas=row.get('Modo ECO Desactivado (h)'),
+                modo_eco_activado_porcentaje=row.get('Modo ECO Activado (%)', 0),
+                modo_eco_activado_horas=row.get('Modo ECO Activado (h)', 0),
+                modo_eco_desactivado_horas=row.get('Modo ECO Desactivado (h)', 0),
                 
                 # Datos de utilización (C&F)
-                utilizacion_alta_horas=row.get('Utilización (C&F) Alta (h)'),
-                utilizacion_media_horas=row.get('Utilización (C&F) Media (h)'),
-                utilizacion_baja_horas=row.get('Utilización (C&F) Baja (h)'),
-                utilizacion_ralenti_horas=row.get('Utilización (C&F) Ralentí (h)'),
+                utilizacion_alta_horas=row.get('Utilización (C&F) Alta (h)', 0),
+                utilizacion_media_horas=row.get('Utilización (C&F) Media (h)', 0),
+                utilizacion_baja_horas=row.get('Utilización (C&F) Baja (h)', 0),
+                utilizacion_ralenti_horas=row.get('Utilización (C&F) Ralentí (h)', 0),
                 
                 # Datos de tiempo en marcha
-                tiempo_avan_1=row.get('Tiempo en marcha Avan 1 (h)'),
-                tiempo_avan_2=row.get('Tiempo en marcha Avan 2 (h)'),
-                tiempo_avan_3=row.get('Tiempo en marcha Avan 3 (h)'),
-                tiempo_avan_4=row.get('Tiempo en marcha Avan 4 (h)'),
-                tiempo_avan_5=row.get('Tiempo en marcha Avan 5 (h)'),
-                tiempo_avan_6=row.get('Tiempo en marcha Avan 6 (h)'),
-                tiempo_avan_7=row.get('Tiempo en marcha Avan 7 (h)'),
-                tiempo_avan_8=row.get('Tiempo en marcha Avan 8 (h)'),
-                tiempo_estacionamiento=row.get('Tiempo en marcha Estacionamiento (h)'),
-                tiempo_punto_muerto=row.get('Tiempo en marcha Punto muerto (h)'),
-                tiempo_ret_1=row.get('Tiempo en marcha Ret 1 (h)'),
-                tiempo_ret_2=row.get('Tiempo en marcha Ret 2 (h)'),
-                tiempo_ret_3=row.get('Tiempo en marcha Ret 3 (h)'),
-                tiempo_ret_4=row.get('Tiempo en marcha Ret 4 (h)'),
-                tiempo_ret_5=row.get('Tiempo en marcha Ret 5 (h)'),
-                tiempo_ret_6=row.get('Tiempo en marcha Ret 6 (h)'),
-                tiempo_ret_7=row.get('Tiempo en marcha Ret 7 (h)'),
-                tiempo_ret_8=row.get('Tiempo en marcha Ret 8 (h)'),
+                tiempo_avan_1=row.get('Tiempo en marcha Avan 1 (h)', 0),
+                tiempo_avan_2=row.get('Tiempo en marcha Avan 2 (h)', 0),
+                tiempo_avan_3=row.get('Tiempo en marcha Avan 3 (h)', 0),
+                tiempo_avan_4=row.get('Tiempo en marcha Avan 4 (h)', 0),
+                tiempo_avan_5=row.get('Tiempo en marcha Avan 5 (h)', 0),
+                tiempo_avan_6=row.get('Tiempo en marcha Avan 6 (h)', 0),
+                tiempo_avan_7=row.get('Tiempo en marcha Avan 7 (h)', 0),
+                tiempo_avan_8=row.get('Tiempo en marcha Avan 8 (h)', 0),
+                tiempo_estacionamiento=row.get('Tiempo en marcha Estacionamiento (h)', 0),
+                tiempo_punto_muerto=row.get('Tiempo en marcha Punto muerto (h)', 0),
+                tiempo_ret_1=row.get('Tiempo en marcha Ret 1 (h)', 0),
+                tiempo_ret_2=row.get('Tiempo en marcha Ret 2 (h)', 0),
+                tiempo_ret_3=row.get('Tiempo en marcha Ret 3 (h)', 0),
+                tiempo_ret_4=row.get('Tiempo en marcha Ret 4 (h)', 0),
+                tiempo_ret_5=row.get('Tiempo en marcha Ret 5 (h)', 0),
+                tiempo_ret_6=row.get('Tiempo en marcha Ret 6 (h)', 0),
+                tiempo_ret_7=row.get('Tiempo en marcha Ret 7 (h)', 0),
+                tiempo_ret_8=row.get('Tiempo en marcha Ret 8 (h)', 0),
                 
                 # Datos adicionales
-                nivel_tanque_combustible=row.get('Nivel del tanque de combustible (%)'),
-                odometro_vida_util=row.get('Odómetro Vida útil (km)'),
-                ano_modelo=row.get('Año del modelo'),
+                nivel_tanque_combustible=row.get('Nivel del tanque de combustible (%)', 0),
+                odometro_vida_util=row.get('Odómetro Vida útil (km)', 0),
+                ano_modelo=row.get('Año del modelo', ''),
                 estado_maquina=row.get('Estado de máquina', ''),
-                ultima_latitud=row.get('Última latitud conocida'),
-                ultima_longitud=row.get('Última longitud conocida'),
+                ultima_latitud=row.get('Última latitud conocida', 0),
+                ultima_longitud=row.get('Última longitud conocida', 0),
                 
                 # Datos originales
                 datos_originales=row.to_dict()
@@ -1991,9 +1995,14 @@ def procesar_datos_utilizacion(archivo, df):
             datos_utilizacion.save()
             registros_procesados += 1
             
+            if registros_procesados % 50 == 0:
+                print(f"DEBUG: Procesados {registros_procesados} registros...")
+            
         except Exception as e:
-            print(f"Error procesando fila {index}: {str(e)}")
+            print(f"ERROR procesando fila {index}: {str(e)}")
             continue
+    
+    print(f"DEBUG: Total registros procesados: {registros_procesados}")
     
     # Actualizar archivo
     archivo.total_registros = len(df)
