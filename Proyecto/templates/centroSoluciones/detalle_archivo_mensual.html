@@ -25,6 +25,11 @@
                            class="btn btn-warning" onclick="return confirm('¿Está seguro de reprocesar este archivo?')">
                             <i class="fas fa-redo me-1"></i>Reprocesar
                         </a>
+                    {% elif archivo.estado == 'COMPLETADO' and archivo.registros_procesados == 0 %}
+                        <a href="{% url 'centroSoluciones:cambiar_estado_archivo_mensual' archivo.id %}" 
+                           class="btn btn-danger" onclick="return confirm('¿Está seguro de marcar este archivo para reprocesamiento?')">
+                            <i class="fas fa-exclamation-triangle me-1"></i>Marcar para Reprocesar
+                        </a>
                     {% endif %}
                 </div>
             </div>

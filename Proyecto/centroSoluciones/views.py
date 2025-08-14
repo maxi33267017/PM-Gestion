@@ -2093,3 +2093,19 @@ def procesar_notificaciones(archivo, df):
     archivo.registros_procesados = registros_procesados
     archivo.log_procesamiento = f"Procesadas {registros_procesados} de {len(df)} notificaciones"
     archivo.save()
+
+@login_required
+def cambiar_estado_archivo_mensual(request, archivo_id):
+    """Cambiar estado de un archivo mensual para poder reprocesarlo"""
+    from .models import ArchivoDatosMensual
+    
+    archivo = get_object_or_404(ArchivoDatosMensual, id=archivo_id)
+    
+    # Cambiar a estado ERROR para poder reprocesar
+    archivo.estado = 'ERROR'
+    archivo.errores = 'Archivo marcado para reprocesamiento manual'
+    archivo.save()
+    
+    messages.success(request, f'Archivo "{archivo.nombre_archivo}" marcado para reprocesamiento.')
+    
+    return redirect('centroSoluciones:detalle_archivo_mensual', archivo_id=archivo_id)

@@ -41,5 +41,6 @@ urlpatterns = [
     path('archivos-mensuales/cargar/', views.cargar_archivos_mensuales, name='cargar_archivos_mensuales'),
     path('archivos-mensuales/<int:archivo_id>/', views.detalle_archivo_mensual, name='detalle_archivo_mensual'),
     path('archivos-mensuales/<int:archivo_id>/reprocesar/', views.reprocesar_archivo_mensual, name='reprocesar_archivo_mensual'),
+    path('archivos-mensuales/<int:archivo_id>/cambiar-estado/', views.cambiar_estado_archivo_mensual, name='cambiar_estado_archivo_mensual'),
     path('reportes-mensuales/', views.reportes_mensuales, name='reportes_mensuales'),
 ] 
