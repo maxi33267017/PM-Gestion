@@ -176,6 +176,24 @@
             </div>
         </div>
         {% endif %}
+        
+        <!-- Nueva sección para Archivos Mensuales -->
+        <div class="col-md-4">
+            <div class="card shadow-sm border-primary">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="bi bi-file-earmark-excel text-primary me-2"></i>Archivos Mensuales
+                    </h5>
+                    <p class="card-text display-6 text-primary">{{ total_archivos_mensuales|default:"0" }}</p>
+                    <a href="{% url 'centroSoluciones:archivos_mensuales' %}" class="btn btn-outline-primary btn-sm">
+                        <i class="bi bi-list-ul me-1"></i>Ver archivos
+                    </a>
+                    <a href="{% url 'centroSoluciones:cargar_archivos_mensuales' %}" class="btn btn-outline-success btn-sm">
+                        <i class="bi bi-upload me-1"></i>Cargar archivo
+                    </a>
+                </div>
+            </div>
+        </div>
     </div>
     
     <!-- Acciones Rápidas -->
@@ -222,6 +240,11 @@
                         <div class="col-md-3">
                             <a href="{% url 'centroSoluciones:lista_reportes_csc' %}" class="btn btn-warning w-100">
                                 <i class="bi bi-chart-line me-2"></i>Reportes CSC
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="{% url 'centroSoluciones:archivos_mensuales' %}" class="btn btn-primary w-100">
+                                <i class="bi bi-file-earmark-excel me-2"></i>Archivos Mensuales
                             </a>
                         </div>
                         {% endif %}

@@ -54,14 +54,18 @@ def dashboard(request):
     
     # Contar reportes CSC (solo para gerentes/administrativos)
     reportes_csc = 0
+    total_archivos_mensuales = 0
     if request.user.rol in ['GERENTE', 'ADMINISTRATIVO']:
         reportes_csc = ReporteCSC.objects.count()
+        from .models import ArchivoDatosMensual
+        total_archivos_mensuales = ArchivoDatosMensual.objects.count()
     
     context = {
         'alertas_pendientes': alertas_pendientes,
         'alertas_asignadas': alertas_asignadas,
         'leads_nuevos': leads_nuevos,
         'reportes_csc': reportes_csc,
+        'total_archivos_mensuales': total_archivos_mensuales,
     }
     
     return render(request, 'centroSoluciones/dashboard.html', context)
