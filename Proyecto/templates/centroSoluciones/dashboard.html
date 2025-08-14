@@ -160,6 +160,24 @@
             </div>
         </div>
         {% endif %}
+        {% if user.rol == 'GERENTE' or user.rol == 'ADMINISTRATIVO' %}
+        <div class="col-md-4">
+            <div class="card shadow-sm border-primary">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="bi bi-database-fill text-primary me-2"></i>Archivos Mensuales
+                    </h5>
+                    <p class="card-text display-6 text-primary">{{ total_archivos_mensuales }}</p>
+                    <a href="{% url 'centroSoluciones:archivos_mensuales' %}" class="btn btn-outline-primary btn-sm">
+                        Ver archivos
+                    </a>
+                    <a href="{% url 'centroSoluciones:cargar_archivos_mensuales' %}" class="btn btn-outline-info btn-sm">
+                        Cargar archivo
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endif %}
     </div>
     
     <!-- Acciones Rápidas -->
@@ -202,6 +220,13 @@
                                 <i class="bi bi-database me-2"></i>Base de Códigos
                             </a>
                         </div>
+                        {% if user.rol == 'GERENTE' or user.rol == 'ADMINISTRATIVO' %}
+                        <div class="col-md-3">
+                            <a href="{% url 'centroSoluciones:archivos_mensuales' %}" class="btn btn-primary w-100">
+                                <i class="bi bi-file-earmark-excel me-2"></i>Archivos Mensuales
+                            </a>
+                        </div>
+                        {% endif %}
                     </div>
                 </div>
             </div>

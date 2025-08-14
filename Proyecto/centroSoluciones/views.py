@@ -307,6 +307,8 @@ def procesar_notificaciones(archivo, df):
 @login_required
 def dashboard(request):
     """Vista principal del Centro de Soluciones Conectadas"""
+    from .models import ArchivoDatosMensual
+    
     # Obtener estadísticas según el rol del usuario
     if request.user.rol in ['GERENTE', 'ADMINISTRATIVO']:
         # Para gerentes/administrativos: ver todas las alertas de su sucursal
@@ -334,10 +336,14 @@ def dashboard(request):
         ).count()
         leads_nuevos = 0  # Los técnicos no ven leads
     
+    # Estadísticas de archivos mensuales
+    total_archivos_mensuales = ArchivoDatosMensual.objects.count()
+    
     context = {
         'alertas_pendientes': alertas_pendientes,
         'alertas_asignadas': alertas_asignadas,
         'leads_nuevos': leads_nuevos,
+        'total_archivos_mensuales': total_archivos_mensuales,
     }
     
     return render(request, 'centroSoluciones/dashboard.html', context)
