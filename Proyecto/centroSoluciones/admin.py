@@ -5,7 +5,7 @@ from django.utils.safestring import mark_safe
 from django.db.models import Count, Q
 from django.utils import timezone
 from datetime import timedelta
-from .models import AlertaEquipo, LeadJohnDeere, AsignacionAlerta, CodigoAlerta, ReporteCSC, DatosReporteCSC, AlertaReporteCSC
+from .models import AlertaEquipo, LeadJohnDeere, AsignacionAlerta, CodigoAlerta, ReporteCSC, DatosReporteCSC, AlertaReporteCSC, ArchivoDatosMensual, DatosUtilizacionMensual, NotificacionMensual
 
 @admin.register(AlertaEquipo)
 class AlertaEquipoAdmin(admin.ModelAdmin):
@@ -574,6 +574,52 @@ class AlertaReporteCSCAdmin(admin.ModelAdmin):
         if not change:  # Si es una nueva alerta
             obj.creado_por = request.user
         super().save_model(request, obj, form, change)
+
+
+@admin.register(ArchivoDatosMensual)
+class ArchivoDatosMensualAdmin(admin.ModelAdmin):
+    list_display = ['nombre_archivo', 'tipo', 'estado', 'fecha_carga', 'cargado_por', 'total_registros', 'registros_procesados']
+    list_filter = ['tipo', 'estado', 'fecha_carga']
+    search_fields = ['nombre_archivo', 'cargado_por__username']
+    readonly_fields = ['fecha_carga', 'fecha_procesamiento', 'log_procesamiento', 'errores']
+    ordering = ['-fecha_carga']
+    
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related('cargado_por')
+
+@admin.register(DatosUtilizacionMensual)
+class DatosUtilizacionMensualAdmin(admin.ModelAdmin):
+    list_display = ['maquina', 'numero_serie', 'modelo', 'fecha_inicio', 'fecha_fin', 'horas_trabajo_motor_periodo', 'consumo_promedio_periodo']
+    list_filter = ['tipo', 'estado_maquina', 'fecha_inicio', 'fecha_fin']
+    search_fields = ['maquina', 'numero_serie', 'modelo', 'organizacion']
+    readonly_fields = ['datos_originales']
+    ordering = ['-fecha_inicio']
+    
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related('equipo', 'archivo')
+
+@admin.register(NotificacionMensual)
+class NotificacionMensualAdmin(admin.ModelAdmin):
+    list_display = ['pin_maquina', 'fecha', 'codigo_hora', 'severidad', 'categoria', 'resuelta', 'incidencias']
+    list_filter = ['severidad', 'categoria', 'resuelta', 'fecha', 'tipo_maquina']
+    search_fields = ['pin_maquina', 'descripcion', 'nombre_organizacion']
+    readonly_fields = ['datos_originales']
+    ordering = ['-fecha', '-codigo_hora']
+    
+    actions = ['marcar_como_resuelta', 'marcar_como_pendiente']
+    
+    def marcar_como_resuelta(self, request, queryset):
+        updated = queryset.update(resuelta=True, fecha_resolucion=timezone.now(), resuelta_por=request.user)
+        self.message_user(request, f'{updated} notificaciones marcadas como resueltas.')
+    marcar_como_resuelta.short_description = "Marcar como resuelta"
+    
+    def marcar_como_pendiente(self, request, queryset):
+        updated = queryset.update(resuelta=False, fecha_resolucion=None, resuelta_por=None)
+        self.message_user(request, f'{updated} notificaciones marcadas como pendientes.')
+    marcar_como_pendiente.short_description = "Marcar como pendiente"
+    
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related('equipo', 'archivo', 'resuelta_por')
 
 
 # Personalización del sitio de administración

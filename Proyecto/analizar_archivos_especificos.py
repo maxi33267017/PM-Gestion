@@ -106,8 +106,8 @@ def main():
     
     # Archivos específicos que mencionaste
     archivos_especificos = [
-        "Analizador_de_máquina_01_07_2025-31_07_2025 (1).xlsx",
-        "Notificaciones_14_08_2025, 09_50 a.m..xlsx"
+        "../Analizador_de_máquina_01_07_2025-31_07_2025 (1).xlsx",
+        "../Notificaciones_14_08_2025, 09_50 a.m..xlsx"
     ]
     
     print("🎯 ANALIZANDO ARCHIVOS ESPECÍFICOS...")

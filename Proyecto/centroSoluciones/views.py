@@ -1832,3 +1832,253 @@ def reportes_mensuales(request):
     }
     
     return render(request, 'centroSoluciones/reportes_mensuales.html', context)
+
+def procesar_archivo_excel(archivo_id):
+    """Procesar archivo Excel en segundo plano"""
+    from .models import ArchivoDatosMensual, DatosUtilizacionMensual, NotificacionMensual
+    from clientes.models import Equipo
+    import pandas as pd
+    from datetime import datetime
+    import traceback
+    
+    try:
+        archivo = ArchivoDatosMensual.objects.get(id=archivo_id)
+        archivo.estado = 'PROCESANDO'
+        archivo.save()
+        
+        print(f"Procesando archivo: {archivo.nombre_archivo}")
+        
+        # Leer el archivo Excel
+        df = pd.read_excel(archivo.archivo.path)
+        
+        if archivo.tipo == 'UTILIZACION':
+            procesar_datos_utilizacion(archivo, df)
+        elif archivo.tipo == 'NOTIFICACIONES':
+            procesar_notificaciones(archivo, df)
+        
+        archivo.estado = 'COMPLETADO'
+        archivo.fecha_procesamiento = datetime.now()
+        archivo.save()
+        
+        print(f"Archivo procesado exitosamente: {archivo.nombre_archivo}")
+        
+    except Exception as e:
+        print(f"Error procesando archivo {archivo_id}: {str(e)}")
+        print(traceback.format_exc())
+        
+        archivo.estado = 'ERROR'
+        archivo.errores = f"Error: {str(e)}\n\nTraceback:\n{traceback.format_exc()}"
+        archivo.save()
+
+def procesar_datos_utilizacion(archivo, df):
+    """Procesar datos de utilización del archivo Analizador_de_máquina"""
+    from .models import DatosUtilizacionMensual
+    from clientes.models import Equipo
+    from datetime import datetime
+    
+    registros_procesados = 0
+    
+    for index, row in df.iterrows():
+        try:
+            # Extraer datos básicos
+            maquina = row.get('Máquina', '')
+            modelo = row.get('Modelo', '')
+            tipo = row.get('Tipo', '')
+            numero_serie = row.get('Número de serie de la máquina', '')
+            organizacion = row.get('Organización', '')
+            identificador_org = str(row.get('Identificador de organización', ''))
+            
+            # Procesar fechas
+            fecha_inicio_str = row.get('Fecha de inicio', '')
+            fecha_fin_str = row.get('Fecha de terminación', '')
+            
+            fecha_inicio = None
+            fecha_fin = None
+            
+            if fecha_inicio_str:
+                try:
+                    fecha_inicio = datetime.strptime(fecha_inicio_str.split()[0], '%d/%m/%Y').date()
+                except:
+                    pass
+            
+            if fecha_fin_str:
+                try:
+                    fecha_fin = datetime.strptime(fecha_fin_str.split()[0], '%d/%m/%Y').date()
+                except:
+                    pass
+            
+            # Buscar equipo por número de serie
+            equipo = None
+            if numero_serie:
+                try:
+                    equipo = Equipo.objects.get(numero_serie=numero_serie)
+                except Equipo.DoesNotExist:
+                    pass
+            
+            # Crear registro de datos de utilización
+            datos_utilizacion = DatosUtilizacionMensual(
+                archivo=archivo,
+                equipo=equipo,
+                maquina=maquina,
+                modelo=modelo,
+                tipo=tipo,
+                numero_serie=numero_serie,
+                organizacion=organizacion,
+                identificador_organizacion=identificador_org,
+                fecha_inicio=fecha_inicio,
+                fecha_fin=fecha_fin,
+                
+                # Datos de combustible
+                combustible_consumido_periodo=row.get('Combustible consumido Período (l)'),
+                consumo_promedio_periodo=row.get('Consumo promedio de combustible Período (l/h)'),
+                combustible_funcionamiento=row.get('Combustible en funcionamiento Período (l)'),
+                combustible_ralenti=row.get('Combustible en ralentí Período (l)'),
+                
+                # Datos de motor
+                horas_trabajo_motor_periodo=row.get('Horas de trabajo del motor Período (h)'),
+                horas_trabajo_motor_vida_util=row.get('Horas de trabajo del motor Vida útil (h)'),
+                
+                # Datos de temperatura
+                temp_max_aceite_transmision=row.get('Temperatura máxima de aceite de transmisión Período (°C)'),
+                temp_max_aceite_hidraulico=row.get('Temperatura máxima de aceite hidráulico Período (°C)'),
+                temp_max_refrigerante=row.get('Temperatura máxima de refrigerante Período (°C)'),
+                
+                # Datos de modo ECO
+                modo_eco_activado_porcentaje=row.get('Modo ECO Activado (%)'),
+                modo_eco_activado_horas=row.get('Modo ECO Activado (h)'),
+                modo_eco_desactivado_horas=row.get('Modo ECO Desactivado (h)'),
+                
+                # Datos de utilización (C&F)
+                utilizacion_alta_horas=row.get('Utilización (C&F) Alta (h)'),
+                utilizacion_media_horas=row.get('Utilización (C&F) Media (h)'),
+                utilizacion_baja_horas=row.get('Utilización (C&F) Baja (h)'),
+                utilizacion_ralenti_horas=row.get('Utilización (C&F) Ralentí (h)'),
+                
+                # Datos de tiempo en marcha
+                tiempo_avan_1=row.get('Tiempo en marcha Avan 1 (h)'),
+                tiempo_avan_2=row.get('Tiempo en marcha Avan 2 (h)'),
+                tiempo_avan_3=row.get('Tiempo en marcha Avan 3 (h)'),
+                tiempo_avan_4=row.get('Tiempo en marcha Avan 4 (h)'),
+                tiempo_avan_5=row.get('Tiempo en marcha Avan 5 (h)'),
+                tiempo_avan_6=row.get('Tiempo en marcha Avan 6 (h)'),
+                tiempo_avan_7=row.get('Tiempo en marcha Avan 7 (h)'),
+                tiempo_avan_8=row.get('Tiempo en marcha Avan 8 (h)'),
+                tiempo_estacionamiento=row.get('Tiempo en marcha Estacionamiento (h)'),
+                tiempo_punto_muerto=row.get('Tiempo en marcha Punto muerto (h)'),
+                tiempo_ret_1=row.get('Tiempo en marcha Ret 1 (h)'),
+                tiempo_ret_2=row.get('Tiempo en marcha Ret 2 (h)'),
+                tiempo_ret_3=row.get('Tiempo en marcha Ret 3 (h)'),
+                tiempo_ret_4=row.get('Tiempo en marcha Ret 4 (h)'),
+                tiempo_ret_5=row.get('Tiempo en marcha Ret 5 (h)'),
+                tiempo_ret_6=row.get('Tiempo en marcha Ret 6 (h)'),
+                tiempo_ret_7=row.get('Tiempo en marcha Ret 7 (h)'),
+                tiempo_ret_8=row.get('Tiempo en marcha Ret 8 (h)'),
+                
+                # Datos adicionales
+                nivel_tanque_combustible=row.get('Nivel del tanque de combustible (%)'),
+                odometro_vida_util=row.get('Odómetro Vida útil (km)'),
+                ano_modelo=row.get('Año del modelo'),
+                estado_maquina=row.get('Estado de máquina', ''),
+                ultima_latitud=row.get('Última latitud conocida'),
+                ultima_longitud=row.get('Última longitud conocida'),
+                
+                # Datos originales
+                datos_originales=row.to_dict()
+            )
+            
+            datos_utilizacion.save()
+            registros_procesados += 1
+            
+        except Exception as e:
+            print(f"Error procesando fila {index}: {str(e)}")
+            continue
+    
+    # Actualizar archivo
+    archivo.total_registros = len(df)
+    archivo.registros_procesados = registros_procesados
+    archivo.periodo = f"{fecha_inicio.strftime('%d/%m/%Y')} - {fecha_fin.strftime('%d/%m/%Y')}" if fecha_inicio and fecha_fin else ""
+    archivo.log_procesamiento = f"Procesados {registros_procesados} de {len(df)} registros"
+    archivo.save()
+
+def procesar_notificaciones(archivo, df):
+    """Procesar notificaciones del archivo Notificaciones"""
+    from .models import NotificacionMensual
+    from clientes.models import Equipo
+    from datetime import datetime
+    
+    registros_procesados = 0
+    
+    for index, row in df.iterrows():
+        try:
+            # Extraer datos básicos
+            nombre_organizacion = row.get('Nombre de organización', '')
+            nombre = row.get('Nombre', '')
+            pin_maquina = row.get('PIN de máquina', '')
+            marca_maquina = row.get('Marca de máquina', '')
+            tipo_maquina = row.get('Tipo de máquina', '')
+            modelo_maquina = row.get('Modelo de máquina', '')
+            
+            # Procesar fecha y hora
+            fecha_str = row.get('Fecha', '')
+            codigo_hora_str = row.get('Código de hora', '')
+            
+            fecha = None
+            codigo_hora = None
+            
+            if fecha_str:
+                try:
+                    fecha = datetime.strptime(fecha_str, '%Y/%m/%d').date()
+                except:
+                    pass
+            
+            if codigo_hora_str:
+                try:
+                    codigo_hora = datetime.strptime(codigo_hora_str, '%H:%M:%S').time()
+                except:
+                    pass
+            
+            # Buscar equipo por PIN
+            equipo = None
+            if pin_maquina:
+                try:
+                    equipo = Equipo.objects.get(numero_serie=pin_maquina)
+                except Equipo.DoesNotExist:
+                    pass
+            
+            # Crear registro de notificación
+            notificacion = NotificacionMensual(
+                archivo=archivo,
+                equipo=equipo,
+                nombre_organizacion=nombre_organizacion,
+                nombre=nombre,
+                fecha=fecha,
+                codigo_hora=codigo_hora,
+                pin_maquina=pin_maquina,
+                marca_maquina=marca_maquina,
+                tipo_maquina=tipo_maquina,
+                modelo_maquina=modelo_maquina,
+                severidad=row.get('Severidad', ''),
+                categoria=row.get('Categoría', ''),
+                codigos_diagnostico=row.get('Códigos de diagnóstico', ''),
+                descripcion=row.get('Descripción', ''),
+                texto=row.get('Texto', ''),
+                latitud=row.get('LAT'),
+                longitud=row.get('LON'),
+                incidencias=row.get('Incidencias', 1),
+                duracion=row.get('Duración'),
+                horas_trabajo_motor=row.get('Horas de trabajo del motor'),
+                datos_originales=row.to_dict()
+            )
+            
+            notificacion.save()
+            registros_procesados += 1
+            
+        except Exception as e:
+            print(f"Error procesando fila {index}: {str(e)}")
+            continue
+    
+    # Actualizar archivo
+    archivo.total_registros = len(df)
+    archivo.registros_procesados = registros_procesados
+    archivo.log_procesamiento = f"Procesadas {registros_procesados} de {len(df)} notificaciones"
+    archivo.save()

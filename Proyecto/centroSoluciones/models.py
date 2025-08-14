@@ -424,135 +424,174 @@ class AlertaReporteCSC(models.Model):
         return colors.get(self.severidad, 'secondary')
 
 class ArchivoDatosMensual(models.Model):
-    """Modelo para almacenar archivos Excel con datos de utilización mensual"""
+    """Modelo para almacenar archivos Excel mensuales cargados"""
     TIPO_CHOICES = [
         ('UTILIZACION', 'Datos de Utilización'),
         ('NOTIFICACIONES', 'Notificaciones y Alertas'),
     ]
-    
     ESTADO_CHOICES = [
-        ('PENDIENTE', 'Pendiente de procesar'),
+        ('PENDIENTE', 'Pendiente'),
         ('PROCESANDO', 'Procesando'),
-        ('COMPLETADO', 'Procesado exitosamente'),
-        ('ERROR', 'Error en procesamiento'),
+        ('COMPLETADO', 'Completado'),
+        ('ERROR', 'Error'),
     ]
     
     nombre_archivo = models.CharField(max_length=255)
-    archivo = models.FileField(upload_to='datos_mensuales/')
+    archivo = models.FileField(upload_to='archivos_mensuales/')
     tipo = models.CharField(max_length=20, choices=TIPO_CHOICES)
     fecha_carga = models.DateTimeField(auto_now_add=True)
     fecha_procesamiento = models.DateTimeField(null=True, blank=True)
     estado = models.CharField(max_length=20, choices=ESTADO_CHOICES, default='PENDIENTE')
-    
-    # Metadatos del archivo
-    periodo_inicio = models.DateField(null=True, blank=True)
-    periodo_fin = models.DateField(null=True, blank=True)
+    periodo = models.CharField(max_length=50, blank=True)  # Ej: "01/07/2025 - 31/07/2025"
     total_registros = models.IntegerField(default=0)
     registros_procesados = models.IntegerField(default=0)
-    
-    # Usuario que cargó el archivo
-    cargado_por = models.ForeignKey(
-        'recursosHumanos.Usuario',
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True
-    )
-    
-    # Logs de procesamiento
-    log_procesamiento = models.TextField(blank=True, null=True)
-    errores = models.TextField(blank=True, null=True)
+    cargado_por = models.ForeignKey('recursosHumanos.Usuario', on_delete=models.CASCADE)
+    log_procesamiento = models.TextField(blank=True)
+    errores = models.TextField(blank=True)
     
     class Meta:
-        verbose_name = "Archivo de Datos Mensual"
-        verbose_name_plural = "Archivos de Datos Mensuales"
         ordering = ['-fecha_carga']
+        verbose_name = 'Archivo de Datos Mensual'
+        verbose_name_plural = 'Archivos de Datos Mensuales'
     
     def __str__(self):
-        return f"{self.nombre_archivo} - {self.get_tipo_display()} ({self.fecha_carga.strftime('%d/%m/%Y')})"
-    
-    @property
-    def porcentaje_procesado(self):
-        if self.total_registros > 0:
-            return (self.registros_procesados / self.total_registros) * 100
-        return 0
+        return f"{self.nombre_archivo} ({self.get_tipo_display()}) - {self.estado}"
 
 class DatosUtilizacionMensual(models.Model):
-    """Modelo para almacenar datos de utilización procesados desde Excel"""
+    """Modelo para datos de utilización procesados del archivo Analizador_de_máquina"""
     archivo = models.ForeignKey(ArchivoDatosMensual, on_delete=models.CASCADE, related_name='datos_utilizacion')
-    equipo = models.ForeignKey('clientes.Equipo', on_delete=models.CASCADE)
-    fecha = models.DateField()
+    equipo = models.ForeignKey('clientes.Equipo', on_delete=models.CASCADE, null=True, blank=True)
     
-    # Métricas de utilización
-    horas_trabajo = models.DecimalField(max_digits=8, decimal_places=2, default=0)
-    horas_reposo = models.DecimalField(max_digits=8, decimal_places=2, default=0)
-    eficiencia = models.DecimalField(max_digits=5, decimal_places=2, default=0)  # Porcentaje
-    consumo_combustible = models.DecimalField(max_digits=8, decimal_places=2, default=0)  # Litros
-    consumo_promedio = models.DecimalField(max_digits=6, decimal_places=2, default=0)  # l/hr
+    # Datos básicos del equipo
+    maquina = models.CharField(max_length=255)  # Nombre de la máquina
+    modelo = models.CharField(max_length=100)   # Modelo
+    tipo = models.CharField(max_length=100)     # Tipo de máquina
+    numero_serie = models.CharField(max_length=100)  # Número de serie
+    organizacion = models.CharField(max_length=255)  # Organización
+    identificador_organizacion = models.CharField(max_length=50)
     
-    # Métricas adicionales
-    temperatura_promedio = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
-    presion_promedio = models.DecimalField(max_digits=6, decimal_places=2, null=True, blank=True)
-    modo_eco_habilitado = models.DecimalField(max_digits=8, decimal_places=2, default=0)
-    modo_eco_inhabilitado = models.DecimalField(max_digits=8, decimal_places=2, default=0)
+    # Período de análisis
+    fecha_inicio = models.DateField()
+    fecha_fin = models.DateField()
     
-    # Datos originales del Excel
+    # Datos de combustible
+    combustible_consumido_periodo = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    consumo_promedio_periodo = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    combustible_funcionamiento = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    combustible_ralenti = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    
+    # Datos de motor
+    horas_trabajo_motor_periodo = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    horas_trabajo_motor_vida_util = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    
+    # Datos de temperatura
+    temp_max_aceite_transmision = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+    temp_max_aceite_hidraulico = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+    temp_max_refrigerante = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+    
+    # Datos de modo ECO
+    modo_eco_activado_porcentaje = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+    modo_eco_activado_horas = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    modo_eco_desactivado_horas = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    
+    # Datos de utilización (C&F)
+    utilizacion_alta_horas = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    utilizacion_media_horas = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    utilizacion_baja_horas = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    utilizacion_ralenti_horas = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    
+    # Datos de tiempo en marcha
+    tiempo_avan_1 = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    tiempo_avan_2 = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    tiempo_avan_3 = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    tiempo_avan_4 = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    tiempo_avan_5 = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    tiempo_avan_6 = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    tiempo_avan_7 = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    tiempo_avan_8 = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    tiempo_estacionamiento = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    tiempo_punto_muerto = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    tiempo_ret_1 = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    tiempo_ret_2 = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    tiempo_ret_3 = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    tiempo_ret_4 = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    tiempo_ret_5 = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    tiempo_ret_6 = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    tiempo_ret_7 = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    tiempo_ret_8 = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    
+    # Datos adicionales
+    nivel_tanque_combustible = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+    odometro_vida_util = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    ano_modelo = models.IntegerField(null=True, blank=True)
+    estado_maquina = models.CharField(max_length=50, blank=True)
+    ultima_latitud = models.DecimalField(max_digits=10, decimal_places=6, null=True, blank=True)
+    ultima_longitud = models.DecimalField(max_digits=10, decimal_places=6, null=True, blank=True)
+    
+    # Datos originales completos (JSON)
     datos_originales = models.JSONField(default=dict, blank=True)
     
     class Meta:
-        verbose_name = "Dato de Utilización Mensual"
-        verbose_name_plural = "Datos de Utilización Mensual"
-        ordering = ['-fecha', 'equipo']
-        unique_together = ['archivo', 'equipo', 'fecha']
+        ordering = ['-fecha_inicio']
+        verbose_name = 'Dato de Utilización Mensual'
+        verbose_name_plural = 'Datos de Utilización Mensual'
+        indexes = [
+            models.Index(fields=['numero_serie', 'fecha_inicio']),
+            models.Index(fields=['equipo', 'fecha_inicio']),
+        ]
     
     def __str__(self):
-        return f"{self.equipo.numero_serie} - {self.fecha} - {self.horas_trabajo}hr"
+        return f"{self.maquina} - {self.fecha_inicio} a {self.fecha_fin}"
 
 class NotificacionMensual(models.Model):
-    """Modelo para almacenar notificaciones y alertas procesadas desde Excel"""
-    SEVERIDAD_CHOICES = [
-        ('BAJA', 'Baja'),
-        ('MEDIA', 'Media'),
-        ('ALTA', 'Alta'),
-        ('CRITICA', 'Crítica'),
-    ]
-    
-    TIPO_CHOICES = [
-        ('MANTENIMIENTO', 'Mantenimiento'),
-        ('ALERTA', 'Alerta'),
-        ('ERROR', 'Error'),
-        ('INFO', 'Información'),
-        ('ADVERTENCIA', 'Advertencia'),
-    ]
-    
+    """Modelo para notificaciones y alertas procesadas del archivo Notificaciones"""
     archivo = models.ForeignKey(ArchivoDatosMensual, on_delete=models.CASCADE, related_name='notificaciones')
     equipo = models.ForeignKey('clientes.Equipo', on_delete=models.CASCADE, null=True, blank=True)
-    fecha_hora = models.DateTimeField()
     
-    # Información de la notificación
-    tipo = models.CharField(max_length=20, choices=TIPO_CHOICES, default='INFO')
-    severidad = models.CharField(max_length=10, choices=SEVERIDAD_CHOICES, default='MEDIA')
-    titulo = models.CharField(max_length=255)
+    # Datos básicos
+    nombre_organizacion = models.CharField(max_length=255)
+    nombre = models.CharField(max_length=255)
+    fecha = models.DateField()
+    codigo_hora = models.TimeField()
+    pin_maquina = models.CharField(max_length=100)
+    marca_maquina = models.CharField(max_length=100)
+    tipo_maquina = models.CharField(max_length=100)
+    modelo_maquina = models.CharField(max_length=100)
+    
+    # Datos de la notificación
+    severidad = models.CharField(max_length=50)
+    categoria = models.CharField(max_length=100)
+    codigos_diagnostico = models.CharField(max_length=100, blank=True)
     descripcion = models.TextField()
-    codigo_error = models.CharField(max_length=50, blank=True, null=True)
+    texto = models.TextField()
     
-    # Estado de la notificación
+    # Ubicación
+    latitud = models.DecimalField(max_digits=10, decimal_places=6, null=True, blank=True)
+    longitud = models.DecimalField(max_digits=10, decimal_places=6, null=True, blank=True)
+    
+    # Datos adicionales
+    incidencias = models.IntegerField(default=1)
+    duracion = models.IntegerField(null=True, blank=True)  # en segundos
+    horas_trabajo_motor = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    
+    # Estado de resolución
     resuelta = models.BooleanField(default=False)
     fecha_resolucion = models.DateTimeField(null=True, blank=True)
-    resuelta_por = models.ForeignKey(
-        'recursosHumanos.Usuario',
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name='notificaciones_resueltas'
-    )
+    resuelta_por = models.ForeignKey('recursosHumanos.Usuario', on_delete=models.SET_NULL, null=True, blank=True)
     
-    # Datos originales del Excel
+    # Datos originales completos (JSON)
     datos_originales = models.JSONField(default=dict, blank=True)
     
     class Meta:
-        verbose_name = "Notificación Mensual"
-        verbose_name_plural = "Notificaciones Mensuales"
-        ordering = ['-fecha_hora']
+        ordering = ['-fecha', '-codigo_hora']
+        verbose_name = 'Notificación Mensual'
+        verbose_name_plural = 'Notificaciones Mensuales'
+        indexes = [
+            models.Index(fields=['pin_maquina', 'fecha']),
+            models.Index(fields=['equipo', 'fecha']),
+            models.Index(fields=['severidad', 'fecha']),
+            models.Index(fields=['resuelta', 'fecha']),
+        ]
     
     def __str__(self):
-        return f"{self.titulo} - {self.equipo.numero_serie if self.equipo else 'Sin equipo'} - {self.fecha_hora.strftime('%d/%m/%Y %H:%M')}"
+        return f"{self.pin_maquina} - {self.fecha} {self.codigo_hora} - {self.severidad}"
