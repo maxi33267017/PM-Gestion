@@ -1,0 +1,178 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Generar Reporte Público{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0">
+                <i class="fas fa-share-alt me-2"></i>
+                Generar Reporte Público
+            </h1>
+            <p class="text-muted mb-0">
+                Crea un enlace público para compartir reportes con clientes
+            </p>
+        </div>
+        <a href="{% url 'centroSoluciones:centro_soluciones_dashboard' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-1"></i>Volver
+        </a>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <!-- Formulario -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-cog me-2"></i>
+                        Configuración del Reporte
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="tipo_reporte" class="form-label">
+                                        <i class="fas fa-chart-line me-1"></i>
+                                        Tipo de Reporte
+                                    </label>
+                                    <select class="form-select" id="tipo_reporte" name="tipo_reporte" required>
+                                        <option value="FLOTA">Reporte de Flota</option>
+                                        <option value="ORGANIZACION">Reporte de Organización</option>
+                                        <option value="INDIVIDUAL">Reporte Individual</option>
+                                    </select>
+                                    <div class="form-text">
+                                        Selecciona el tipo de reporte que deseas generar
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="dias_expiracion" class="form-label">
+                                        <i class="fas fa-clock me-1"></i>
+                                        Días de Validez
+                                    </label>
+                                    <input type="number" class="form-control" id="dias_expiracion" name="dias_expiracion" 
+                                           value="30" min="1" max="365" required>
+                                    <div class="form-text">
+                                        Número de días que estará disponible el reporte
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="organizacion" class="form-label">
+                                <i class="fas fa-building me-1"></i>
+                                Organización (Opcional)
+                            </label>
+                            <input type="text" class="form-control" id="organizacion" name="organizacion" 
+                                   placeholder="Nombre de la organización">
+                            <div class="form-text">
+                                Deja vacío para reportes generales
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-share-alt me-1"></i>
+                                Generar Reporte Público
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <!-- Información -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Información
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <h6><i class="fas fa-lightbulb me-1"></i>¿Cómo funciona?</h6>
+                        <ul class="mb-0">
+                            <li>Se genera un enlace único y seguro</li>
+                            <li>El cliente puede acceder sin login</li>
+                            <li>El enlace expira automáticamente</li>
+                            <li>Puedes desactivarlo manualmente</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="alert alert-warning">
+                        <h6><i class="fas fa-exclamation-triangle me-1"></i>Consideraciones</h6>
+                        <ul class="mb-0">
+                            <li>Los datos son de solo lectura</li>
+                            <li>No se puede navegar por la aplicación</li>
+                            <li>El enlace es público, compártelo con cuidado</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Reportes Recientes -->
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-history me-2"></i>
+                        Reportes Recientes
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group list-group-flush">
+                        {% for reporte in reportes_recientes %}
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <small class="text-muted">{{ reporte.tipo_reporte }}</small><br>
+                                <small>{{ reporte.fecha_creacion|date:"d/m/Y H:i" }}</small>
+                            </div>
+                            <span class="badge bg-{% if reporte.activo %}success{% else %}secondary{% endif %} rounded-pill">
+                                {% if reporte.activo %}Activo{% else %}Expirado{% endif %}
+                            </span>
+                        </div>
+                        {% empty %}
+                        <div class="text-center text-muted py-3">
+                            <i class="fas fa-inbox fa-2x mb-2"></i>
+                            <p class="mb-0">No hay reportes recientes</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Mostrar/ocultar campo organización según tipo de reporte
+    const tipoReporte = document.getElementById('tipo_reporte');
+    const organizacionField = document.getElementById('organizacion').parentElement;
+    
+    function toggleOrganizacion() {
+        if (tipoReporte.value === 'ORGANIZACION') {
+            organizacionField.style.display = 'block';
+            document.getElementById('organizacion').required = true;
+        } else {
+            organizacionField.style.display = 'none';
+            document.getElementById('organizacion').required = false;
+        }
+    }
+    
+    tipoReporte.addEventListener('change', toggleOrganizacion);
+    toggleOrganizacion(); // Ejecutar al cargar
+});
+</script>
+{% endblock %}

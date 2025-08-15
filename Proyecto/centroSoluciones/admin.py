@@ -5,7 +5,7 @@ from django.utils.safestring import mark_safe
 from django.db.models import Count, Q
 from django.utils import timezone
 from datetime import timedelta
-from .models import AlertaEquipo, LeadJohnDeere, AsignacionAlerta, CodigoAlerta, ReporteCSC, DatosReporteCSC, AlertaReporteCSC
+from .models import AlertaEquipo, LeadJohnDeere, AsignacionAlerta, CodigoAlerta, ReporteCSC, DatosReporteCSC, AlertaReporteCSC, ReportePublico
 
 @admin.register(AlertaEquipo)
 class AlertaEquipoAdmin(admin.ModelAdmin):
@@ -577,6 +577,83 @@ class AlertaReporteCSCAdmin(admin.ModelAdmin):
 
 
 # Personalización del sitio de administración
+
+@admin.register(ReportePublico)
+class ReportePublicoAdmin(admin.ModelAdmin):
+    list_display = [
+        'token_short', 
+        'tipo_reporte', 
+        'organizacion', 
+        'fecha_creacion', 
+        'fecha_expiracion', 
+        'estado_activo', 
+        'creado_por'
+    ]
+    list_filter = [
+        'tipo_reporte', 
+        'activo', 
+        'fecha_creacion', 
+        'fecha_expiracion',
+        'creado_por'
+    ]
+    search_fields = [
+        'token', 
+        'organizacion', 
+        'archivo_nombre',
+        'creado_por__username',
+        'creado_por__first_name',
+        'creado_por__last_name'
+    ]
+    readonly_fields = ['token', 'fecha_creacion']
+    ordering = ['-fecha_creacion']
+    list_per_page = 25
+    
+    fieldsets = (
+        ('Información del Reporte', {
+            'fields': ('tipo_reporte', 'organizacion', 'archivo_nombre')
+        }),
+        ('Configuración', {
+            'fields': ('archivo_id', 'equipo_id', 'fecha_expiracion', 'activo')
+        }),
+        ('Información de Auditoría', {
+            'fields': ('token', 'fecha_creacion', 'creado_por'),
+            'classes': ('collapse',)
+        }),
+    )
+    
+    actions = ['activar_reportes', 'desactivar_reportes', 'eliminar_reportes_expirados']
+    
+    def token_short(self, obj):
+        return f"{obj.token[:12]}..."
+    token_short.short_description = 'Token'
+    
+    def estado_activo(self, obj):
+        if obj.esta_activo():
+            return format_html('<span class="badge bg-success">Activo</span>')
+        else:
+            return format_html('<span class="badge bg-danger">Expirado/Inactivo</span>')
+    estado_activo.short_description = 'Estado'
+    
+    def activar_reportes(self, request, queryset):
+        count = queryset.update(activo=True)
+        self.message_user(request, f'{count} reportes activados exitosamente.')
+    activar_reportes.short_description = "Activar reportes seleccionados"
+    
+    def desactivar_reportes(self, request, queryset):
+        count = queryset.update(activo=False)
+        self.message_user(request, f'{count} reportes desactivados exitosamente.')
+    desactivar_reportes.short_description = "Desactivar reportes seleccionados"
+    
+    def eliminar_reportes_expirados(self, request, queryset):
+        from django.utils import timezone
+        expirados = queryset.filter(fecha_expiracion__lt=timezone.now())
+        count = expirados.count()
+        expirados.delete()
+        self.message_user(request, f'{count} reportes expirados eliminados exitosamente.')
+    eliminar_reportes_expirados.short_description = "Eliminar reportes expirados"
+    
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related('creado_por')
 admin.site.site_header = "Centro de Soluciones Conectadas - Patagonia Maquinarias"
 admin.site.site_title = "Centro de Soluciones"
 admin.site.index_title = "Panel de Administración"

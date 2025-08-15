@@ -1,0 +1,260 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Organizaciones - {{ archivo.nombre_archivo }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0">
+                <i class="fas fa-building me-2"></i>
+                Organizaciones - {{ archivo.nombre_archivo }}
+            </h1>
+            <p class="text-muted mb-0">
+                <i class="fas fa-calendar me-1"></i>
+                Período: {{ archivo.periodo }}
+            </p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{% url 'centroSoluciones:detalle_archivo_mensual' archivo.id %}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-1"></i>Volver
+            </a>
+            <a href="{% url 'centroSoluciones:generar_reporte_flota' archivo.id %}" class="btn btn-success">
+                <i class="fas fa-file-pdf me-1"></i>Reporte de Flota
+            </a>
+            <a href="{% url 'centroSoluciones:generar_reporte_publico' archivo.id %}?tipo=FLOTA" class="btn btn-primary">
+                <i class="fas fa-share-alt me-1"></i>Reporte Público
+            </a>
+        </div>
+    </div>
+
+    <!-- Resumen General -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h4 class="text-primary">{{ archivo.registros_procesados }}</h4>
+                    <small class="text-muted">Total Equipos</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h4 class="text-info">{{ total_horas_general|default:"0"|floatformat:0 }}</h4>
+                    <small class="text-muted">Total Horas</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h4 class="text-warning">{{ total_combustible_general|default:"0"|floatformat:0 }}</h4>
+                    <small class="text-muted">Total Combustible (l)</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h4 class="text-success">{{ organizaciones|length }}</h4>
+                    <small class="text-muted">Organizaciones</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Resumen de Notificaciones -->
+    {% if todas_notificaciones %}
+    <div class="card mb-4 border-warning">
+        <div class="card-header bg-warning text-dark">
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            Resumen de Notificaciones
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-3">
+                    <div class="text-center">
+                        <h4 class="text-danger">{{ todas_notificaciones|length }}</h4>
+                        <small class="text-muted">Total Notificaciones</small>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="text-center">
+                        <h4 class="text-danger">{{ notificaciones_criticas|default:0 }}</h4>
+                        <small class="text-muted">Críticas</small>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="text-center">
+                        <h4 class="text-warning">{{ notificaciones_altas|default:0 }}</h4>
+                        <small class="text-muted">Altas</small>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="text-center">
+                        <h4 class="text-info">{{ equipos_con_notificaciones|default:0 }}</h4>
+                        <small class="text-muted">Equipos con Alertas</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Organizaciones -->
+    <div class="accordion" id="organizacionesAccordion">
+        {% for org in organizaciones %}
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="org{{ forloop.counter }}">
+                <div class="d-flex justify-content-between align-items-center w-100">
+                    <button class="accordion-button {% if not forloop.first %}collapsed{% endif %}" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ forloop.counter }}" aria-expanded="{% if forloop.first %}true{% else %}false{% endif %}" aria-controls="collapse{{ forloop.counter }}" style="flex: 1; text-align: left;">
+                        <div class="d-flex justify-content-between align-items-center w-100 me-3">
+                            <div>
+                                <strong>{{ org.organizacion|default:"Sin organización" }}</strong>
+                            </div>
+                            <div class="d-flex gap-3">
+                                <span class="badge bg-primary">{{ org.total_equipos }} equipos</span>
+                                <span class="badge bg-success">{{ org.total_horas|default:"0"|floatformat:0 }}h</span>
+                                <span class="badge bg-warning">{{ org.total_combustible|default:"0"|floatformat:0 }}l</span>
+                            </div>
+                        </div>
+                    </button>
+                    <div class="d-flex gap-2 me-2">
+                        <a href="{% url 'centroSoluciones:generar_reporte_organizacion' archivo.id %}?organizacion={{ org.organizacion|urlencode }}" 
+                           class="btn btn-sm btn-outline-success" title="Descargar reporte PDF de esta organización">
+                            <i class="fas fa-file-pdf"></i>
+                        </a>
+                        <a href="{% url 'centroSoluciones:generar_reporte_publico' archivo.id %}?tipo=ORGANIZACION&organizacion={{ org.organizacion|urlencode }}" 
+                           class="btn btn-sm btn-outline-primary" title="Generar reporte público de esta organización">
+                            <i class="fas fa-share-alt"></i>
+                        </a>
+                    </div>
+                </div>
+            </h2>
+            <div id="collapse{{ forloop.counter }}" class="accordion-collapse collapse {% if forloop.first %}show{% endif %}" aria-labelledby="org{{ forloop.counter }}" data-bs-parent="#organizacionesAccordion">
+                <div class="accordion-body">
+                    <!-- Tabs -->
+                    <ul class="nav nav-tabs" id="tabs{{ forloop.counter }}" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="equipos-tab{{ forloop.counter }}" data-bs-toggle="tab" data-bs-target="#equipos{{ forloop.counter }}" type="button" role="tab">
+                                <i class="fas fa-truck me-1"></i>Equipos
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="alertas-tab{{ forloop.counter }}" data-bs-toggle="tab" data-bs-target="#alertas{{ forloop.counter }}" type="button" role="tab">
+                                <i class="fas fa-exclamation-triangle me-1"></i>Alertas
+                            </button>
+                        </li>
+                    </ul>
+                    
+                    <div class="tab-content mt-3" id="tabContent{{ forloop.counter }}">
+                        <!-- Tab Equipos -->
+                        <div class="tab-pane fade show active" id="equipos{{ forloop.counter }}" role="tabpanel">
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Máquina</th>
+                                            <th>Modelo</th>
+                                            <th>N° Serie</th>
+                                            <th>Horas</th>
+                                            <th>Combustible (l)</th>
+                                            <th>Consumo (l/h)</th>
+                                            <th>Estado</th>
+                                            <th>Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for equipo in org.equipos %}
+                                        <tr>
+                                            <td>{{ equipo.maquina }}</td>
+                                            <td>{{ equipo.modelo }}</td>
+                                            <td>{{ equipo.numero_serie }}</td>
+                                            <td>{{ equipo.horas_trabajo_motor_periodo|default:"0"|floatformat:2 }}</td>
+                                            <td>{{ equipo.combustible_consumido_periodo|default:"0"|floatformat:2 }}</td>
+                                            <td>{{ equipo.consumo_promedio_periodo|default:"0"|floatformat:2 }}</td>
+                                            <td>
+                                                {% if equipo.equipo %}
+                                                    <span class="badge bg-success">Vinculado</span>
+                                                {% else %}
+                                                    <span class="badge bg-warning">Sin vincular</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <a href="{% url 'centroSoluciones:detalle_equipo_mensual' equipo.id %}" class="btn btn-sm btn-outline-info">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                <a href="{% url 'centroSoluciones:generar_reporte_individual' equipo.id %}" class="btn btn-sm btn-outline-success">
+                                                    <i class="fas fa-file-pdf"></i>
+                                                </a>
+                                                <a href="{% url 'centroSoluciones:generar_reporte_publico' archivo.id %}?tipo=INDIVIDUAL&equipo_id={{ equipo.id }}" class="btn btn-sm btn-outline-primary">
+                                                    <i class="fas fa-share-alt"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        
+                        <!-- Tab Alertas -->
+                        <div class="tab-pane fade" id="alertas{{ forloop.counter }}" role="tabpanel">
+                            {% if org.notificaciones %}
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Fecha</th>
+                                            <th>Hora</th>
+                                            <th>Máquina</th>
+                                            <th>Severidad</th>
+                                            <th>Categoría</th>
+                                            <th>Descripción</th>
+                                            <th>Estado</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for notif in org.notificaciones %}
+                                        <tr>
+                                            <td>{{ notif.fecha|date:"d/m/Y" }}</td>
+                                            <td>{{ notif.codigo_hora|time:"H:i" }}</td>
+                                            <td>{{ notif.pin_maquina }}</td>
+                                            <td>
+                                                <span class="badge bg-{{ notif.severidad|lower }}">
+                                                    {{ notif.severidad }}
+                                                </span>
+                                            </td>
+                                            <td>{{ notif.categoria }}</td>
+                                            <td>{{ notif.descripcion|truncatechars:50 }}</td>
+                                            <td>
+                                                {% if notif.resuelta %}
+                                                    <span class="badge bg-success">Resuelta</span>
+                                                {% else %}
+                                                    <span class="badge bg-warning">Pendiente</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            {% else %}
+                            <div class="text-center text-muted py-4">
+                                <i class="fas fa-check-circle fa-3x mb-3 text-success"></i>
+                                <h5>Sin notificaciones</h5>
+                                <p>No hay alertas o notificaciones para esta organización en el período analizado.</p>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

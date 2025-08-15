@@ -422,6 +422,9 @@
             <button onclick="window.print()" class="btn btn-primary">
                 <i class="fas fa-print"></i> Imprimir
             </button>
+            <a href="{% url 'centroSoluciones:generar_link_publico_csc' reporte.id %}" class="btn btn-info">
+                <i class="fas fa-share-alt"></i> Generar Link
+            </a>
         </div>
     </div>
 

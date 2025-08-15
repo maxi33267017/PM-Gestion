@@ -422,3 +422,31 @@ class AlertaReporteCSC(models.Model):
             'CRITICA': 'dark',
         }
         return colors.get(self.severidad, 'secondary')
+
+class ReportePublico(models.Model):
+    """Modelo para generar reportes públicos con acceso directo"""
+    token = models.CharField(max_length=64, unique=True)
+    archivo_id = models.IntegerField()  # ID del archivo (referencia simple)
+    archivo_nombre = models.CharField(max_length=255)  # Nombre del archivo
+    organizacion = models.CharField(max_length=255, null=True, blank=True)
+    tipo_reporte = models.CharField(max_length=20, choices=[
+        ('FLOTA', 'Reporte de Flota'),
+        ('ORGANIZACION', 'Reporte de Organización'),
+        ('INDIVIDUAL', 'Reporte Individual'),
+        ('CSC', 'Reporte CSC'),
+    ])
+    equipo_id = models.IntegerField(null=True, blank=True)  # Para reportes individuales
+    fecha_creacion = models.DateTimeField(auto_now_add=True)
+    fecha_expiracion = models.DateTimeField()
+    activo = models.BooleanField(default=True)
+    creado_por = models.ForeignKey(Usuario, on_delete=models.CASCADE)
+    
+    def __str__(self):
+        return f"Reporte {self.tipo_reporte} - {self.token[:8]}..."
+    
+    def esta_expirado(self):
+        from django.utils import timezone
+        return self.fecha_expiracion < timezone.now()
+    
+    def esta_activo(self):
+        return self.activo and not self.esta_expirado()

@@ -31,8 +31,14 @@ urlpatterns = [
     path('reportes-csc/importar/', views.importar_reporte_csc, name='importar_reporte_csc'),
     path('reportes-csc/<int:reporte_id>/', views.detalle_reporte_csc, name='detalle_reporte_csc'),
     path('reportes-csc/<int:reporte_id>/pdf/', views.generar_pdf_reporte_csc, name='generar_pdf_reporte_csc'),
+    path('reportes-csc/<int:reporte_id>/link-publico/', views.generar_link_publico_csc, name='generar_link_publico_csc'),
     path('reportes-csc/<int:reporte_id>/comentarios/', views.actualizar_comentarios_csc, name='actualizar_comentarios_csc'),
     path('reportes-csc/<int:reporte_id>/regenerar-recomendaciones/', views.regenerar_recomendaciones_csc, name='regenerar_recomendaciones_csc'),
     path('reportes-csc/<int:reporte_id>/agregar-alerta/', views.agregar_alerta_csc, name='agregar_alerta_csc'),
     path('obtener-equipos-cliente-csc/', views.obtener_equipos_cliente_csc, name='obtener_equipos_cliente_csc'),
+    
+    # URLs para reportes públicos
+    path('archivos-mensuales/<int:archivo_id>/reporte-publico/', views.generar_reporte_publico, name='generar_reporte_publico'),
+    path('reporte-publico/<str:token>/', views.reporte_publico, name='reporte_publico'),
+    path('generar-reporte-publico/', views.generar_reporte_publico_simple, name='generar_reporte_publico_simple'),
 ] 

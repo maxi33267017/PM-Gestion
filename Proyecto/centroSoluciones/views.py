@@ -67,6 +67,52 @@ def dashboard(request):
     return render(request, 'centroSoluciones/dashboard.html', context)
 
 @login_required
+def generar_reporte_publico_simple(request):
+    """Vista simple para generar reportes públicos desde el dashboard"""
+    from .models import ReportePublico
+    from django.utils import timezone
+    from datetime import timedelta
+    import secrets
+    
+    # Solo gerentes y administrativos pueden generar reportes públicos
+    if request.user.rol not in ['GERENTE', 'ADMINISTRATIVO']:
+        messages.error(request, 'No tienes permisos para generar reportes públicos.')
+        return redirect('centroSoluciones:centro_soluciones_dashboard')
+    
+    if request.method == 'POST':
+        tipo_reporte = request.POST.get('tipo_reporte', 'FLOTA')
+        organizacion = request.POST.get('organizacion', '')
+        dias_expiracion = int(request.POST.get('dias_expiracion', 30))
+        
+        # Generar token único
+        token = secrets.token_urlsafe(32)
+        
+        # Fecha de expiración
+        fecha_expiracion = timezone.now() + timedelta(days=dias_expiracion)
+        
+        # Crear el reporte público
+        reporte_publico = ReportePublico.objects.create(
+            token=token,
+            archivo_id=1,  # ID simulado
+            archivo_nombre=f"Reporte {tipo_reporte} - {organizacion or 'General'}",
+            organizacion=organizacion,
+            tipo_reporte=tipo_reporte,
+            equipo_id=None,
+            fecha_expiracion=fecha_expiracion,
+            creado_por=request.user
+        )
+        
+        # Generar URL del reporte público
+        base_url = request.build_absolute_uri('/').rstrip('/')
+        reporte_url = f"{base_url}/centro-soluciones/reporte-publico/{token}/"
+        
+        messages.success(request, f'Reporte público generado exitosamente. URL: {reporte_url}')
+        
+        return redirect('centroSoluciones:centro_soluciones_dashboard')
+    
+    return render(request, 'centroSoluciones/generar_reporte_publico.html')
+
+@login_required
 def alertas_list(request):
     """Lista de alertas con filtros según el rol del usuario"""
     
@@ -950,6 +996,60 @@ def detalle_reporte_csc(request, reporte_id):
     return render(request, 'centroSoluciones/detalle_reporte_csc.html', context)
 
 @login_required
+def generar_link_publico_csc(request, reporte_id):
+    """Generar un link público para un reporte CSC"""
+    from .models import ReportePublico
+    from django.utils import timezone
+    from datetime import timedelta
+    import secrets
+    
+    # Solo gerentes y administrativos pueden generar links públicos
+    if request.user.rol not in ['GERENTE', 'ADMINISTRATIVO']:
+        messages.error(request, 'No tienes permisos para generar links públicos.')
+        return redirect('centroSoluciones:detalle_reporte_csc', reporte_id=reporte_id)
+    
+    reporte = get_object_or_404(ReporteCSC, id=reporte_id)
+    
+    # Verificar si ya existe un reporte público activo para este reporte CSC
+    reporte_publico_existente = ReportePublico.objects.filter(
+        archivo_id=reporte_id,
+        tipo_reporte='CSC',
+        activo=True
+    ).first()
+    
+    if reporte_publico_existente and not reporte_publico_existente.esta_expirado():
+        # Si ya existe uno activo, devolver la URL existente
+        base_url = request.build_absolute_uri('/').rstrip('/')
+        reporte_url = f"{base_url}/centro-soluciones/reporte-publico/{reporte_publico_existente.token}/"
+        messages.info(request, f'Ya existe un link público activo: {reporte_url}')
+    else:
+        # Generar nuevo token
+        token = secrets.token_urlsafe(32)
+        
+        # Fecha de expiración (30 días por defecto)
+        fecha_expiracion = timezone.now() + timedelta(days=30)
+        
+        # Crear el reporte público
+        reporte_publico = ReportePublico.objects.create(
+            token=token,
+            archivo_id=reporte_id,
+            archivo_nombre=f"Reporte CSC - {reporte.equipo.numero_serie} ({reporte.fecha_reporte.strftime('%d/%m/%Y')})",
+            organizacion=reporte.equipo.cliente.razon_social,
+            tipo_reporte='CSC',
+            equipo_id=reporte.equipo.id,
+            fecha_expiracion=fecha_expiracion,
+            creado_por=request.user
+        )
+        
+        # Generar URL del reporte público
+        base_url = request.build_absolute_uri('/').rstrip('/')
+        reporte_url = f"{base_url}/centro-soluciones/reporte-publico/{token}/"
+        
+        messages.success(request, f'Link público generado exitosamente: {reporte_url}')
+    
+    return redirect('centroSoluciones:detalle_reporte_csc', reporte_id=reporte_id)
+
+@login_required
 def generar_pdf_reporte_csc(request, reporte_id):
     """Generar PDF del reporte CSC usando el template principal con estilos de print"""
     reporte = get_object_or_404(
@@ -1036,6 +1136,154 @@ def generar_pdf_reporte_csc(request, reporte_id):
         return HttpResponse("Hubo un error al generar el PDF", status=400)
     
     return response
+
+@login_required
+def generar_reporte_publico(request, archivo_id):
+    """Generar un reporte público con token de acceso"""
+    from .models import ReportePublico
+    from django.utils import timezone
+    from datetime import timedelta
+    import secrets
+    import urllib.parse
+    
+    # Solo gerentes y administrativos pueden generar reportes públicos
+    if request.user.rol not in ['GERENTE', 'ADMINISTRATIVO']:
+        messages.error(request, 'No tienes permisos para generar reportes públicos.')
+        return redirect('centroSoluciones:centro_soluciones_dashboard')
+    
+    # Para esta implementación simplificada, usamos datos básicos
+    tipo_reporte = request.GET.get('tipo', 'FLOTA')
+    organizacion = request.GET.get('organizacion', '')
+    equipo_id = request.GET.get('equipo_id', None)
+    
+    # Generar token único
+    token = secrets.token_urlsafe(32)
+    
+    # Fecha de expiración (30 días por defecto)
+    fecha_expiracion = timezone.now() + timedelta(days=30)
+    
+    # Crear el reporte público
+    reporte_publico = ReportePublico.objects.create(
+        token=token,
+        archivo_id=archivo_id,
+        archivo_nombre=f"Archivo {archivo_id}",
+        organizacion=organizacion,
+        tipo_reporte=tipo_reporte,
+        equipo_id=equipo_id,
+        fecha_expiracion=fecha_expiracion,
+        creado_por=request.user
+    )
+    
+    # Generar URL del reporte público
+    base_url = request.build_absolute_uri('/').rstrip('/')
+    reporte_url = f"{base_url}/reporte-publico/{token}/"
+    
+    messages.success(request, f'Reporte público generado exitosamente. URL: {reporte_url}')
+    
+    return redirect('centroSoluciones:centro_soluciones_dashboard')
+
+def reporte_publico(request, token):
+    """Vista pública para acceder a reportes sin autenticación"""
+    from .models import ReportePublico
+    from django.utils import timezone
+    
+    # Buscar el reporte público
+    try:
+        reporte = ReportePublico.objects.get(token=token)
+    except ReportePublico.DoesNotExist:
+        return render(request, 'centroSoluciones/reporte_publico_error.html', {
+            'error': 'Reporte no encontrado'
+        }, status=404)
+    
+    # Verificar si está activo y no expirado
+    if not reporte.esta_activo():
+        return render(request, 'centroSoluciones/reporte_publico_error.html', {
+            'error': 'Reporte expirado o inactivo'
+        }, status=410)
+    
+    # Crear un objeto archivo simulado para el template
+    class ArchivoSimulado:
+        def __init__(self, reporte):
+            self.nombre_archivo = reporte.archivo_nombre
+            self.tipo = 'UTILIZACION'
+            self.estado = 'COMPLETADO'
+            self.fecha_carga = reporte.fecha_creacion
+            self.cargado_por = reporte.creado_por
+            self.registros_procesados = 0
+            self.registros_totales = 0
+            self.periodo = f"Período del reporte {reporte.tipo_reporte}"
+        
+        def get_tipo_display(self):
+            return "Datos de Utilización"
+        
+        def get_estado_display(self):
+            return "Completado"
+    
+    archivo = ArchivoSimulado(reporte)
+    context = {
+        'reporte': reporte,
+        'archivo': archivo,
+        'es_publico': True,
+        'organizaciones': [],
+        'total_horas_general': 0,
+        'total_combustible_general': 0
+    }
+    
+    # Si es un reporte CSC, agregar los datos específicos
+    if reporte.tipo_reporte == 'CSC':
+        try:
+            from .models import ReporteCSC
+            reporte_csc = ReporteCSC.objects.get(id=reporte.archivo_id)
+            
+            # Agrupar datos por categoría
+            datos_por_categoria = {}
+            for dato in reporte_csc.datos.all():
+                if dato.categoria not in datos_por_categoria:
+                    datos_por_categoria[dato.categoria] = []
+                datos_por_categoria[dato.categoria].append(dato)
+            
+            # Analizar categorías disponibles dinámicamente
+            categorias_disponibles = analizar_categorias_disponibles(datos_por_categoria)
+            
+            # Convertir a formato para template
+            categorias_lista = []
+            for config in categorias_disponibles:
+                if config['datos']:
+                    datos_tabla = []
+                    for dato in config['datos']:
+                        datos_tabla.append({
+                            'serie': dato.serie,
+                            'valor': float(dato.valor),
+                            'unidad': dato.unidad
+                        })
+                    
+                    categorias_lista.append({
+                        'nombre': config['nombre'],
+                        'datos_tabla': datos_tabla,
+                        'tipo_grafico': config['tipo_grafico'],
+                        'prioridad': config['prioridad'],
+                        'total_valor': float(config['total_valor']),
+                        'unidades': config['unidades']
+                    })
+            
+            # Procesar período analizado
+            periodo_analizado = None
+            if reporte_csc.comentarios_manuales:
+                for linea in reporte_csc.comentarios_manuales.splitlines():
+                    if "Período analizado:" in linea:
+                        periodo_analizado = linea[18:].strip()
+                        break
+            
+            context.update({
+                'reporte_csc': reporte_csc,
+                'categorias': categorias_lista,
+                'periodo_analizado': periodo_analizado,
+            })
+            
+        except ReporteCSC.DoesNotExist:
+            pass
+    
+    return render(request, 'centroSoluciones/reporte_publico.html', context)
 
 @login_required
 @require_http_methods(["POST"])
