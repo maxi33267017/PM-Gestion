@@ -149,10 +149,12 @@
                             <span class="badge badge-conversion bg-primary">{{ item.tasa_conversion|floatformat:1 }}%</span>
                         </div>
                         <div class="progress progress-custom">
-                            <div class="progress-bar bg-success" style="width: {{ item.con_servicio|div:item.total|mul:100 }}%">
+                            {% widthratio item.con_servicio item.total 100 as porcentaje_con %}
+                            {% widthratio item.sin_servicio item.total 100 as porcentaje_sin %}
+                            <div class="progress-bar bg-success" style="width: {{ porcentaje_con }}%">
                                 {{ item.con_servicio }}
                             </div>
-                            <div class="progress-bar bg-warning" style="width: {{ item.sin_servicio|div:item.total|mul:100 }}%">
+                            <div class="progress-bar bg-warning" style="width: {{ porcentaje_sin }}%">
                                 {{ item.sin_servicio }}
                             </div>
                         </div>
@@ -177,10 +179,12 @@
                             <span class="badge badge-conversion bg-primary">{{ item.tasa_conversion|floatformat:1 }}%</span>
                         </div>
                         <div class="progress progress-custom">
-                            <div class="progress-bar bg-success" style="width: {{ item.con_servicio|div:item.total|mul:100 }}%">
+                            {% widthratio item.con_servicio item.total 100 as porcentaje_con %}
+                            {% widthratio item.sin_servicio item.total 100 as porcentaje_sin %}
+                            <div class="progress-bar bg-success" style="width: {{ porcentaje_con }}%">
                                 {{ item.con_servicio }}
                             </div>
-                            <div class="progress-bar bg-warning" style="width: {{ item.sin_servicio|div:item.total|mul:100 }}%">
+                            <div class="progress-bar bg-warning" style="width: {{ porcentaje_sin }}%">
                                 {{ item.sin_servicio }}
                             </div>
                         </div>

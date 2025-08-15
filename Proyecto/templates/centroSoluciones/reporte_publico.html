@@ -191,7 +191,8 @@
                         <div class="metric-card">
                             <div class="metric-value">
                                 {% if total_combustible_general > 0 and total_horas_general > 0 %}
-                                    {{ total_combustible_general|div:total_horas_general|floatformat:2 }}
+                                    {% widthratio total_combustible_general total_horas_general 1 as consumo_promedio %}
+                                    {{ consumo_promedio|floatformat:2 }}
                                 {% else %}
                                     0
                                 {% endif %}
