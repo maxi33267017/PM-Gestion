@@ -157,7 +157,7 @@
                 <div class="col-md-12">
                     <div class="logo-container">
                         <img src="{% static 'img/JDLOGOHORIZONTAL.png' %}" alt="John Deere" class="logo">
-                        <img src="{% static 'img/logo_pm_fondo_blanco.png' %}" alt="Patagonia Maquinarias" class="logo">
+                        <img src="{% static 'img/logo_pm.png' %}" alt="Patagonia Maquinarias" class="logo">
                     </div>
                     <h1 class="mb-2 text-center">
                         <i class="fas fa-chart-line me-2"></i>
@@ -585,14 +585,14 @@
                 {% endif %}
 
                 <!-- Recomendaciones -->
-                {% if reporte_csc.recomendaciones %}
+                {% if reporte_csc.recomendaciones_automaticas %}
                 <div class="reporte-card">
                     <div class="reporte-card-header">
                         <i class="fas fa-lightbulb me-2"></i>
                         Recomendaciones
                     </div>
                     <div class="reporte-card-body">
-                        {% for recomendacion in reporte_csc.recomendaciones.splitlines %}
+                        {% for recomendacion in reporte_csc.recomendaciones_automaticas.splitlines %}
                             {% if recomendacion.strip %}
                             <div class="recommendation-item">
                                 <i class="fas fa-arrow-right me-2"></i>{{ recomendacion.strip }}
@@ -826,14 +826,14 @@
             {% for categoria in categorias %}
             {
                 id: {{ forloop.counter }},
-                nombre: "{{ categoria.nombre }}",
+                nombre: "{{ categoria.nombre|escapejs }}",
                 tipo: "{{ categoria.tipo_grafico }}",
                 datos: [
                     {% for dato in categoria.datos_tabla %}
                     {
-                        serie: "{{ dato.serie }}",
+                        serie: "{{ dato.serie|escapejs }}",
                         valor: {{ dato.valor }},
-                        unidad: "{{ dato.unidad }}"
+                        unidad: "{{ dato.unidad|escapejs }}"
                     }{% if not forloop.last %},{% endif %}
                     {% endfor %}
                 ]
@@ -843,8 +843,11 @@
         
         // Generar gráficos
         document.addEventListener('DOMContentLoaded', function() {
+            console.log('Categorías disponibles:', categoriasData);
+            console.log('Número de categorías:', categoriasData.length);
             categoriasData.forEach(function(categoria) {
                 const ctx = document.getElementById('chart_' + categoria.id);
+                console.log('Buscando canvas para categoría', categoria.id, ':', ctx);
                 if (ctx) {
                     const labels = categoria.datos.map(d => d.serie);
                     const data = categoria.datos.map(d => d.valor);
