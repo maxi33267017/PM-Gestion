@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -155,8 +156,8 @@
             <div class="row align-items-center">
                 <div class="col-md-12">
                     <div class="logo-container">
-                        <img src="https://patagonia-maquinarias-media.s3.amazonaws.com/media/static/img/JDLOGOHORIZONTAL.png" alt="John Deere" class="logo">
-                        <img src="https://patagonia-maquinarias-media.s3.amazonaws.com/media/static/img/logo_pm_fondo_blanco.png" alt="Patagonia Maquinarias" class="logo">
+                        <img src="{% static 'img/JDLOGOHORIZONTAL.png' %}" alt="John Deere" class="logo">
+                        <img src="{% static 'img/logo_pm_fondo_blanco.png' %}" alt="Patagonia Maquinarias" class="logo">
                     </div>
                     <h1 class="mb-2 text-center">
                         <i class="fas fa-chart-line me-2"></i>
@@ -661,35 +662,7 @@
                 </div>
                 {% endif %}
 
-                <!-- Recomendaciones -->
-                {% if reporte_csc.recomendaciones_automaticas %}
-                <div class="reporte-card">
-                    <div class="reporte-card-header">
-                        <i class="fas fa-lightbulb me-2"></i>
-                        Recomendaciones Automáticas
-                    </div>
-                    <div class="reporte-card-body">
-                        <div class="recommendation-item">
-                            {{ reporte_csc.recomendaciones_automaticas|linebreaks }}
-                        </div>
-                    </div>
-                </div>
-                {% endif %}
 
-                <!-- Comentarios Manuales -->
-                {% if reporte_csc.comentarios_manuales and "Período analizado:" not in reporte_csc.comentarios_manuales %}
-                <div class="reporte-card">
-                    <div class="reporte-card-header">
-                        <i class="fas fa-comments me-2"></i>
-                        Comentarios Adicionales
-                    </div>
-                    <div class="reporte-card-body">
-                        <div class="recommendation-item">
-                            {{ reporte_csc.comentarios_manuales|linebreaks }}
-                        </div>
-                    </div>
-                </div>
-                {% endif %}
             {% endif %}
 
         {% elif reporte.tipo_reporte == 'INDIVIDUAL' %}
@@ -884,9 +857,8 @@
                                 label: categoria.nombre,
                                 data: data,
                                 backgroundColor: colors.slice(0, data.length),
-                                borderColor: categoria.tipo === 'line' ? '#000000' : undefined,
-                                borderWidth: categoria.tipo === 'line' ? 3 : 1,
-                                borderColor: '#000000'
+                                borderColor: '#000000',
+                                borderWidth: categoria.tipo === 'line' ? 3 : 1
                             }]
                         },
                         options: {
