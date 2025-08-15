@@ -428,6 +428,33 @@
         </div>
     </div>
 
+    <!-- Sección de Link Público -->
+    {% if link_publico_generado or link_publico %}
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <h5 class="alert-heading">
+                <i class="fas fa-link me-2"></i>Link Público Disponible
+            </h5>
+            <p class="mb-2">
+                {% if link_publico_generado %}
+                    <strong>Link recién generado:</strong>
+                    <a href="{{ link_publico_generado }}" target="_blank" class="alert-link">{{ link_publico_generado }}</a>
+                {% else %}
+                    <strong>Link existente:</strong>
+                    <a href="{{ link_publico }}" target="_blank" class="alert-link">{{ link_publico }}</a>
+                {% endif %}
+            </p>
+            <div class="mt-2">
+                <button class="btn btn-sm btn-outline-success" onclick="copiarLink('{{ link_publico_generado|default:link_publico }}')">
+                    <i class="fas fa-copy me-1"></i>Copiar Link
+                </button>
+                <a href="{{ link_publico_generado|default:link_publico }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                    <i class="fas fa-external-link-alt me-1"></i>Abrir en Nueva Pestaña
+                </a>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    {% endif %}
+
     <!-- KPIs Principales - Compactos -->
     <div class="row mb-3">
         <div class="col-md-3">
@@ -837,5 +864,26 @@ const colors = ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40'
         }
     });
 });
+
+// Función para copiar link al portapapeles
+function copiarLink(url) {
+    navigator.clipboard.writeText(url).then(function() {
+        // Mostrar notificación de éxito
+        const button = event.target.closest('button');
+        const originalText = button.innerHTML;
+        button.innerHTML = '<i class="fas fa-check me-1"></i>¡Copiado!';
+        button.classList.remove('btn-outline-success');
+        button.classList.add('btn-success');
+        
+        setTimeout(function() {
+            button.innerHTML = originalText;
+            button.classList.remove('btn-success');
+            button.classList.add('btn-outline-success');
+        }, 2000);
+    }).catch(function(err) {
+        console.error('Error al copiar: ', err);
+        alert('Error al copiar el link. Por favor, cópialo manualmente.');
+    });
+}
 </script>
 {% endblock %}

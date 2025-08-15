@@ -984,6 +984,22 @@ def detalle_reporte_csc(request, reporte_id):
             fecha_fin = max(fechas_fin)
             periodo_analizado = f"{fecha_inicio.strftime('%d/%m/%Y')} - {fecha_fin.strftime('%d/%m/%Y')}"
     
+    # Verificar si existe un link público para este reporte
+    from .models import ReportePublico
+    link_publico = None
+    reporte_publico = ReportePublico.objects.filter(
+        archivo_id=reporte_id,
+        tipo_reporte='CSC',
+        activo=True
+    ).first()
+    
+    if reporte_publico and not reporte_publico.esta_expirado():
+        base_url = request.build_absolute_uri('/').rstrip('/')
+        link_publico = f"{base_url}/centro-soluciones/reporte-publico/{reporte_publico.token}/"
+    
+    # Obtener link de la sesión si se acaba de generar
+    link_publico_generado = request.session.pop('link_publico_generado', None)
+    
     context = {
         'reporte': reporte,
         'categorias': categorias_lista,
@@ -992,6 +1008,8 @@ def detalle_reporte_csc(request, reporte_id):
         'logo_pm_path': logo_pm_path,
         'consumo_promedio': consumo_promedio,
         'periodo_analizado': periodo_analizado,
+        'link_publico': link_publico,
+        'link_publico_generado': link_publico_generado,
     }
     return render(request, 'centroSoluciones/detalle_reporte_csc.html', context)
 
@@ -1022,6 +1040,8 @@ def generar_link_publico_csc(request, reporte_id):
         base_url = request.build_absolute_uri('/').rstrip('/')
         reporte_url = f"{base_url}/centro-soluciones/reporte-publico/{reporte_publico_existente.token}/"
         messages.info(request, f'Ya existe un link público activo: {reporte_url}')
+        # Guardar la URL en la sesión para mostrarla en el template
+        request.session['link_publico_generado'] = reporte_url
     else:
         # Generar nuevo token
         token = secrets.token_urlsafe(32)
@@ -1046,6 +1066,8 @@ def generar_link_publico_csc(request, reporte_id):
         reporte_url = f"{base_url}/centro-soluciones/reporte-publico/{token}/"
         
         messages.success(request, f'Link público generado exitosamente: {reporte_url}')
+        # Guardar la URL en la sesión para mostrarla en el template
+        request.session['link_publico_generado'] = reporte_url
     
     return redirect('centroSoluciones:detalle_reporte_csc', reporte_id=reporte_id)
 
