@@ -464,7 +464,7 @@
                 <div class="row mb-4">
                     <div class="col-md-3">
                         <div class="metric-card">
-                            <div class="metric-value text-truncate-custom">{{ reporte_csc.equipo.numero_serie }}</div>
+                            <div class="metric-value" style="font-size: 1.5rem; word-break: break-all;">{{ reporte_csc.equipo.numero_serie }}</div>
                             <div class="metric-label">PIN del Equipo</div>
                         </div>
                     </div>
@@ -561,28 +561,33 @@
                 {% endfor %}
 
                 <!-- Alertas -->
-                {% if reporte_csc.alertas.all %}
                 <div class="reporte-card">
                     <div class="reporte-card-header">
                         <i class="fas fa-exclamation-triangle me-2"></i>
                         Alertas
                     </div>
                     <div class="reporte-card-body">
-                        {% for alerta in reporte_csc.alertas.all %}
-                        <div class="alert-section">
-                            <div class="d-flex justify-content-between align-items-start">
-                                <div>
-                                    <h6 class="mb-1">{{ alerta.nombre }}</h6>
-                                    <p class="mb-1">{{ alerta.descripcion }}</p>
-                                    <small class="text-muted">{{ alerta.fecha_hora|date:"d/m/Y H:i" }}</small>
+                        {% if reporte_csc.alertas.all %}
+                            {% for alerta in reporte_csc.alertas.all %}
+                            <div class="alert-section">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <h6 class="mb-1">{{ alerta.nombre }}</h6>
+                                        <p class="mb-1">{{ alerta.descripcion }}</p>
+                                        <small class="text-muted">{{ alerta.fecha_hora|date:"d/m/Y H:i" }}</small>
+                                    </div>
+                                    <span class="badge bg-{{ alerta.get_severidad_color }}">{{ alerta.get_severidad_display }}</span>
                                 </div>
-                                <span class="badge bg-{{ alerta.get_severidad_color }}">{{ alerta.get_severidad_display }}</span>
                             </div>
-                        </div>
-                        {% endfor %}
+                            {% endfor %}
+                        {% else %}
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle me-2"></i>
+                                No hay alertas registradas para este reporte.
+                            </div>
+                        {% endif %}
                     </div>
                 </div>
-                {% endif %}
 
                 <!-- Recomendaciones -->
                 {% if reporte_csc.recomendaciones_automaticas %}
@@ -821,102 +826,104 @@
         // Colores para gráficos
         const colors = ['#FFDE00', '#D5A32E', '#000000', '#FF6B35', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', '#DDA0DD', '#98D8C8'];
         
-        // Datos de las categorías para gráficos
-        const categoriasData = [
-            {% for categoria in categorias %}
-            {
-                id: {{ forloop.counter }},
-                nombre: "{{ categoria.nombre|escapejs }}",
-                tipo: "{{ categoria.tipo_grafico }}",
-                datos: [
-                    {% for dato in categoria.datos_tabla %}
-                    {
-                        serie: "{{ dato.serie|escapejs }}",
-                        valor: {{ dato.valor }},
-                        unidad: "{{ dato.unidad|escapejs }}"
-                    }{% if not forloop.last %},{% endif %}
-                    {% endfor %}
-                ]
-            }{% if not forloop.last %},{% endif %}
-            {% endfor %}
-        ];
-        
-        // Generar gráficos
+        // Generar gráficos cuando el DOM esté listo
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('Categorías disponibles:', categoriasData);
-            console.log('Número de categorías:', categoriasData.length);
-            categoriasData.forEach(function(categoria) {
-                const ctx = document.getElementById('chart_' + categoria.id);
-                console.log('Buscando canvas para categoría', categoria.id, ':', ctx);
+            console.log('Iniciando generación de gráficos...');
+            
+            // Verificar si Chart.js está disponible
+            if (typeof Chart === 'undefined') {
+                console.error('Chart.js no está disponible');
+                return;
+            }
+            
+            // Generar gráficos para cada categoría
+            {% for categoria in categorias %}
+            (function() {
+                const ctx = document.getElementById('chart_{{ forloop.counter }}');
+                console.log('Canvas para categoría {{ forloop.counter }}:', ctx);
+                
                 if (ctx) {
-                    const labels = categoria.datos.map(d => d.serie);
-                    const data = categoria.datos.map(d => d.valor);
-                    
-                    let chartConfig = {
-                        type: categoria.tipo,
-                        data: {
-                            labels: labels,
-                            datasets: [{
-                                label: categoria.nombre,
-                                data: data,
-                                backgroundColor: colors.slice(0, data.length),
-                                borderColor: '#000000',
-                                borderWidth: categoria.tipo === 'line' ? 3 : 1
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            plugins: {
-                                legend: {
-                                    position: 'bottom',
-                                    labels: {
-                                        color: '#000000',
-                                        font: {
-                                            weight: 'bold'
-                                        }
-                                    }
-                                },
-                                title: {
-                                    display: false
-                                }
+                    try {
+                        const chartConfig = {
+                            type: '{{ categoria.tipo_grafico }}',
+                            data: {
+                                labels: [
+                                    {% for dato in categoria.datos_tabla %}
+                                    '{{ dato.serie|escapejs }}'{% if not forloop.last %},{% endif %}
+                                    {% endfor %}
+                                ],
+                                datasets: [{
+                                    label: '{{ categoria.nombre|escapejs }}',
+                                    data: [
+                                        {% for dato in categoria.datos_tabla %}
+                                        {{ dato.valor }}{% if not forloop.last %},{% endif %}
+                                        {% endfor %}
+                                    ],
+                                    backgroundColor: colors.slice(0, {{ categoria.datos_tabla|length }}),
+                                    borderColor: '#000000',
+                                    borderWidth: '{{ categoria.tipo_grafico }}' === 'line' ? 3 : 1
+                                }]
                             },
-                            scales: {
-                                y: {
-                                    beginAtZero: true,
-                                    ticks: {
-                                        color: '#000000',
-                                        font: {
-                                            weight: 'bold'
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                plugins: {
+                                    legend: {
+                                        position: 'bottom',
+                                        labels: {
+                                            color: '#000000',
+                                            font: {
+                                                weight: 'bold'
+                                            }
                                         }
                                     },
-                                    grid: {
-                                        color: '#dee2e6'
+                                    title: {
+                                        display: false
                                     }
                                 },
-                                x: {
-                                    ticks: {
-                                        color: '#000000',
-                                        font: {
-                                            weight: 'bold'
+                                scales: {
+                                    y: {
+                                        beginAtZero: true,
+                                        ticks: {
+                                            color: '#000000',
+                                            font: {
+                                                weight: 'bold'
+                                            }
+                                        },
+                                        grid: {
+                                            color: '#dee2e6'
                                         }
                                     },
-                                    grid: {
-                                        color: '#dee2e6'
+                                    x: {
+                                        ticks: {
+                                            color: '#000000',
+                                            font: {
+                                                weight: 'bold'
+                                            }
+                                        },
+                                        grid: {
+                                            color: '#dee2e6'
+                                        }
                                     }
                                 }
                             }
+                        };
+                        
+                        // Configuraciones específicas por tipo
+                        if ('{{ categoria.tipo_grafico }}' === 'pie' || '{{ categoria.tipo_grafico }}' === 'doughnut') {
+                            chartConfig.options.plugins.legend.position = 'right';
                         }
-                    };
-                    
-                    // Configuraciones específicas por tipo
-                    if (categoria.tipo === 'pie' || categoria.tipo === 'doughnut') {
-                        chartConfig.options.plugins.legend.position = 'right';
+                        
+                        new Chart(ctx, chartConfig);
+                        console.log('Gráfico creado para categoría {{ forloop.counter }}');
+                    } catch (error) {
+                        console.error('Error al crear gráfico para categoría {{ forloop.counter }}:', error);
                     }
-                    
-                    new Chart(ctx, chartConfig);
+                } else {
+                    console.warn('No se encontró el canvas para categoría {{ forloop.counter }}');
                 }
-            });
+            })();
+            {% endfor %}
         });
     </script>
     {% endif %}
