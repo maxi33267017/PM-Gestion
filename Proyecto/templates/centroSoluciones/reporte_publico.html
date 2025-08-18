@@ -1359,8 +1359,11 @@
                             chartConfig.options.plugins.legend.position = 'right';
                         }
                         
-                        new Chart(ctx, chartConfig);
+                        const chart = new Chart(ctx, chartConfig);
                         console.log('Gráfico creado para categoría {{ forloop.counter }}');
+                        console.log('Configuración del gráfico:', chartConfig);
+                        console.log('Número de elementos en el gráfico:', chart.data.labels.length);
+                        console.log('Elementos del gráfico:', chart.data.labels);
                     } catch (error) {
                         console.error('Error al crear gráfico para categoría {{ forloop.counter }}:', error);
                     }

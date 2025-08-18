@@ -1789,25 +1789,7 @@ def analizar_categorias_disponibles(datos_por_categoria):
 
 def determinar_tipo_grafico(categoria, datos):
     """Determinar el tipo de gráfico más apropiado para una categoría"""
-    categoria_lower = categoria.lower()
-    
-    # Si hay más de 5 datos, usar gráfico de barras para mejor legibilidad
-    if len(datos) > 5:
-        return 'bar'
-    
-    # Gráficos de torta para distribución de tiempo/uso (solo si 5 o menos datos)
-    if any(palabra in categoria_lower for palabra in ['utilización', 'uso', 'modos', 'tiempo']):
-        return 'pie'
-    
-    # Gráficos de barras para comparaciones
-    elif any(palabra in categoria_lower for palabra in ['marcha', 'gear', 'velocidad', 'carga']):
-        return 'bar'
-    
-    # Gráficos de líneas para tendencias
-    elif any(palabra in categoria_lower for palabra in ['temperatura', 'presión', 'consumo']):
-        return 'line'
-    
-    # Por defecto, gráfico de barras
+    # Por ahora, usar solo gráficos de barras para evitar problemas con Chart.js
     return 'bar'
 
 def calcular_prioridad_categoria(categoria):
