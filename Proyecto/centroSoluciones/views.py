@@ -1849,7 +1849,7 @@ def generar_recomendaciones_automaticas(reporte):
             print(f"DEBUG: Porcentaje en reposo: {porcentaje_reposo:.1f}%")
             
             if porcentaje_reposo > 50:
-                recomendaciones.append(f"🚨 CRÍTICO: Tiempo excesivo en reposo ({en_reposo:.1f} hr, {porcentaje_reposo:.1f}%). Máximo aceptable: 15%. Urgente optimización de horarios de trabajo.")
+                recomendaciones.append(f"🚨 CRÍTICO: Tiempo excesivo en reposo ({en_reposo:.1f} hr, {porcentaje_reposo:.1f}%). Máximo recomendable: 15%. Considerar disminuir tiempo en reposo para evitar problemas prematuros en motor.")
             elif porcentaje_reposo > 30:
                 recomendaciones.append(f"⚠️ Alto tiempo en reposo ({en_reposo:.1f} hr, {porcentaje_reposo:.1f}%). Máximo recomendable: 15%. Considerar disminuir tiempo en reposo para evitar problemas prematuros en motor.")
             elif porcentaje_reposo > 15:
@@ -1864,7 +1864,7 @@ def generar_recomendaciones_automaticas(reporte):
         if eficiencia < 30:
             recomendaciones.append(f"⚠️ Eficiencia muy baja ({eficiencia:.1f}%). Favor de analizar en detalle la actividad realizada, el tipo de material trabajado y otras condiciones operativas para determinar si este indicador es un factor crítico a considerar.")
         elif eficiencia < 50:
-            recomendaciones.append(f"⚠️ Eficiencia baja ({eficiencia:.1f}%). Considerar optimización de operaciones.")
+            recomendaciones.append(f"⚠️ Eficiencia baja ({eficiencia:.1f}%). Favor de analizar en detalle la actividad realizada, el tipo de material trabajado y otras condiciones operativas para determinar si este indicador es un factor crítico a considerar.")
         elif eficiencia < 70:
             recomendaciones.append(f"⚠️ Eficiencia moderada ({eficiencia:.1f}%). Hay espacio para mejoras.")
         else:
