@@ -565,9 +565,25 @@ def crear_campania(request):
         valor_paquete = request.POST.get('valor_paquete')
         objetivo_paquetes = request.POST.get('objetivo_paquetes')
         estado = request.POST.get('estado', 'PLANIFICADA')
+        tipo_equipo_id = request.POST.get('tipo_equipo')
+        modelo_equipo_id = request.POST.get('modelo_equipo')
+        crear_embudos = request.POST.get('crear_embudos') == 'on'
         
         if nombre and fecha_inicio and fecha_fin and valor_paquete and objetivo_paquetes:
             try:
+                # Obtener las instancias de tipo y modelo de equipo
+                tipo_equipo = None
+                modelo_equipo = None
+                
+                if tipo_equipo_id and tipo_equipo_id != '':
+                    from clientes.models import TipoEquipo
+                    tipo_equipo = TipoEquipo.objects.get(id=tipo_equipo_id)
+                
+                if modelo_equipo_id and modelo_equipo_id != '':
+                    from clientes.models import ModeloEquipo
+                    modelo_equipo = ModeloEquipo.objects.get(id=modelo_equipo_id)
+                
+                # Crear la campaña
                 campania = Campania.objects.create(
                     nombre=nombre,
                     descripcion=descripcion,
@@ -575,18 +591,55 @@ def crear_campania(request):
                     fecha_fin=fecha_fin,
                     valor_paquete=valor_paquete,
                     objetivo_paquetes=objetivo_paquetes,
-                    estado=estado
+                    estado=estado,
+                    tipo_equipo=tipo_equipo,
+                    modelo_equipo=modelo_equipo,
+                    creado_por=request.user
                 )
                 
-                messages.success(request, f'Campaña "{nombre}" creada exitosamente.')
-                return redirect('campanias_marketing')
+                # Crear embudos de ventas automáticamente si se solicita
+                embudos_creados = 0
+                if crear_embudos:
+                    embudos_creados = campania.crear_embudos_ventas_automaticos()
+                    messages.success(request, f'Campaña "{nombre}" creada exitosamente con {embudos_creados} embudos de ventas generados automáticamente.')
+                else:
+                    messages.success(request, f'Campaña "{nombre}" creada exitosamente.')
+                
+                return redirect('crm:campanias_marketing')
             except Exception as e:
                 messages.error(request, f'Error al crear la campaña: {str(e)}')
         else:
             messages.error(request, 'Por favor complete todos los campos requeridos.')
     
-    context = {}
+    # Obtener tipos de equipos y modelos para el formulario
+    from clientes.models import TipoEquipo, ModeloEquipo
+    tipos_equipo = TipoEquipo.objects.filter(activo=True).order_by('nombre')
+    modelos_equipo = ModeloEquipo.objects.filter(activo=True).order_by('tipo_equipo__nombre', 'marca', 'nombre')
+    
+    context = {
+        'tipos_equipo': tipos_equipo,
+        'modelos_equipo': modelos_equipo,
+    }
     return render(request, 'crm/crear_campania.html', context)
+
+@login_required
+def obtener_modelos_por_tipo(request):
+    """Vista AJAX para obtener modelos de equipo según el tipo seleccionado"""
+    tipo_equipo_id = request.GET.get('tipo_equipo_id')
+    
+    if tipo_equipo_id:
+        from clientes.models import ModeloEquipo
+        modelos = ModeloEquipo.objects.filter(
+            tipo_equipo_id=tipo_equipo_id,
+            activo=True
+        ).order_by('marca', 'nombre')
+        
+        data = [{'id': modelo.id, 'nombre': f"{modelo.marca} {modelo.nombre}"} for modelo in modelos]
+    else:
+        data = []
+    
+    from django.http import JsonResponse
+    return JsonResponse(data, safe=False)
 
 @login_required
 def editar_campania(request, campania_id):

@@ -188,6 +188,24 @@ class Campana(models.Model):
     activa = models.BooleanField(default=True, verbose_name="Activa")
     sucursal = models.ForeignKey(Sucursal, on_delete=models.CASCADE, verbose_name="Sucursal")
     
+    # Campos para segmentación por equipos
+    tipo_equipo = models.ForeignKey(
+        'clientes.TipoEquipo', 
+        on_delete=models.CASCADE, 
+        verbose_name="Tipo de Equipo",
+        null=True,
+        blank=True,
+        help_text="Dejar vacío para incluir todos los tipos de equipos"
+    )
+    modelo_equipo = models.ForeignKey(
+        'clientes.ModeloEquipo', 
+        on_delete=models.CASCADE, 
+        verbose_name="Modelo de Equipo",
+        null=True,
+        blank=True,
+        help_text="Dejar vacío para incluir todos los modelos del tipo seleccionado"
+    )
+    
     # Métricas y objetivos
     presupuesto = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True, verbose_name="Presupuesto")
     objetivo_contactos = models.IntegerField(null=True, blank=True, verbose_name="Objetivo de Contactos")
@@ -231,6 +249,44 @@ class Campana(models.Model):
         total_contactos = self.get_contactos_count()
         ventas = self.get_ventas_count()
         return (ventas / total_contactos * 100) if total_contactos > 0 else 0
+    
+    def get_clientes_objetivo(self):
+        """Obtiene los clientes objetivo basados en el tipo y modelo de equipo"""
+        from clientes.models import Cliente
+        
+        # Filtrar equipos según la segmentación de la campaña
+        equipos_query = {'activo': True}
+        
+        if self.tipo_equipo:
+            equipos_query['modelo__tipo_equipo'] = self.tipo_equipo
+            
+        if self.modelo_equipo:
+            equipos_query['modelo'] = self.modelo_equipo
+        
+        # Obtener clientes únicos que tienen equipos que cumplen los criterios
+        clientes_ids = Cliente.objects.filter(
+            equipos__in=Cliente.objects.filter(**equipos_query).values('equipos')
+        ).distinct().values_list('id', flat=True)
+        
+        return Cliente.objects.filter(id__in=clientes_ids, activo=True)
+    
+    def crear_embudos_ventas_automaticos(self):
+        """Crea automáticamente embudos de ventas para todos los clientes objetivo"""
+        clientes_objetivo = self.get_clientes_objetivo()
+        embudos_creados = 0
+        
+        for cliente in clientes_objetivo:
+            # Verificar si ya existe un embudo para este cliente en esta campaña
+            if not self.embudos_ventas.filter(cliente=cliente).exists():
+                EmbudoVentas.objects.create(
+                    campana=self,
+                    cliente=cliente,
+                    etapa='CONTACTO_INICIAL',
+                    origen='CAMPAÑA_MARKETING'
+                )
+                embudos_creados += 1
+        
+        return embudos_creados
 
 
 class EmbudoVentas(models.Model):

@@ -61,6 +61,55 @@
                             </div>
                         </div>
                         
+                        <!-- Segmentación por Equipos -->
+                        <div class="card border-primary mb-3">
+                            <div class="card-header bg-primary text-white">
+                                <h6 class="mb-0">
+                                    <i class="bi bi-gear me-2"></i>Segmentación por Equipos
+                                </h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="tipo_equipo" class="form-label">Tipo de Equipo</label>
+                                        <select class="form-select" id="tipo_equipo" name="tipo_equipo">
+                                            <option value="">Todos los tipos de equipos</option>
+                                            {% for tipo in tipos_equipo %}
+                                            <option value="{{ tipo.id }}">{{ tipo.nombre }}</option>
+                                            {% endfor %}
+                                        </select>
+                                        <small class="form-text text-muted">Dejar vacío para incluir todos los tipos</small>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="modelo_equipo" class="form-label">Modelo de Equipo</label>
+                                        <select class="form-select" id="modelo_equipo" name="modelo_equipo" disabled>
+                                            <option value="">Selecciona primero un tipo de equipo</option>
+                                        </select>
+                                        <small class="form-text text-muted">Dejar vacío para incluir todos los modelos del tipo seleccionado</small>
+                                    </div>
+                                </div>
+                                
+                                <!-- Información de segmentación -->
+                                <div id="info-segmentacion" class="alert alert-info" style="display: none;">
+                                    <h6>Información de Segmentación</h6>
+                                    <div id="segmentacion-details"></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Opción para crear embudos automáticamente -->
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="crear_embudos" name="crear_embudos">
+                                <label class="form-check-label" for="crear_embudos">
+                                    <strong>Crear embudos de ventas automáticamente</strong>
+                                </label>
+                                <small class="form-text text-muted d-block">
+                                    Al marcar esta opción, se crearán automáticamente embudos de ventas para todos los clientes que tengan equipos que coincidan con la segmentación seleccionada.
+                                </small>
+                            </div>
+                        </div>
+                        
                         <!-- Información de la campaña -->
                         <div class="alert alert-info">
                             <h6>Información de la Campaña</h6>
@@ -153,5 +202,72 @@ document.querySelector('form').addEventListener('submit', function(e) {
 
 // Establecer fecha de inicio por defecto como hoy
 document.getElementById('fecha_inicio').value = new Date().toISOString().split('T')[0];
+
+// Función para cargar modelos según el tipo de equipo seleccionado
+document.getElementById('tipo_equipo').addEventListener('change', function() {
+    const tipoEquipoId = this.value;
+    const modeloSelect = document.getElementById('modelo_equipo');
+    const infoSegmentacion = document.getElementById('info-segmentacion');
+    
+    // Limpiar y deshabilitar el select de modelos
+    modeloSelect.innerHTML = '<option value="">Selecciona primero un tipo de equipo</option>';
+    modeloSelect.disabled = true;
+    infoSegmentacion.style.display = 'none';
+    
+    if (tipoEquipoId) {
+        // Habilitar el select de modelos
+        modeloSelect.disabled = false;
+        
+        // Cargar modelos via AJAX
+        fetch(`{% url 'crm:obtener_modelos_por_tipo' %}?tipo_equipo_id=${tipoEquipoId}`)
+            .then(response => response.json())
+            .then(data => {
+                modeloSelect.innerHTML = '<option value="">Todos los modelos de este tipo</option>';
+                
+                data.forEach(modelo => {
+                    const option = document.createElement('option');
+                    option.value = modelo.id;
+                    option.textContent = modelo.nombre;
+                    modeloSelect.appendChild(option);
+                });
+                
+                // Mostrar información de segmentación
+                mostrarInfoSegmentacion();
+            })
+            .catch(error => {
+                console.error('Error al cargar modelos:', error);
+            });
+    }
+});
+
+// Función para mostrar información de segmentación
+function mostrarInfoSegmentacion() {
+    const tipoEquipo = document.getElementById('tipo_equipo');
+    const modeloEquipo = document.getElementById('modelo_equipo');
+    const infoSegmentacion = document.getElementById('info-segmentacion');
+    const segmentacionDetails = document.getElementById('segmentacion-details');
+    
+    let descripcion = '';
+    
+    if (tipoEquipo.value) {
+        const tipoSeleccionado = tipoEquipo.options[tipoEquipo.selectedIndex].text;
+        descripcion += `<p><strong>Tipo de Equipo:</strong> ${tipoSeleccionado}</p>`;
+        
+        if (modeloEquipo.value) {
+            const modeloSeleccionado = modeloEquipo.options[modeloEquipo.selectedIndex].text;
+            descripcion += `<p><strong>Modelo Específico:</strong> ${modeloSeleccionado}</p>`;
+        } else {
+            descripcion += `<p><strong>Modelo:</strong> Todos los modelos de ${tipoSeleccionado}</p>`;
+        }
+    } else {
+        descripcion = '<p><strong>Segmentación:</strong> Todos los tipos de equipos</p>';
+    }
+    
+    segmentacionDetails.innerHTML = descripcion;
+    infoSegmentacion.style.display = 'block';
+}
+
+// Event listener para el cambio de modelo
+document.getElementById('modelo_equipo').addEventListener('change', mostrarInfoSegmentacion);
 </script>
 {% endblock %}

@@ -19,6 +19,7 @@ urlpatterns = [
     path('crm/portfolio/<int:paquete_id>/clientes/', views.clientes_por_paquete, name='clientes_por_paquete'),
     path('crm/campanias/', views.campanias_marketing, name='campanias_marketing'),
     path('crm/campanias/crear/', views.crear_campania, name='crear_campania'),
+    path('crm/campanias/obtener-modelos/', views.obtener_modelos_por_tipo, name='obtener_modelos_por_tipo'),
     path('crm/campanias/editar/<int:campania_id>/', views.editar_campania, name='editar_campania'),
     path('crm/campanias/<int:campania_id>/contactos/', views.gestionar_contactos, name='gestionar_contactos'),
     path('crm/campanias/<int:campania_id>/dashboard/', views.dashboard_campania, name='dashboard_campania'),

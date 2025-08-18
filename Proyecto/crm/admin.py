@@ -37,12 +37,32 @@ class ContactoAdmin(admin.ModelAdmin):
 
 @admin.register(Campana)
 class CampanaAdmin(admin.ModelAdmin):
-    list_display = ['nombre', 'sucursal', 'fecha_inicio', 'fecha_fin', 'activa', 'presupuesto_display']
-    list_filter = ['activa', 'fecha_inicio', 'sucursal']
+    list_display = ['nombre', 'sucursal', 'tipo_equipo', 'modelo_equipo', 'fecha_inicio', 'fecha_fin', 'activa', 'presupuesto_display']
+    list_filter = ['activa', 'fecha_inicio', 'sucursal', 'tipo_equipo']
     search_fields = ['nombre', 'descripcion']
     date_hierarchy = 'fecha_inicio'
     
     readonly_fields = ['fecha_creacion', 'fecha_modificacion']
+    
+    fieldsets = (
+        ('Información Básica', {
+            'fields': ('nombre', 'descripcion', 'sucursal', 'activa')
+        }),
+        ('Segmentación por Equipos', {
+            'fields': ('tipo_equipo', 'modelo_equipo'),
+            'description': 'Dejar vacío para incluir todos los equipos'
+        }),
+        ('Fechas', {
+            'fields': ('fecha_inicio', 'fecha_fin')
+        }),
+        ('Objetivos', {
+            'fields': ('presupuesto', 'objetivo_contactos', 'objetivo_ventas')
+        }),
+        ('Auditoría', {
+            'fields': ('creado_por', 'fecha_creacion', 'fecha_modificacion'),
+            'classes': ('collapse',)
+        }),
+    )
     
     def presupuesto_display(self, obj):
         if obj.presupuesto:
