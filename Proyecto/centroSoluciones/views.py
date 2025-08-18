@@ -1702,13 +1702,59 @@ def procesar_csv_reporte(reporte):
         print(f"ERROR traceback: {traceback.format_exc()}")
         raise Exception(f"Error procesando CSV: {str(e)}")
 
+def consolidar_categorias_similares(datos_por_categoria):
+    """Consolidar categorías similares para evitar duplicados"""
+    categorias_consolidadas = {}
+    
+    # Mapeo de categorías similares
+    mapeo_categorias = {
+        'Índice de utilización de combustible del motor': 'Utilización del combustible del motor',
+        'Utilización del combustible del motor': 'Utilización del combustible del motor',
+        'Utilización del motor': 'Utilización del motor',
+        'Uso de modo ECO': 'Uso de modo ECO',
+        'Consumo promedio combustible': 'Consumo promedio combustible',
+        'Combustible consumido': 'Combustible consumido',
+        'Nivel del depósito de combustible': 'Nivel del depósito de combustible',
+    }
+    
+    for categoria, datos in datos_por_categoria.items():
+        # Buscar categoría consolidada
+        categoria_consolidada = mapeo_categorias.get(categoria, categoria)
+        
+        if categoria_consolidada not in categorias_consolidadas:
+            categorias_consolidadas[categoria_consolidada] = []
+        
+        # Agregar datos a la categoría consolidada
+        categorias_consolidadas[categoria_consolidada].extend(datos)
+    
+    # Eliminar duplicados por serie
+    for categoria, datos in categorias_consolidadas.items():
+        series_unicas = {}
+        for dato in datos:
+            if dato.serie not in series_unicas:
+                series_unicas[dato.serie] = dato
+            else:
+                # Si hay duplicados, mantener el que tenga mayor valor
+                if dato.valor > series_unicas[dato.serie].valor:
+                    series_unicas[dato.serie] = dato
+        
+        categorias_consolidadas[categoria] = list(series_unicas.values())
+    
+    print(f"DEBUG: Categorías originales: {len(datos_por_categoria)}")
+    print(f"DEBUG: Categorías consolidadas: {len(categorias_consolidadas)}")
+    
+    return categorias_consolidadas
+
 def analizar_categorias_disponibles(datos_por_categoria):
     """Analizar las categorías disponibles en el reporte y determinar tipos de gráficos"""
     categorias = []
     
-    print(f"DEBUG: Analizando {len(datos_por_categoria)} categorías")
+    # Consolidar categorías similares primero
+    datos_consolidados = consolidar_categorias_similares(datos_por_categoria)
     
-    for categoria, datos in datos_por_categoria.items():
+    print(f"DEBUG: Analizando {len(datos_consolidados)} categorías consolidadas")
+    
+    for categoria, datos in datos_consolidados.items():
         # Determinar tipo de gráfico basado en la categoría y datos
         tipo_grafico = determinar_tipo_grafico(categoria, datos)
         prioridad = calcular_prioridad_categoria(categoria)
@@ -1734,7 +1780,7 @@ def analizar_categorias_disponibles(datos_por_categoria):
             'unidades': datos[0].unidad if datos else 'hr'
         })
         
-        print(f"DEBUG: Categoría '{categoria}' - Tipo: {tipo_grafico}, Prioridad: {prioridad}")
+        print(f"DEBUG: Categoría '{categoria}' - Tipo: {tipo_grafico}, Prioridad: {prioridad}, Datos: {len(datos)}")
     
     # Ordenar por prioridad
     categorias.sort(key=lambda x: x['prioridad'])
