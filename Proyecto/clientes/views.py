@@ -19,9 +19,9 @@ def clientes(request):
     # Filtrar los clientes según la sucursal del usuario logueado
     usuario = request.user
     if usuario.rol in ['ADMINISTRATIVO', 'TECNICO'] and usuario.sucursal:
-        lista_clientes = Cliente.objects.filter(sucursal=usuario.sucursal)
+        lista_clientes = Cliente.objects.filter(sucursal=usuario.sucursal, activo=True)
     elif usuario.rol == 'GERENTE':
-        # Los gerentes ven todos los clientes
+        # Los gerentes ven todos los clientes (incluyendo inactivos)
         lista_clientes = Cliente.objects.all()
     else:
         lista_clientes = Cliente.objects.all()
