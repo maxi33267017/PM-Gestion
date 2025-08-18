@@ -16,10 +16,13 @@ def clientes(request):
         form = ClienteForm()
     
 
-    # # Filtrar los clientes según la sucursal del usuario logueado
+    # Filtrar los clientes según la sucursal del usuario logueado
     usuario = request.user
     if usuario.rol in ['ADMINISTRATIVO', 'TECNICO'] and usuario.sucursal:
         lista_clientes = Cliente.objects.filter(sucursal=usuario.sucursal)
+    elif usuario.rol == 'GERENTE':
+        # Los gerentes ven todos los clientes
+        lista_clientes = Cliente.objects.all()
     else:
         lista_clientes = Cliente.objects.all()
 
