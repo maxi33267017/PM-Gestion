@@ -1274,24 +1274,36 @@
             (function() {
                 const ctx = document.getElementById('chart_{{ forloop.counter }}');
                 console.log('Canvas para categoría {{ forloop.counter }}:', ctx);
+                console.log('Categoría: {{ categoria.nombre|escapejs }}');
+                console.log('Tipo de gráfico: {{ categoria.tipo_grafico }}');
+                console.log('Número de datos en tabla: {{ categoria.datos_tabla|length }}');
+                
+                // Debug: mostrar datos que se van a usar en el gráfico
+                const labels = [
+                    {% for dato in categoria.datos_tabla %}
+                    '{{ dato.serie|escapejs }}'{% if not forloop.last %},{% endif %}
+                    {% endfor %}
+                ];
+                const data = [
+                    {% for dato in categoria.datos_tabla %}
+                    {{ dato.valor }}{% if not forloop.last %},{% endif %}
+                    {% endfor %}
+                ];
+                
+                console.log('Labels para gráfico:', labels);
+                console.log('Data para gráfico:', data);
+                console.log('Número de labels:', labels.length);
+                console.log('Número de data points:', data.length);
                 
                 if (ctx) {
                     try {
                         const chartConfig = {
                             type: '{{ categoria.tipo_grafico }}',
                             data: {
-                                labels: [
-                                    {% for dato in categoria.datos_tabla %}
-                                    '{{ dato.serie|escapejs }}'{% if not forloop.last %},{% endif %}
-                                    {% endfor %}
-                                ],
+                                labels: labels,
                                 datasets: [{
                                     label: '{{ categoria.nombre|escapejs }}',
-                                    data: [
-                                        {% for dato in categoria.datos_tabla %}
-                                        {{ dato.valor }}{% if not forloop.last %},{% endif %}
-                                        {% endfor %}
-                                    ],
+                                    data: data,
                                     backgroundColor: colors.slice(0, {{ categoria.datos_tabla|length }}),
                                     borderColor: '#000000',
                                     borderWidth: '{{ categoria.tipo_grafico }}' === 'line' ? 3 : 1
