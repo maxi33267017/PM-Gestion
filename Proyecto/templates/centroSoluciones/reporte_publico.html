@@ -476,6 +476,40 @@
                 max-width: 100% !important;
             }
             
+            /* Sección Datos del Reporte optimizada para impresión */
+            .datos-reporte-section {
+                page-break-inside: auto !important;
+            }
+            
+            /* Cada categoría de datos debe mantenerse junta */
+            .categoria-datos {
+                page-break-inside: avoid !important;
+                page-break-after: auto !important;
+                margin-bottom: 20px !important;
+            }
+            
+            /* Tablas dentro de categorías */
+            .table-responsive {
+                page-break-inside: avoid !important;
+                margin-top: 10px !important;
+            }
+            
+            /* Evitar cortes en tablas */
+            .table {
+                page-break-inside: avoid !important;
+            }
+            
+            /* Títulos de categorías */
+            .text-primary {
+                page-break-after: avoid !important;
+                margin-bottom: 10px !important;
+            }
+            
+            /* Espaciado entre categorías para mejor separación en impresión */
+            .categoria-datos:not(:last-child) {
+                page-break-after: auto !important;
+            }
+            
             /* Tablas optimizadas */
             .table {
                 font-size: 10px !important;
@@ -1024,14 +1058,14 @@
 
                 <!-- Datos del Reporte -->
                 {% if categorias %}
-                <div class="reporte-card">
+                <div class="reporte-card datos-reporte-section">
                     <div class="reporte-card-header">
                         <i class="fas fa-chart-bar me-2"></i>
                         Datos del Reporte
                     </div>
                     <div class="reporte-card-body">
                         {% for categoria in categorias %}
-                        <div class="mb-4">
+                        <div class="mb-4 categoria-datos">
                             <h6 class="text-primary">{{ categoria.nombre }}</h6>
                             
                             <!-- Gráfico -->
