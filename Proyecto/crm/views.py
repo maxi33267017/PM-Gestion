@@ -355,7 +355,7 @@ def portfolio_paquetes(request):
     paquetes = paquetes.annotate(
         clientes_activos=Count('clientes', filter=Q(clientes__estado='ACTIVO')),
         total_ingresos=Sum('clientes__paquete__precio', filter=Q(clientes__estado='ACTIVO'))
-    ).order_by('-fecha_creacion')
+    ).prefetch_related('servicios__preorden__cliente', 'servicios__preorden__equipo__modelo').order_by('-fecha_creacion')
     
     # Calcular estadísticas adicionales
     paquetes_activos_count = paquetes.filter(estado='ACTIVO').count()
@@ -399,7 +399,9 @@ def crear_paquete(request):
             messages.error(request, 'Por favor complete todos los campos requeridos.')
     
     # Obtener servicios disponibles para el formulario
-    servicios = Servicio.objects.filter(estado='COMPLETADO').order_by('-fecha_servicio')[:50]
+    servicios = Servicio.objects.filter(estado='COMPLETADO').select_related(
+        'preorden__cliente', 'preorden__equipo'
+    ).order_by('-fecha_servicio')[:50]
     
     context = {
         'servicios': servicios,
@@ -441,7 +443,9 @@ def editar_paquete(request, paquete_id):
             messages.error(request, 'Por favor complete todos los campos requeridos.')
     
     # Obtener servicios disponibles
-    servicios = Servicio.objects.filter(estado='COMPLETADO').order_by('-fecha_servicio')[:50]
+    servicios = Servicio.objects.filter(estado='COMPLETADO').select_related(
+        'preorden__cliente', 'preorden__equipo'
+    ).order_by('-fecha_servicio')[:50]
     
     context = {
         'paquete': paquete,
@@ -501,8 +505,14 @@ def asignar_paquete_cliente(request):
 @login_required
 def clientes_por_paquete(request, paquete_id):
     """Vista para ver qué clientes tienen asignado un paquete específico"""
-    paquete = get_object_or_404(PaqueteServicio, id=paquete_id)
-    asignaciones = ClientePaquete.objects.filter(paquete=paquete).select_related('cliente').order_by('-fecha_inicio')
+    paquete = get_object_or_404(
+        PaqueteServicio.objects.prefetch_related(
+            'servicios__preorden__cliente', 
+            'servicios__preorden__equipo__modelo'
+        ), 
+        id=paquete_id
+    )
+    asignaciones = ClientePaquete.objects.filter(paquete=paquete).select_related('cliente', 'cliente__sucursal').order_by('-fecha_inicio')
     
     # Calcular estadísticas
     asignaciones_activas_count = asignaciones.filter(estado='ACTIVO').count()

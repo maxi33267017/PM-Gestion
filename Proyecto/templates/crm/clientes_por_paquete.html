@@ -192,7 +192,8 @@
                             <h6 class="card-title">{{ servicio.tipo_servicio }}</h6>
                             <p class="card-text">
                                 <small class="text-muted">
-                                    Cliente: {{ servicio.cliente.razon_social|truncatechars:30 }}<br>
+                                    Cliente: {{ servicio.preorden.cliente.razon_social|truncatechars:30 }}<br>
+                                    Equipo: {{ servicio.preorden.equipo.modelo.marca }} {{ servicio.preorden.equipo.modelo.nombre }}<br>
                                     Fecha: {{ servicio.fecha_servicio|date:"d/m/Y" }}
                                 </small>
                             </p>

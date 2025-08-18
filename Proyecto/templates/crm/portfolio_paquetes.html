@@ -143,7 +143,7 @@
                                 {% if paquete.servicios.count > 0 %}
                                     <button class="btn btn-sm btn-outline-info ms-1" 
                                             data-bs-toggle="tooltip" 
-                                            title="{% for servicio in paquete.servicios.all|slice:':3' %}{{ servicio.tipo_servicio }}{% if not forloop.last %}, {% endif %}{% endfor %}{% if paquete.servicios.count > 3 %}...{% endif %}">
+                                            title="{% for servicio in paquete.servicios.all|slice:':3' %}{{ servicio.tipo_servicio }} ({{ servicio.preorden.cliente.razon_social|truncatechars:20 }}){% if not forloop.last %}, {% endif %}{% endfor %}{% if paquete.servicios.count > 3 %}...{% endif %}">
                                         <i class="bi bi-eye"></i>
                                     </button>
                                 {% endif %}

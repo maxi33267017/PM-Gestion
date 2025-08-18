@@ -55,7 +55,8 @@
                                                 <label class="form-check-label" for="servicio_{{ servicio.id }}">
                                                     <strong>{{ servicio.tipo_servicio }}</strong><br>
                                                     <small class="text-muted">
-                                                        Cliente: {{ servicio.cliente.razon_social|truncatechars:30 }}<br>
+                                                        Cliente: {{ servicio.preorden.cliente.razon_social|truncatechars:30 }}<br>
+                                                        Equipo: {{ servicio.preorden.equipo.modelo.marca }} {{ servicio.preorden.equipo.modelo.nombre }}<br>
                                                         Fecha: {{ servicio.fecha_servicio|date:"d/m/Y" }}
                                                     </small>
                                                 </label>
