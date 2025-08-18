@@ -15,6 +15,8 @@ $(document).ready(function () {
                 "last": "Último"
             }
         },
+        "pageLength": 50,  // Mostrar 50 clientes por página
+        "lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "Todos"]],  // Opciones de elementos por página
         "scrollX": false,
     });
 
