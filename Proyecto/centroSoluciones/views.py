@@ -1745,7 +1745,11 @@ def determinar_tipo_grafico(categoria, datos):
     """Determinar el tipo de gráfico más apropiado para una categoría"""
     categoria_lower = categoria.lower()
     
-    # Gráficos de torta para distribución de tiempo/uso
+    # Si hay más de 5 datos, usar gráfico de barras para mejor legibilidad
+    if len(datos) > 5:
+        return 'bar'
+    
+    # Gráficos de torta para distribución de tiempo/uso (solo si 5 o menos datos)
     if any(palabra in categoria_lower for palabra in ['utilización', 'uso', 'modos', 'tiempo']):
         return 'pie'
     
@@ -1819,7 +1823,7 @@ def generar_recomendaciones_automaticas(reporte):
             if porcentaje_reposo > 50:
                 recomendaciones.append(f"🚨 CRÍTICO: Tiempo excesivo en reposo ({en_reposo:.1f} hr, {porcentaje_reposo:.1f}%). Máximo aceptable: 15%. Urgente optimización de horarios de trabajo.")
             elif porcentaje_reposo > 30:
-                recomendaciones.append(f"⚠️ Alto tiempo en reposo ({en_reposo:.1f} hr, {porcentaje_reposo:.1f}%). Máximo aceptable: 15%. Considerar optimizar horarios de trabajo.")
+                recomendaciones.append(f"⚠️ Alto tiempo en reposo ({en_reposo:.1f} hr, {porcentaje_reposo:.1f}%). Máximo recomendable: 15%. Considerar disminuir tiempo en reposo para evitar problemas prematuros en motor.")
             elif porcentaje_reposo > 15:
                 recomendaciones.append(f"⚠️ Tiempo en reposo superior al recomendado ({en_reposo:.1f} hr, {porcentaje_reposo:.1f}%). Máximo aceptable: 15%. Revisar eficiencia operativa.")
             else:
@@ -1830,7 +1834,7 @@ def generar_recomendaciones_automaticas(reporte):
         eficiencia = (tiempo_productivo / reporte.total_horas_analizadas) * 100 if reporte.total_horas_analizadas > 0 else 0
         
         if eficiencia < 30:
-            recomendaciones.append(f"⚠️ Eficiencia muy baja ({eficiencia:.1f}%). Urgente optimización de operaciones.")
+            recomendaciones.append(f"⚠️ Eficiencia muy baja ({eficiencia:.1f}%). Favor de analizar en detalle la actividad realizada, el tipo de material trabajado y otras condiciones operativas para determinar si este indicador es un factor crítico a considerar.")
         elif eficiencia < 50:
             recomendaciones.append(f"⚠️ Eficiencia baja ({eficiencia:.1f}%). Considerar optimización de operaciones.")
         elif eficiencia < 70:
@@ -1908,7 +1912,7 @@ def generar_recomendaciones_automaticas(reporte):
             print(f"DEBUG: Porcentaje ECO habilitado: {porcentaje_habilitado:.1f}%, inhabilitado: {porcentaje_inhabilitado:.1f}%")
             
             if porcentaje_habilitado == 0:
-                recomendaciones.append(f"🚨 CRÍTICO: Modo ECO completamente inhabilitado ({inhabilitado:.1f} hr, 100%). El modo ECO reduce significativamente el consumo de combustible. URGENTE: Habilitar el modo ECO y capacitar al operador para su uso.")
+                recomendaciones.append(f"🚨 CRÍTICO: Modo ECO completamente inhabilitado ({inhabilitado:.1f} hr, 100%). El modo ECO reduce significativamente el consumo de combustible. URGENTE: Analizar la actividad y condicion operativa para determinar si es posible realizarla con modo ECO activado.")
             elif porcentaje_habilitado < 20:
                 recomendaciones.append(f"🚨 CRÍTICO: Uso muy bajo del modo ECO ({habilitado:.1f} hr, {porcentaje_habilitado:.1f}%). El modo ECO reduce significativamente el consumo de combustible. Recomendado: mínimo 40% de uso para excavadoras y motoniveladores.")
             elif porcentaje_habilitado < 40:
