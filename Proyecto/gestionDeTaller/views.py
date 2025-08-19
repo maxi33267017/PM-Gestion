@@ -3968,7 +3968,14 @@ def dashboard_gerente(request):
         # Si estamos en 2025, el año fiscal es 2024-2025 (Nov 2024 - Oct 2025)
         año_fiscal = inicio_mes.year - 1  # Siempre usar el año anterior para histórico
         
-        for mes in range(1, 13):
+        # Crear lista de meses en orden del año fiscal (Noviembre a Octubre)
+        meses_fiscal = []
+        for mes in range(11, 13):  # Noviembre y Diciembre
+            meses_fiscal.append(mes)
+        for mes in range(1, 11):   # Enero a Octubre
+            meses_fiscal.append(mes)
+        
+        for mes in meses_fiscal:
             if mes >= 11:  # Noviembre a Diciembre
                 año = año_fiscal
                 mes_inicio = date(año, mes, 1)
@@ -4080,7 +4087,14 @@ def dashboard_gerente(request):
         else:  # Enero a Octubre
             año_fiscal = inicio_mes.year - 1
         
-        for mes in range(1, 13):
+        # Crear lista de meses en orden del año fiscal (Noviembre a Octubre)
+        meses_fiscal = []
+        for mes in range(11, 13):  # Noviembre y Diciembre
+            meses_fiscal.append(mes)
+        for mes in range(1, 11):   # Enero a Octubre
+            meses_fiscal.append(mes)
+        
+        for mes in meses_fiscal:
             if mes >= 11:  # Noviembre a Diciembre
                 año = año_fiscal
                 mes_inicio = date(año, mes, 1)
