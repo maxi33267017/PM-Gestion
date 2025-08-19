@@ -4,7 +4,8 @@ from django.urls import reverse
 from django.utils import timezone
 from .models import (
     Campania, Contacto, AnalisisCliente, PaqueteServicio, ClientePaquete,
-    Campana, EmbudoVentas, ContactoCliente, SugerenciaMejora, PotencialCompraModelo
+    Campana, EmbudoVentas, ContactoCliente, SugerenciaMejora, PotencialCompraModelo,
+    HistorialFacturacion
 )
 
 # ============================================================================
@@ -344,4 +345,56 @@ class PotencialCompraModeloAdmin(admin.ModelAdmin):
     
     def potencial_anual_display(self, obj):
         return f"${obj.potencial_anual:,.2f}"
-    potencial_anual_display.short_description = 'Potencial Anual USD' 
+    potencial_anual_display.short_description = 'Potencial Anual USD'
+
+
+@admin.register(HistorialFacturacion)
+class HistorialFacturacionAdmin(admin.ModelAdmin):
+    list_display = [
+        'pin_equipo', 'cliente_nombre', 'fecha_servicio', 'numero_factura', 
+        'monto_usd_display', 'tipo_servicio', 'equipo_existe_badge'
+    ]
+    list_filter = [
+        'fecha_servicio', 'tipo_servicio', 'cliente', 'equipo'
+    ]
+    search_fields = [
+        'pin_equipo', 'numero_factura', 'cliente__razon_social', 'modelo_equipo'
+    ]
+    date_hierarchy = 'fecha_servicio'
+    
+    readonly_fields = ['fecha_importacion']
+    
+    fieldsets = (
+        ('Información del Equipo', {
+            'fields': ('pin_equipo', 'modelo_equipo', 'equipo')
+        }),
+        ('Información de Facturación', {
+            'fields': ('fecha_servicio', 'numero_factura', 'monto_usd', 'tipo_servicio')
+        }),
+        ('Cliente', {
+            'fields': ('cliente',)
+        }),
+        ('Auditoría', {
+            'fields': ('fecha_importacion',),
+            'classes': ('collapse',)
+        }),
+    )
+    
+    def cliente_nombre(self, obj):
+        return obj.cliente.razon_social if obj.cliente else "Sin Cliente"
+    cliente_nombre.short_description = 'Cliente'
+    
+    def monto_usd_display(self, obj):
+        return f"${obj.monto_usd:,.2f}"
+    monto_usd_display.short_description = 'Monto USD'
+    
+    def equipo_existe_badge(self, obj):
+        if obj.equipo:
+            return format_html(
+                '<span class="badge bg-success">En BD</span>'
+            )
+        else:
+            return format_html(
+                '<span class="badge bg-warning">Externo</span>'
+            )
+    equipo_existe_badge.short_description = 'Estado Equipo' 

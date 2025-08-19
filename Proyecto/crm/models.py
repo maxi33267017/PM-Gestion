@@ -761,3 +761,45 @@ class EmbudoChecklistAdicional(models.Model):
             'CANCELADO': '#dc3545',
         }
         return colores.get(self.etapa, '#6c757d')
+
+
+class HistorialFacturacion(models.Model):
+    """
+    Modelo para almacenar el histórico de facturación de servicios
+    importado desde archivos externos.
+    """
+    pin_equipo = models.CharField(max_length=50, verbose_name='PIN del Equipo')
+    fecha_servicio = models.DateField(verbose_name='Fecha de Servicio')
+    numero_factura = models.CharField(max_length=50, verbose_name='Número de Factura')
+    monto_usd = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='Monto USD')
+    tipo_servicio = models.CharField(max_length=100, verbose_name='Tipo de Servicio')
+    modelo_equipo = models.CharField(max_length=100, verbose_name='Modelo del Equipo')
+    fecha_importacion = models.DateTimeField(auto_now_add=True, verbose_name='Fecha de Importación')
+    
+    # Relaciones
+    cliente = models.ForeignKey('clientes.Cliente', on_delete=models.CASCADE, verbose_name='Cliente')
+    equipo = models.ForeignKey('clientes.Equipo', blank=True, null=True, on_delete=models.SET_NULL, verbose_name='Equipo')
+    
+    class Meta:
+        verbose_name = 'Historial de Facturación'
+        verbose_name_plural = 'Historial de Facturación'
+        ordering = ['-fecha_servicio']
+        indexes = [
+            models.Index(fields=['pin_equipo']),
+            models.Index(fields=['fecha_servicio']),
+            models.Index(fields=['cliente']),
+            models.Index(fields=['equipo']),
+        ]
+    
+    def __str__(self):
+        return f"{self.pin_equipo} - {self.fecha_servicio} - ${self.monto_usd}"
+    
+    @property
+    def cliente_nombre(self):
+        """Retorna el nombre del cliente"""
+        return self.cliente.razon_social if self.cliente else "Sin Cliente"
+    
+    @property
+    def equipo_existe_en_bd(self):
+        """Verifica si el equipo existe en la base de datos"""
+        return self.equipo is not None
