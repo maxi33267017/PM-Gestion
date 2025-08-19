@@ -3964,10 +3964,9 @@ def dashboard_gerente(request):
         # Facturación año fiscal usando histórico
         facturacion_anio_fiscal = []
         
-        if inicio_mes.month >= 11:  # Noviembre en adelante
-            año_fiscal = inicio_mes.year
-        else:  # Enero a Octubre
-            año_fiscal = inicio_mes.year - 1
+        # Para datos históricos, siempre usar el año fiscal anterior
+        # Si estamos en 2025, el año fiscal es 2024-2025 (Nov 2024 - Oct 2025)
+        año_fiscal = inicio_mes.year - 1  # Siempre usar el año anterior para histórico
         
         for mes in range(1, 13):
             if mes >= 11:  # Noviembre a Diciembre
@@ -4074,6 +4073,8 @@ def dashboard_gerente(request):
         # Facturación año fiscal usando datos actuales
         facturacion_anio_fiscal = []
         
+        # Para datos actuales, usar el año fiscal correcto
+        # Si estamos en Julio 2025, el año fiscal es 2024-2025 (Nov 2024 - Oct 2025)
         if inicio_mes.month >= 11:  # Noviembre en adelante
             año_fiscal = inicio_mes.year
         else:  # Enero a Octubre
