@@ -3899,52 +3899,237 @@ def dashboard_gerente(request):
     sucursales = Sucursal.objects.all()
     
     # === MÉTRICAS DE SERVICIOS ===
-    servicios_mes = Servicio.objects.filter(
-        fecha_servicio__range=[inicio_mes, fin_mes]
-    )
+    # Determinar si usar datos históricos o actuales
+    fecha_limite_historico = date(2025, 6, 30)  # 30 de Junio 2025
     
-    # Aplicar filtro por sucursal si se especifica
-    if sucursal_filtro:
-        servicios_mes = servicios_mes.filter(preorden__sucursal__nombre=sucursal_filtro)
-    
-    total_servicios_mes = servicios_mes.count()
-    servicios_completados = servicios_mes.filter(estado='COMPLETADO').count()
-    servicios_en_proceso = servicios_mes.filter(estado='EN_PROCESO').count()
-    servicios_espera_repuestos = servicios_mes.filter(estado='ESPERA_REPUESTOS').count()
-    servicios_a_facturar = servicios_mes.filter(estado='A_FACTURAR').count()
+    if fin_mes <= fecha_limite_historico:
+        # Usar datos históricos para Junio 2025 y anteriores
+        from crm.models import HistorialFacturacion
+        
+        # Obtener servicios históricos del período
+        servicios_historicos = HistorialFacturacion.objects.filter(
+            fecha_servicio__range=[inicio_mes, fin_mes]
+        )
+        
+        # Aplicar filtro por sucursal si se especifica (para histórico, todos van a SinCliente o clientes existentes)
+        if sucursal_filtro:
+            # Para histórico, no podemos filtrar por sucursal ya que no tenemos esa información
+            # Mostrar todos los registros históricos
+            pass
+        
+        total_servicios_mes = servicios_historicos.count()
+        servicios_completados = total_servicios_mes  # En histórico todos están completados
+        servicios_en_proceso = 0  # No hay servicios en proceso en histórico
+        servicios_espera_repuestos = 0  # No hay servicios esperando en histórico
+        servicios_a_facturar = 0  # No hay servicios a facturar en histórico
+        
+        # Calcular facturación del histórico
+        facturacion_mano_obra = servicios_historicos.aggregate(
+            total=Sum('monto_usd')
+        )['total'] or 0
+        
+        facturacion_repuestos = 0  # No tenemos desglose en histórico
+        facturacion_gastos = 0  # No tenemos desglose en histórico
+        facturacion_terceros = 0  # No tenemos desglose en histórico
+        
+        total_facturacion = facturacion_mano_obra
+        
+        # Porcentajes para histórico (todo es mano de obra)
+        porcentaje_mano_obra = 100.0
+        porcentaje_repuestos = 0.0
+        porcentaje_gastos = 0.0
+        porcentaje_terceros = 0.0
+        
+        # Servicios recientes del histórico
+        servicios_recientes = servicios_historicos.order_by('-fecha_servicio')[:5]
+        
+        # Estados de servicios (todos completados en histórico)
+        estados_servicios = [{'estado': 'COMPLETADO', 'count': total_servicios_mes}]
+        
+        # Crecimiento comparado con mes anterior (usando histórico también)
+        if inicio_mes.month == 1:
+            mes_anterior_inicio = date(inicio_mes.year - 1, 12, 1)
+        else:
+            mes_anterior_inicio = date(inicio_mes.year, inicio_mes.month - 1, 1)
+        
+        mes_anterior_fin = inicio_mes - timedelta(days=1)
+        
+        servicios_mes_anterior = HistorialFacturacion.objects.filter(
+            fecha_servicio__range=[mes_anterior_inicio, mes_anterior_fin]
+        )
+        
+        servicios_mes_anterior_count = servicios_mes_anterior.count()
+        crecimiento_servicios = ((total_servicios_mes - servicios_mes_anterior_count) / servicios_mes_anterior_count * 100) if servicios_mes_anterior_count > 0 else 0
+        
+        # Facturación año fiscal usando histórico
+        facturacion_anio_fiscal = []
+        
+        if inicio_mes.month >= 11:  # Noviembre en adelante
+            año_fiscal = inicio_mes.year
+        else:  # Enero a Octubre
+            año_fiscal = inicio_mes.year - 1
+        
+        for mes in range(1, 13):
+            if mes >= 11:  # Noviembre a Diciembre
+                año = año_fiscal
+                mes_inicio = date(año, mes, 1)
+                if mes == 12:
+                    mes_fin = date(año + 1, 1, 1) - timedelta(days=1)
+                else:
+                    mes_fin = date(año, mes + 1, 1) - timedelta(days=1)
+            else:  # Enero a Octubre
+                año = año_fiscal + 1
+                mes_inicio = date(año, mes, 1)
+                mes_fin = date(año, mes + 1, 1) - timedelta(days=1)
+            
+            # Solo usar histórico si el mes está en el período histórico
+            if mes_fin <= fecha_limite_historico:
+                servicios_mes = HistorialFacturacion.objects.filter(
+                    fecha_servicio__range=[mes_inicio, mes_fin]
+                )
+                facturacion_mes = servicios_mes.aggregate(
+                    total=Sum('monto_usd')
+                )['total'] or 0
+            else:
+                facturacion_mes = 0
+            
+            facturacion_anio_fiscal.append({
+                'mes': mes,
+                'nombre_mes': mes_inicio.strftime('%B'),
+                'total': float(facturacion_mes) if facturacion_mes else 0.0
+            })
+        
+    else:
+        # Usar datos actuales para Julio 2025 en adelante
+        servicios_mes = Servicio.objects.filter(
+            fecha_servicio__range=[inicio_mes, fin_mes]
+        )
+        
+        # Aplicar filtro por sucursal si se especifica
+        if sucursal_filtro:
+            servicios_mes = servicios_mes.filter(preorden__sucursal__nombre=sucursal_filtro)
+        
+        total_servicios_mes = servicios_mes.count()
+        servicios_completados = servicios_mes.filter(estado='COMPLETADO').count()
+        servicios_en_proceso = servicios_mes.filter(estado='EN_PROCESO').count()
+        servicios_espera_repuestos = servicios_mes.filter(estado='ESPERA_REPUESTOS').count()
+        servicios_a_facturar = servicios_mes.filter(estado='A_FACTURAR').count()
+        
+        # Calcular facturación actual
+        servicios_facturados = servicios_mes.filter(estado='COMPLETADO')
+        
+        # Calcular mano de obra
+        facturacion_mano_obra = servicios_facturados.aggregate(
+            total=Sum('valor_mano_obra')
+        )['total'] or 0
+        
+        # Calcular repuestos y gastos usando las funciones helper
+        from reportes.views import calcular_gastos_servicios, calcular_repuestos_servicios
+        facturacion_repuestos = calcular_repuestos_servicios(servicios_facturados)
+        facturacion_gastos = calcular_gastos_servicios(servicios_facturados)
+        
+        # Calcular venta de terceros
+        from gestionDeTaller.models import GastoInsumosTerceros
+        facturacion_terceros = GastoInsumosTerceros.objects.filter(
+            servicio__in=servicios_facturados
+        ).aggregate(
+            total=Sum('monto_usd')
+        )['total'] or 0
+        
+        total_facturacion = facturacion_mano_obra + facturacion_repuestos + facturacion_gastos + facturacion_terceros
+        
+        # Calcular porcentajes para las barras de progreso
+        porcentaje_mano_obra = round((facturacion_mano_obra / total_facturacion * 100) if total_facturacion > 0 else 0, 1)
+        porcentaje_repuestos = round((facturacion_repuestos / total_facturacion * 100) if total_facturacion > 0 else 0, 1)
+        porcentaje_gastos = round((facturacion_gastos / total_facturacion * 100) if total_facturacion > 0 else 0, 1)
+        porcentaje_terceros = round((facturacion_terceros / total_facturacion * 100) if total_facturacion > 0 else 0, 1)
+        
+        # Servicios recientes actuales
+        servicios_recientes = servicios_mes.order_by('-fecha_servicio')[:5]
+        
+        # Estados de servicios actuales
+        estados_servicios = servicios_mes.values('estado').annotate(
+            count=Count('id')
+        ).order_by('-count')
+        
+        # Crecimiento comparado con mes anterior
+        if inicio_mes.month == 1:
+            mes_anterior_inicio = date(inicio_mes.year - 1, 12, 1)
+        else:
+            mes_anterior_inicio = date(inicio_mes.year, inicio_mes.month - 1, 1)
+        
+        mes_anterior_fin = inicio_mes - timedelta(days=1)
+        
+        servicios_mes_anterior = Servicio.objects.filter(
+            fecha_servicio__range=[mes_anterior_inicio, mes_anterior_fin]
+        )
+        
+        # Aplicar filtro por sucursal al mes anterior también
+        if sucursal_filtro:
+            servicios_mes_anterior = servicios_mes_anterior.filter(preorden__sucursal__nombre=sucursal_filtro)
+        
+        servicios_mes_anterior_count = servicios_mes_anterior.count()
+        crecimiento_servicios = ((total_servicios_mes - servicios_mes_anterior_count) / servicios_mes_anterior_count * 100) if servicios_mes_anterior_count > 0 else 0
+        
+        # Facturación año fiscal usando datos actuales
+        facturacion_anio_fiscal = []
+        
+        if inicio_mes.month >= 11:  # Noviembre en adelante
+            año_fiscal = inicio_mes.year
+        else:  # Enero a Octubre
+            año_fiscal = inicio_mes.year - 1
+        
+        for mes in range(1, 13):
+            if mes >= 11:  # Noviembre a Diciembre
+                año = año_fiscal
+                mes_inicio = date(año, mes, 1)
+                if mes == 12:
+                    mes_fin = date(año + 1, 1, 1) - timedelta(days=1)
+                else:
+                    mes_fin = date(año, mes + 1, 1) - timedelta(days=1)
+            else:  # Enero a Octubre
+                año = año_fiscal + 1
+                mes_inicio = date(año, mes, 1)
+                mes_fin = date(año, mes + 1, 1) - timedelta(days=1)
+            
+            # Usar datos actuales para Julio 2025 en adelante
+            if mes_inicio >= date(2025, 7, 1):
+                servicios_mes = Servicio.objects.filter(
+                    fecha_servicio__range=[mes_inicio, mes_fin],
+                    estado='COMPLETADO'
+                )
+                
+                # Aplicar filtro por sucursal si se especifica
+                if sucursal_filtro:
+                    servicios_mes = servicios_mes.filter(preorden__sucursal__nombre=sucursal_filtro)
+                
+                facturacion_mes = servicios_mes.aggregate(
+                    total=Sum('valor_mano_obra')
+                )['total'] or 0
+                
+                facturacion_repuestos_mes = calcular_repuestos_servicios(servicios_mes)
+                facturacion_gastos_mes = calcular_gastos_servicios(servicios_mes)
+                
+                total_mes = facturacion_mes + facturacion_repuestos_mes + facturacion_gastos_mes
+            else:
+                # Usar datos históricos para meses anteriores a Julio 2025
+                from crm.models import HistorialFacturacion
+                servicios_mes = HistorialFacturacion.objects.filter(
+                    fecha_servicio__range=[mes_inicio, mes_fin]
+                )
+                total_mes = servicios_mes.aggregate(
+                    total=Sum('monto_usd')
+                )['total'] or 0
+            
+            facturacion_anio_fiscal.append({
+                'mes': mes,
+                'nombre_mes': mes_inicio.strftime('%B'),
+                'total': float(total_mes) if total_mes else 0.0
+            })
     
     # Debug: imprimir resultados de servicios
     print(f"DEBUG: Servicios encontrados - Total: {total_servicios_mes}, Completados: {servicios_completados}")
     print(f"DEBUG: Servicios por estado - En proceso: {servicios_en_proceso}, Espera: {servicios_espera_repuestos}, A facturar: {servicios_a_facturar}")
-    
-    # === MÉTRICAS DE FACTURACIÓN ===
-    servicios_facturados = servicios_mes.filter(estado='COMPLETADO')
-    
-    # Calcular mano de obra
-    facturacion_mano_obra = servicios_facturados.aggregate(
-        total=Sum('valor_mano_obra')
-    )['total'] or 0
-    
-    # Calcular repuestos y gastos usando las funciones helper
-    from reportes.views import calcular_gastos_servicios, calcular_repuestos_servicios
-    facturacion_repuestos = calcular_repuestos_servicios(servicios_facturados)
-    facturacion_gastos = calcular_gastos_servicios(servicios_facturados)
-    
-    # Calcular venta de terceros
-    from gestionDeTaller.models import GastoInsumosTerceros
-    facturacion_terceros = GastoInsumosTerceros.objects.filter(
-        servicio__in=servicios_facturados
-    ).aggregate(
-        total=Sum('monto_usd')
-    )['total'] or 0
-    
-    total_facturacion = facturacion_mano_obra + facturacion_repuestos + facturacion_gastos + facturacion_terceros
-    
-    # Calcular porcentajes para las barras de progreso
-    porcentaje_mano_obra = round((facturacion_mano_obra / total_facturacion * 100) if total_facturacion > 0 else 0, 1)
-    porcentaje_repuestos = round((facturacion_repuestos / total_facturacion * 100) if total_facturacion > 0 else 0, 1)
-    porcentaje_gastos = round((facturacion_gastos / total_facturacion * 100) if total_facturacion > 0 else 0, 1)
-    porcentaje_terceros = round((facturacion_terceros / total_facturacion * 100) if total_facturacion > 0 else 0, 1)
     
     # Debug: imprimir resultados de facturación
     print(f"DEBUG: Facturación - Mano obra: ${facturacion_mano_obra}, Repuestos: ${facturacion_repuestos}")
@@ -3987,14 +4172,6 @@ def dashboard_gerente(request):
     ).count()
     
 
-    
-    # === SERVICIOS RECIENTES ===
-    servicios_recientes = servicios_mes.order_by('-fecha_servicio')[:5]
-    
-    # Debug: imprimir servicios recientes
-    print(f"DEBUG: Servicios recientes encontrados: {servicios_recientes.count()}")
-    for servicio in servicios_recientes:
-        print(f"DEBUG: Servicio reciente - {servicio.fecha_servicio}: {servicio.estado}")
     
     # === TÉCNICOS CON MÁS ACTIVIDAD ===
     # Primero obtener todos los técnicos activos
@@ -4098,98 +4275,21 @@ def dashboard_gerente(request):
         tecnico['desempeño'] = round((horas_facturadas / horas_contratadas) * 100, 1) if horas_contratadas > 0 else 0
     
     # === ESTADÍSTICAS DE ESTADOS ===
-    estados_servicios = servicios_mes.values('estado').annotate(
-        count=Count('id')
-    ).order_by('-count')
+    # (Ya manejado en la lógica condicional anterior)
     
-    # Debug: imprimir estados de servicios
-    print(f"DEBUG: Estados de servicios encontrados:")
-    for estado in estados_servicios:
-        print(f"DEBUG: Estado - {estado['estado']}: {estado['count']} servicios")
+    # === MÉTRICAS DE CRECIMIENTO ===
+    # (Ya manejado en la lógica condicional anterior)
     
-    # === MÉTRICAS DE CRECIMIENTO (comparación con mes anterior) ===
-    # Calcular mes anterior basado en las fechas filtradas
-    if inicio_mes.month == 1:
-        mes_anterior_inicio = date(inicio_mes.year - 1, 12, 1)
-    else:
-        mes_anterior_inicio = date(inicio_mes.year, inicio_mes.month - 1, 1)
+    # === FACTURACIÓN POR AÑO FISCAL ===
+    # (Ya manejado en la lógica condicional anterior)
     
-    mes_anterior_fin = inicio_mes - timedelta(days=1)
-    
-    servicios_mes_anterior = Servicio.objects.filter(
-        fecha_servicio__range=[mes_anterior_inicio, mes_anterior_fin]
-    )
-    
-    # Aplicar filtro por sucursal al mes anterior también
-    if sucursal_filtro:
-        servicios_mes_anterior = servicios_mes_anterior.filter(preorden__sucursal__nombre=sucursal_filtro)
-    
-    servicios_mes_anterior_count = servicios_mes_anterior.count()
-    
-    crecimiento_servicios = ((total_servicios_mes - servicios_mes_anterior_count) / servicios_mes_anterior_count * 100) if servicios_mes_anterior_count > 0 else 0
-    
-    # === FACTURACIÓN POR AÑO FISCAL (Noviembre a Octubre) ===
-    # Determinar año fiscal basado en las fechas filtradas
+    # Determinar año fiscal para el contexto
     if inicio_mes.month >= 11:  # Noviembre en adelante
         año_fiscal_inicio = date(inicio_mes.year, 11, 1)
         año_fiscal_fin = date(inicio_mes.year + 1, 10, 31)
     else:  # Enero a Octubre
         año_fiscal_inicio = date(inicio_mes.year - 1, 11, 1)
         año_fiscal_fin = date(inicio_mes.year, 10, 31)
-    
-    # Facturación por mes del año fiscal
-    facturacion_anio_fiscal = []
-    
-    # Determinar el año fiscal correcto basado en las fechas filtradas
-    if inicio_mes.month >= 11:  # Noviembre en adelante
-        año_fiscal = inicio_mes.year
-    else:  # Enero a Octubre
-        año_fiscal = inicio_mes.year - 1
-    
-    for mes in range(1, 13):
-        if mes >= 11:  # Noviembre a Diciembre
-            año = año_fiscal
-            mes_inicio = date(año, mes, 1)
-            if mes == 12:
-                mes_fin = date(año + 1, 1, 1) - timedelta(days=1)
-            else:
-                mes_fin = date(año, mes + 1, 1) - timedelta(days=1)
-        else:  # Enero a Octubre
-            año = año_fiscal + 1
-            mes_inicio = date(año, mes, 1)
-            mes_fin = date(año, mes + 1, 1) - timedelta(days=1)
-        
-        servicios_mes = Servicio.objects.filter(
-            fecha_servicio__range=[mes_inicio, mes_fin],
-            estado='COMPLETADO'
-        )
-        
-        # Aplicar filtro por sucursal si se especifica
-        if sucursal_filtro:
-            servicios_mes = servicios_mes.filter(preorden__sucursal__nombre=sucursal_filtro)
-        
-        facturacion_mes = servicios_mes.aggregate(
-            total=Sum('valor_mano_obra')
-        )['total'] or 0
-        
-        facturacion_repuestos_mes = calcular_repuestos_servicios(servicios_mes)
-        facturacion_gastos_mes = calcular_gastos_servicios(servicios_mes)
-        
-        # Convertir a float para evitar problemas de serialización JSON
-        facturacion_mes = float(facturacion_mes) if facturacion_mes else 0.0
-        facturacion_repuestos_mes = float(facturacion_repuestos_mes) if facturacion_repuestos_mes else 0.0
-        facturacion_gastos_mes = float(facturacion_gastos_mes) if facturacion_gastos_mes else 0.0
-        
-        total_mes = facturacion_mes + facturacion_repuestos_mes + facturacion_gastos_mes
-        
-        # Debug: imprimir información del mes
-        print(f"Mes {mes}: {mes_inicio.strftime('%B %Y')} - Total: ${total_mes}")
-        
-        facturacion_anio_fiscal.append({
-            'mes': mes,
-            'nombre_mes': mes_inicio.strftime('%B'),
-            'total': float(total_mes) if total_mes else 0.0
-        })
     
     context = {
         'inicio_mes': inicio_mes,
