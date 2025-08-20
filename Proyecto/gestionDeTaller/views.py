@@ -5490,8 +5490,17 @@ def dashboard_pops(request):
         else:
             pops_mes = 0
         
+        # Traducir mes al español
+        meses_espanol = {
+            1: 'Enero', 2: 'Febrero', 3: 'Marzo', 4: 'Abril',
+            5: 'Mayo', 6: 'Junio', 7: 'Julio', 8: 'Agosto',
+            9: 'Septiembre', 10: 'Octubre', 11: 'Noviembre', 12: 'Diciembre'
+        }
+        
+        mes_nombre = meses_espanol[fecha_mes.month]
+        
         pops_mensual.append({
-            'mes': fecha_mes.strftime('%B %Y'),
+            'mes': f'{mes_nombre} {fecha_mes.year}',
             'fecha': fecha_mes,
             'equipos_vendidos': equipos_vendidos_mes,
             'equipos_con_servicios': equipos_con_servicios_mes,

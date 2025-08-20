@@ -237,7 +237,6 @@
                                 <th>Equipos con Servicios (1 año)</th>
                                 <th>Equipos Sin Servicios</th>
                                 <th>POPS (%)</th>
-                                <th>Debug Info</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -258,40 +257,14 @@
                                         {{ item.pops }}%
                                     </span>
                                 </td>
-                                <td class="small text-muted">
-                                    <div><strong>Fecha:</strong> {{ item.fecha|date:"d/m/Y" }}</div>
-                                    <div><strong>Ventas:</strong> {{ item.debug_info.fecha_inicio_ventas|date:"d/m/Y" }} - {{ item.debug_info.fecha_fin_ventas|date:"d/m/Y" }}</div>
-                                    <div><strong>Servicios:</strong> {{ item.debug_info.fecha_inicio_servicios|date:"d/m/Y" }} - {{ item.debug_info.fecha_fin_servicios|date:"d/m/Y" }}</div>
-                                    <div><strong>PINs:</strong> {{ item.debug_info.pines_vendidos_count }} vendidos, {{ item.debug_info.pines_con_servicios_count }} con servicios</div>
-                                </td>
+
                             </tr>
                             {% endfor %}
                         </tbody>
                     </table>
                 </div>
                 
-                <!-- Resumen de datos -->
-                <div class="row mt-3">
-                    <div class="col-md-6">
-                        <div class="alert alert-info">
-                            <h6><i class="bi bi-info-circle me-2"></i>Información del Gráfico</h6>
-                            <div class="small">
-                                <strong>Datos enviados al gráfico:</strong><br>
-                                <span id="chartDataDebug"></span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="alert alert-warning">
-                            <h6><i class="bi bi-exclamation-triangle me-2"></i>Verificación de Datos</h6>
-                            <div class="small">
-                                <strong>Total de registros:</strong> {{ pops_mensual|length }}<br>
-                                <strong>Rango de POPS:</strong> {{ pops_mensual.0.pops|floatformat:1 }}% - {{ pops_mensual.1.pops|floatformat:1 }}%<br>
-                                <strong>Promedio POPS:</strong> <span id="promedioPops"></span>%
-                            </div>
-                        </div>
-                    </div>
-                </div>
+
             </div>
         </div>
     </div>
@@ -439,38 +412,16 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
 <script>
     // Función para obtener datos de la tabla
-    function obtenerDatosDeTabla() {
-        const tablaPOPS = document.querySelector('.chart-container table tbody');
-        const labels = [];
-        const data = [];
-        
-        if (tablaPOPS) {
-            const tablaRows = tablaPOPS.querySelectorAll('tr');
-            tablaRows.forEach((row) => {
-                if (row.cells.length >= 5) {
-                    const mes = row.cells[0].textContent.trim();
-                    const pops = parseFloat(row.cells[4].textContent.replace('%', ''));
-                    
-                    labels.push(mes);
-                    data.push(pops);
-                }
-            });
-        }
-        
-        return { labels, data };
-    }
+
     
     // Función para inicializar el gráfico
     function inicializarGrafico() {
-        // Obtener datos de la tabla
-        const datosTabla = obtenerDatosDeTabla();
-        
-        // Datos para el gráfico - tomados de la tabla
+        // Obtener datos directamente del contexto Django
         const popsData = {
-            labels: datosTabla.labels,
+            labels: [{% for item in pops_mensual %}'{{ item.mes }}'{% if not forloop.last %}, {% endif %}{% endfor %}],
             datasets: [{
                 label: 'POPS (%)',
-                data: datosTabla.data,
+                data: [{% for item in pops_mensual %}{{ item.pops }}{% if not forloop.last %}, {% endif %}{% endfor %}],
                 backgroundColor: 'rgba(40, 167, 69, 0.2)',
                 borderColor: 'rgba(40, 167, 69, 1)',
                 borderWidth: 2,
@@ -478,14 +429,14 @@
             }]
         };
         
-        // Debug: mostrar datos obtenidos de la tabla
-        console.log('=== DATOS OBTENIDOS DE LA TABLA ===');
-        console.log('Labels:', datosTabla.labels);
-        console.log('Data:', datosTabla.data);
+        // Debug: mostrar datos
+        console.log('=== DATOS POPS ===');
+        console.log('Labels:', popsData.labels);
+        console.log('Data:', popsData.datasets[0].data);
         
         // Crear el gráfico
         const ctx = document.getElementById('popsChart');
-        if (ctx && datosTabla.data.length > 0) {
+        if (ctx && popsData.datasets[0].data.length > 0) {
             const chartCtx = ctx.getContext('2d');
             try {
                 new Chart(chartCtx, {
@@ -545,8 +496,7 @@
         }
     }
     
-    // Debug: mostrar datos en consola
-    console.log('Datos POPS mensual:', popsData);
+
     
     // Mostrar datos de debug en la página
     document.addEventListener('DOMContentLoaded', function() {
