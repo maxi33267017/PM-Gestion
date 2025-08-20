@@ -460,84 +460,32 @@
         return { labels, data };
     }
     
-    // Obtener datos de la tabla
-    const datosTabla = obtenerDatosDeTabla();
-    
-    // Datos para el gráfico - tomados de la tabla
-    const popsData = {
-        labels: datosTabla.labels,
-        datasets: [{
-            label: 'POPS (%)',
-            data: datosTabla.data,
-            backgroundColor: 'rgba(40, 167, 69, 0.2)',
-            borderColor: 'rgba(40, 167, 69, 1)',
-            borderWidth: 2,
-            tension: 0.4
-        }]
-    };
-    
-    // Debug: mostrar datos obtenidos de la tabla
-    console.log('=== DATOS OBTENIDOS DE LA TABLA ===');
-    console.log('Labels:', datosTabla.labels);
-    console.log('Data:', datosTabla.data);
-    
-    // Debug: mostrar datos en consola
-    console.log('Datos POPS mensual:', popsData);
-    
-    // Mostrar datos de debug en la página
-    document.addEventListener('DOMContentLoaded', function() {
-        // Debug del gráfico
-        const chartDataDebug = document.getElementById('chartDataDebug');
-        if (chartDataDebug) {
-            let debugText = '';
-            for (let i = 0; i < popsData.labels.length; i++) {
-                debugText += `${popsData.labels[i]}: ${popsData.datasets[0].data[i]}%<br>`;
-            }
-            chartDataDebug.innerHTML = debugText;
-        }
+    // Función para inicializar el gráfico
+    function inicializarGrafico() {
+        // Obtener datos de la tabla
+        const datosTabla = obtenerDatosDeTabla();
         
-        // Calcular promedio POPS
-        const promedioPops = document.getElementById('promedioPops');
-        if (promedioPops && popsData.datasets[0].data.length > 0) {
-            const suma = popsData.datasets[0].data.reduce((a, b) => a + b, 0);
-            const promedio = (suma / popsData.datasets[0].data.length).toFixed(1);
-            promedioPops.textContent = promedio;
-        }
+        // Datos para el gráfico - tomados de la tabla
+        const popsData = {
+            labels: datosTabla.labels,
+            datasets: [{
+                label: 'POPS (%)',
+                data: datosTabla.data,
+                backgroundColor: 'rgba(40, 167, 69, 0.2)',
+                borderColor: 'rgba(40, 167, 69, 1)',
+                borderWidth: 2,
+                tension: 0.4
+            }]
+        };
         
-        // Comparar datos de la tabla con el gráfico
-        console.log('=== COMPARACIÓN DATOS TABLA vs GRÁFICO ===');
-        console.log('Datos del gráfico:', popsData.datasets[0].data);
+        // Debug: mostrar datos obtenidos de la tabla
+        console.log('=== DATOS OBTENIDOS DE LA TABLA ===');
+        console.log('Labels:', datosTabla.labels);
+        console.log('Data:', datosTabla.data);
         
-        // Seleccionar solo la tabla de POPS mensual (la que tiene 6 columnas)
-        const tablaPOPS = document.querySelector('.chart-container table tbody');
-        if (tablaPOPS) {
-            const tablaRows = tablaPOPS.querySelectorAll('tr');
-            tablaRows.forEach((row, index) => {
-                if (row.cells.length < 5) return;
-                const mesTabla = row.cells[0].textContent.trim();
-                const popsTabla = parseFloat(row.cells[4].textContent.replace('%', ''));
-                const popsGrafico = popsData.datasets[0].data[index];
-                
-                console.log(`${mesTabla}: Tabla=${popsTabla}%, Gráfico=${popsGrafico}%`);
-                
-                if (popsTabla !== popsGrafico) {
-                    console.warn(`⚠️ DISCREPANCIA en ${mesTabla}: Tabla=${popsTabla}%, Gráfico=${popsGrafico}%`);
-                } else {
-                    console.log(`✅ ${mesTabla}: ${popsTabla}% (coincide)`);
-                }
-            });
-        }
-    });
-
-    // Verificar que Chart.js se cargó correctamente
-    if (typeof Chart === 'undefined') {
-        console.error('Chart.js no se cargó correctamente');
-    } else {
-        console.log('Chart.js cargado correctamente');
-        
-        // Configuración del gráfico
+        // Crear el gráfico
         const ctx = document.getElementById('popsChart');
-        if (ctx) {
+        if (ctx && datosTabla.data.length > 0) {
             const chartCtx = ctx.getContext('2d');
             try {
                 new Chart(chartCtx, {
@@ -588,12 +536,72 @@
                         }
                     }
                 });
+                console.log('Gráfico creado exitosamente');
             } catch (error) {
                 console.error('Error al crear el gráfico:', error);
             }
         } else {
-            console.error('No se pudo encontrar el elemento canvas para el gráfico');
+            console.error('No se pudo encontrar el canvas o no hay datos');
         }
+    }
+    
+    // Debug: mostrar datos en consola
+    console.log('Datos POPS mensual:', popsData);
+    
+    // Mostrar datos de debug en la página
+    document.addEventListener('DOMContentLoaded', function() {
+        // Inicializar el gráfico
+        inicializarGrafico();
+        
+        // Debug del gráfico
+        const chartDataDebug = document.getElementById('chartDataDebug');
+        if (chartDataDebug) {
+            const datosTabla = obtenerDatosDeTabla();
+            let debugText = '';
+            for (let i = 0; i < datosTabla.labels.length; i++) {
+                debugText += `${datosTabla.labels[i]}: ${datosTabla.data[i]}%<br>`;
+            }
+            chartDataDebug.innerHTML = debugText;
+        }
+        
+        // Calcular promedio POPS
+        const promedioPops = document.getElementById('promedioPops');
+        if (promedioPops && popsData.datasets[0].data.length > 0) {
+            const suma = popsData.datasets[0].data.reduce((a, b) => a + b, 0);
+            const promedio = (suma / popsData.datasets[0].data.length).toFixed(1);
+            promedioPops.textContent = promedio;
+        }
+        
+        // Comparar datos de la tabla con el gráfico
+        console.log('=== COMPARACIÓN DATOS TABLA vs GRÁFICO ===');
+        console.log('Datos del gráfico:', popsData.datasets[0].data);
+        
+        // Seleccionar solo la tabla de POPS mensual (la que tiene 6 columnas)
+        const tablaPOPS = document.querySelector('.chart-container table tbody');
+        if (tablaPOPS) {
+            const tablaRows = tablaPOPS.querySelectorAll('tr');
+            tablaRows.forEach((row, index) => {
+                if (row.cells.length < 5) return;
+                const mesTabla = row.cells[0].textContent.trim();
+                const popsTabla = parseFloat(row.cells[4].textContent.replace('%', ''));
+                const popsGrafico = popsData.datasets[0].data[index];
+                
+                console.log(`${mesTabla}: Tabla=${popsTabla}%, Gráfico=${popsGrafico}%`);
+                
+                if (popsTabla !== popsGrafico) {
+                    console.warn(`⚠️ DISCREPANCIA en ${mesTabla}: Tabla=${popsTabla}%, Gráfico=${popsGrafico}%`);
+                } else {
+                    console.log(`✅ ${mesTabla}: ${popsTabla}% (coincide)`);
+                }
+            });
+        }
+    });
+
+    // Verificar que Chart.js se cargó correctamente
+    if (typeof Chart === 'undefined') {
+        console.error('Chart.js no se cargó correctamente');
+    } else {
+        console.log('Chart.js cargado correctamente');
     }
 
     // Función para aplicar filtros

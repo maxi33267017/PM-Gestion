@@ -2299,9 +2299,11 @@ def crear_embudo_pops(request):
                 oportunidad = ContactoCliente.objects.create(
                     embudo_ventas=embudo_principal,
                     cliente=equipo.cliente,
-                    estado='NUEVO',
-                    notas=f"Equipo sin servicios: {equipo.numero_serie} - {equipo.modelo.nombre} - Vendido: {equipo.fecha_venta.strftime('%d/%m/%Y') if equipo.fecha_venta else 'N/A'}",
-                    fecha_creacion=timezone.now()
+                    responsable=request.user,
+                    tipo_contacto='EMAIL',  # Tipo por defecto
+                    descripcion=f"Equipo sin servicios: {equipo.numero_serie} - {equipo.modelo.nombre} - Vendido: {equipo.fecha_venta.strftime('%d/%m/%Y') if equipo.fecha_venta else 'N/A'}",
+                    resultado='PENDIENTE',  # Resultado por defecto
+                    observaciones=f"Oportunidad POPS creada automáticamente para equipo {equipo.numero_serie}"
                 )
                 oportunidades_creadas += 1
             
