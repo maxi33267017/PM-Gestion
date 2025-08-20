@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% block title %} | Detalle Embudo - {{ embudo.cliente.razon_social }}{% endblock %}
+{% block title %} | Detalle Embudo - {% if embudo.cliente %}{{ embudo.cliente.razon_social }}{% else %}Embudo Genérico{% endif %}{% endblock %}
 
 {% block content %}
 <div class="container-fluid">
@@ -10,7 +10,13 @@
                     <h1 class="display-6 mb-2">
                         <i class="bi bi-funnel-fill text-primary me-2"></i>Detalle del Embudo
                     </h1>
-                    <p class="lead text-muted">{{ embudo.cliente.razon_social }} - {{ embudo.get_etapa_display }}</p>
+                    <p class="lead text-muted">
+                        {% if embudo.cliente %}
+                            {{ embudo.cliente.razon_social }} - {{ embudo.get_etapa_display }}
+                        {% else %}
+                            Embudo Genérico - {{ embudo.get_etapa_display }}
+                        {% endif %}
+                    </p>
                 </div>
                 <div>
                     <a href="{% url 'crm:embudo_ventas_dashboard' %}" class="btn btn-outline-secondary">
@@ -35,8 +41,13 @@
                         <div class="col-md-6">
                             <h6>Cliente</h6>
                             <p class="mb-3">
-                                <strong>{{ embudo.cliente.razon_social }}</strong><br>
-                                <small class="text-muted">{{ embudo.cliente.cuit }}</small>
+                                {% if embudo.cliente %}
+                                    <strong>{{ embudo.cliente.razon_social }}</strong><br>
+                                    <small class="text-muted">{{ embudo.cliente.cuit }}</small>
+                                {% else %}
+                                    <strong class="text-primary">Embudo Genérico</strong><br>
+                                    <small class="text-muted">Múltiples clientes</small>
+                                {% endif %}
                             </p>
                             
                             <h6>Etapa Actual</h6>
@@ -267,6 +278,187 @@
         </div>
     </div>
 
+    <!-- Oportunidades Individuales (Especialmente para POPS) -->
+    {% if embudo.origen == 'POPS' or contactos %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="bi bi-people me-2"></i>Oportunidades Individuales
+                    </h5>
+                    <div>
+                        <span class="badge bg-primary">{{ contactos.count }} oportunidades</span>
+                        <button class="btn btn-primary btn-sm ms-2" data-bs-toggle="modal" data-bs-target="#nuevoContactoModal">
+                            <i class="bi bi-plus-circle me-1"></i>Nuevo Contacto
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if contactos %}
+                        <!-- Filtros para oportunidades -->
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <input type="text" id="buscarCliente" class="form-control" placeholder="Buscar por cliente...">
+                            </div>
+                            <div class="col-md-3">
+                                <select id="filtroResultado" class="form-select">
+                                    <option value="">Todos los resultados</option>
+                                    <option value="PENDIENTE">Pendiente</option>
+                                    <option value="EXITOSO">Exitoso</option>
+                                    <option value="VENTA">Venta</option>
+                                    <option value="OBJECCION">Objeción</option>
+                                    <option value="NO_CONTESTA">No Contesta</option>
+                                    <option value="REPROGRAMADO">Reprogramado</option>
+                                    <option value="CANCELADO">Cancelado</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <select id="filtroTipo" class="form-select">
+                                    <option value="">Todos los tipos</option>
+                                    <option value="EMAIL">Email</option>
+                                    <option value="TELEFONO">Teléfono</option>
+                                    <option value="WHATSAPP">WhatsApp</option>
+                                    <option value="VISITA">Visita</option>
+                                    <option value="VIDEO_LLAMADA">Video Llamada</option>
+                                    <option value="REUNION">Reunión</option>
+                                    <option value="PRESENTACION">Presentación</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <button type="button" class="btn btn-outline-secondary w-100" onclick="limpiarFiltros()">
+                                    <i class="bi bi-arrow-clockwise"></i> Limpiar
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Tabla de oportunidades -->
+                        <div class="table-responsive">
+                            <table class="table table-hover" id="tablaOportunidades">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Cliente</th>
+                                        <th>Equipo</th>
+                                        <th>Último Contacto</th>
+                                        <th>Tipo</th>
+                                        <th>Resultado</th>
+                                        <th>Responsable</th>
+                                        <th>Próximo Seguimiento</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for contacto in contactos %}
+                                    <tr class="oportunidad-row" 
+                                        data-cliente="{{ contacto.cliente.razon_social|lower }}"
+                                        data-resultado="{{ contacto.resultado }}"
+                                        data-tipo="{{ contacto.tipo_contacto }}">
+                                        <td>
+                                            <strong>{{ contacto.cliente.razon_social }}</strong>
+                                            <br><small class="text-muted">{{ contacto.cliente.cuit }}</small>
+                                        </td>
+                                        <td>
+                                            {% if "Equipo sin servicios:" in contacto.descripcion %}
+                                                {% with equipo_info=contacto.descripcion|slice:"25:"|slice:":-1" %}
+                                                    <small class="text-muted">{{ equipo_info|truncatechars:30 }}</small>
+                                                {% endwith %}
+                                            {% else %}
+                                                <small class="text-muted">{{ contacto.descripcion|truncatechars:30 }}</small>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <small>{{ contacto.fecha_contacto|date:"d/m/Y H:i" }}</small>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-info">{{ contacto.get_tipo_contacto_display }}</span>
+                                        </td>
+                                        <td>
+                                            <span class="badge {% if contacto.resultado == 'EXITOSO' %}bg-success{% elif contacto.resultado == 'VENTA' %}bg-success{% elif contacto.resultado == 'OBJECCION' %}bg-warning{% elif contacto.resultado == 'PENDIENTE' %}bg-secondary{% else %}bg-light text-dark{% endif %}">
+                                                {{ contacto.get_resultado_display }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <small>{{ contacto.responsable.get_nombre_completo }}</small>
+                                        </td>
+                                        <td>
+                                            {% if contacto.proximo_seguimiento %}
+                                                <small class="text-primary">{{ contacto.proximo_seguimiento|date:"d/m/Y" }}</small>
+                                            {% else %}
+                                                <small class="text-muted">No programado</small>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div class="btn-group" role="group">
+                                                <button type="button" class="btn btn-sm btn-outline-primary" 
+                                                        onclick="verDetalleContacto({{ contacto.id }})" 
+                                                        title="Ver detalle">
+                                                    <i class="bi bi-eye"></i>
+                                                </button>
+                                                <button type="button" class="btn btn-sm btn-outline-success" 
+                                                        onclick="editarContacto({{ contacto.id }})" 
+                                                        title="Editar">
+                                                    <i class="bi bi-pencil"></i>
+                                                </button>
+                                                <button type="button" class="btn btn-sm btn-outline-info" 
+                                                        onclick="nuevoSeguimiento({{ contacto.id }})" 
+                                                        title="Nuevo seguimiento">
+                                                    <i class="bi bi-plus-circle"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Estadísticas de oportunidades -->
+                        <div class="row mt-3">
+                            <div class="col-md-3">
+                                <div class="card bg-primary text-white">
+                                    <div class="card-body text-center">
+                                        <h6>Total Oportunidades</h6>
+                                        <h4>{{ contactos.count }}</h4>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card bg-success text-white">
+                                    <div class="card-body text-center">
+                                        <h6>Exitosas</h6>
+                                        <h4>{{ contactos|dictsort:"resultado"|length }}</h4>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card bg-warning text-white">
+                                    <div class="card-body text-center">
+                                        <h6>Pendientes</h6>
+                                        <h4>{{ contactos|dictsort:"resultado"|length }}</h4>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card bg-info text-white">
+                                    <div class="card-body text-center">
+                                        <h6>Último Mes</h6>
+                                        <h4>{{ contactos|dictsort:"fecha_contacto"|length }}</h4>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="bi bi-people display-4 text-muted"></i>
+                            <p class="text-muted mt-2">No hay oportunidades registradas</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
     <!-- Relaciones con Alertas/Leads -->
     {% if embudo.alerta_equipo or embudo.lead_jd %}
     <div class="row mb-4">
@@ -311,72 +503,9 @@
         </div>
     </div>
     {% endif %}
-
-    <!-- Historial de Contactos -->
-    <div class="row">
-        <div class="col-12">
-            <div class="card shadow-sm">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0">
-                        <i class="bi bi-chat-dots me-2"></i>Historial de Contactos
-                    </h5>
-                    <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#nuevoContactoModal">
-                        <i class="bi bi-plus-circle me-1"></i>Nuevo Contacto
-                    </button>
-                </div>
-                <div class="card-body">
-                    {% if contactos %}
-                        <div class="table-responsive">
-                            <table class="table table-hover">
-                                <thead>
-                                    <tr>
-                                        <th>Fecha</th>
-                                        <th>Tipo</th>
-                                        <th>Responsable</th>
-                                        <th>Resultado</th>
-                                        <th>Descripción</th>
-                                        <th>Próximo Seguimiento</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for contacto in contactos %}
-                                    <tr>
-                                        <td>{{ contacto.fecha_contacto|date:"d/m/Y H:i" }}</td>
-                                        <td>
-                                            <span class="badge bg-info">{{ contacto.get_tipo_contacto_display }}</span>
-                                        </td>
-                                        <td>{{ contacto.responsable.get_nombre_completo }}</td>
-                                        <td>
-                                            <span class="badge {% if contacto.resultado == 'EXITOSO' %}bg-success{% elif contacto.resultado == 'VENTA' %}bg-success{% elif contacto.resultado == 'OBJECCION' %}bg-warning{% else %}bg-secondary{% endif %}">
-                                                {{ contacto.get_resultado_display }}
-                                            </span>
-                                        </td>
-                                        <td>{{ contacto.descripcion|truncatewords:10 }}</td>
-                                        <td>
-                                            {% if contacto.proximo_seguimiento %}
-                                                {{ contacto.proximo_seguimiento|date:"d/m/Y" }}
-                                            {% else %}
-                                                <span class="text-muted">No programado</span>
-                                            {% endif %}
-                                        </td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-                    {% else %}
-                        <div class="text-center py-4">
-                            <i class="bi bi-chat-dots display-4 text-muted"></i>
-                            <p class="text-muted mt-2">No hay contactos registrados</p>
-                        </div>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-    </div>
 </div>
 
-<!-- Espacio adicional al final para evitar que se corte el contenido -->
+<!-- Espacio adicional al final -->
 <div style="height: 50px;"></div>
 
 <!-- Modal para Nuevo Contacto -->
@@ -398,7 +527,6 @@
                             <div class="mb-3">
                                 <label class="form-label">Tipo de Contacto</label>
                                 <select name="tipo_contacto" class="form-select" required>
-                                    <option value="">Seleccionar...</option>
                                     <option value="TELEFONO">Teléfono</option>
                                     <option value="EMAIL">Email</option>
                                     <option value="WHATSAPP">WhatsApp</option>
@@ -413,7 +541,7 @@
                             <div class="mb-3">
                                 <label class="form-label">Resultado</label>
                                 <select name="resultado" class="form-select" required>
-                                    <option value="">Seleccionar...</option>
+                                    <option value="PENDIENTE">Pendiente</option>
                                     <option value="EXITOSO">Exitoso</option>
                                     <option value="NO_CONTESTA">No Contesta</option>
                                     <option value="REPROGRAMADO">Reprogramado</option>
@@ -426,19 +554,35 @@
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Descripción del Contacto</label>
-                        <textarea name="descripcion" class="form-control" rows="4" required></textarea>
+                        <textarea name="descripcion" class="form-control" rows="3" required 
+                                  placeholder="Describa el contacto realizado..."></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Observaciones</label>
+                        <textarea name="observaciones" class="form-control" rows="2" 
+                                  placeholder="Observaciones adicionales..."></textarea>
                     </div>
                     <div class="row">
                         <div class="col-md-6">
                             <div class="mb-3">
                                 <label class="form-label">Próximo Seguimiento</label>
-                                <input type="date" name="proximo_seguimiento" class="form-control">
+                                <input type="datetime-local" name="proximo_seguimiento" class="form-control">
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="mb-3">
-                                <label class="form-label">Observaciones</label>
-                                <textarea name="observaciones" class="form-control" rows="2"></textarea>
+                                <label class="form-label">Cliente</label>
+                                {% if embudo.cliente %}
+                                    <input type="text" class="form-control" value="{{ embudo.cliente.razon_social }}" readonly>
+                                    <input type="hidden" name="cliente_id" value="{{ embudo.cliente.id }}">
+                                {% else %}
+                                    <select name="cliente_id" class="form-select" required>
+                                        <option value="">Seleccionar cliente...</option>
+                                        {% for contacto in contactos %}
+                                            <option value="{{ contacto.cliente.id }}">{{ contacto.cliente.razon_social }}</option>
+                                        {% endfor %}
+                                    </select>
+                                {% endif %}
                             </div>
                         </div>
                     </div>
@@ -446,7 +590,7 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
                     <button type="submit" class="btn btn-primary">
-                        <i class="bi bi-check-circle me-1"></i>Guardar Contacto
+                        <i class="bi bi-save me-2"></i>Guardar Contacto
                     </button>
                 </div>
             </form>
@@ -455,102 +599,98 @@
 </div>
 {% endblock %}
 
-<script>
-// Calcular diferencia estimado vs cierre en tiempo real
-document.addEventListener('DOMContentLoaded', function() {
-    const valorEstimadoInput = document.getElementById('valor_estimado');
-    const valorCierreInput = document.getElementById('valor_cierre');
-    const diferenciaAlert = document.querySelector('.alert-info');
-    
-    function calcularDiferencia() {
-        const valorEstimado = parseFloat(valorEstimadoInput.value) || 0;
-        const valorCierre = parseFloat(valorCierreInput.value) || 0;
-        
-        // Actualizar el texto del alert
-        if (diferenciaAlert) {
-            let alertText = `<i class="bi bi-info-circle me-2"></i>`;
-            
-            if (valorCierre > 0) {
-                const diferencia = valorCierre - valorEstimado;
-                const diferenciaText = diferencia >= 0 ? 
-                    `<span class="text-success">+$${diferencia.toLocaleString('en-US', {minimumFractionDigits: 0, maximumFractionDigits: 0})}</span>` :
-                    `<span class="text-danger">$${diferencia.toLocaleString('en-US', {minimumFractionDigits: 0, maximumFractionDigits: 0})}</span>`;
-                
-                alertText += `<strong>Diferencia Estimado vs Cierre:</strong> ${diferenciaText}`;
-                
-                if (diferencia >= 0) {
-                    alertText += ` <small class="text-muted">(Sobre estimado)</small>`;
-                } else {
-                    alertText += ` <small class="text-muted">(Sub estimado)</small>`;
-                }
-            } else {
-                alertText += `<strong>Ingrese el valor de cierre para ver la diferencia</strong>`;
-            }
-            
-            diferenciaAlert.innerHTML = alertText;
-        }
-    }
-    
-    // Escuchar cambios en los inputs
-    if (valorEstimadoInput) {
-        valorEstimadoInput.addEventListener('input', calcularDiferencia);
-    }
-    
-    if (valorCierreInput) {
-        valorCierreInput.addEventListener('input', calcularDiferencia);
-    }
-    
-    // Calcular valor inicial
-    calcularDiferencia();
-});
-</script>
-
 {% block extra_css %}
 <style>
 .card {
-    border-radius: 15px;
     border: none;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
 }
 
 .card-header {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    border-radius: 15px 15px 0 0 !important;
-    border: none;
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.table th {
+    border-top: none;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    letter-spacing: 0.5px;
+}
+
+.oportunidad-row:hover {
+    background-color: #f8f9fa;
+    transform: translateY(-1px);
+    transition: all 0.2s ease;
 }
 
 .badge {
-    border-radius: 20px;
-    padding: 0.5rem 1rem;
-    font-weight: 600;
+    font-size: 0.75rem;
+    padding: 0.5em 0.75em;
 }
 
-.progress {
-    border-radius: 15px;
-    background: #e9ecef;
-}
-
-.progress-bar {
-    border-radius: 15px;
-    font-weight: 600;
-}
-
-.table {
-    border-radius: 15px;
-    overflow: hidden;
-}
-
-.table thead th {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    border: none;
-    font-weight: 600;
-}
-
-.alert {
-    border-radius: 15px;
-    border: none;
+.btn-group .btn {
+    border-radius: 0.375rem;
 }
 </style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Filtros para oportunidades
+function filtrarOportunidades() {
+    const busqueda = document.getElementById('buscarCliente').value.toLowerCase();
+    const resultado = document.getElementById('filtroResultado').value;
+    const tipo = document.getElementById('filtroTipo').value;
+    
+    const filas = document.querySelectorAll('.oportunidad-row');
+    
+    filas.forEach(fila => {
+        const cliente = fila.dataset.cliente;
+        const resultadoFila = fila.dataset.resultado;
+        const tipoFila = fila.dataset.tipo;
+        
+        const coincideBusqueda = !busqueda || cliente.includes(busqueda);
+        const coincideResultado = !resultado || resultadoFila === resultado;
+        const coincideTipo = !tipo || tipoFila === tipo;
+        
+        if (coincideBusqueda && coincideResultado && coincideTipo) {
+            fila.style.display = '';
+        } else {
+            fila.style.display = 'none';
+        }
+    });
+}
+
+function limpiarFiltros() {
+    document.getElementById('buscarCliente').value = '';
+    document.getElementById('filtroResultado').value = '';
+    document.getElementById('filtroTipo').value = '';
+    filtrarOportunidades();
+}
+
+// Event listeners para filtros
+document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('buscarCliente').addEventListener('input', filtrarOportunidades);
+    document.getElementById('filtroResultado').addEventListener('change', filtrarOportunidades);
+    document.getElementById('filtroTipo').addEventListener('change', filtrarOportunidades);
+});
+
+// Funciones para gestionar contactos
+function verDetalleContacto(contactoId) {
+    // Implementar vista de detalle del contacto
+    console.log('Ver detalle del contacto:', contactoId);
+}
+
+function editarContacto(contactoId) {
+    // Implementar edición del contacto
+    console.log('Editar contacto:', contactoId);
+}
+
+function nuevoSeguimiento(contactoId) {
+    // Implementar nuevo seguimiento
+    console.log('Nuevo seguimiento para contacto:', contactoId);
+}
+</script>
 {% endblock %} 
