@@ -2201,7 +2201,7 @@ def checklist_por_prioridad(request, prioridad):
 @user_passes_test(es_gerente, login_url='/login/')
 def crear_embudo_pops(request):
     """
-    Crear embudo de ventas con equipos sin servicios (POPS)
+    Crear campaña POPS con equipos sin servicios
     """
     if request.method == 'POST':
         try:
@@ -2209,49 +2209,65 @@ def crear_embudo_pops(request):
             data = json.loads(request.body)
             
             equipos_ids = data.get('equipos_ids', [])
-            nombre = data.get('nombre', 'Embudo POPS')
+            nombre = data.get('nombre', 'Campaña POPS')
             descripcion = data.get('descripcion', '')
             
             if not equipos_ids:
                 return JsonResponse({'success': False, 'error': 'No se proporcionaron equipos'})
             
-            # Crear el embudo de ventas
-            embudo = EmbudoVentas.objects.create(
-                nombre=nombre,
-                descripcion=descripcion,
-                origen='POPS',
-                estado='ACTIVO',
-                fecha_creacion=timezone.now()
-            )
-            
-            # Obtener los equipos y crear contactos
+            # Obtener los equipos para determinar el tipo más común
             from clientes.models import Equipo
             equipos = Equipo.objects.filter(id__in=equipos_ids)
             
-            contactos_creados = 0
-            for equipo in equipos:
-                if equipo.cliente:
-                    # Verificar si ya existe un contacto para este cliente en este embudo
-                    contacto_existente = ContactoCliente.objects.filter(
-                        embudo_ventas=embudo,
-                        cliente=equipo.cliente
-                    ).first()
-                    
-                    if not contacto_existente:
-                        ContactoCliente.objects.create(
-                            embudo_ventas=embudo,
-                            cliente=equipo.cliente,
-                            estado='NUEVO',
-                            notas=f'Equipo sin servicios: {equipo.numero_serie} - {equipo.modelo.nombre}',
-                            fecha_creacion=timezone.now()
-                        )
-                        contactos_creados += 1
+            # Determinar el tipo de equipo más común
+            tipos_equipo = equipos.values_list('modelo__tipo_equipo__nombre', flat=True).distinct()
+            tipo_principal = tipos_equipo.first() if tipos_equipo else None
+            
+            # Obtener la sucursal principal (usar la primera disponible)
+            from recursosHumanos.models import Sucursal
+            sucursal = Sucursal.objects.first()
+            
+            # Crear la campaña
+            campana = Campana.objects.create(
+                nombre=nombre,
+                descripcion=descripcion,
+                fecha_inicio=timezone.now().date(),
+                activa=True,
+                sucursal=sucursal,
+                tipo_equipo_id=equipos.first().modelo.tipo_equipo.id if equipos.exists() else None,
+                creado_por=request.user
+            )
+            
+            # Crear embudos de ventas para cada cliente único
+            clientes_unicos = equipos.values_list('cliente', flat=True).distinct()
+            embudos_creados = 0
+            
+            for cliente_id in clientes_unicos:
+                cliente = Cliente.objects.get(id=cliente_id)
+                
+                # Obtener equipos de este cliente que están en la lista
+                equipos_cliente = equipos.filter(cliente=cliente)
+                equipos_info = []
+                for equipo in equipos_cliente:
+                    equipos_info.append(f"{equipo.numero_serie} - {equipo.modelo.nombre}")
+                
+                # Crear embudo de ventas para este cliente
+                embudo = EmbudoVentas.objects.create(
+                    campana=campana,
+                    cliente=cliente,
+                    etapa='CONTACTO_INICIAL',
+                    origen='POPS',
+                    descripcion_negocio=f"Equipos sin servicios: {', '.join(equipos_info)}",
+                    observaciones=f"Campaña POPS - {len(equipos_cliente)} equipos sin servicios",
+                    creado_por=request.user
+                )
+                embudos_creados += 1
             
             return JsonResponse({
                 'success': True,
-                'embudo_id': embudo.id,
-                'contactos_creados': contactos_creados,
-                'redirect_url': reverse('crm:embudo_ventas_detalle', kwargs={'embudo_id': embudo.id})
+                'campana_id': campana.id,
+                'embudos_creados': embudos_creados,
+                'redirect_url': reverse('crm:dashboard_campania', kwargs={'campana_id': campana.id})
             })
             
         except Exception as e:
