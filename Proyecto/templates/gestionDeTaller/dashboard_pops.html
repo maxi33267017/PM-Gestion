@@ -167,7 +167,9 @@
                 <h5 class="mb-3">
                     <i class="bi bi-bar-chart me-2"></i>POPS Mensual (Últimos 12 meses)
                 </h5>
-                <canvas id="popsChart" width="400" height="200"></canvas>
+                <div style="height: 300px; position: relative;">
+                    <canvas id="popsChart"></canvas>
+                </div>
             </div>
         </div>
 
@@ -241,6 +243,9 @@
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
+    // Debug: mostrar datos en consola
+    console.log('Datos POPS mensual:', {{ pops_mensual|safe }});
+    
     // Datos para el gráfico
     const popsData = {
         labels: [{% for item in pops_mensual %}'{{ item.mes }}'{% if not forloop.last %}, {% endif %}{% endfor %}],
@@ -261,7 +266,8 @@
         data: popsData,
         options: {
             responsive: true,
-            maintainAspectRatio: false,
+            maintainAspectRatio: true,
+            aspectRatio: 2,
             scales: {
                 y: {
                     beginAtZero: true,
@@ -271,11 +277,34 @@
                             return value + '%';
                         }
                     }
+                },
+                x: {
+                    ticks: {
+                        maxRotation: 45,
+                        minRotation: 45
+                    }
                 }
             },
             plugins: {
                 legend: {
                     display: false
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return 'POPS: ' + context.parsed.y + '%';
+                        }
+                    }
+                }
+            },
+            interaction: {
+                intersect: false,
+                mode: 'index'
+            },
+            elements: {
+                point: {
+                    radius: 4,
+                    hoverRadius: 6
                 }
             }
         }
