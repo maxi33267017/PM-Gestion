@@ -283,8 +283,11 @@ class Campana(models.Model):
                 ContactoCliente.objects.create(
                     embudo_ventas=embudo,
                     cliente=cliente,
-                    estado='PENDIENTE',
-                    notas=f"Oportunidad de campaña: {self.nombre}"
+                    tipo_contacto='PRESENTACION',
+                    descripcion=f"Oportunidad de campaña: {self.nombre}",
+                    resultado='EXITOSO',
+                    observaciones=f"Campaña automática creada para cliente con equipos del tipo seleccionado",
+                    responsable=self.creado_por
                 )
                 contactos_creados += 1
                 print(f"✅ Contacto creado para {cliente.razon_social}")
