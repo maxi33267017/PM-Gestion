@@ -255,25 +255,44 @@ class Campana(models.Model):
         clientes_objetivo = self.get_clientes_objetivo()
         print(f"Clientes objetivo encontrados: {clientes_objetivo.count()}")
         
-        embudos_creados = 0
+        # Crear 1 embudo genérico para la campaña
+        embudo_nombre = f"{self.nombre} - {self.fecha_inicio.strftime('%d/%m/%Y')}"
+        
+        # Verificar si ya existe un embudo genérico para esta campaña
+        embudo_existente = self.embudos_ventas.filter(cliente__isnull=True).first()
+        
+        if embudo_existente:
+            print(f"⚠️ Embudo genérico ya existe: {embudo_existente}")
+            embudo = embudo_existente
+        else:
+            embudo = EmbudoVentas.objects.create(
+                campana=self,
+                cliente=None,  # Embudo genérico
+                etapa='CONTACTO_INICIAL',
+                origen='CAMPAÑA_MARKETING'
+            )
+            print(f"✅ Embudo genérico creado: {embudo}")
+        
+        # Crear ContactoCliente para cada cliente objetivo
+        contactos_creados = 0
         
         for cliente in clientes_objetivo:
             print(f"Procesando cliente: {cliente.razon_social}")
-            # Verificar si ya existe un embudo para este cliente en esta campaña
-            if not self.embudos_ventas.filter(cliente=cliente).exists():
-                EmbudoVentas.objects.create(
-                    campana=self,
+            # Verificar si ya existe un contacto para este cliente en este embudo
+            if not ContactoCliente.objects.filter(embudo_ventas=embudo, cliente=cliente).exists():
+                ContactoCliente.objects.create(
+                    embudo_ventas=embudo,
                     cliente=cliente,
-                    etapa='CONTACTO_INICIAL',
-                    origen='CAMPAÑA_MARKETING'
+                    estado='PENDIENTE',
+                    notas=f"Oportunidad de campaña: {self.nombre}"
                 )
-                embudos_creados += 1
-                print(f"✅ Embudo creado para {cliente.razon_social}")
+                contactos_creados += 1
+                print(f"✅ Contacto creado para {cliente.razon_social}")
             else:
-                print(f"⚠️ Embudo ya existe para {cliente.razon_social}")
+                print(f"⚠️ Contacto ya existe para {cliente.razon_social}")
         
-        print(f"Total embudos creados: {embudos_creados}")
-        return embudos_creados
+        print(f"Total contactos creados: {contactos_creados}")
+        return contactos_creados
 
 
 class Contacto(models.Model):
