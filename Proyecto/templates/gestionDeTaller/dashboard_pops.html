@@ -484,18 +484,27 @@
         
         // Comparar datos de la tabla con el gráfico
         console.log('=== COMPARACIÓN DATOS TABLA vs GRÁFICO ===');
-        const tablaRows = document.querySelectorAll('tbody tr');
-        tablaRows.forEach((row, index) => {
-            const mesTabla = row.cells[0].textContent.trim();
-            const popsTabla = parseFloat(row.cells[4].textContent.replace('%', ''));
-            const popsGrafico = popsData.datasets[0].data[index];
-            
-            if (popsTabla !== popsGrafico) {
-                console.warn(`⚠️ DISCREPANCIA en ${mesTabla}: Tabla=${popsTabla}%, Gráfico=${popsGrafico}%`);
-            } else {
-                console.log(`✅ ${mesTabla}: ${popsTabla}% (coincide)`);
-            }
-        });
+        console.log('Datos del gráfico:', popsData.datasets[0].data);
+        
+        // Seleccionar solo la tabla de POPS mensual (la que tiene 6 columnas)
+        const tablaPOPS = document.querySelector('.chart-container table tbody');
+        if (tablaPOPS) {
+            const tablaRows = tablaPOPS.querySelectorAll('tr');
+            tablaRows.forEach((row, index) => {
+                if (row.cells.length < 5) return;
+                const mesTabla = row.cells[0].textContent.trim();
+                const popsTabla = parseFloat(row.cells[4].textContent.replace('%', ''));
+                const popsGrafico = popsData.datasets[0].data[index];
+                
+                console.log(`${mesTabla}: Tabla=${popsTabla}%, Gráfico=${popsGrafico}%`);
+                
+                if (popsTabla !== popsGrafico) {
+                    console.warn(`⚠️ DISCREPANCIA en ${mesTabla}: Tabla=${popsTabla}%, Gráfico=${popsGrafico}%`);
+                } else {
+                    console.log(`✅ ${mesTabla}: ${popsTabla}% (coincide)`);
+                }
+            });
+        }
     });
 
     // Verificar que Chart.js se cargó correctamente
