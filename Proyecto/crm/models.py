@@ -317,7 +317,6 @@ class Campana(models.Model):
             # Obtener todos los equipos del cliente que cumplen los criterios
             equipos_cliente = Equipo.objects.filter(
                 cliente=cliente,
-                activo=True,
                 **equipos_query
             )
             
