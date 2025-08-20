@@ -2278,17 +2278,14 @@ def crear_embudo_pops(request):
             fecha_actual = timezone.now().date()
             nombre_embudo = f"POPS {fecha_actual.strftime('%d/%m/%Y')}"
             
-            # Obtener un cliente representativo (usar el primero o crear uno genérico)
-            cliente_representativo = equipos.first().cliente if equipos.exists() else Cliente.objects.first()
-            
-            # Crear el embudo principal
+            # Crear el embudo principal GENÉRICO (sin cliente específico)
             embudo_principal = EmbudoVentas.objects.create(
                 campana=None,  # Sin campaña específica
-                cliente=cliente_representativo,
+                cliente=None,  # Embudo genérico sin cliente específico
                 etapa='CONTACTO_INICIAL',
                 origen='POPS',
                 descripcion_negocio=f"Embudo POPS con {equipos.count()} equipos sin servicios",
-                observaciones=f"Embudo creado el {fecha_actual.strftime('%d/%m/%Y')} con {equipos.count()} oportunidades",
+                observaciones=f"Embudo creado el {fecha_actual.strftime('%d/%m/%Y')} con {equipos.count()} oportunidades - Cada oportunidad tiene su propio cliente",
                 creado_por=request.user
             )
             

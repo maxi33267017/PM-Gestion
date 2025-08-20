@@ -171,8 +171,13 @@
                                         </span>
                                     </td>
                                     <td>
-                                        <strong>{{ embudo.cliente.razon_social }}</strong>
-                                        <br><small class="text-muted">{{ embudo.cliente.cuit }}</small>
+                                        {% if embudo.cliente %}
+                                            <strong>{{ embudo.cliente.razon_social }}</strong>
+                                            <br><small class="text-muted">{{ embudo.cliente.cuit }}</small>
+                                        {% else %}
+                                            <strong class="text-primary">Embudo Genérico</strong>
+                                            <br><small class="text-muted">Múltiples clientes</small>
+                                        {% endif %}
                                     </td>
                                     <td>
                                         <div class="text-truncate" style="max-width: 200px;" title="{{ embudo.descripcion_negocio }}">

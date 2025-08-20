@@ -309,7 +309,7 @@ class EmbudoVentas(models.Model):
         related_name='embudos_ventas',
         verbose_name="Campaña"
     )
-    cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE, verbose_name="Cliente")
+    cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE, null=True, blank=True, verbose_name="Cliente")
     etapa = models.CharField(max_length=20, choices=ETAPA_CHOICES, verbose_name="Etapa")
     fecha_ingreso = models.DateTimeField(auto_now_add=True, verbose_name="Fecha de Ingreso")
     fecha_ultima_actividad = models.DateTimeField(auto_now=True, verbose_name="Última Actividad")
@@ -334,6 +334,7 @@ class EmbudoVentas(models.Model):
         choices=[
             ('ALERTA_EQUIPO', 'Alerta de Equipo'),
             ('LEAD_JD', 'Lead John Deere'),
+            ('POPS', 'POPS'),
             ('REFERENCIA', 'Referencia'),
             ('MARKETING', 'Marketing'),
             ('SERVICIO_EXISTENTE', 'Servicio Existente'),
@@ -384,7 +385,8 @@ class EmbudoVentas(models.Model):
         ]
     
     def __str__(self):
-        return f"{self.cliente.razon_social} - {self.get_etapa_display()} - {self.origen}"
+        cliente_nombre = self.cliente.razon_social if self.cliente else "Embudo Genérico"
+        return f"{cliente_nombre} - {self.get_etapa_display()} - {self.origen}"
     
     @property
     def tiempo_en_embudo(self):
