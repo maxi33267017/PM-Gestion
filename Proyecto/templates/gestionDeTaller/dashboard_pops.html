@@ -438,20 +438,37 @@
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
 <script>
-    // Datos para el gráfico - usando JSON seguro
+    // Función para obtener datos de la tabla
+    function obtenerDatosDeTabla() {
+        const tablaPOPS = document.querySelector('.chart-container table tbody');
+        const labels = [];
+        const data = [];
+        
+        if (tablaPOPS) {
+            const tablaRows = tablaPOPS.querySelectorAll('tr');
+            tablaRows.forEach((row) => {
+                if (row.cells.length >= 5) {
+                    const mes = row.cells[0].textContent.trim();
+                    const pops = parseFloat(row.cells[4].textContent.replace('%', ''));
+                    
+                    labels.push(mes);
+                    data.push(pops);
+                }
+            });
+        }
+        
+        return { labels, data };
+    }
+    
+    // Obtener datos de la tabla
+    const datosTabla = obtenerDatosDeTabla();
+    
+    // Datos para el gráfico - tomados de la tabla
     const popsData = {
-        labels: [
-            {% for item in pops_mensual %}
-                '{{ item.mes|escapejs }}'{% if not forloop.last %},{% endif %}
-            {% endfor %}
-        ],
+        labels: datosTabla.labels,
         datasets: [{
             label: 'POPS (%)',
-            data: [
-                {% for item in pops_mensual %}
-                    {{ item.pops|default:0 }}{% if not forloop.last %},{% endif %}
-                {% endfor %}
-            ],
+            data: datosTabla.data,
             backgroundColor: 'rgba(40, 167, 69, 0.2)',
             borderColor: 'rgba(40, 167, 69, 1)',
             borderWidth: 2,
@@ -459,18 +476,10 @@
         }]
     };
     
-    // Debug: mostrar datos crudos del template
-    console.log('=== DATOS CRUDOS DEL TEMPLATE ===');
-    console.log('Labels:', [
-        {% for item in pops_mensual %}
-            '{{ item.mes|escapejs }}'{% if not forloop.last %},{% endif %}
-        {% endfor %}
-    ]);
-    console.log('Data:', [
-        {% for item in pops_mensual %}
-            {{ item.pops|default:0 }}{% if not forloop.last %},{% endif %}
-        {% endfor %}
-    ]);
+    // Debug: mostrar datos obtenidos de la tabla
+    console.log('=== DATOS OBTENIDOS DE LA TABLA ===');
+    console.log('Labels:', datosTabla.labels);
+    console.log('Data:', datosTabla.data);
     
     // Debug: mostrar datos en consola
     console.log('Datos POPS mensual:', popsData);
