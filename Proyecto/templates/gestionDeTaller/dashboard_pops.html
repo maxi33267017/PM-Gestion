@@ -420,6 +420,15 @@
         data: [{% for item in pops_mensual %}{{ item.pops }}{% if not forloop.last %}, {% endif %}{% endfor %}]
     };
     
+    // Debug inmediato de los datos del gráfico
+    console.log('=== DATOS INMEDIATOS DEL GRÁFICO ===');
+    console.log('popsChartData.labels:', popsChartData.labels);
+    console.log('popsChartData.data:', popsChartData.data);
+    console.log('Datos del template Django:');
+    {% for item in pops_mensual %}
+    console.log('{{ item.mes }}: {{ item.pops }}%');
+    {% endfor %}
+    
     // Función para inicializar el gráfico
     function inicializarGrafico() {
         // Usar los datos globales
@@ -439,6 +448,12 @@
         console.log('=== DATOS POPS DEL GRÁFICO ===');
         console.log('Labels:', popsData.labels);
         console.log('Data:', popsData.datasets[0].data);
+        
+        // Debug detallado de cada punto
+        console.log('=== PUNTOS DEL GRÁFICO ===');
+        for (let i = 0; i < popsData.labels.length; i++) {
+            console.log(`${i}: ${popsData.labels[i]} = ${popsData.datasets[0].data[i]}%`);
+        }
         
         // Crear el gráfico
         const ctx = document.getElementById('popsChart');
