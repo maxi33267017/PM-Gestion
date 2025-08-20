@@ -14,6 +14,7 @@ from recursosHumanos.models import Sucursal
 import csv
 from django.contrib.auth.decorators import user_passes_test
 from django.urls import reverse
+from ventaMaquinarias.views import es_gerente
 
 # ===== FUNCIONES HELPER PARA ANÁLISIS DE CLIENTES =====
 
