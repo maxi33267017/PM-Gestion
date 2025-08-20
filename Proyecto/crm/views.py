@@ -687,7 +687,7 @@ def obtener_modelos_por_tipo(request):
 @login_required
 def editar_campania(request, campania_id):
     """Vista para editar una campaña existente"""
-    campania = get_object_or_404(Campania, id=campania_id)
+    campania = get_object_or_404(Campana, id=campania_id)
     
     if request.method == 'POST':
         nombre = request.POST.get('nombre')
@@ -724,7 +724,7 @@ def editar_campania(request, campania_id):
 @login_required
 def gestionar_contactos(request, campania_id):
     """Vista para gestionar contactos de una campaña"""
-    campania = get_object_or_404(Campania, id=campania_id)
+    campania = get_object_or_404(Campana, id=campania_id)
     
     if request.method == 'POST':
         cliente_id = request.POST.get('cliente')
@@ -792,7 +792,7 @@ def gestionar_contactos(request, campania_id):
 @login_required
 def dashboard_campania(request, campania_id):
     """Vista para mostrar el dashboard de resultados de una campaña"""
-    campania = get_object_or_404(Campania, id=campania_id)
+    campania = get_object_or_404(Campana, id=campania_id)
     contactos = Contacto.objects.filter(campania=campania).select_related('cliente', 'responsable')
     
     # Estadísticas detalladas
