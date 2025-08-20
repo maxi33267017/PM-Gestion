@@ -173,6 +173,35 @@
                 <h5 class="mb-3">
                     <i class="bi bi-bar-chart me-2"></i>POPS Mensual (Últimos 12 meses)
                 </h5>
+                <!-- Debug Visual de Datos -->
+                <div class="alert alert-info mb-3">
+                    <h6><i class="bi bi-bug me-2"></i>Debug: Datos que se envían al gráfico</h6>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-bordered">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>#</th>
+                                    <th>Mes</th>
+                                    <th>POPS (%)</th>
+                                    <th>Vendidos</th>
+                                    <th>Con Servicios</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in pops_mensual %}
+                                <tr>
+                                    <td>{{ forloop.counter0 }}</td>
+                                    <td><strong>{{ item.mes }}</strong></td>
+                                    <td><span class="badge bg-primary">{{ item.pops }}%</span></td>
+                                    <td>{{ item.equipos_vendidos }}</td>
+                                    <td>{{ item.equipos_con_servicios }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
                 <div style="height: 300px; position: relative;">
                     <canvas id="popsChart"></canvas>
                     <div id="chartFallback" style="display: none; text-align: center; padding: 50px;">
@@ -454,6 +483,18 @@
         for (let i = 0; i < popsData.labels.length; i++) {
             console.log(`${i}: ${popsData.labels[i]} = ${popsData.datasets[0].data[i]}%`);
         }
+        
+        // Debug visual en la página
+        const debugDiv = document.createElement('div');
+        debugDiv.className = 'alert alert-warning mt-3';
+        debugDiv.innerHTML = `
+            <h6><i class="bi bi-exclamation-triangle me-2"></i>Debug: Datos del Gráfico</h6>
+            <div class="small">
+                <strong>Labels:</strong> [${popsData.labels.join(', ')}]<br>
+                <strong>Data:</strong> [${popsData.datasets[0].data.join(', ')}]
+            </div>
+        `;
+        document.querySelector('.chart-container').appendChild(debugDiv);
         
         // Crear el gráfico
         const ctx = document.getElementById('popsChart');
