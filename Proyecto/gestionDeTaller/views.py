@@ -5519,6 +5519,11 @@ def dashboard_pops(request):
     # Ordenar por fecha (más reciente primero)
     pops_mensual.reverse()
     
+    # Debug: mostrar datos generados
+    print("=== DEBUG POPS MENSUAL ===")
+    for item in pops_mensual:
+        print(f"{item['mes']}: {item['pops']}% (Vendidos: {item['equipos_vendidos']}, Con servicios: {item['equipos_con_servicios']})")
+    
     # === ANÁLISIS POR TIPO DE EQUIPO ===
     from clientes.models import TipoEquipo
     

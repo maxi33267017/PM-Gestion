@@ -498,35 +498,23 @@
     
 
     
-    // Mostrar datos de debug en la página
+    // Inicializar cuando el DOM esté listo
     document.addEventListener('DOMContentLoaded', function() {
         // Inicializar el gráfico
         inicializarGrafico();
         
-        // Debug del gráfico
-        const chartDataDebug = document.getElementById('chartDataDebug');
-        if (chartDataDebug) {
-            const datosTabla = obtenerDatosDeTabla();
-            let debugText = '';
-            for (let i = 0; i < datosTabla.labels.length; i++) {
-                debugText += `${datosTabla.labels[i]}: ${datosTabla.data[i]}%<br>`;
-            }
-            chartDataDebug.innerHTML = debugText;
-        }
+        // Debug: mostrar datos del gráfico en consola
+        console.log('=== DATOS DEL GRÁFICO ===');
+        const labels = [{% for item in pops_mensual %}'{{ item.mes }}'{% if not forloop.last %}, {% endif %}{% endfor %}];
+        const data = [{% for item in pops_mensual %}{{ item.pops }}{% if not forloop.last %}, {% endif %}{% endfor %}];
         
-        // Calcular promedio POPS
-        const promedioPops = document.getElementById('promedioPops');
-        if (promedioPops && popsData.datasets[0].data.length > 0) {
-            const suma = popsData.datasets[0].data.reduce((a, b) => a + b, 0);
-            const promedio = (suma / popsData.datasets[0].data.length).toFixed(1);
-            promedioPops.textContent = promedio;
-        }
+        console.log('Labels:', labels);
+        console.log('Data:', data);
         
         // Comparar datos de la tabla con el gráfico
         console.log('=== COMPARACIÓN DATOS TABLA vs GRÁFICO ===');
-        console.log('Datos del gráfico:', popsData.datasets[0].data);
         
-        // Seleccionar solo la tabla de POPS mensual (la que tiene 6 columnas)
+        // Obtener datos de la tabla
         const tablaPOPS = document.querySelector('.chart-container table tbody');
         if (tablaPOPS) {
             const tablaRows = tablaPOPS.querySelectorAll('tr');
@@ -534,7 +522,7 @@
                 if (row.cells.length < 5) return;
                 const mesTabla = row.cells[0].textContent.trim();
                 const popsTabla = parseFloat(row.cells[4].textContent.replace('%', ''));
-                const popsGrafico = popsData.datasets[0].data[index];
+                const popsGrafico = data[index];
                 
                 console.log(`${mesTabla}: Tabla=${popsTabla}%, Gráfico=${popsGrafico}%`);
                 
