@@ -12,6 +12,7 @@ urlpatterns = [
         path('', views.gestion_de_taller, name='gestion_de_taller'),
         path('dashboard-tecnico/', views.dashboard_tecnico, name='dashboard_tecnico'),
         path('dashboard-gerente/', views.dashboard_gerente, name='dashboard_gerente'),
+    path('dashboard-pops/', views.dashboard_pops, name='dashboard_pops'),
         path('dashboard-administrador/', views.dashboard_administrador, name='dashboard_administrador'),
         path('servicios/', views.lista_servicios, name='lista_servicios'),
         path('calendario_preordenes/', views.calendario_preordenes, name='calendario_preordenes'),

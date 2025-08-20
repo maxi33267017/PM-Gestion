@@ -5333,3 +5333,243 @@ def guardar_todo_checklist(request, checklist_id):
             'success': False,
             'message': f'Error al guardar: {str(e)}'
         })
+
+@login_required
+def dashboard_pops(request):
+    """
+    Dashboard POPS (Parts, Oil, and Service) - Análisis de retención de equipos vendidos
+    """
+    # Verificar que el usuario sea gerente
+    if request.user.rol != 'GERENTE':
+        messages.error(request, "No tienes permisos para acceder al dashboard POPS.")
+        return redirect('home')
+    
+    from datetime import date, timedelta
+    from django.db.models import Sum, Count, Q
+    from django.utils import timezone
+    
+    # === FILTROS DE FECHA ===
+    mes_filtro = request.GET.get('mes', '')
+    año_filtro = request.GET.get('año', '')
+    
+    # Si se especifica al menos un filtro, usarlo
+    if mes_filtro or año_filtro:
+        try:
+            # Si solo hay mes, usar año actual
+            if mes_filtro and not año_filtro:
+                mes_seleccionado = int(mes_filtro)
+                año_seleccionado = date.today().year
+            # Si solo hay año, usar mes actual
+            elif año_filtro and not mes_filtro:
+                año_seleccionado = int(año_filtro)
+                mes_seleccionado = date.today().month
+            # Si hay ambos
+            else:
+                mes_seleccionado = int(mes_filtro)
+                año_seleccionado = int(año_filtro)
+            
+            fecha_analisis = date(año_seleccionado, mes_seleccionado, 1)
+        except (ValueError, TypeError):
+            fecha_analisis = date.today()
+    else:
+        fecha_analisis = date.today()
+    
+    # === CÁLCULO DE PERÍODOS POPS ===
+    # Para el mes analizado, calcular:
+    # - Base: equipos vendidos en los últimos 10 años hasta ese mes
+    # - Servicios: equipos con servicios en el último año hasta ese mes
+    
+    # Fecha de inicio para equipos vendidos (10 años atrás)
+    inicio_ventas = fecha_analisis - timedelta(days=365*10)
+    
+    # Fecha de inicio para servicios (1 año atrás)
+    inicio_servicios = fecha_analisis - timedelta(days=365)
+    
+    # Fecha límite para datos históricos
+    fecha_limite_historico = date(2025, 6, 30)
+    
+    # === OBTENER EQUIPOS VENDIDOS (BASE) ===
+    from clientes.models import Equipo
+    
+    equipos_vendidos = Equipo.objects.filter(
+        fecha_venta__range=[inicio_ventas, fecha_analisis],
+        fecha_venta__isnull=False
+    )
+    
+    total_equipos_vendidos = equipos_vendidos.count()
+    pines_vendidos = set(equipos_vendidos.values_list('numero_serie', flat=True))
+    
+    # === OBTENER EQUIPOS CON SERVICIOS ===
+    pines_con_servicios = set()
+    
+    # 1. Servicios históricos (Abril 2024 - Junio 2025)
+    if inicio_servicios <= fecha_limite_historico:
+        from crm.models import HistorialFacturacion
+        
+        servicios_historicos = HistorialFacturacion.objects.filter(
+            fecha_servicio__range=[inicio_servicios, min(fecha_analisis, fecha_limite_historico)]
+        )
+        
+        pines_historicos = set(servicios_historicos.values_list('pin_equipo', flat=True))
+        pines_con_servicios.update(pines_historicos)
+    
+    # 2. Servicios actuales (Julio 2025 en adelante)
+    if fecha_analisis > fecha_limite_historico:
+        from gestionDeTaller.models import Servicio
+        
+        servicios_actuales = Servicio.objects.filter(
+            fecha_servicio__range=[max(inicio_servicios, fecha_limite_historico + timedelta(days=1)), fecha_analisis]
+        )
+        
+        # Obtener PINs de los equipos de los servicios
+        pines_actuales = set()
+        for servicio in servicios_actuales:
+            if servicio.preorden and servicio.preorden.equipo:
+                pines_actuales.add(servicio.preorden.equipo.numero_serie)
+        
+        pines_con_servicios.update(pines_actuales)
+    
+    # === CÁLCULO POPS ===
+    equipos_con_servicios = len(pines_vendidos.intersection(pines_con_servicios))
+    equipos_sin_servicios = len(pines_vendidos) - equipos_con_servicios
+    
+    if total_equipos_vendidos > 0:
+        porcentaje_pops = round((equipos_con_servicios / total_equipos_vendidos) * 100, 1)
+    else:
+        porcentaje_pops = 0
+    
+    # === ANÁLISIS POR MES (ÚLTIMOS 12 MESES) ===
+    pops_mensual = []
+    
+    for i in range(12):
+        # Calcular fecha para cada mes hacia atrás
+        fecha_mes = fecha_analisis - timedelta(days=30*i)
+        
+        # Período de ventas (10 años hasta ese mes)
+        inicio_ventas_mes = fecha_mes - timedelta(days=365*10)
+        
+        # Período de servicios (1 año hasta ese mes)
+        inicio_servicios_mes = fecha_mes - timedelta(days=365)
+        
+        # Equipos vendidos en ese período
+        equipos_vendidos_mes = Equipo.objects.filter(
+            fecha_venta__range=[inicio_ventas_mes, fecha_mes],
+            fecha_venta__isnull=False
+        ).count()
+        
+        # Equipos con servicios en ese período
+        pines_vendidos_mes = set(Equipo.objects.filter(
+            fecha_venta__range=[inicio_ventas_mes, fecha_mes],
+            fecha_venta__isnull=False
+        ).values_list('numero_serie', flat=True))
+        
+        pines_con_servicios_mes = set()
+        
+        # Servicios históricos
+        if inicio_servicios_mes <= fecha_limite_historico:
+            servicios_historicos_mes = HistorialFacturacion.objects.filter(
+                fecha_servicio__range=[inicio_servicios_mes, min(fecha_mes, fecha_limite_historico)]
+            )
+            pines_historicos_mes = set(servicios_historicos_mes.values_list('pin_equipo', flat=True))
+            pines_con_servicios_mes.update(pines_historicos_mes)
+        
+        # Servicios actuales
+        if fecha_mes > fecha_limite_historico:
+            servicios_actuales_mes = Servicio.objects.filter(
+                fecha_servicio__range=[max(inicio_servicios_mes, fecha_limite_historico + timedelta(days=1)), fecha_mes]
+            )
+            
+            for servicio in servicios_actuales_mes:
+                if servicio.preorden and servicio.preorden.equipo:
+                    pines_con_servicios_mes.add(servicio.preorden.equipo.numero_serie)
+        
+        equipos_con_servicios_mes = len(pines_vendidos_mes.intersection(pines_con_servicios_mes))
+        
+        if equipos_vendidos_mes > 0:
+            pops_mes = round((equipos_con_servicios_mes / equipos_vendidos_mes) * 100, 1)
+        else:
+            pops_mes = 0
+        
+        pops_mensual.append({
+            'mes': fecha_mes.strftime('%B %Y'),
+            'fecha': fecha_mes,
+            'equipos_vendidos': equipos_vendidos_mes,
+            'equipos_con_servicios': equipos_con_servicios_mes,
+            'pops': pops_mes
+        })
+    
+    # Ordenar por fecha (más reciente primero)
+    pops_mensual.reverse()
+    
+    # === ANÁLISIS POR TIPO DE EQUIPO ===
+    from clientes.models import TipoEquipo
+    
+    tipos_equipo = TipoEquipo.objects.all()
+    pops_por_tipo = []
+    
+    for tipo in tipos_equipo:
+        # Equipos vendidos de este tipo
+        equipos_tipo = equipos_vendidos.filter(tipo_equipo=tipo)
+        total_tipo = equipos_tipo.count()
+        
+        if total_tipo > 0:
+            pines_tipo = set(equipos_tipo.values_list('numero_serie', flat=True))
+            equipos_con_servicios_tipo = len(pines_tipo.intersection(pines_con_servicios))
+            pops_tipo = round((equipos_con_servicios_tipo / total_tipo) * 100, 1)
+            
+            pops_por_tipo.append({
+                'tipo': tipo.nombre,
+                'total_equipos': total_tipo,
+                'equipos_con_servicios': equipos_con_servicios_tipo,
+                'pops': pops_tipo
+            })
+    
+    # Ordenar por POPS descendente
+    pops_por_tipo.sort(key=lambda x: x['pops'], reverse=True)
+    
+    # === EQUIPOS SIN SERVICIOS (OPORTUNIDADES) ===
+    pines_sin_servicios = pines_vendidos - pines_con_servicios
+    equipos_sin_servicios_list = Equipo.objects.filter(
+        numero_serie__in=pines_sin_servicios
+    ).select_related('cliente', 'tipo_equipo', 'modelo_equipo')[:10]
+    
+    context = {
+        'fecha_analisis': fecha_analisis,
+        'mes_analisis': fecha_analisis.strftime('%B %Y'),
+        
+        # Métricas principales
+        'total_equipos_vendidos': total_equipos_vendidos,
+        'equipos_con_servicios': equipos_con_servicios,
+        'equipos_sin_servicios': equipos_sin_servicios,
+        'porcentaje_pops': porcentaje_pops,
+        
+        # Análisis temporal
+        'pops_mensual': pops_mensual,
+        
+        # Análisis por tipo
+        'pops_por_tipo': pops_por_tipo,
+        
+        # Oportunidades
+        'equipos_sin_servicios_list': equipos_sin_servicios_list,
+        
+        # Filtros
+        'mes_filtro': mes_filtro,
+        'año_filtro': año_filtro,
+        'meses': [
+            {'valor': '1', 'nombre': 'Enero'},
+            {'valor': '2', 'nombre': 'Febrero'},
+            {'valor': '3', 'nombre': 'Marzo'},
+            {'valor': '4', 'nombre': 'Abril'},
+            {'valor': '5', 'nombre': 'Mayo'},
+            {'valor': '6', 'nombre': 'Junio'},
+            {'valor': '7', 'nombre': 'Julio'},
+            {'valor': '8', 'nombre': 'Agosto'},
+            {'valor': '9', 'nombre': 'Septiembre'},
+            {'valor': '10', 'nombre': 'Octubre'},
+            {'valor': '11', 'nombre': 'Noviembre'},
+            {'valor': '12', 'nombre': 'Diciembre'},
+        ],
+        'años': range(2020, date.today().year + 2),
+    }
+    
+    return render(request, 'gestionDeTaller/dashboard_pops.html', context)

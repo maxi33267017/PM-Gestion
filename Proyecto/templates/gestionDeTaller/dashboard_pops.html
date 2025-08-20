@@ -1,0 +1,302 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Dashboard POPS - Análisis de Retención{% endblock %}
+
+{% block extra_css %}
+<style>
+    .pops-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 15px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+    
+    .metric-card {
+        background: white;
+        border-radius: 15px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        transition: transform 0.2s;
+    }
+    
+    .metric-card:hover {
+        transform: translateY(-2px);
+    }
+    
+    .metric-value {
+        font-size: 2.5rem;
+        font-weight: bold;
+        margin-bottom: 0.5rem;
+    }
+    
+    .metric-label {
+        color: #6c757d;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .pops-percentage {
+        font-size: 3rem;
+        font-weight: 800;
+        color: #28a745;
+    }
+    
+    .chart-container {
+        background: white;
+        border-radius: 15px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+    }
+    
+    .opportunity-item {
+        border-left: 4px solid #ffc107;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        background: #f8f9fa;
+        border-radius: 0 10px 10px 0;
+    }
+    
+    .filter-section {
+        background: white;
+        border-radius: 15px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+    }
+    
+    .progress-bar-custom {
+        height: 8px;
+        border-radius: 4px;
+        background: #e9ecef;
+        overflow: hidden;
+    }
+    
+    .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #28a745, #20c997);
+        transition: width 0.3s ease;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="pops-header">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="mb-2">
+                    <i class="bi bi-graph-up me-3"></i>Dashboard POPS
+                </h1>
+                <p class="mb-0 lead">Análisis de retención de equipos vendidos - Parts, Oil, and Service</p>
+            </div>
+            <div class="col-md-4 text-end">
+                <div class="pops-percentage">{{ porcentaje_pops }}%</div>
+                <div class="text-white-50">POPS Actual</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="filter-section">
+        <div class="row">
+            <div class="col-md-6">
+                <label for="mes" class="form-label">Mes:</label>
+                <select id="mes" name="mes" class="form-select" onchange="aplicarFiltros()">
+                    <option value="">Todos los meses</option>
+                    {% for mes in meses %}
+                        <option value="{{ mes.valor }}" {% if mes.valor == mes_filtro %}selected{% endif %}>
+                            {{ mes.nombre }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-6">
+                <label for="año" class="form-label">Año:</label>
+                <select id="año" name="año" class="form-select" onchange="aplicarFiltros()">
+                    <option value="">Todos los años</option>
+                    {% for año in años %}
+                        <option value="{{ año }}" {% if año|stringformat:"s" == año_filtro %}selected{% endif %}>
+                            {{ año }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <!-- Métricas Principales -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="metric-card">
+                <div class="metric-value text-primary">{{ total_equipos_vendidos }}</div>
+                <div class="metric-label">Equipos Vendidos (10 años)</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="metric-card">
+                <div class="metric-value text-success">{{ equipos_con_servicios }}</div>
+                <div class="metric-label">Con Servicios (último año)</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="metric-card">
+                <div class="metric-value text-warning">{{ equipos_sin_servicios }}</div>
+                <div class="metric-label">Sin Servicios</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="metric-card">
+                <div class="metric-value text-info">{{ mes_analisis }}</div>
+                <div class="metric-label">Período Analizado</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Gráficos -->
+    <div class="row">
+        <!-- POPS Mensual -->
+        <div class="col-lg-8">
+            <div class="chart-container">
+                <h5 class="mb-3">
+                    <i class="bi bi-bar-chart me-2"></i>POPS Mensual (Últimos 12 meses)
+                </h5>
+                <canvas id="popsChart" width="400" height="200"></canvas>
+            </div>
+        </div>
+
+        <!-- POPS por Tipo de Equipo -->
+        <div class="col-lg-4">
+            <div class="chart-container">
+                <h5 class="mb-3">
+                    <i class="bi bi-pie-chart me-2"></i>POPS por Tipo de Equipo
+                </h5>
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Tipo</th>
+                                <th>POPS</th>
+                                <th>Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for tipo in pops_por_tipo %}
+                            <tr>
+                                <td>{{ tipo.tipo }}</td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <span class="badge bg-success me-2">{{ tipo.pops }}%</span>
+                                        <div class="progress-bar-custom flex-grow-1">
+                                            <div class="progress-fill" style="width: {{ tipo.pops }}%"></div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>{{ tipo.total_equipos }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Oportunidades -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="chart-container">
+                <h5 class="mb-3">
+                    <i class="bi bi-exclamation-triangle me-2"></i>Oportunidades - Equipos Sin Servicios
+                </h5>
+                <div class="row">
+                    {% for equipo in equipos_sin_servicios_list %}
+                    <div class="col-md-6 col-lg-4">
+                        <div class="opportunity-item">
+                            <div class="fw-bold">{{ equipo.numero_serie }}</div>
+                            <div class="text-muted">{{ equipo.tipo_equipo.nombre }} - {{ equipo.modelo_equipo.nombre }}</div>
+                            <div class="small">{{ equipo.cliente.razon_social }}</div>
+                            <div class="small text-muted">Vendido: {{ equipo.fecha_venta|date:"d/m/Y" }}</div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="col-12">
+                        <div class="text-center text-muted py-4">
+                            <i class="bi bi-check-circle fs-1"></i>
+                            <p class="mt-2">¡Excelente! Todos los equipos tienen servicios registrados.</p>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Datos para el gráfico
+    const popsData = {
+        labels: [{% for item in pops_mensual %}'{{ item.mes }}'{% if not forloop.last %}, {% endif %}{% endfor %}],
+        datasets: [{
+            label: 'POPS (%)',
+            data: [{% for item in pops_mensual %}{{ item.pops }}{% if not forloop.last %}, {% endif %}{% endfor %}],
+            backgroundColor: 'rgba(40, 167, 69, 0.2)',
+            borderColor: 'rgba(40, 167, 69, 1)',
+            borderWidth: 2,
+            tension: 0.4
+        }]
+    };
+
+    // Configuración del gráfico
+    const ctx = document.getElementById('popsChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'line',
+        data: popsData,
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 100,
+                    ticks: {
+                        callback: function(value) {
+                            return value + '%';
+                        }
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    display: false
+                }
+            }
+        }
+    });
+
+    // Función para aplicar filtros
+    function aplicarFiltros() {
+        const mes = document.getElementById('mes').value;
+        const año = document.getElementById('año').value;
+        
+        let url = '{% url "gestionDeTaller:dashboard_pops" %}?';
+        const params = [];
+        
+        if (mes) params.push('mes=' + mes);
+        if (año) params.push('año=' + año);
+        
+        if (params.length > 0) {
+            url += params.join('&');
+        }
+        
+        window.location.href = url;
+    }
+</script>
+{% endblock %}
