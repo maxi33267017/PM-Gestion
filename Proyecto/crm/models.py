@@ -256,7 +256,7 @@ class Campana(models.Model):
         print(f"Clientes objetivo encontrados: {clientes_objetivo.count()}")
         
         # Crear 1 embudo genérico para la campaña
-        embudo_nombre = f"{self.nombre} - {self.fecha_inicio.strftime('%d/%m/%Y')}"
+        embudo_nombre = f"{self.nombre} - {self.fecha_inicio}"
         
         # Verificar si ya existe un embudo genérico para esta campaña
         embudo_existente = self.embudos_ventas.filter(cliente__isnull=True).first()
