@@ -286,7 +286,7 @@
                             <h6><i class="bi bi-exclamation-triangle me-2"></i>Verificación de Datos</h6>
                             <div class="small">
                                 <strong>Total de registros:</strong> {{ pops_mensual|length }}<br>
-                                <strong>Rango de POPS:</strong> {{ pops_mensual|first|first|pops|floatformat:1 }}% - {{ pops_mensual|last|first|pops|floatformat:1 }}%<br>
+                                <strong>Rango de POPS:</strong> {{ pops_mensual.0.pops|floatformat:1 }}% - {{ pops_mensual|last|pops|floatformat:1 }}%<br>
                                 <strong>Promedio POPS:</strong> <span id="promedioPops"></span>%
                             </div>
                         </div>
