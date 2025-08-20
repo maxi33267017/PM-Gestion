@@ -221,6 +221,82 @@
         </div>
     </div>
 
+    <!-- Tabla POPS Mensual Detallada -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="chart-container">
+                <h5 class="mb-3">
+                    <i class="bi bi-table me-2"></i>POPS Mensual Detallado (Últimos 12 meses)
+                </h5>
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Mes</th>
+                                <th>Equipos Vendidos (10 años)</th>
+                                <th>Equipos con Servicios (1 año)</th>
+                                <th>Equipos Sin Servicios</th>
+                                <th>POPS (%)</th>
+                                <th>Debug Info</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in pops_mensual %}
+                            <tr>
+                                <td><strong>{{ item.mes }}</strong></td>
+                                <td class="text-center">
+                                    <span class="badge bg-primary">{{ item.equipos_vendidos }}</span>
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge bg-success">{{ item.equipos_con_servicios }}</span>
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge bg-warning">{{ item.equipos_sin_servicios }}</span>
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge {% if item.pops >= 50 %}bg-success{% elif item.pops >= 25 %}bg-warning{% else %}bg-danger{% endif %} fs-6">
+                                        {{ item.pops }}%
+                                    </span>
+                                </td>
+                                <td class="small text-muted">
+                                    <div><strong>Fecha:</strong> {{ item.fecha|date:"d/m/Y" }}</div>
+                                    <div><strong>Ventas:</strong> {{ item.debug_info.fecha_inicio_ventas|date:"d/m/Y" }} - {{ item.debug_info.fecha_fin_ventas|date:"d/m/Y" }}</div>
+                                    <div><strong>Servicios:</strong> {{ item.debug_info.fecha_inicio_servicios|date:"d/m/Y" }} - {{ item.debug_info.fecha_fin_servicios|date:"d/m/Y" }}</div>
+                                    <div><strong>PINs:</strong> {{ item.debug_info.pines_vendidos_count }} vendidos, {{ item.debug_info.pines_con_servicios_count }} con servicios</div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Resumen de datos -->
+                <div class="row mt-3">
+                    <div class="col-md-6">
+                        <div class="alert alert-info">
+                            <h6><i class="bi bi-info-circle me-2"></i>Información del Gráfico</h6>
+                            <div class="small">
+                                <strong>Datos enviados al gráfico:</strong><br>
+                                <span id="chartDataDebug"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="alert alert-warning">
+                            <h6><i class="bi bi-exclamation-triangle me-2"></i>Verificación de Datos</h6>
+                            <div class="small">
+                                <strong>Total de registros:</strong> {{ pops_mensual|length }}<br>
+                                <strong>Rango de POPS:</strong> {{ pops_mensual|first|first|pops|floatformat:1 }}% - {{ pops_mensual|last|first|pops|floatformat:1 }}%<br>
+                                <strong>Promedio POPS:</strong> <span id="promedioPops"></span>%
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+
     <!-- Oportunidades y Embudos -->
     <div class="row mt-4">
         <div class="col-12">
@@ -326,6 +402,42 @@
     
     // Debug: mostrar datos en consola
     console.log('Datos POPS mensual:', popsData);
+    
+    // Mostrar datos de debug en la página
+    document.addEventListener('DOMContentLoaded', function() {
+        // Debug del gráfico
+        const chartDataDebug = document.getElementById('chartDataDebug');
+        if (chartDataDebug) {
+            let debugText = '';
+            for (let i = 0; i < popsData.labels.length; i++) {
+                debugText += `${popsData.labels[i]}: ${popsData.datasets[0].data[i]}%<br>`;
+            }
+            chartDataDebug.innerHTML = debugText;
+        }
+        
+        // Calcular promedio POPS
+        const promedioPops = document.getElementById('promedioPops');
+        if (promedioPops && popsData.datasets[0].data.length > 0) {
+            const suma = popsData.datasets[0].data.reduce((a, b) => a + b, 0);
+            const promedio = (suma / popsData.datasets[0].data.length).toFixed(1);
+            promedioPops.textContent = promedio;
+        }
+        
+        // Comparar datos de la tabla con el gráfico
+        console.log('=== COMPARACIÓN DATOS TABLA vs GRÁFICO ===');
+        const tablaRows = document.querySelectorAll('tbody tr');
+        tablaRows.forEach((row, index) => {
+            const mesTabla = row.cells[0].textContent.trim();
+            const popsTabla = parseFloat(row.cells[4].textContent.replace('%', ''));
+            const popsGrafico = popsData.datasets[0].data[index];
+            
+            if (popsTabla !== popsGrafico) {
+                console.warn(`⚠️ DISCREPANCIA en ${mesTabla}: Tabla=${popsTabla}%, Gráfico=${popsGrafico}%`);
+            } else {
+                console.log(`✅ ${mesTabla}: ${popsTabla}% (coincide)`);
+            }
+        });
+    });
 
     // Verificar que Chart.js se cargó correctamente
     if (typeof Chart === 'undefined') {

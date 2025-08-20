@@ -5495,7 +5495,16 @@ def dashboard_pops(request):
             'fecha': fecha_mes,
             'equipos_vendidos': equipos_vendidos_mes,
             'equipos_con_servicios': equipos_con_servicios_mes,
-            'pops': pops_mes
+            'equipos_sin_servicios': equipos_vendidos_mes - equipos_con_servicios_mes,
+            'pops': pops_mes,
+            'debug_info': {
+                'fecha_inicio_ventas': inicio_ventas_mes,
+                'fecha_fin_ventas': fecha_mes,
+                'fecha_inicio_servicios': inicio_servicios_mes,
+                'fecha_fin_servicios': fecha_mes,
+                'pines_vendidos_count': len(pines_vendidos_mes),
+                'pines_con_servicios_count': len(pines_con_servicios_mes)
+            }
         })
     
     # Ordenar por fecha (más reciente primero)
