@@ -171,7 +171,7 @@
         <div class="col-lg-8">
             <div class="chart-container">
                 <h5 class="mb-3">
-                    <i class="bi bi-bar-chart me-2"></i>POPS Mensual (Últimos 12 meses)
+                    <i class="bi bi-bar-chart me-2"></i>POPS Mensual - Gráfico de Barras (Últimos 12 meses)
                 </h5>
 
                 
@@ -439,10 +439,11 @@
             datasets: [{
                 label: 'POPS (%)',
                 data: popsChartData.data,
-                backgroundColor: 'rgba(40, 167, 69, 0.2)',
+                backgroundColor: 'rgba(40, 167, 69, 0.8)',
                 borderColor: 'rgba(40, 167, 69, 1)',
-                borderWidth: 2,
-                tension: 0.4
+                borderWidth: 1,
+                borderRadius: 4,
+                borderSkipped: false
             }]
         };
         
@@ -465,7 +466,7 @@
             const chartCtx = ctx.getContext('2d');
             try {
                 new Chart(chartCtx, {
-                    type: 'line',
+                    type: 'bar',
                     data: popsData,
                     options: {
                         responsive: true,
@@ -505,9 +506,9 @@
                             mode: 'index'
                         },
                         elements: {
-                            point: {
-                                radius: 4,
-                                hoverRadius: 6
+                            bar: {
+                                borderRadius: 4,
+                                borderSkipped: false
                             }
                         }
                     }
