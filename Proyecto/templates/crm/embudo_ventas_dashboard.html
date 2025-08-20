@@ -3,14 +3,15 @@
 
 {% block content %}
 <div class="container-fluid">
+    <!-- Header -->
     <div class="row mb-4">
         <div class="col-12">
             <div class="d-flex justify-content-between align-items-center">
                 <div>
                     <h1 class="display-6 mb-2">
-                        <i class="bi bi-funnel-fill text-primary me-2"></i>Embudo de Ventas
+                        <i class="bi bi-funnel-fill text-primary me-2"></i>Embudos de Ventas
                     </h1>
-                    <p class="lead text-muted">Análisis visual del proceso de ventas por etapas</p>
+                    <p class="lead text-muted">Gestión centralizada de todas las oportunidades de venta</p>
                 </div>
                 <div>
                     <a href="{% url 'crm:crear_embudo' %}" class="btn btn-success">
@@ -72,198 +73,111 @@
         </div>
     </div>
 
-    <!-- Gráfico del Embudo -->
+    <!-- Filtros -->
     <div class="row mb-4">
         <div class="col-12">
             <div class="card shadow-sm">
-                <div class="card-header">
-                    <h5 class="mb-0">
-                        <i class="bi bi-funnel me-2"></i>Embudo de Ventas - Vista General
-                    </h5>
-                </div>
                 <div class="card-body">
-                    <div class="embudo-container">
-                        {% for etapa in embudo_data %}
-                        <div class="embudo-etapa" style="background-color: {{ etapa.color }}20; border: 2px solid {{ etapa.color }};">
-                            <div class="embudo-etapa-header">
-                                <h6 class="mb-1">{{ etapa.etapa }}</h6>
-                                <div class="embudo-stats">
-                                    <span class="badge bg-light text-dark">{{ etapa.total }} oportunidades</span>
-                                    {% if etapa.valor_total > 0 %}
-                                    <span class="badge bg-success">${{ etapa.valor_total|floatformat:0 }}</span>
-                                    {% endif %}
-                                </div>
-                            </div>
-                            <div class="embudo-etapa-body">
-                                <div class="progress mb-2" style="height: 8px;">
-                                    {% if total_embudos > 0 %}
-                                    {% widthratio etapa.total total_embudos 100 as porcentaje %}
-                                    <div class="progress-bar" role="progressbar" 
-                                         style="width: {{ porcentaje }}%; background-color: {{ etapa.color }};"></div>
-                                    {% endif %}
-                                </div>
-                                <small class="text-muted">
-                                    {% if total_embudos > 0 %}
-                                    {% widthratio etapa.total total_embudos 100 as porcentaje %}
-                                    {{ porcentaje }}% del total
-                                    {% else %}
-                                    0% del total
-                                    {% endif %}
-                                </small>
-                            </div>
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <label for="filtroTipo" class="form-label">Tipo de Embudo</label>
+                            <select id="filtroTipo" class="form-select" onchange="filtrarEmbudos()">
+                                <option value="">Todos los tipos</option>
+                                <option value="POPS">Embudos POPS</option>
+                                <option value="LEAD_JD">Leads John Deere</option>
+                                <option value="ALERTA_EQUIPO">Alertas de Equipo</option>
+                                <option value="CHECKLIST">Checklist</option>
+                                <option value="CAMPAÑA_MARKETING">Campañas</option>
+                                <option value="SERVICIO_EXISTENTE">Servicios Existentes</option>
+                                <option value="REFERENCIA">Referencias</option>
+                                <option value="OTRO">Otros</option>
+                            </select>
                         </div>
-                        {% endfor %}
+                        <div class="col-md-3">
+                            <label for="filtroEtapa" class="form-label">Etapa</label>
+                            <select id="filtroEtapa" class="form-select" onchange="filtrarEmbudos()">
+                                <option value="">Todas las etapas</option>
+                                <option value="CONTACTO_INICIAL">Contacto Inicial</option>
+                                <option value="CALIFICACION">Calificación</option>
+                                <option value="PROPUESTA">Propuesta</option>
+                                <option value="NEGOCIACION">Negociación</option>
+                                <option value="CIERRE">Cierre</option>
+                                <option value="PERDIDO">Perdido</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="buscarEmbudo" class="form-label">Buscar</label>
+                            <input type="text" id="buscarEmbudo" class="form-control" placeholder="Cliente, descripción..." onkeyup="filtrarEmbudos()">
+                        </div>
+                        <div class="col-md-2 d-flex align-items-end">
+                            <button type="button" class="btn btn-outline-secondary w-100" onclick="limpiarFiltros()">
+                                <i class="bi bi-arrow-clockwise me-1"></i>Limpiar
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Filtros y Análisis -->
-    <div class="row g-4">
-        <!-- Análisis por Origen -->
-        <div class="col-md-6">
-            <div class="card shadow-sm">
-                <div class="card-header">
-                    <h5 class="mb-0">
-                        <i class="bi bi-pie-chart me-2"></i>Análisis por Origen
-                    </h5>
-                </div>
-                <div class="card-body">
-                    {% if origenes_stats %}
-                        <div class="table-responsive">
-                            <table class="table table-sm">
-                                <thead>
-                                    <tr>
-                                        <th>Origen</th>
-                                        <th>Oportunidades</th>
-                                        <th>Valor Total</th>
-                                        <th>Acciones</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for origen in origenes_stats %}
-                                    <tr>
-                                        <td>
-                                            <span class="badge bg-secondary">{{ origen.origen|title }}</span>
-                                        </td>
-                                        <td>
-                                            <strong>{{ origen.total }}</strong>
-                                        </td>
-                                        <td>
-                                            <span class="text-success">${{ origen.valor_total|floatformat:0 }}</span>
-                                        </td>
-                                        <td>
-                                            <a href="{% url 'crm:embudo_ventas_origen' origen.origen %}" 
-                                               class="btn btn-sm btn-outline-primary">
-                                                <i class="bi bi-eye me-1"></i>Ver Embudo
-                                            </a>
-                                        </td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-                    {% else %}
-                        <div class="text-center py-4">
-                            <i class="bi bi-inbox display-4 text-muted"></i>
-                            <p class="text-muted mt-2">No hay datos por origen</p>
-                        </div>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-
-        <!-- Análisis por Campaña -->
-        <div class="col-md-6">
-            <div class="card shadow-sm">
-                <div class="card-header">
-                    <h5 class="mb-0">
-                        <i class="bi bi-megaphone me-2"></i>Análisis por Campaña
-                    </h5>
-                </div>
-                <div class="card-body">
-                    {% if campanas_stats %}
-                        <div class="table-responsive">
-                            <table class="table table-sm">
-                                <thead>
-                                    <tr>
-                                        <th>Campaña</th>
-                                        <th>Oportunidades</th>
-                                        <th>Valor Total</th>
-                                        <th>Acciones</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for campana in campanas_stats %}
-                                    <tr>
-                                        <td>
-                                            <strong>{{ campana.campana__nombre }}</strong>
-                                        </td>
-                                        <td>
-                                            <strong>{{ campana.total }}</strong>
-                                        </td>
-                                        <td>
-                                            <span class="text-success">${{ campana.valor_total|floatformat:0 }}</span>
-                                        </td>
-                                        <td>
-                                            <a href="{% url 'crm:embudo_ventas_campana' campana.campana__id %}" 
-                                               class="btn btn-sm btn-outline-info">
-                                                <i class="bi bi-eye me-1"></i>Ver Embudo
-                                            </a>
-                                        </td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-                    {% else %}
-                        <div class="text-center py-4">
-                            <i class="bi bi-inbox display-4 text-muted"></i>
-                            <p class="text-muted mt-2">No hay datos por campaña</p>
-                        </div>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Lista de Embudos Recientes -->
-    <div class="row mt-4">
+    <!-- Tabla Principal de Embudos -->
+    <div class="row">
         <div class="col-12">
             <div class="card shadow-sm">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h5 class="mb-0">
-                        <i class="bi bi-clock-history me-2"></i>Embudos Recientes
+                        <i class="bi bi-table me-2"></i>Embudos de Ventas
                     </h5>
                     <div>
-                        <a href="{% url 'crm:embudo_checklist_dashboard' %}" class="btn btn-warning btn-sm">
-                            <i class="bi bi-clipboard-check me-1"></i>Checklist Adicionales
-                        </a>
-                        <a href="{% url 'crm:crear_embudo' %}" class="btn btn-success btn-sm">
-                            <i class="bi bi-plus-circle me-1"></i>Nuevo Embudo
-                        </a>
+                        <span class="badge bg-primary" id="contadorEmbudos">{{ total_embudos }} embudos</span>
                     </div>
                 </div>
                 <div class="card-body">
                     <div class="table-responsive">
-                        <table class="table table-hover">
-                            <thead>
+                        <table class="table table-hover" id="tablaEmbudos">
+                            <thead class="table-dark">
                                 <tr>
+                                    <th>Tipo</th>
                                     <th>Cliente</th>
+                                    <th>Descripción</th>
                                     <th>Etapa</th>
-                                    <th>Origen</th>
                                     <th>Valor Estimado</th>
-                                    <th>Valor de Cierre</th>
+                                    <th>Valor Cierre</th>
+                                    <th>Oportunidades</th>
                                     <th>Última Actividad</th>
                                     <th>Acciones</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {% for embudo in embudos_recientes %}
-                                <tr>
+                                <tr class="embudo-row" 
+                                    data-tipo="{{ embudo.origen }}" 
+                                    data-etapa="{{ embudo.etapa }}"
+                                    data-cliente="{{ embudo.cliente.razon_social|lower }}"
+                                    data-descripcion="{{ embudo.descripcion_negocio|lower }}">
+                                    <td>
+                                        <span class="badge {% if embudo.origen == 'POPS' %}bg-danger{% elif embudo.origen == 'LEAD_JD' %}bg-success{% elif embudo.origen == 'ALERTA_EQUIPO' %}bg-warning{% elif embudo.origen == 'CAMPAÑA_MARKETING' %}bg-info{% else %}bg-secondary{% endif %}">
+                                            {% if embudo.origen == 'POPS' %}
+                                                <i class="bi bi-graph-up me-1"></i>POPS
+                                            {% elif embudo.origen == 'LEAD_JD' %}
+                                                <i class="bi bi-truck me-1"></i>Lead JD
+                                            {% elif embudo.origen == 'ALERTA_EQUIPO' %}
+                                                <i class="bi bi-exclamation-triangle me-1"></i>Alerta
+                                            {% elif embudo.origen == 'CAMPAÑA_MARKETING' %}
+                                                <i class="bi bi-megaphone me-1"></i>Campaña
+                                            {% else %}
+                                                {{ embudo.get_origen_display }}
+                                            {% endif %}
+                                        </span>
+                                    </td>
                                     <td>
                                         <strong>{{ embudo.cliente.razon_social }}</strong>
+                                        <br><small class="text-muted">{{ embudo.cliente.cuit }}</small>
+                                    </td>
+                                    <td>
+                                        <div class="text-truncate" style="max-width: 200px;" title="{{ embudo.descripcion_negocio }}">
+                                            {{ embudo.descripcion_negocio|default:"Sin descripción" }}
+                                        </div>
                                     </td>
                                     <td>
                                         <span class="badge" style="background-color: {{ embudo.color }}; color: white;">
@@ -271,11 +185,8 @@
                                         </span>
                                     </td>
                                     <td>
-                                        <span class="badge bg-secondary">{{ embudo.get_origen_display }}</span>
-                                    </td>
-                                    <td>
                                         {% if embudo.valor_estimado %}
-                                            <span class="text-success">${{ embudo.valor_estimado|floatformat:0 }}</span>
+                                            <span class="text-success fw-bold">${{ embudo.valor_estimado|floatformat:0 }}</span>
                                         {% else %}
                                             <span class="text-muted">No especificado</span>
                                         {% endif %}
@@ -288,15 +199,19 @@
                                         {% endif %}
                                     </td>
                                     <td>
+                                        <span class="badge bg-info">{{ embudo.contactos.count }}</span>
+                                        <small class="text-muted">oportunidades</small>
+                                    </td>
+                                    <td>
                                         <small class="text-muted">{{ embudo.fecha_ultima_actividad|date:"d/m/Y H:i" }}</small>
                                     </td>
                                     <td>
                                         <div class="btn-group" role="group">
                                             <a href="{% url 'crm:embudo_ventas_detalle' embudo.id %}" 
-                                               class="btn btn-sm btn-outline-primary">
-                                                <i class="bi bi-eye me-1"></i>Ver
+                                               class="btn btn-sm btn-primary" title="Ver detalle">
+                                                <i class="bi bi-eye"></i>
                                             </a>
-                                            <button type="button" class="btn btn-sm btn-outline-info dropdown-toggle dropdown-toggle-split" 
+                                            <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle dropdown-toggle-split" 
                                                     data-bs-toggle="dropdown" aria-expanded="false">
                                                 <span class="visually-hidden">Toggle Dropdown</span>
                                             </button>
@@ -317,9 +232,9 @@
                                 </tr>
                                 {% empty %}
                                 <tr>
-                                    <td colspan="7" class="text-center py-4">
+                                    <td colspan="9" class="text-center py-5">
                                         <i class="bi bi-inbox display-4 text-muted"></i>
-                                        <p class="text-muted mt-2">No hay embudos recientes</p>
+                                        <p class="text-muted mt-3">No hay embudos disponibles</p>
                                         <a href="{% url 'crm:crear_embudo' %}" class="btn btn-primary">
                                             <i class="bi bi-plus-circle me-2"></i>Crear Primer Embudo
                                         </a>
@@ -334,39 +249,51 @@
         </div>
     </div>
 
-    <!-- Acceso Rápido a Embudos -->
+    <!-- Acceso Rápido por Tipo -->
     <div class="row mt-4">
         <div class="col-12">
             <div class="card shadow-sm">
                 <div class="card-header">
                     <h5 class="mb-0">
-                        <i class="bi bi-lightning me-2"></i>Acceso Rápido
+                        <i class="bi bi-lightning me-2"></i>Acceso Rápido por Tipo
                     </h5>
                 </div>
                 <div class="card-body">
                     <div class="row g-3">
-                        <div class="col-md-3">
-                            <a href="{% url 'crm:embudo_ventas_origen' 'ALERTA_EQUIPO' %}" class="btn btn-outline-primary w-100">
-                                <i class="bi bi-exclamation-triangle me-2"></i>
-                                Alertas de Equipo
-                            </a>
+                        <div class="col-md-2">
+                            <button type="button" class="btn btn-outline-danger w-100" onclick="filtrarPorTipo('POPS')">
+                                <i class="bi bi-graph-up me-2"></i>
+                                POPS
+                            </button>
                         </div>
-                        <div class="col-md-3">
-                            <a href="{% url 'crm:embudo_ventas_origen' 'LEAD_JD' %}" class="btn btn-outline-success w-100">
+                        <div class="col-md-2">
+                            <button type="button" class="btn btn-outline-success w-100" onclick="filtrarPorTipo('LEAD_JD')">
                                 <i class="bi bi-truck me-2"></i>
-                                Leads John Deere
-                            </a>
+                                Leads JD
+                            </button>
                         </div>
-                        <div class="col-md-3">
-                            <a href="{% url 'crm:embudo_ventas_origen' 'SERVICIO_EXISTENTE' %}" class="btn btn-outline-info w-100">
+                        <div class="col-md-2">
+                            <button type="button" class="btn btn-outline-warning w-100" onclick="filtrarPorTipo('ALERTA_EQUIPO')">
+                                <i class="bi bi-exclamation-triangle me-2"></i>
+                                Alertas
+                            </button>
+                        </div>
+                        <div class="col-md-2">
+                            <button type="button" class="btn btn-outline-info w-100" onclick="filtrarPorTipo('CAMPAÑA_MARKETING')">
+                                <i class="bi bi-megaphone me-2"></i>
+                                Campañas
+                            </button>
+                        </div>
+                        <div class="col-md-2">
+                            <button type="button" class="btn btn-outline-secondary w-100" onclick="filtrarPorTipo('SERVICIO_EXISTENTE')">
                                 <i class="bi bi-tools me-2"></i>
-                                Servicios Existentes
-                            </a>
+                                Servicios
+                            </button>
                         </div>
-                        <div class="col-md-3">
-                            <a href="{% url 'crm:embudo_checklist_dashboard' %}" class="btn btn-outline-warning w-100">
+                        <div class="col-md-2">
+                            <a href="{% url 'crm:embudo_checklist_dashboard' %}" class="btn btn-outline-dark w-100">
                                 <i class="bi bi-clipboard-check me-2"></i>
-                                Checklist Adicionales
+                                Checklist
                             </a>
                         </div>
                     </div>
@@ -376,139 +303,106 @@
     </div>
 </div>
 
-<!-- Espacio adicional al final para evitar que se corte el contenido -->
+<!-- Espacio adicional al final -->
 <div style="height: 50px;"></div>
 {% endblock %}
 
 {% block extra_css %}
 <style>
-.embudo-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 20px;
-    padding: 20px 0;
+.card {
+    border: none;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
 }
 
-.embudo-etapa {
-    width: 100%;
-    max-width: 800px;
-    border-radius: 15px;
-    padding: 20px;
-    transition: all 0.3s ease;
-    position: relative;
+.card-header {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
 }
 
-.embudo-etapa:hover {
-    transform: translateY(-2px);
+.table th {
+    border-top: none;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    letter-spacing: 0.5px;
+}
+
+.embudo-row:hover {
+    background-color: #f8f9fa;
+    transform: translateY(-1px);
+    transition: all 0.2s ease;
+}
+
+.badge {
+    font-size: 0.75rem;
+    padding: 0.5em 0.75em;
+}
+
+.btn-group .btn {
+    border-radius: 0.375rem;
+}
+
+.dropdown-menu {
+    border: none;
     box-shadow: 0 4px 15px rgba(0,0,0,0.1);
 }
 
-.embudo-etapa::before {
-    content: '';
-    position: absolute;
-    top: -10px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 0;
-    height: 0;
-    border-left: 10px solid transparent;
-    border-right: 10px solid transparent;
-    border-bottom: 10px solid currentColor;
-    opacity: 0.3;
-}
-
-.embudo-etapa:first-child::before {
-    display: none;
-}
-
-.embudo-etapa-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 15px;
-}
-
-.embudo-etapa-header h6 {
-    margin: 0;
-    font-weight: 600;
-    color: #333;
-}
-
-.embudo-stats {
-    display: flex;
-    gap: 8px;
-}
-
-.embudo-etapa-body {
-    text-align: center;
-}
-
-.progress {
-    background-color: rgba(0,0,0,0.1);
-    border-radius: 10px;
-}
-
-.progress-bar {
-    border-radius: 10px;
-    transition: width 0.6s ease;
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-    .embudo-etapa {
-        padding: 15px;
-    }
-    
-    .embudo-etapa-header {
-        flex-direction: column;
-        gap: 10px;
-        text-align: center;
-    }
-    
-    .embudo-stats {
-        justify-content: center;
-    }
+.text-truncate {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 </style>
 {% endblock %}
 
 {% block extra_js %}
 <script>
+function filtrarEmbudos() {
+    const tipo = document.getElementById('filtroTipo').value.toLowerCase();
+    const etapa = document.getElementById('filtroEtapa').value.toLowerCase();
+    const busqueda = document.getElementById('buscarEmbudo').value.toLowerCase();
+    
+    const filas = document.querySelectorAll('.embudo-row');
+    let contador = 0;
+    
+    filas.forEach(fila => {
+        const tipoFila = fila.dataset.tipo.toLowerCase();
+        const etapaFila = fila.dataset.etapa.toLowerCase();
+        const clienteFila = fila.dataset.cliente;
+        const descripcionFila = fila.dataset.descripcion;
+        
+        const coincideTipo = !tipo || tipoFila.includes(tipo);
+        const coincideEtapa = !etapa || etapaFila.includes(etapa);
+        const coincideBusqueda = !busqueda || 
+            clienteFila.includes(busqueda) || 
+            descripcionFila.includes(busqueda);
+        
+        if (coincideTipo && coincideEtapa && coincideBusqueda) {
+            fila.style.display = '';
+            contador++;
+        } else {
+            fila.style.display = 'none';
+        }
+    });
+    
+    document.getElementById('contadorEmbudos').textContent = contador + ' embudos';
+}
+
+function filtrarPorTipo(tipo) {
+    document.getElementById('filtroTipo').value = tipo;
+    filtrarEmbudos();
+}
+
+function limpiarFiltros() {
+    document.getElementById('filtroTipo').value = '';
+    document.getElementById('filtroEtapa').value = '';
+    document.getElementById('buscarEmbudo').value = '';
+    filtrarEmbudos();
+}
+
+// Inicializar filtros al cargar la página
 document.addEventListener('DOMContentLoaded', function() {
-    // Animación de las barras de progreso
-    const progressBars = document.querySelectorAll('.progress-bar');
-    
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                const progressBar = entry.target;
-                const width = progressBar.style.width;
-                progressBar.style.width = '0%';
-                
-                setTimeout(() => {
-                    progressBar.style.width = width;
-                }, 200);
-            }
-        });
-    });
-    
-    progressBars.forEach(bar => {
-        observer.observe(bar);
-    });
-    
-    // Tooltips para las etapas
-    const embudoEtapas = document.querySelectorAll('.embudo-etapa');
-    embudoEtapas.forEach(etapa => {
-        etapa.addEventListener('click', function() {
-            const etapaName = this.querySelector('h6').textContent;
-            const total = this.querySelector('.badge').textContent;
-            const valor = this.querySelector('.badge.bg-success')?.textContent || 'Sin valor estimado';
-            
-            // Aquí podrías abrir un modal con más detalles de la etapa
-            console.log(`Etapa: ${etapaName}, ${total}, ${valor}`);
-        });
-    });
+    filtrarEmbudos();
 });
 </script>
 {% endblock %} 
