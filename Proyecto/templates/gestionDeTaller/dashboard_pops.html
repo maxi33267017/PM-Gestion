@@ -459,6 +459,19 @@
         }]
     };
     
+    // Debug: mostrar datos crudos del template
+    console.log('=== DATOS CRUDOS DEL TEMPLATE ===');
+    console.log('Labels:', [
+        {% for item in pops_mensual %}
+            '{{ item.mes|escapejs }}'{% if not forloop.last %},{% endif %}
+        {% endfor %}
+    ]);
+    console.log('Data:', [
+        {% for item in pops_mensual %}
+            {{ item.pops|default:0 }}{% if not forloop.last %},{% endif %}
+        {% endfor %}
+    ]);
+    
     // Debug: mostrar datos en consola
     console.log('Datos POPS mensual:', popsData);
     
