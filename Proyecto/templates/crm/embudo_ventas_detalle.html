@@ -289,6 +289,9 @@
                     </h5>
                     <div>
                         <span class="badge bg-primary">{{ contactos.count }} oportunidades</span>
+                        <button class="btn btn-info btn-sm ms-2" onclick="verGraficoEmbudo()" title="Ver gráfico del embudo">
+                            <i class="bi bi-graph-up me-1"></i>Ver Gráfico
+                        </button>
                     </div>
                 </div>
                 <div class="card-body">
@@ -700,6 +703,145 @@
     </div>
 </div>
 
+<!-- Modal para Gráfico del Embudo -->
+<div class="modal fade" id="graficoEmbudoModal" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bi bi-funnel me-2"></i>Gráfico del Embudo de Ventas
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Información del embudo -->
+                <div class="alert alert-info mb-3">
+                    <strong>Embudo:</strong> {% if embudo.cliente %}{{ embudo.cliente.razon_social }}{% else %}Embudo Genérico{% endif %} - 
+                    <strong>Total Oportunidades:</strong> {{ contactos.count }} - 
+                    <strong>Fecha:</strong> {{ embudo.fecha_creacion|date:"d/m/Y" }}
+                </div>
+                
+                <!-- Gráfico del embudo -->
+                <div class="embudo-container mb-4">
+                    <div class="embudo-etapa" id="etapa-contacto-inicial">
+                        <div class="embudo-header">
+                            <h6>Contacto Inicial</h6>
+                            <div class="embudo-stats">
+                                <span class="badge bg-primary" id="count-contacto-inicial">0</span>
+                                <span class="text-muted" id="percent-contacto-inicial">0%</span>
+                            </div>
+                        </div>
+                        <div class="embudo-progress">
+                            <div class="progress">
+                                <div class="progress-bar bg-primary" id="progress-contacto-inicial" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="embudo-etapa" id="etapa-calificacion">
+                        <div class="embudo-header">
+                            <h6>Calificación</h6>
+                            <div class="embudo-stats">
+                                <span class="badge bg-info" id="count-calificacion">0</span>
+                                <span class="text-muted" id="percent-calificacion">0%</span>
+                            </div>
+                        </div>
+                        <div class="embudo-progress">
+                            <div class="progress">
+                                <div class="progress-bar bg-info" id="progress-calificacion" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="embudo-etapa" id="etapa-propuesta">
+                        <div class="embudo-header">
+                            <h6>Propuesta</h6>
+                            <div class="embudo-stats">
+                                <span class="badge bg-warning" id="count-propuesta">0</span>
+                                <span class="text-muted" id="percent-propuesta">0%</span>
+                            </div>
+                        </div>
+                        <div class="embudo-progress">
+                            <div class="progress">
+                                <div class="progress-bar bg-warning" id="progress-propuesta" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="embudo-etapa" id="etapa-negociacion">
+                        <div class="embudo-header">
+                            <h6>Negociación</h6>
+                            <div class="embudo-stats">
+                                <span class="badge bg-orange" id="count-negociacion">0</span>
+                                <span class="text-muted" id="percent-negociacion">0%</span>
+                            </div>
+                        </div>
+                        <div class="embudo-progress">
+                            <div class="progress">
+                                <div class="progress-bar bg-orange" id="progress-negociacion" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="embudo-etapa" id="etapa-cierre">
+                        <div class="embudo-header">
+                            <h6>Cierre</h6>
+                            <div class="embudo-stats">
+                                <span class="badge bg-success" id="count-cierre">0</span>
+                                <span class="text-muted" id="percent-cierre">0%</span>
+                            </div>
+                        </div>
+                        <div class="embudo-progress">
+                            <div class="progress">
+                                <div class="progress-bar bg-success" id="progress-cierre" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Estadísticas del embudo -->
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="card bg-primary text-white">
+                            <div class="card-body text-center">
+                                <h6>Tasa Conversión</h6>
+                                <h4 id="tasa-conversion">0%</h4>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-success text-white">
+                            <div class="card-body text-center">
+                                <h6>Valor Estimado</h6>
+                                <h4 id="valor-estimado">$0</h4>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-info text-white">
+                            <div class="card-body text-center">
+                                <h6>Valor Cierre</h6>
+                                <h4 id="valor-cierre">$0</h4>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-warning text-white">
+                            <div class="card-body text-center">
+                                <h6>Promedio por Oportunidad</h6>
+                                <h4 id="promedio-oportunidad">$0</h4>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Modal para Historial de Oportunidad -->
 <div class="modal fade" id="historialOportunidadModal" tabindex="-1">
     <div class="modal-dialog modal-xl">
@@ -935,6 +1077,130 @@
 
 .btn-group .btn {
     border-radius: 0.375rem;
+}
+
+/* Estilos para el gráfico de embudo */
+.embudo-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    padding: 20px 0;
+}
+
+.embudo-etapa {
+    width: 100%;
+    max-width: 800px;
+    border-radius: 15px;
+    padding: 20px;
+    transition: all 0.3s ease;
+    position: relative;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border: 2px solid #dee2e6;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.embudo-etapa:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+}
+
+.embudo-etapa::before {
+    content: '';
+    position: absolute;
+    top: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 10px solid transparent;
+    border-right: 10px solid transparent;
+    border-bottom: 10px solid #dee2e6;
+    opacity: 0.8;
+}
+
+.embudo-etapa:first-child::before {
+    display: none;
+}
+
+.embudo-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.embudo-header h6 {
+    margin: 0;
+    font-weight: 600;
+    color: #333;
+    font-size: 1.1rem;
+}
+
+.embudo-stats {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.embudo-progress {
+    text-align: center;
+}
+
+.progress {
+    background-color: rgba(0,0,0,0.1);
+    border-radius: 10px;
+    height: 12px;
+}
+
+.progress-bar {
+    border-radius: 10px;
+    transition: width 0.8s ease;
+    font-weight: 600;
+}
+
+/* Colores específicos para cada etapa */
+#etapa-contacto-inicial {
+    border-color: #007bff;
+    background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+}
+
+#etapa-calificacion {
+    border-color: #17a2b8;
+    background: linear-gradient(135deg, #e0f7fa 0%, #b2ebf2 100%);
+}
+
+#etapa-propuesta {
+    border-color: #ffc107;
+    background: linear-gradient(135deg, #fff8e1 0%, #ffecb3 100%);
+}
+
+#etapa-negociacion {
+    border-color: #fd7e14;
+    background: linear-gradient(135deg, #fff3e0 0%, #ffcc80 100%);
+}
+
+#etapa-cierre {
+    border-color: #28a745;
+    background: linear-gradient(135deg, #e8f5e8 0%, #c8e6c9 100%);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .embudo-etapa {
+        padding: 15px;
+        margin: 0 10px;
+    }
+    
+    .embudo-header {
+        flex-direction: column;
+        gap: 10px;
+        text-align: center;
+    }
+    
+    .embudo-stats {
+        justify-content: center;
+    }
 }
 </style>
 {% endblock %}
@@ -1185,5 +1451,64 @@ function getBadgeClass(resultado) {
             return 'bg-light text-dark';
     }
 }
+
+// Función para ver el gráfico del embudo
+function verGraficoEmbudo() {
+    // Abrir modal del gráfico
+    const modal = new bootstrap.Modal(document.getElementById('graficoEmbudoModal'));
+    
+    // Cargar datos del embudo
+    fetch(`/crm/embudo/${embudoId}/datos-grafico/`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                actualizarGraficoEmbudo(data.datos);
+                modal.show();
+            } else {
+                alert('Error al cargar los datos del gráfico');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error al cargar los datos del gráfico');
+        });
+}
+
+// Función para actualizar el gráfico del embudo
+function actualizarGraficoEmbudo(datos) {
+    const totalOportunidades = datos.total_contactos;
+    
+    // Actualizar cada etapa
+    const etapas = [
+        { id: 'contacto-inicial', count: datos.contacto_inicial, percent: (datos.contacto_inicial / totalOportunidades * 100) },
+        { id: 'calificacion', count: datos.calificacion, percent: (datos.calificacion / totalOportunidades * 100) },
+        { id: 'propuesta', count: datos.propuesta, percent: (datos.propuesta / totalOportunidades * 100) },
+        { id: 'negociacion', count: datos.negociacion, percent: (datos.negociacion / totalOportunidades * 100) },
+        { id: 'cierre', count: datos.cierre, percent: (datos.cierre / totalOportunidades * 100) }
+    ];
+    
+    etapas.forEach(etapa => {
+        // Actualizar contador
+        document.getElementById(`count-${etapa.id}`).textContent = etapa.count;
+        
+        // Actualizar porcentaje
+        document.getElementById(`percent-${etapa.id}`).textContent = `${etapa.percent.toFixed(1)}%`;
+        
+        // Actualizar barra de progreso con animación
+        const progressBar = document.getElementById(`progress-${etapa.id}`);
+        setTimeout(() => {
+            progressBar.style.width = `${etapa.percent}%`;
+        }, 100);
+    });
+    
+    // Actualizar estadísticas
+    document.getElementById('tasa-conversion').textContent = `${datos.tasa_conversion.toFixed(1)}%`;
+    document.getElementById('valor-estimado').textContent = `$${datos.valor_estimado.toLocaleString()}`;
+    document.getElementById('valor-cierre').textContent = `$${datos.valor_cierre.toLocaleString()}`;
+    document.getElementById('promedio-oportunidad').textContent = `$${datos.promedio_oportunidad.toLocaleString()}`;
+}
+
+// Variable global para el ID del embudo
+const embudoId = {{ embudo.id }};
 </script>
 {% endblock %} 
