@@ -5509,7 +5509,7 @@ def dashboard_pops(request):
     
     for tipo in tipos_equipo:
         # Equipos vendidos de este tipo
-        equipos_tipo = equipos_vendidos.filter(tipo_equipo=tipo)
+        equipos_tipo = equipos_vendidos.filter(modelo__tipo_equipo=tipo)
         total_tipo = equipos_tipo.count()
         
         if total_tipo > 0:
@@ -5531,7 +5531,7 @@ def dashboard_pops(request):
     pines_sin_servicios = pines_vendidos - pines_con_servicios
     equipos_sin_servicios_list = Equipo.objects.filter(
         numero_serie__in=pines_sin_servicios
-    ).select_related('cliente', 'tipo_equipo', 'modelo_equipo')[:10]
+    ).select_related('cliente', 'modelo__tipo_equipo', 'modelo')[:10]
     
     context = {
         'fecha_analisis': fecha_analisis,
