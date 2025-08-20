@@ -394,6 +394,11 @@
                                                         title="Ver detalle">
                                                     <i class="bi bi-eye"></i>
                                                 </button>
+                                                <button type="button" class="btn btn-sm btn-outline-secondary" 
+                                                        onclick="verHistorialOportunidad({{ contacto.cliente.id }}, '{{ contacto.cliente.razon_social|escapejs }}')" 
+                                                        title="Ver historial completo">
+                                                    <i class="bi bi-clock-history"></i>
+                                                </button>
                                                 <button type="button" class="btn btn-sm btn-outline-success" 
                                                         onclick="editarContacto({{ contacto.id }})" 
                                                         title="Editar">
@@ -698,6 +703,117 @@
     </div>
 </div>
 
+<!-- Modal para Historial de Oportunidad -->
+<div class="modal fade" id="historialOportunidadModal" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bi bi-clock-history me-2"></i>Historial Completo de Oportunidad
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-info mb-3">
+                    <strong>Cliente:</strong> <span id="historialCliente"></span>
+                </div>
+                
+                <!-- Filtros del historial -->
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <select id="filtroHistorialTipo" class="form-select" onchange="filtrarHistorial()">
+                            <option value="">Todos los tipos</option>
+                            <option value="EMAIL">Email</option>
+                            <option value="TELEFONO">Teléfono</option>
+                            <option value="WHATSAPP">WhatsApp</option>
+                            <option value="VISITA">Visita</option>
+                            <option value="VIDEO_LLAMADA">Video Llamada</option>
+                            <option value="REUNION">Reunión</option>
+                            <option value="PRESENTACION">Presentación</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <select id="filtroHistorialResultado" class="form-select" onchange="filtrarHistorial()">
+                            <option value="">Todos los resultados</option>
+                            <option value="PENDIENTE">Pendiente</option>
+                            <option value="EXITOSO">Exitoso</option>
+                            <option value="VENTA">Venta</option>
+                            <option value="OBJECCION">Objeción</option>
+                            <option value="NO_CONTESTA">No Contesta</option>
+                            <option value="REPROGRAMADO">Reprogramado</option>
+                            <option value="CANCELADO">Cancelado</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <button type="button" class="btn btn-outline-secondary w-100" onclick="limpiarFiltrosHistorial()">
+                            <i class="bi bi-arrow-clockwise"></i> Limpiar Filtros
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Tabla del historial -->
+                <div class="table-responsive">
+                    <table class="table table-hover" id="tablaHistorial">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Tipo</th>
+                                <th>Resultado</th>
+                                <th>Responsable</th>
+                                <th>Descripción</th>
+                                <th>Observaciones</th>
+                                <th>Próximo Seguimiento</th>
+                            </tr>
+                        </thead>
+                        <tbody id="historialBody">
+                            <!-- Los datos se cargarán dinámicamente -->
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Estadísticas del historial -->
+                <div class="row mt-3">
+                    <div class="col-md-3">
+                        <div class="card bg-primary text-white">
+                            <div class="card-body text-center">
+                                <h6>Total Contactos</h6>
+                                <h4 id="totalContactos">0</h4>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-success text-white">
+                            <div class="card-body text-center">
+                                <h6>Exitosos</h6>
+                                <h4 id="contactosExitosos">0</h4>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-warning text-white">
+                            <div class="card-body text-center">
+                                <h6>Pendientes</h6>
+                                <h4 id="contactosPendientes">0</h4>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-info text-white">
+                            <div class="card-body text-center">
+                                <h6>Último Contacto</h6>
+                                <h6 id="ultimoContacto">-</h6>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Modal para Nuevo Contacto -->
 <div class="modal fade" id="nuevoContactoModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
@@ -953,6 +1069,124 @@ function nuevoSeguimiento(contactoId) {
             console.error('Error:', error);
             alert('Error al cargar la información del contacto');
         });
+}
+
+// Función para ver historial completo de una oportunidad
+function verHistorialOportunidad(clienteId, clienteNombre) {
+    // Abrir modal del historial
+    const modal = new bootstrap.Modal(document.getElementById('historialOportunidadModal'));
+    
+    // Mostrar nombre del cliente
+    document.getElementById('historialCliente').textContent = clienteNombre;
+    
+    // Cargar historial completo del cliente
+    fetch(`/crm/cliente/${clienteId}/historial/`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                mostrarHistorial(data.contactos);
+                actualizarEstadisticasHistorial(data.contactos);
+                modal.show();
+            } else {
+                alert('Error al cargar el historial');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error al cargar el historial');
+        });
+}
+
+// Función para mostrar el historial en la tabla
+function mostrarHistorial(contactos) {
+    const tbody = document.getElementById('historialBody');
+    tbody.innerHTML = '';
+    
+    contactos.forEach(contacto => {
+        const row = document.createElement('tr');
+        row.className = 'historial-row';
+        row.dataset.tipo = contacto.tipo_contacto;
+        row.dataset.resultado = contacto.resultado;
+        
+        row.innerHTML = `
+            <td><small>${contacto.fecha_contacto}</small></td>
+            <td><span class="badge bg-info">${contacto.tipo_contacto_display}</span></td>
+            <td><span class="badge ${getBadgeClass(contacto.resultado)}">${contacto.resultado_display}</span></td>
+            <td><small>${contacto.responsable}</small></td>
+            <td><small>${contacto.descripcion}</small></td>
+            <td><small>${contacto.observaciones || '-'}</small></td>
+            <td><small>${contacto.proximo_seguimiento || 'No programado'}</small></td>
+        `;
+        
+        tbody.appendChild(row);
+    });
+}
+
+// Función para actualizar estadísticas del historial
+function actualizarEstadisticasHistorial(contactos) {
+    document.getElementById('totalContactos').textContent = contactos.length;
+    
+    const exitosos = contactos.filter(c => c.resultado === 'EXITOSO' || c.resultado === 'VENTA').length;
+    document.getElementById('contactosExitosos').textContent = exitosos;
+    
+    const pendientes = contactos.filter(c => c.resultado === 'PENDIENTE').length;
+    document.getElementById('contactosPendientes').textContent = pendientes;
+    
+    if (contactos.length > 0) {
+        const ultimo = contactos[0]; // Ya están ordenados por fecha descendente
+        document.getElementById('ultimoContacto').textContent = ultimo.fecha_contacto;
+    } else {
+        document.getElementById('ultimoContacto').textContent = '-';
+    }
+}
+
+// Función para filtrar el historial
+function filtrarHistorial() {
+    const tipo = document.getElementById('filtroHistorialTipo').value;
+    const resultado = document.getElementById('filtroHistorialResultado').value;
+    
+    const filas = document.querySelectorAll('.historial-row');
+    
+    filas.forEach(fila => {
+        const tipoFila = fila.dataset.tipo;
+        const resultadoFila = fila.dataset.resultado;
+        
+        const coincideTipo = !tipo || tipoFila === tipo;
+        const coincideResultado = !resultado || resultadoFila === resultado;
+        
+        if (coincideTipo && coincideResultado) {
+            fila.style.display = '';
+        } else {
+            fila.style.display = 'none';
+        }
+    });
+}
+
+// Función para limpiar filtros del historial
+function limpiarFiltrosHistorial() {
+    document.getElementById('filtroHistorialTipo').value = '';
+    document.getElementById('filtroHistorialResultado').value = '';
+    filtrarHistorial();
+}
+
+// Función para obtener la clase CSS del badge según el resultado
+function getBadgeClass(resultado) {
+    switch (resultado) {
+        case 'EXITOSO':
+        case 'VENTA':
+            return 'bg-success';
+        case 'OBJECCION':
+            return 'bg-warning';
+        case 'PENDIENTE':
+            return 'bg-secondary';
+        case 'NO_CONTESTA':
+        case 'CANCELADO':
+            return 'bg-danger';
+        case 'REPROGRAMADO':
+            return 'bg-info';
+        default:
+            return 'bg-light text-dark';
+    }
 }
 </script>
 {% endblock %} 

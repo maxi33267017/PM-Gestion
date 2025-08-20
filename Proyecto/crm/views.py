@@ -2377,3 +2377,47 @@ def editar_contacto(request):
         return redirect('crm:embudo_ventas_detalle', embudo_id=embudo_id)
     else:
         return redirect('crm:embudo_ventas_dashboard')
+
+@login_required
+def cliente_historial_ajax(request, cliente_id):
+    """Vista AJAX para obtener el historial completo de contactos de un cliente"""
+    try:
+        from clientes.models import Cliente
+        cliente = get_object_or_404(Cliente, id=cliente_id)
+        
+        # Obtener todos los contactos del cliente ordenados por fecha descendente
+        contactos = ContactoCliente.objects.filter(
+            cliente=cliente
+        ).select_related('responsable').order_by('-fecha_contacto')
+        
+        # Preparar datos para JSON
+        contactos_data = []
+        for contacto in contactos:
+            contactos_data.append({
+                'id': contacto.id,
+                'fecha_contacto': contacto.fecha_contacto.strftime('%d/%m/%Y %H:%M'),
+                'tipo_contacto': contacto.tipo_contacto,
+                'tipo_contacto_display': contacto.get_tipo_contacto_display(),
+                'resultado': contacto.resultado,
+                'resultado_display': contacto.get_resultado_display(),
+                'responsable': contacto.responsable.get_nombre_completo(),
+                'descripcion': contacto.descripcion,
+                'observaciones': contacto.observaciones,
+                'proximo_seguimiento': contacto.proximo_seguimiento.strftime('%d/%m/%Y %H:%M') if contacto.proximo_seguimiento else None,
+            })
+        
+        data = {
+            'success': True,
+            'cliente': {
+                'id': cliente.id,
+                'razon_social': cliente.razon_social,
+                'cuit': cliente.cuit,
+            },
+            'contactos': contactos_data,
+            'total_contactos': len(contactos_data)
+        }
+        
+        return JsonResponse(data)
+        
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)})
