@@ -517,6 +517,12 @@
         console.log('Labels:', popsData.labels);
         console.log('Data:', popsData.datasets[0].data);
         
+        // Debug: verificar que los datos son números
+        console.log('=== VERIFICACIÓN DE TIPOS DE DATOS ===');
+        popsData.datasets[0].data.forEach((val, idx) => {
+            console.log(`${popsData.labels[idx]}: ${val} (tipo: ${typeof val})`);
+        });
+        
         // Debug detallado de cada punto
         console.log('=== PUNTOS DEL GRÁFICO ===');
         for (let i = 0; i < popsData.labels.length; i++) {
@@ -603,8 +609,8 @@
             const tablaRows = tablaPOPS.querySelectorAll('tr');
             tablaRows.forEach((row, index) => {
                 if (row.cells.length < 5) return;
-                const mesTabla = row.cells[0].textContent.trim();
-                const popsTabla = parseFloat(row.cells[4].textContent.replace('%', ''));
+                const mesTabla = row.cells[1].textContent.trim();
+                const popsTabla = parseFloat(row.cells[2].textContent.replace('%', ''));
                 const popsGrafico = popsChartData.data[index];
                 
                 console.log(`${mesTabla}: Tabla=${popsTabla}%, Gráfico=${popsGrafico}%`);
