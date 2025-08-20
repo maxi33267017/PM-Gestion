@@ -339,61 +339,60 @@
             const chartCtx = ctx.getContext('2d');
             try {
                 new Chart(chartCtx, {
-        type: 'line',
-        data: popsData,
-        options: {
-            responsive: true,
-            maintainAspectRatio: true,
-            aspectRatio: 2,
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    max: 100,
-                    ticks: {
-                        callback: function(value) {
-                            return value + '%';
+                    type: 'line',
+                    data: popsData,
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        aspectRatio: 2,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                max: 100,
+                                ticks: {
+                                    callback: function(value) {
+                                        return value + '%';
+                                    }
+                                }
+                            },
+                            x: {
+                                ticks: {
+                                    maxRotation: 45,
+                                    minRotation: 45
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return 'POPS: ' + context.parsed.y + '%';
+                                    }
+                                }
+                            }
+                        },
+                        interaction: {
+                            intersect: false,
+                            mode: 'index'
+                        },
+                        elements: {
+                            point: {
+                                radius: 4,
+                                hoverRadius: 6
+                            }
                         }
                     }
-                },
-                x: {
-                    ticks: {
-                        maxRotation: 45,
-                        minRotation: 45
-                    }
-                }
-            },
-            plugins: {
-                legend: {
-                    display: false
-                },
-                tooltip: {
-                    callbacks: {
-                        label: function(context) {
-                            return 'POPS: ' + context.parsed.y + '%';
-                        }
-                    }
-                }
-            },
-            interaction: {
-                intersect: false,
-                mode: 'index'
-            },
-            elements: {
-                point: {
-                    radius: 4,
-                    hoverRadius: 6
-                }
-            }
-        });
-                } catch (error) {
-                    console.error('Error al crear el gráfico:', error);
-                }
-            } else {
-                console.error('No se pudo encontrar el elemento canvas para el gráfico');
+                });
+            } catch (error) {
+                console.error('Error al crear el gráfico:', error);
             }
         } else {
-            console.error('Chart.js no está disponible');
+            console.error('No se pudo encontrar el elemento canvas para el gráfico');
         }
+    }
 
     // Función para aplicar filtros
     function aplicarFiltros() {
@@ -412,5 +411,201 @@
         
         window.location.href = url;
     }
+    
+    // Funciones para filtros de oportunidades
+    function filtrarOportunidades() {
+        const filtroTipo = document.getElementById('filtroTipoOportunidad').value.toLowerCase();
+        const busqueda = document.getElementById('buscarOportunidad').value.toLowerCase();
+        const items = document.querySelectorAll('.oportunidad-item');
+        
+        items.forEach(item => {
+            const tipo = item.dataset.tipo.toLowerCase();
+            const pin = item.dataset.pin.toLowerCase();
+            const cliente = item.dataset.cliente.toLowerCase();
+            
+            const coincideTipo = !filtroTipo || tipo.includes(filtroTipo);
+            const coincideBusqueda = !busqueda || pin.includes(busqueda) || cliente.includes(busqueda);
+            
+            if (coincideTipo && coincideBusqueda) {
+                item.style.display = 'block';
+            } else {
+                item.style.display = 'none';
+            }
+        });
+    }
+    
+    function seleccionarTodosOportunidades() {
+        const seleccionarTodos = document.getElementById('seleccionarTodos');
+        const checkboxes = document.querySelectorAll('.oportunidad-checkbox:not([style*="display: none"])');
+        
+        checkboxes.forEach(checkbox => {
+            checkbox.checked = seleccionarTodos.checked;
+        });
+        
+        actualizarContadorSeleccionados();
+    }
+    
+    function actualizarContadorSeleccionados() {
+        const checkboxes = document.querySelectorAll('.oportunidad-checkbox:checked');
+        const contador = document.getElementById('contadorSeleccionados');
+        const btnCrear = document.getElementById('btnCrearEmbudoSeleccionados');
+        
+        contador.textContent = checkboxes.length;
+        btnCrear.disabled = checkboxes.length === 0;
+    }
+    
+    // Event listeners para checkboxes
+    document.addEventListener('DOMContentLoaded', function() {
+        const checkboxes = document.querySelectorAll('.oportunidad-checkbox');
+        checkboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', actualizarContadorSeleccionados);
+        });
+    });
+    
+    // Funciones para crear embudos
+    function crearEmbudo(tipo) {
+        let equiposIds = [];
+        
+        if (tipo === 'todos') {
+            const checkboxes = document.querySelectorAll('.oportunidad-checkbox');
+            checkboxes.forEach(checkbox => {
+                equiposIds.push(checkbox.value);
+            });
+        } else if (tipo === 'seleccionados') {
+            const checkboxes = document.querySelectorAll('.oportunidad-checkbox:checked');
+            checkboxes.forEach(checkbox => {
+                equiposIds.push(checkbox.value);
+            });
+        }
+        
+        if (equiposIds.length === 0) {
+            alert('No hay equipos seleccionados para crear el embudo.');
+            return;
+        }
+        
+        // Crear el embudo via AJAX
+        fetch('{% url "crm:crear_embudo_pops" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: JSON.stringify({
+                equipos_ids: equiposIds,
+                nombre: 'Embudo POPS - ' + new Date().toLocaleDateString(),
+                descripcion: 'Embudo creado desde dashboard POPS con equipos sin servicios'
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Embudo creado exitosamente con ' + equiposIds.length + ' equipos.');
+                window.location.href = data.redirect_url;
+            } else {
+                alert('Error al crear el embudo: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error al crear el embudo.');
+        });
+    }
+    
+    function crearEmbudoSeleccionados() {
+        crearEmbudo('seleccionados');
+    }
+    
+    function crearEmbudoPorTipo() {
+        const tipo = document.getElementById('tipoEmbudo').value;
+        const nombre = document.getElementById('nombreEmbudo').value;
+        const descripcion = document.getElementById('descripcionEmbudo').value;
+        
+        if (!nombre.trim()) {
+            alert('Por favor ingrese un nombre para el embudo.');
+            return;
+        }
+        
+        // Filtrar equipos del tipo seleccionado
+        const equiposIds = [];
+        const items = document.querySelectorAll('.oportunidad-item');
+        items.forEach(item => {
+            if (item.dataset.tipo === tipo) {
+                const checkbox = item.querySelector('.oportunidad-checkbox');
+                if (checkbox) {
+                    equiposIds.push(checkbox.value);
+                }
+            }
+        });
+        
+        if (equiposIds.length === 0) {
+            alert('No hay equipos del tipo seleccionado sin servicios.');
+            return;
+        }
+        
+        // Crear el embudo
+        fetch('{% url "crm:crear_embudo_pops" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: JSON.stringify({
+                equipos_ids: equiposIds,
+                nombre: nombre,
+                descripcion: descripcion
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Embudo creado exitosamente con ' + equiposIds.length + ' equipos.');
+                window.location.href = data.redirect_url;
+            } else {
+                alert('Error al crear el embudo: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error al crear el embudo.');
+        });
+        
+        // Cerrar modal
+        const modal = bootstrap.Modal.getInstance(document.getElementById('modalEmbudoTipo'));
+        modal.hide();
+    }
 </script>
+
+<!-- Modal para crear embudo por tipo -->
+<div class="modal fade" id="modalEmbudoTipo" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Crear Embudo por Tipo de Equipo</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label for="tipoEmbudo" class="form-label">Tipo de Equipo:</label>
+                    <select id="tipoEmbudo" class="form-select">
+                        {% for tipo in pops_por_tipo %}
+                            <option value="{{ tipo.tipo }}">{{ tipo.tipo }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="nombreEmbudo" class="form-label">Nombre del Embudo:</label>
+                    <input type="text" id="nombreEmbudo" class="form-control" placeholder="Ej: Embudo POPS - Retroexcavadoras">
+                </div>
+                <div class="mb-3">
+                    <label for="descripcionEmbudo" class="form-label">Descripción:</label>
+                    <textarea id="descripcionEmbudo" class="form-control" rows="3" placeholder="Descripción del embudo..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" onclick="crearEmbudoPorTipo()">Crear Embudo</button>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
