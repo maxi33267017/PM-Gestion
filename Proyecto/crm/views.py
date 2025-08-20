@@ -2201,7 +2201,7 @@ def checklist_por_prioridad(request, prioridad):
 @user_passes_test(es_gerente, login_url='/login/')
 def crear_embudo_pops(request):
     """
-    Crear campaña POPS con equipos sin servicios
+    Crear UN SOLO embudo de ventas POPS con todas las oportunidades
     """
     if request.method == 'POST':
         try:
@@ -2210,7 +2210,7 @@ def crear_embudo_pops(request):
             
             tipo_creacion = data.get('tipo', 'seleccionados')  # 'todos', 'seleccionados', 'por_tipo'
             equipos_ids = data.get('equipos_ids', [])
-            nombre = data.get('nombre', 'Campaña POPS')
+            nombre = data.get('nombre', 'POPS')
             descripcion = data.get('descripcion', '')
             tipo_equipo = data.get('tipo_equipo', None)
             
@@ -2274,55 +2274,42 @@ def crear_embudo_pops(request):
             if not equipos.exists():
                 return JsonResponse({'success': False, 'error': 'No se encontraron equipos para crear el embudo'})
             
-            # Determinar el tipo de equipo más común
-            tipos_equipo = equipos.values_list('modelo__tipo_equipo__nombre', flat=True).distinct()
-            tipo_principal = tipos_equipo.first() if tipos_equipo else None
+            # Crear UN SOLO embudo de ventas con todas las oportunidades
+            fecha_actual = timezone.now().date()
+            nombre_embudo = f"POPS {fecha_actual.strftime('%d/%m/%Y')}"
             
-            # Obtener la sucursal principal (usar la primera disponible)
-            from recursosHumanos.models import Sucursal
-            sucursal = Sucursal.objects.first()
+            # Obtener un cliente representativo (usar el primero o crear uno genérico)
+            cliente_representativo = equipos.first().cliente if equipos.exists() else Cliente.objects.first()
             
-            # Crear la campaña
-            campana = Campana.objects.create(
-                nombre=nombre,
-                descripcion=descripcion,
-                fecha_inicio=timezone.now().date(),
-                activa=True,
-                sucursal=sucursal,
-                tipo_equipo_id=equipos.first().modelo.tipo_equipo.id if equipos.exists() else None,
+            # Crear el embudo principal
+            embudo_principal = EmbudoVentas.objects.create(
+                campana=None,  # Sin campaña específica
+                cliente=cliente_representativo,
+                etapa='CONTACTO_INICIAL',
+                origen='POPS',
+                descripcion_negocio=f"Embudo POPS con {equipos.count()} equipos sin servicios",
+                observaciones=f"Embudo creado el {fecha_actual.strftime('%d/%m/%Y')} con {equipos.count()} oportunidades",
                 creado_por=request.user
             )
             
-            # Crear embudos de ventas para cada cliente único
-            clientes_unicos = equipos.values_list('cliente', flat=True).distinct()
-            embudos_creados = 0
-            
-            for cliente_id in clientes_unicos:
-                cliente = Cliente.objects.get(id=cliente_id)
-                
-                # Obtener equipos de este cliente que están en la lista
-                equipos_cliente = equipos.filter(cliente=cliente)
-                equipos_info = []
-                for equipo in equipos_cliente:
-                    equipos_info.append(f"{equipo.numero_serie} - {equipo.modelo.nombre}")
-                
-                # Crear embudo de ventas para este cliente
-                embudo = EmbudoVentas.objects.create(
-                    campana=campana,
-                    cliente=cliente,
-                    etapa='CONTACTO_INICIAL',
-                    origen='POPS',
-                    descripcion_negocio=f"Equipos sin servicios: {', '.join(equipos_info)}",
-                    observaciones=f"Campaña POPS - {len(equipos_cliente)} equipos sin servicios",
-                    creado_por=request.user
+            # Crear oportunidades individuales para cada equipo
+            oportunidades_creadas = 0
+            for equipo in equipos:
+                # Crear una oportunidad por cada equipo
+                oportunidad = ContactoCliente.objects.create(
+                    embudo_ventas=embudo_principal,
+                    cliente=equipo.cliente,
+                    estado='NUEVO',
+                    notas=f"Equipo sin servicios: {equipo.numero_serie} - {equipo.modelo.nombre} - Vendido: {equipo.fecha_venta.strftime('%d/%m/%Y') if equipo.fecha_venta else 'N/A'}",
+                    fecha_creacion=timezone.now()
                 )
-                embudos_creados += 1
+                oportunidades_creadas += 1
             
             return JsonResponse({
                 'success': True,
-                'campana_id': campana.id,
-                'embudos_creados': embudos_creados,
-                'redirect_url': reverse('crm:dashboard_campania', kwargs={'campana_id': campana.id})
+                'embudo_id': embudo_principal.id,
+                'oportunidades_creadas': oportunidades_creadas,
+                'redirect_url': reverse('crm:embudo_ventas_detalle', kwargs={'embudo_id': embudo_principal.id})
             })
             
         except Exception as e:

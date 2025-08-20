@@ -375,6 +375,65 @@
             </div>
         </div>
     </div>
+
+    <!-- Embudos POPS Existentes -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="chart-container">
+                <h5 class="mb-3">
+                    <i class="bi bi-funnel me-2"></i>Embudos POPS Existentes
+                </h5>
+                {% if embudos_pops %}
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Embudo</th>
+                                <th>Cliente</th>
+                                <th>Etapa</th>
+                                <th>Oportunidades</th>
+                                <th>Fecha Creación</th>
+                                <th>Creado por</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for embudo in embudos_pops %}
+                            <tr>
+                                <td>
+                                    <strong>{{ embudo.descripcion_negocio|truncatechars:50 }}</strong>
+                                </td>
+                                <td>{{ embudo.cliente.razon_social|truncatechars:30 }}</td>
+                                <td>
+                                    <span class="badge {% if embudo.etapa == 'CONTACTO_INICIAL' %}bg-primary{% elif embudo.etapa == 'CALIFICACION' %}bg-info{% elif embudo.etapa == 'PROPUESTA' %}bg-warning{% elif embudo.etapa == 'NEGOCIACION' %}bg-secondary{% elif embudo.etapa == 'CIERRE' %}bg-success{% else %}bg-danger{% endif %}">
+                                        {{ embudo.get_etapa_display }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="badge bg-info">{{ embudo.contactos.count }}</span>
+                                </td>
+                                <td>{{ embudo.fecha_creacion|date:"d/m/Y H:i" }}</td>
+                                <td>{{ embudo.creado_por.get_full_name|default:embudo.creado_por.username }}</td>
+                                <td>
+                                    <a href="{% url 'crm:embudo_ventas_detalle' embudo.id %}" class="btn btn-sm btn-primary">
+                                        <i class="bi bi-eye me-1"></i>Ver
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center text-muted py-4">
+                    <i class="bi bi-funnel fs-1"></i>
+                    <p class="mt-2">No hay embudos POPS creados aún.</p>
+                    <p class="small">Crea tu primer embudo usando los botones de arriba.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
@@ -610,15 +669,15 @@
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                alert('Campaña creada exitosamente con ' + data.embudos_creados + ' embudos de clientes.');
+                alert('Embudo POPS creado exitosamente con ' + data.oportunidades_creadas + ' oportunidades.');
                 window.location.href = data.redirect_url;
             } else {
-                alert('Error al crear la campaña: ' + data.error);
+                alert('Error al crear el embudo: ' + data.error);
             }
         })
         .catch(error => {
             console.error('Error:', error);
-            alert('Error al crear la campaña.');
+            alert('Error al crear el embudo.');
         });
     }
     
@@ -653,15 +712,15 @@
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                alert('Campaña creada exitosamente con ' + data.embudos_creados + ' embudos de clientes.');
+                alert('Embudo POPS creado exitosamente con ' + data.oportunidades_creadas + ' oportunidades.');
                 window.location.href = data.redirect_url;
             } else {
-                alert('Error al crear la campaña: ' + data.error);
+                alert('Error al crear el embudo: ' + data.error);
             }
         })
         .catch(error => {
             console.error('Error:', error);
-            alert('Error al crear la campaña.');
+            alert('Error al crear el embudo.');
         });
         
         // Cerrar modal

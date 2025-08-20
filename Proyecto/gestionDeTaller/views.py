@@ -5542,6 +5542,12 @@ def dashboard_pops(request):
         numero_serie__in=pines_sin_servicios
     ).select_related('cliente', 'modelo__tipo_equipo', 'modelo').order_by('fecha_venta')
     
+    # Obtener embudos POPS existentes
+    from crm.models import EmbudoVentas
+    embudos_pops = EmbudoVentas.objects.filter(
+        origen='POPS'
+    ).select_related('cliente', 'creado_por').order_by('-fecha_creacion')[:10]
+    
     context = {
         'fecha_analisis': fecha_analisis,
         'mes_analisis': fecha_analisis.strftime('%B %Y'),
@@ -5560,6 +5566,9 @@ def dashboard_pops(request):
         
         # Oportunidades
         'equipos_sin_servicios_list': equipos_sin_servicios_list,
+        
+        # Embudos POPS existentes
+        'embudos_pops': embudos_pops,
         
         # Filtros
         'mes_filtro': mes_filtro,
