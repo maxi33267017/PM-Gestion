@@ -43,6 +43,8 @@ urlpatterns = [
     path('embudo-ventas-origen/<str:origen>/', views.embudo_ventas_origen, name='embudo_ventas_origen'),
     path('embudo-ventas-detalle/<int:embudo_id>/', views.embudo_ventas_detalle, name='embudo_ventas_detalle'),
     path('crear-contacto/', views.crear_contacto, name='crear_contacto'),
+    path('contacto/<int:contacto_id>/detalle/', views.contacto_detalle_ajax, name='contacto_detalle_ajax'),
+    path('editar-contacto/', views.editar_contacto, name='editar_contacto'),
     # URLs para Embudo de Checklist Adicionales
     path('embudo-checklist/', views.embudo_checklist_dashboard, name='embudo_checklist_dashboard'),
     path('embudo-checklist/crear/', views.crear_checklist_adicional, name='crear_checklist_adicional'),

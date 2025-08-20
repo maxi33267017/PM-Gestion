@@ -2315,3 +2315,65 @@ def crear_embudo_pops(request):
             return JsonResponse({'success': False, 'error': str(e)})
     
     return JsonResponse({'success': False, 'error': 'Método no permitido'})
+
+@login_required
+def contacto_detalle_ajax(request, contacto_id):
+    """Vista AJAX para obtener detalles de un contacto"""
+    try:
+        contacto = get_object_or_404(ContactoCliente, id=contacto_id)
+        
+        data = {
+            'success': True,
+            'contacto': {
+                'cliente': contacto.cliente.razon_social,
+                'fecha': contacto.fecha_contacto.strftime('%d/%m/%Y %H:%M'),
+                'tipo': contacto.get_tipo_contacto_display(),
+                'tipo_codigo': contacto.tipo_contacto,
+                'resultado': contacto.get_resultado_display(),
+                'resultado_codigo': contacto.resultado,
+                'responsable': contacto.responsable.get_nombre_completo(),
+                'descripcion': contacto.descripcion,
+                'observaciones': contacto.observaciones,
+                'proximo_seguimiento': contacto.proximo_seguimiento.strftime('%d/%m/%Y %H:%M') if contacto.proximo_seguimiento else None,
+            }
+        }
+        
+        return JsonResponse(data)
+        
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)})
+
+@login_required
+def editar_contacto(request):
+    """Vista para editar un contacto existente"""
+    if request.method == 'POST':
+        try:
+            contacto_id = request.POST.get('contacto_id')
+            contacto = get_object_or_404(ContactoCliente, id=contacto_id)
+            
+            # Actualizar campos del contacto
+            contacto.tipo_contacto = request.POST.get('tipo_contacto')
+            contacto.resultado = request.POST.get('resultado')
+            contacto.descripcion = request.POST.get('descripcion')
+            contacto.observaciones = request.POST.get('observaciones')
+            
+            # Manejar próximo seguimiento
+            proximo_seguimiento = request.POST.get('proximo_seguimiento')
+            if proximo_seguimiento:
+                contacto.proximo_seguimiento = timezone.datetime.fromisoformat(proximo_seguimiento.replace('Z', '+00:00'))
+            else:
+                contacto.proximo_seguimiento = None
+            
+            contacto.save()
+            
+            messages.success(request, 'Contacto actualizado correctamente')
+            
+        except Exception as e:
+            messages.error(request, f'Error al actualizar el contacto: {str(e)}')
+    
+    # Redirigir de vuelta al embudo
+    embudo_id = request.POST.get('embudo_id') or request.GET.get('embudo_id')
+    if embudo_id:
+        return redirect('crm:embudo_ventas_detalle', embudo_id=embudo_id)
+    else:
+        return redirect('crm:embudo_ventas_dashboard')

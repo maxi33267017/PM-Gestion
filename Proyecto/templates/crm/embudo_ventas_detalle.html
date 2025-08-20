@@ -508,6 +508,196 @@
 <!-- Espacio adicional al final -->
 <div style="height: 50px;"></div>
 
+<!-- Modal para Detalle de Contacto -->
+<div class="modal fade" id="detalleContactoModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bi bi-eye me-2"></i>Detalle del Contacto
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Cliente</h6>
+                        <p id="detalleCliente" class="text-muted"></p>
+                        
+                        <h6>Fecha de Contacto</h6>
+                        <p id="detalleFecha" class="text-muted"></p>
+                        
+                        <h6>Tipo de Contacto</h6>
+                        <p id="detalleTipo" class="text-muted"></p>
+                        
+                        <h6>Resultado</h6>
+                        <p id="detalleResultado" class="text-muted"></p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Responsable</h6>
+                        <p id="detalleResponsable" class="text-muted"></p>
+                        
+                        <h6>Próximo Seguimiento</h6>
+                        <p id="detalleProximoSeguimiento" class="text-muted"></p>
+                        
+                        <h6>Descripción</h6>
+                        <p id="detalleDescripcion" class="text-muted"></p>
+                        
+                        <h6>Observaciones</h6>
+                        <p id="detalleObservaciones" class="text-muted"></p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para Editar Contacto -->
+<div class="modal fade" id="editarContactoModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bi bi-pencil me-2"></i>Editar Contacto
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" action="{% url 'crm:editar_contacto' %}">
+                {% csrf_token %}
+                <input type="hidden" id="editContactoId" name="contacto_id">
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Tipo de Contacto</label>
+                                <select id="editTipoContacto" name="tipo_contacto" class="form-select" required>
+                                    <option value="TELEFONO">Teléfono</option>
+                                    <option value="EMAIL">Email</option>
+                                    <option value="WHATSAPP">WhatsApp</option>
+                                    <option value="VISITA">Visita</option>
+                                    <option value="VIDEO_LLAMADA">Video Llamada</option>
+                                    <option value="REUNION">Reunión</option>
+                                    <option value="PRESENTACION">Presentación</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Resultado</label>
+                                <select id="editResultado" name="resultado" class="form-select" required>
+                                    <option value="PENDIENTE">Pendiente</option>
+                                    <option value="EXITOSO">Exitoso</option>
+                                    <option value="NO_CONTESTA">No Contesta</option>
+                                    <option value="REPROGRAMADO">Reprogramado</option>
+                                    <option value="CANCELADO">Cancelado</option>
+                                    <option value="VENTA">Venta Realizada</option>
+                                    <option value="OBJECCION">Objeción</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Descripción</label>
+                        <textarea id="editDescripcion" name="descripcion" class="form-control" rows="3" required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Observaciones</label>
+                        <textarea id="editObservaciones" name="observaciones" class="form-control" rows="2"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Próximo Seguimiento</label>
+                        <input type="datetime-local" id="editProximoSeguimiento" name="proximo_seguimiento" class="form-control">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-save me-2"></i>Guardar Cambios
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para Nuevo Seguimiento -->
+<div class="modal fade" id="nuevoSeguimientoModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bi bi-plus-circle me-2"></i>Nuevo Seguimiento
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" action="{% url 'crm:crear_contacto' %}">
+                {% csrf_token %}
+                <input type="hidden" id="seguimientoContactoId" name="contacto_base_id">
+                <input type="hidden" name="embudo_id" value="{{ embudo.id }}">
+                <div class="modal-body">
+                    <div class="alert alert-info">
+                        <strong>Cliente:</strong> <span id="seguimientoCliente"></span><br>
+                        <strong>Equipo:</strong> <span id="seguimientoEquipo"></span>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Tipo de Contacto</label>
+                                <select name="tipo_contacto" class="form-select" required>
+                                    <option value="TELEFONO">Teléfono</option>
+                                    <option value="EMAIL">Email</option>
+                                    <option value="WHATSAPP">WhatsApp</option>
+                                    <option value="VISITA">Visita</option>
+                                    <option value="VIDEO_LLAMADA">Video Llamada</option>
+                                    <option value="REUNION">Reunión</option>
+                                    <option value="PRESENTACION">Presentación</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Resultado</label>
+                                <select name="resultado" class="form-select" required>
+                                    <option value="PENDIENTE">Pendiente</option>
+                                    <option value="EXITOSO">Exitoso</option>
+                                    <option value="NO_CONTESTA">No Contesta</option>
+                                    <option value="REPROGRAMADO">Reprogramado</option>
+                                    <option value="CANCELADO">Cancelado</option>
+                                    <option value="VENTA">Venta Realizada</option>
+                                    <option value="OBJECCION">Objeción</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Descripción del Seguimiento</label>
+                        <textarea name="descripcion" class="form-control" rows="3" required 
+                                  placeholder="Describa el seguimiento realizado..."></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Observaciones</label>
+                        <textarea name="observaciones" class="form-control" rows="2" 
+                                  placeholder="Observaciones adicionales..."></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Próximo Seguimiento</label>
+                        <input type="datetime-local" name="proximo_seguimiento" class="form-control">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-success">
+                        <i class="bi bi-plus-circle me-2"></i>Crear Seguimiento
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <!-- Modal para Nuevo Contacto -->
 <div class="modal fade" id="nuevoContactoModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
@@ -679,18 +869,90 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Funciones para gestionar contactos
 function verDetalleContacto(contactoId) {
-    // Implementar vista de detalle del contacto
-    console.log('Ver detalle del contacto:', contactoId);
+    // Abrir modal con detalles del contacto
+    const modal = new bootstrap.Modal(document.getElementById('detalleContactoModal'));
+    
+    // Cargar datos del contacto via AJAX
+    fetch(`/crm/contacto/${contactoId}/detalle/`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                document.getElementById('detalleCliente').textContent = data.contacto.cliente;
+                document.getElementById('detalleFecha').textContent = data.contacto.fecha;
+                document.getElementById('detalleTipo').textContent = data.contacto.tipo;
+                document.getElementById('detalleResultado').textContent = data.contacto.resultado;
+                document.getElementById('detalleResponsable').textContent = data.contacto.responsable;
+                document.getElementById('detalleDescripcion').textContent = data.contacto.descripcion;
+                document.getElementById('detalleObservaciones').textContent = data.contacto.observaciones || 'Sin observaciones';
+                document.getElementById('detalleProximoSeguimiento').textContent = data.contacto.proximo_seguimiento || 'No programado';
+                
+                modal.show();
+            } else {
+                alert('Error al cargar los detalles del contacto');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error al cargar los detalles del contacto');
+        });
 }
 
 function editarContacto(contactoId) {
-    // Implementar edición del contacto
-    console.log('Editar contacto:', contactoId);
+    // Abrir modal de edición
+    const modal = new bootstrap.Modal(document.getElementById('editarContactoModal'));
+    
+    // Cargar datos del contacto para edición
+    fetch(`/crm/contacto/${contactoId}/detalle/`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                document.getElementById('editContactoId').value = contactoId;
+                document.getElementById('editTipoContacto').value = data.contacto.tipo_codigo;
+                document.getElementById('editResultado').value = data.contacto.resultado_codigo;
+                document.getElementById('editDescripcion').value = data.contacto.descripcion;
+                document.getElementById('editObservaciones').value = data.contacto.observaciones || '';
+                
+                if (data.contacto.proximo_seguimiento) {
+                    const fecha = new Date(data.contacto.proximo_seguimiento);
+                    const fechaLocal = fecha.toISOString().slice(0, 16);
+                    document.getElementById('editProximoSeguimiento').value = fechaLocal;
+                } else {
+                    document.getElementById('editProximoSeguimiento').value = '';
+                }
+                
+                modal.show();
+            } else {
+                alert('Error al cargar los datos del contacto');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error al cargar los datos del contacto');
+        });
 }
 
 function nuevoSeguimiento(contactoId) {
-    // Implementar nuevo seguimiento
-    console.log('Nuevo seguimiento para contacto:', contactoId);
+    // Abrir modal para nuevo seguimiento
+    const modal = new bootstrap.Modal(document.getElementById('nuevoSeguimientoModal'));
+    
+    // Cargar información del contacto para el seguimiento
+    fetch(`/crm/contacto/${contactoId}/detalle/`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                document.getElementById('seguimientoContactoId').value = contactoId;
+                document.getElementById('seguimientoCliente').textContent = data.contacto.cliente;
+                document.getElementById('seguimientoEquipo').textContent = data.contacto.descripcion;
+                
+                modal.show();
+            } else {
+                alert('Error al cargar la información del contacto');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error al cargar la información del contacto');
+        });
 }
 </script>
 {% endblock %} 
