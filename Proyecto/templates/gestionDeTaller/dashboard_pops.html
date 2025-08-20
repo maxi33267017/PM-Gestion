@@ -467,10 +467,8 @@
         let equiposIds = [];
         
         if (tipo === 'todos') {
-            const checkboxes = document.querySelectorAll('.oportunidad-checkbox');
-            checkboxes.forEach(checkbox => {
-                equiposIds.push(checkbox.value);
-            });
+            // Para "todos" no necesitamos enviar IDs, la vista los obtendrá de la BD
+            equiposIds = [];
         } else if (tipo === 'seleccionados') {
             const checkboxes = document.querySelectorAll('.oportunidad-checkbox:checked');
             checkboxes.forEach(checkbox => {
@@ -478,7 +476,7 @@
             });
         }
         
-        if (equiposIds.length === 0) {
+        if (tipo === 'seleccionados' && equiposIds.length === 0) {
             alert('No hay equipos seleccionados para crear el embudo.');
             return;
         }
@@ -491,23 +489,24 @@
                 'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
             },
             body: JSON.stringify({
+                tipo: tipo,
                 equipos_ids: equiposIds,
-                nombre: 'Embudo POPS - ' + new Date().toLocaleDateString(),
-                descripcion: 'Embudo creado desde dashboard POPS con equipos sin servicios'
+                nombre: 'Campaña POPS - ' + new Date().toLocaleDateString(),
+                descripcion: 'Campaña creada desde dashboard POPS con equipos sin servicios'
             })
         })
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                alert('Embudo creado exitosamente con ' + equiposIds.length + ' equipos.');
+                alert('Campaña creada exitosamente con ' + data.embudos_creados + ' embudos de clientes.');
                 window.location.href = data.redirect_url;
             } else {
-                alert('Error al crear el embudo: ' + data.error);
+                alert('Error al crear la campaña: ' + data.error);
             }
         })
         .catch(error => {
             console.error('Error:', error);
-            alert('Error al crear el embudo.');
+            alert('Error al crear la campaña.');
         });
     }
     
@@ -521,28 +520,11 @@
         const descripcion = document.getElementById('descripcionEmbudo').value;
         
         if (!nombre.trim()) {
-            alert('Por favor ingrese un nombre para el embudo.');
+            alert('Por favor ingrese un nombre para la campaña.');
             return;
         }
         
-        // Filtrar equipos del tipo seleccionado
-        const equiposIds = [];
-        const items = document.querySelectorAll('.oportunidad-item');
-        items.forEach(item => {
-            if (item.dataset.tipo === tipo) {
-                const checkbox = item.querySelector('.oportunidad-checkbox');
-                if (checkbox) {
-                    equiposIds.push(checkbox.value);
-                }
-            }
-        });
-        
-        if (equiposIds.length === 0) {
-            alert('No hay equipos del tipo seleccionado sin servicios.');
-            return;
-        }
-        
-        // Crear el embudo
+        // Crear la campaña por tipo
         fetch('{% url "crm:crear_embudo_pops" %}', {
             method: 'POST',
             headers: {
@@ -550,7 +532,8 @@
                 'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
             },
             body: JSON.stringify({
-                equipos_ids: equiposIds,
+                tipo: 'por_tipo',
+                tipo_equipo: tipo,
                 nombre: nombre,
                 descripcion: descripcion
             })
@@ -558,15 +541,15 @@
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                alert('Embudo creado exitosamente con ' + equiposIds.length + ' equipos.');
+                alert('Campaña creada exitosamente con ' + data.embudos_creados + ' embudos de clientes.');
                 window.location.href = data.redirect_url;
             } else {
-                alert('Error al crear el embudo: ' + data.error);
+                alert('Error al crear la campaña: ' + data.error);
             }
         })
         .catch(error => {
             console.error('Error:', error);
-            alert('Error al crear el embudo.');
+            alert('Error al crear la campaña.');
         });
         
         // Cerrar modal

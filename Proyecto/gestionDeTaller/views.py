@@ -5531,7 +5531,7 @@ def dashboard_pops(request):
     pines_sin_servicios = pines_vendidos - pines_con_servicios
     equipos_sin_servicios_list = Equipo.objects.filter(
         numero_serie__in=pines_sin_servicios
-    ).select_related('cliente', 'modelo__tipo_equipo', 'modelo')[:10]
+    ).select_related('cliente', 'modelo__tipo_equipo', 'modelo').order_by('fecha_venta')
     
     context = {
         'fecha_analisis': fecha_analisis,

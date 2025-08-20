@@ -2208,16 +2208,71 @@ def crear_embudo_pops(request):
             import json
             data = json.loads(request.body)
             
+            tipo_creacion = data.get('tipo', 'seleccionados')  # 'todos', 'seleccionados', 'por_tipo'
             equipos_ids = data.get('equipos_ids', [])
             nombre = data.get('nombre', 'Campaña POPS')
             descripcion = data.get('descripcion', '')
+            tipo_equipo = data.get('tipo_equipo', None)
             
-            if not equipos_ids:
-                return JsonResponse({'success': False, 'error': 'No se proporcionaron equipos'})
-            
-            # Obtener los equipos para determinar el tipo más común
             from clientes.models import Equipo
-            equipos = Equipo.objects.filter(id__in=equipos_ids)
+            from datetime import date, timedelta
+            
+            # Determinar equipos según el tipo de creación
+            if tipo_creacion == 'todos':
+                # Obtener TODOS los equipos sin servicios del período POPS
+                fecha_analisis = date.today()
+                inicio_ventas = fecha_analisis - timedelta(days=365*10)  # 10 años atrás
+                inicio_servicios = fecha_analisis - timedelta(days=365)   # 1 año atrás
+                fecha_limite_historico = date(2025, 6, 30)  # 30 de junio 2025
+                
+                # Equipos vendidos en los últimos 10 años
+                equipos_vendidos = Equipo.objects.filter(
+                    fecha_venta__range=[inicio_ventas, fecha_analisis],
+                    fecha_venta__isnull=False
+                )
+                
+                pines_vendidos = set(equipos_vendidos.values_list('numero_serie', flat=True))
+                
+                # Equipos con servicios en el último año
+                pines_con_servicios = set()
+                
+                # Servicios históricos (Abril 2024 - Junio 2025)
+                if inicio_servicios <= fecha_limite_historico:
+                    from crm.models import HistorialFacturacion
+                    servicios_historicos = HistorialFacturacion.objects.filter(
+                        fecha_servicio__range=[inicio_servicios, min(fecha_analisis, fecha_limite_historico)]
+                    )
+                    pines_historicos = set(servicios_historicos.values_list('pin_equipo', flat=True))
+                    pines_con_servicios.update(pines_historicos)
+                
+                # Servicios actuales (Julio 2025 en adelante)
+                if fecha_analisis > fecha_limite_historico:
+                    from gestionDeTaller.models import Servicio
+                    servicios_actuales = Servicio.objects.filter(
+                        fecha_servicio__range=[max(inicio_servicios, fecha_limite_historico + timedelta(days=1)), fecha_analisis]
+                    )
+                    
+                    for servicio in servicios_actuales:
+                        if servicio.preorden and servicio.preorden.equipo:
+                            pines_con_servicios.add(servicio.preorden.equipo.numero_serie)
+                
+                # Equipos sin servicios
+                pines_sin_servicios = pines_vendidos - pines_con_servicios
+                equipos = Equipo.objects.filter(numero_serie__in=pines_sin_servicios)
+                
+            elif tipo_creacion == 'por_tipo' and tipo_equipo:
+                # Filtrar por tipo de equipo específico
+                equipos = Equipo.objects.filter(
+                    modelo__tipo_equipo__nombre=tipo_equipo,
+                    fecha_venta__isnull=False
+                )
+                
+            else:
+                # Equipos seleccionados manualmente
+                equipos = Equipo.objects.filter(id__in=equipos_ids)
+            
+            if not equipos.exists():
+                return JsonResponse({'success': False, 'error': 'No se encontraron equipos para crear el embudo'})
             
             # Determinar el tipo de equipo más común
             tipos_equipo = equipos.values_list('modelo__tipo_equipo__nombre', flat=True).distinct()
