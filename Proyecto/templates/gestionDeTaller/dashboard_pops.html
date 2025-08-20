@@ -169,6 +169,11 @@
                 </h5>
                 <div style="height: 300px; position: relative;">
                     <canvas id="popsChart"></canvas>
+                    <div id="chartFallback" style="display: none; text-align: center; padding: 50px;">
+                        <i class="bi bi-exclamation-triangle fs-1 text-warning"></i>
+                        <p class="mt-2">No se pudo cargar el gráfico. Verificando datos...</p>
+                        <div id="dataDebug"></div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -243,27 +248,42 @@
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
 <script>
-    // Debug: mostrar datos en consola
-    console.log('Datos POPS mensual:', {{ pops_mensual|safe }});
-    
-    // Datos para el gráfico
+    // Datos para el gráfico - usando JSON seguro
     const popsData = {
-        labels: [{% for item in pops_mensual %}'{{ item.mes }}'{% if not forloop.last %}, {% endif %}{% endfor %}],
+        labels: [
+            {% for item in pops_mensual %}
+                '{{ item.mes|escapejs }}'{% if not forloop.last %},{% endif %}
+            {% endfor %}
+        ],
         datasets: [{
             label: 'POPS (%)',
-            data: [{% for item in pops_mensual %}{{ item.pops|default:0 }}{% if not forloop.last %}, {% endif %}{% endfor %}],
+            data: [
+                {% for item in pops_mensual %}
+                    {{ item.pops|default:0 }}{% if not forloop.last %},{% endif %}
+                {% endfor %}
+            ],
             backgroundColor: 'rgba(40, 167, 69, 0.2)',
             borderColor: 'rgba(40, 167, 69, 1)',
             borderWidth: 2,
             tension: 0.4
         }]
     };
+    
+    // Debug: mostrar datos en consola
+    console.log('Datos POPS mensual:', popsData);
 
-    // Configuración del gráfico
-    const ctx = document.getElementById('popsChart');
-    if (ctx) {
-        const chartCtx = ctx.getContext('2d');
-        new Chart(chartCtx, {
+    // Verificar que Chart.js se cargó correctamente
+    if (typeof Chart === 'undefined') {
+        console.error('Chart.js no se cargó correctamente');
+    } else {
+        console.log('Chart.js cargado correctamente');
+        
+        // Configuración del gráfico
+        const ctx = document.getElementById('popsChart');
+        if (ctx) {
+            const chartCtx = ctx.getContext('2d');
+            try {
+                new Chart(chartCtx, {
         type: 'line',
         data: popsData,
         options: {
@@ -309,11 +329,16 @@
                     hoverRadius: 6
                 }
             }
-        }
         });
-    } else {
-        console.error('No se pudo encontrar el elemento canvas para el gráfico');
-    }
+                } catch (error) {
+                    console.error('Error al crear el gráfico:', error);
+                }
+            } else {
+                console.error('No se pudo encontrar el elemento canvas para el gráfico');
+            }
+        } else {
+            console.error('Chart.js no está disponible');
+        }
 
     // Función para aplicar filtros
     function aplicarFiltros() {
