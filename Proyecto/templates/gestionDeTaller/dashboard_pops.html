@@ -241,7 +241,7 @@
     </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
 <script>
     // Debug: mostrar datos en consola
     console.log('Datos POPS mensual:', {{ pops_mensual|safe }});
@@ -251,7 +251,7 @@
         labels: [{% for item in pops_mensual %}'{{ item.mes }}'{% if not forloop.last %}, {% endif %}{% endfor %}],
         datasets: [{
             label: 'POPS (%)',
-            data: [{% for item in pops_mensual %}{{ item.pops }}{% if not forloop.last %}, {% endif %}{% endfor %}],
+            data: [{% for item in pops_mensual %}{{ item.pops|default:0 }}{% if not forloop.last %}, {% endif %}{% endfor %}],
             backgroundColor: 'rgba(40, 167, 69, 0.2)',
             borderColor: 'rgba(40, 167, 69, 1)',
             borderWidth: 2,
@@ -260,8 +260,10 @@
     };
 
     // Configuración del gráfico
-    const ctx = document.getElementById('popsChart').getContext('2d');
-    new Chart(ctx, {
+    const ctx = document.getElementById('popsChart');
+    if (ctx) {
+        const chartCtx = ctx.getContext('2d');
+        new Chart(chartCtx, {
         type: 'line',
         data: popsData,
         options: {
@@ -308,7 +310,10 @@
                 }
             }
         }
-    });
+        });
+    } else {
+        console.error('No se pudo encontrar el elemento canvas para el gráfico');
+    }
 
     // Función para aplicar filtros
     function aplicarFiltros() {
