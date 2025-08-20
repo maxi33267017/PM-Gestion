@@ -9,53 +9,9 @@ from django.core.exceptions import ValidationError
 
 
 # Create your models here.
-class Campania(models.Model):
-    ESTADO_CHOICES = [
-        ('PLANIFICADA', 'Planificada'),
-        ('EN_CURSO', 'En Curso'),
-        ('FINALIZADA', 'Finalizada'),
-    ]
-
-    nombre = models.CharField(max_length=200)
-    descripcion = models.TextField()
-    fecha_inicio = models.DateField()
-    fecha_fin = models.DateField()
-    valor_paquete = models.DecimalField(max_digits=10, decimal_places=2)
-    objetivo_paquetes = models.IntegerField()
-    estado = models.CharField(max_length=20, choices=ESTADO_CHOICES)
-
-    def clean(self):
-        if self.fecha_fin < self.fecha_inicio:
-            raise ValidationError('La fecha de fin no puede ser anterior a la fecha de inicio')
-        
-    def save(self, *args, **kwargs):
-        self.full_clean()
-        super().save(*args, **kwargs)
-
-    def get_objetivo_usd(self):
-        return self.valor_paquete * self.objetivo_paquetes
-    
-    def get_cumplimiento(self):
-        ventas = self.contactos.filter(resultado='VENTA_EXITOSA').count()
-        return (ventas / self.objetivo_paquetes) * 100 if self.objetivo_paquetes else 0
     
 
-class Contacto(models.Model):
-    RESULTADO_CHOICES = [
-        ('PENDIENTE', 'Pendiente'),
-        ('VENTA_EXITOSA', 'Venta Exitosa'),
-        ('VENTA_PERDIDA', 'Venta Perdida'),
-        ('REPROGRAMADO', 'Reprogramado'),
-    ]
 
-    campania = models.ForeignKey(Campania, on_delete=models.PROTECT, null=True, blank=True, related_name='contactos')
-    cliente = models.ForeignKey(Cliente, on_delete=models.PROTECT)
-    fecha_contacto = models.DateTimeField()
-    responsable = models.ForeignKey(Usuario, on_delete=models.PROTECT)
-    resultado = models.CharField(max_length=20, choices=RESULTADO_CHOICES)
-    observaciones = models.TextField(blank=True)
-    fecha_seguimiento = models.DateField(null=True, blank=True)
-    valor_venta = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
 
 class PotencialCompraModelo(models.Model):
     modelo = models.OneToOneField(ModeloEquipo, on_delete=models.PROTECT)
@@ -211,6 +167,11 @@ class Campana(models.Model):
     objetivo_contactos = models.IntegerField(null=True, blank=True, verbose_name="Objetivo de Contactos")
     objetivo_ventas = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True, verbose_name="Objetivo de Ventas")
     
+    # Campos adicionales del modelo antiguo
+    valor_paquete = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, verbose_name="Valor del Paquete")
+    objetivo_paquetes = models.IntegerField(null=True, blank=True, verbose_name="Objetivo de Paquetes")
+    estado = models.CharField(max_length=20, choices=ESTADO_CHOICES, default='PLANIFICADA', verbose_name="Estado")
+    
     # Campos de auditoría
     fecha_creacion = models.DateTimeField(auto_now_add=True, verbose_name="Fecha de Creación")
     fecha_modificacion = models.DateTimeField(auto_now=True, verbose_name="Última Modificación")
@@ -287,6 +248,24 @@ class Campana(models.Model):
                 embudos_creados += 1
         
         return embudos_creados
+
+
+class Contacto(models.Model):
+    RESULTADO_CHOICES = [
+        ('PENDIENTE', 'Pendiente'),
+        ('VENTA_EXITOSA', 'Venta Exitosa'),
+        ('VENTA_PERDIDA', 'Venta Perdida'),
+        ('REPROGRAMADO', 'Reprogramado'),
+    ]
+
+    campania = models.ForeignKey(Campana, on_delete=models.PROTECT, null=True, blank=True, related_name='contactos')
+    cliente = models.ForeignKey(Cliente, on_delete=models.PROTECT)
+    fecha_contacto = models.DateTimeField()
+    responsable = models.ForeignKey(Usuario, on_delete=models.PROTECT)
+    resultado = models.CharField(max_length=20, choices=RESULTADO_CHOICES)
+    observaciones = models.TextField(blank=True)
+    fecha_seguimiento = models.DateField(null=True, blank=True)
+    valor_venta = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
 
 
 class EmbudoVentas(models.Model):

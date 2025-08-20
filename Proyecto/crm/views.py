@@ -7,7 +7,7 @@ from datetime import timedelta, datetime
 from decimal import Decimal
 from clientes.models import Cliente
 from gestionDeTaller.models import Servicio
-from .models import AnalisisCliente, Campania, PaqueteServicio, ClientePaquete, Contacto, SugerenciaMejora, EmbudoVentas, Campana, ContactoCliente
+from .models import AnalisisCliente, PaqueteServicio, ClientePaquete, Contacto, SugerenciaMejora, EmbudoVentas, Campana, ContactoCliente
 from django.contrib import messages
 from django.http import JsonResponse, HttpResponse
 from recursosHumanos.models import Sucursal
@@ -260,7 +260,7 @@ def identificar_oportunidades_venta(clientes_analizados):
 @login_required
 def crm(request):
     # Obtener campañas activas
-    campanias = Campania.objects.filter(estado='EN_CURSO')
+    campanias = Campana.objects.filter(activa=True)
     
     context = {
         'campanias': campanias,
@@ -535,7 +535,7 @@ def campanias_marketing(request):
     """Vista para listar todas las campañas de marketing"""
     estado = request.GET.get('estado', '')
     
-    campanias = Campania.objects.all()
+    campanias = Campana.objects.all()
     if estado:
         campanias = campanias.filter(estado=estado)
     
@@ -590,7 +590,7 @@ def crear_campania(request):
                 sucursal = request.user.sucursal if hasattr(request.user, 'sucursal') and request.user.sucursal else Sucursal.objects.first()
                 
                 # Crear la campaña
-                campania = Campania.objects.create(
+                campania = Campana.objects.create(
                     nombre=nombre,
                     descripcion=descripcion,
                     fecha_inicio=fecha_inicio,
@@ -599,6 +599,9 @@ def crear_campania(request):
                     sucursal=sucursal,
                     tipo_equipo=tipo_equipo,
                     modelo_equipo=modelo_equipo,
+                    valor_paquete=float(valor_paquete) if valor_paquete else None,
+                    objetivo_paquetes=int(objetivo_paquetes) if objetivo_paquetes else None,
+                    estado=estado,
                     presupuesto=float(valor_paquete) * int(objetivo_paquetes) if valor_paquete and objetivo_paquetes else None,
                     objetivo_contactos=int(objetivo_paquetes) if objetivo_paquetes else None,
                     creado_por=request.user

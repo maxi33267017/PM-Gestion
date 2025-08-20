@@ -3,21 +3,12 @@ from django.utils.html import format_html
 from django.urls import reverse
 from django.utils import timezone
 from .models import (
-    Campania, Contacto, AnalisisCliente, PaqueteServicio, ClientePaquete,
+    Contacto, AnalisisCliente, PaqueteServicio, ClientePaquete,
     Campana, EmbudoVentas, ContactoCliente, SugerenciaMejora, PotencialCompraModelo,
     HistorialFacturacion
 )
 
-# ============================================================================
-# ADMIN PARA CAMPAÑAS LEGACY
-# ============================================================================
 
-@admin.register(Campania)
-class CampaniaAdmin(admin.ModelAdmin):
-    list_display = ['nombre', 'fecha_inicio', 'fecha_fin', 'estado', 'valor_paquete', 'objetivo_paquetes']
-    list_filter = ['estado', 'fecha_inicio', 'fecha_fin']
-    search_fields = ['nombre', 'descripcion']
-    date_hierarchy = 'fecha_inicio'
 
 @admin.register(Contacto)
 class ContactoAdmin(admin.ModelAdmin):
@@ -47,7 +38,7 @@ class CampanaAdmin(admin.ModelAdmin):
     
     fieldsets = (
         ('Información Básica', {
-            'fields': ('nombre', 'descripcion', 'sucursal', 'activa')
+            'fields': ('nombre', 'descripcion', 'sucursal', 'activa', 'estado')
         }),
         ('Segmentación por Equipos', {
             'fields': ('tipo_equipo', 'modelo_equipo'),
@@ -57,7 +48,7 @@ class CampanaAdmin(admin.ModelAdmin):
             'fields': ('fecha_inicio', 'fecha_fin')
         }),
         ('Objetivos', {
-            'fields': ('presupuesto', 'objetivo_contactos', 'objetivo_ventas')
+            'fields': ('valor_paquete', 'objetivo_paquetes', 'presupuesto', 'objetivo_contactos', 'objetivo_ventas')
         }),
         ('Auditoría', {
             'fields': ('creado_por', 'fecha_creacion', 'fecha_modificacion'),
