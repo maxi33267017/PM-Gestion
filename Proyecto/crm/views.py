@@ -560,7 +560,14 @@ def campanias_marketing(request):
 @login_required
 def crear_campania(request):
     """Vista para crear una nueva campaña de marketing"""
+    print("=== DEBUG CREAR CAMPAÑA ===")
+    print(f"Method: {request.method}")
+    
     if request.method == 'POST':
+        print("POST data recibida:")
+        for key, value in request.POST.items():
+            print(f"  {key}: {value}")
+        
         nombre = request.POST.get('nombre')
         descripcion = request.POST.get('descripcion')
         fecha_inicio = request.POST.get('fecha_inicio')
@@ -572,7 +579,23 @@ def crear_campania(request):
         modelo_equipo_id = request.POST.get('modelo_equipo')
         crear_embudos = request.POST.get('crear_embudos') == 'on'
         
+        print(f"Campos procesados:")
+        print(f"  nombre: {nombre}")
+        print(f"  fecha_inicio: {fecha_inicio}")
+        print(f"  fecha_fin: {fecha_fin}")
+        print(f"  valor_paquete: {valor_paquete}")
+        print(f"  objetivo_paquetes: {objetivo_paquetes}")
+        print(f"  estado: {estado}")
+        
+        print(f"Validación de campos:")
+        print(f"  nombre: {bool(nombre)}")
+        print(f"  fecha_inicio: {bool(fecha_inicio)}")
+        print(f"  fecha_fin: {bool(fecha_fin)}")
+        print(f"  valor_paquete: {bool(valor_paquete)}")
+        print(f"  objetivo_paquetes: {bool(objetivo_paquetes)}")
+        
         if nombre and fecha_inicio and fecha_fin and valor_paquete and objetivo_paquetes:
+            print("✅ Todos los campos requeridos están presentes")
             try:
                 # Obtener las instancias de tipo y modelo de equipo
                 tipo_equipo = None
@@ -581,14 +604,18 @@ def crear_campania(request):
                 if tipo_equipo_id and tipo_equipo_id != '':
                     from clientes.models import TipoEquipo
                     tipo_equipo = TipoEquipo.objects.get(id=tipo_equipo_id)
+                    print(f"✅ Tipo equipo encontrado: {tipo_equipo}")
                 
                 if modelo_equipo_id and modelo_equipo_id != '':
                     from clientes.models import ModeloEquipo
                     modelo_equipo = ModeloEquipo.objects.get(id=modelo_equipo_id)
+                    print(f"✅ Modelo equipo encontrado: {modelo_equipo}")
                 
                 # Obtener la sucursal del usuario (o una por defecto)
                 sucursal = request.user.sucursal if hasattr(request.user, 'sucursal') and request.user.sucursal else Sucursal.objects.first()
+                print(f"✅ Sucursal asignada: {sucursal}")
                 
+                print("Intentando crear la campaña...")
                 # Crear la campaña
                 campania = Campana.objects.create(
                     nombre=nombre,
@@ -606,6 +633,7 @@ def crear_campania(request):
                     objetivo_contactos=int(objetivo_paquetes) if objetivo_paquetes else None,
                     creado_por=request.user
                 )
+                print(f"✅ Campaña creada exitosamente: {campania.id}")
                 
                 # Crear embudos de ventas automáticamente si se solicita
                 embudos_creados = 0
@@ -615,10 +643,15 @@ def crear_campania(request):
                 else:
                     messages.success(request, f'Campaña "{nombre}" creada exitosamente.')
                 
+                print("✅ Redirigiendo a campanias_marketing")
                 return redirect('crm:campanias_marketing')
             except Exception as e:
+                print(f"❌ Error al crear la campaña: {str(e)}")
+                import traceback
+                traceback.print_exc()
                 messages.error(request, f'Error al crear la campaña: {str(e)}')
         else:
+            print("❌ Faltan campos requeridos")
             messages.error(request, 'Por favor complete todos los campos requeridos.')
     
     # Obtener tipos de equipos y modelos para el formulario
