@@ -213,30 +213,52 @@ class Campana(models.Model):
     
     def get_clientes_objetivo(self):
         """Obtiene los clientes objetivo basados en el tipo y modelo de equipo"""
-        from clientes.models import Cliente
+        from clientes.models import Cliente, Equipo
+        
+        print(f"=== DEBUG GET_CLIENTES_OBJETIVO ===")
+        print(f"Tipo de equipo: {self.tipo_equipo}")
+        print(f"Modelo de equipo: {self.modelo_equipo}")
         
         # Filtrar equipos según la segmentación de la campaña
         equipos_query = {'activo': True}
         
         if self.tipo_equipo:
             equipos_query['modelo__tipo_equipo'] = self.tipo_equipo
+            print(f"Filtrando por tipo: {self.tipo_equipo.nombre}")
             
         if self.modelo_equipo:
             equipos_query['modelo'] = self.modelo_equipo
+            print(f"Filtrando por modelo: {self.modelo_equipo.nombre}")
         
-        # Obtener clientes únicos que tienen equipos que cumplen los criterios
-        clientes_ids = Cliente.objects.filter(
-            equipos__in=Cliente.objects.filter(**equipos_query).values('equipos')
-        ).distinct().values_list('id', flat=True)
+        print(f"Query de equipos: {equipos_query}")
         
-        return Cliente.objects.filter(id__in=clientes_ids, activo=True)
+        # Obtener equipos que cumplen los criterios
+        equipos_objetivo = Equipo.objects.filter(**equipos_query)
+        print(f"Equipos encontrados: {equipos_objetivo.count()}")
+        
+        # Obtener clientes únicos que tienen estos equipos
+        clientes_ids = equipos_objetivo.values_list('cliente_id', flat=True).distinct()
+        print(f"IDs de clientes únicos: {list(clientes_ids)}")
+        
+        clientes = Cliente.objects.filter(id__in=clientes_ids, activo=True)
+        print(f"Clientes activos encontrados: {clientes.count()}")
+        
+        return clientes
     
     def crear_embudos_ventas_automaticos(self):
         """Crea automáticamente embudos de ventas para todos los clientes objetivo"""
+        print(f"=== DEBUG CREAR EMBUDOS AUTOMÁTICOS ===")
+        print(f"Campaña: {self.nombre}")
+        print(f"Tipo de equipo: {self.tipo_equipo}")
+        print(f"Modelo de equipo: {self.modelo_equipo}")
+        
         clientes_objetivo = self.get_clientes_objetivo()
+        print(f"Clientes objetivo encontrados: {clientes_objetivo.count()}")
+        
         embudos_creados = 0
         
         for cliente in clientes_objetivo:
+            print(f"Procesando cliente: {cliente.razon_social}")
             # Verificar si ya existe un embudo para este cliente en esta campaña
             if not self.embudos_ventas.filter(cliente=cliente).exists():
                 EmbudoVentas.objects.create(
@@ -246,7 +268,11 @@ class Campana(models.Model):
                     origen='CAMPAÑA_MARKETING'
                 )
                 embudos_creados += 1
+                print(f"✅ Embudo creado para {cliente.razon_social}")
+            else:
+                print(f"⚠️ Embudo ya existe para {cliente.razon_social}")
         
+        print(f"Total embudos creados: {embudos_creados}")
         return embudos_creados
 
 
