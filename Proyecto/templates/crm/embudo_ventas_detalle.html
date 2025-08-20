@@ -358,7 +358,11 @@
                                             <br><small class="text-muted">{{ contacto.cliente.cuit }}</small>
                                         </td>
                                         <td>
-                                            {% if "Equipo sin servicios:" in contacto.descripcion %}
+                                            {% if "Equipo:" in contacto.observaciones %}
+                                                {% with equipo_pin=contacto.observaciones|slice:"Equipo:"|slice:" -" %}
+                                                    <small class="text-muted">{{ equipo_pin|truncatechars:20 }}</small>
+                                                {% endwith %}
+                                            {% elif "Equipo sin servicios:" in contacto.descripcion %}
                                                 {% with equipo_info=contacto.descripcion|slice:"25:"|slice:":-1" %}
                                                     <small class="text-muted">{{ equipo_info|truncatechars:30 }}</small>
                                                 {% endwith %}
