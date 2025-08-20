@@ -184,59 +184,9 @@
                     </div>
                 </div>
                 
-                <!-- Debug Visual de Datos -->
-                <div class="alert alert-info mt-3">
-                    <h6><i class="bi bi-bug me-2"></i>Debug: Datos que se envían al gráfico</h6>
-                    <div class="row">
-                        <div class="col-md-6">
-                            <strong>Labels:</strong>
-                            <div class="small text-muted">
-                                [{% for item in pops_mensual %}'{{ item.mes }}'{% if not forloop.last %}, {% endif %}{% endfor %}]
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <strong>Data:</strong>
-                            <div class="small text-muted">
-                                [{% for item in pops_mensual %}{{ item.pops }}{% if not forloop.last %}, {% endif %}{% endfor %}]
-                            </div>
-                        </div>
-                    </div>
-                </div>
+
                 
-                <!-- Tabla de Datos del Gráfico -->
-                <div class="mt-4">
-                    <h6 class="mb-3">
-                        <i class="bi bi-table me-2"></i>Datos del Gráfico POPS Mensual
-                    </h6>
-                    <div class="table-responsive">
-                        <table class="table table-sm table-striped table-bordered">
-                            <thead class="table-dark">
-                                <tr>
-                                    <th>#</th>
-                                    <th>Mes</th>
-                                    <th>POPS (%)</th>
-                                    <th>Equipos Vendidos</th>
-                                    <th>Equipos con Servicios</th>
-                                    <th>Equipos sin Servicios</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for item in pops_mensual %}
-                                <tr>
-                                    <td>{{ forloop.counter }}</td>
-                                    <td><strong>{{ item.mes }}</strong></td>
-                                    <td>
-                                        <span class="badge bg-primary fs-6">{{ item.pops }}%</span>
-                                    </td>
-                                    <td>{{ item.equipos_vendidos }}</td>
-                                    <td>{{ item.equipos_con_servicios }}</td>
-                                    <td>{{ item.equipos_sin_servicios }}</td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+
             </div>
         </div>
 
@@ -476,31 +426,7 @@
         data: [12.8, 13.2, 14.8, 15.6, 20.3, 20.3, 21.4, 21.6, 21.4, 21.8, 22.8, 24.0]
     };
     
-    // Debug inmediato de los datos del gráfico
-    console.log('=== DATOS INMEDIATOS DEL GRÁFICO ===');
-    console.log('popsChartData.labels:', popsChartData.labels);
-    console.log('popsChartData.data:', popsChartData.data);
-    console.log('Datos del template Django:');
-    {% for item in pops_mensual %}
-    console.log('{{ item.mes }}: {{ item.pops }}%');
-    {% endfor %}
-    
-    // Verificar que los datos son números
-    console.log('=== VERIFICACIÓN DE DATOS ===');
-    popsChartData.data.forEach((val, idx) => {
-        console.log(`${popsChartData.labels[idx]}: ${val} (tipo: ${typeof val}, es número: ${!isNaN(val)})`);
-    });
-    
-    // Debug específico para Junio 2025
-    console.log('=== DEBUG JUNIO 2025 ===');
-    const junioIndex = popsChartData.labels.findIndex(label => label.includes('Junio 2025'));
-    if (junioIndex !== -1) {
-        console.log(`Junio 2025 encontrado en índice ${junioIndex}`);
-        console.log(`Valor en el gráfico: ${popsChartData.data[junioIndex]}%`);
-        console.log(`Label: ${popsChartData.labels[junioIndex]}`);
-    } else {
-        console.log('Junio 2025 NO encontrado en los labels');
-    }
+
     
     // Función para inicializar el gráfico
     function inicializarGrafico() {
@@ -518,22 +444,7 @@
             }]
         };
         
-        // Debug: mostrar datos
-        console.log('=== DATOS POPS DEL GRÁFICO ===');
-        console.log('Labels:', popsData.labels);
-        console.log('Data:', popsData.datasets[0].data);
-        
-        // Debug: verificar que los datos son números
-        console.log('=== VERIFICACIÓN DE TIPOS DE DATOS ===');
-        popsData.datasets[0].data.forEach((val, idx) => {
-            console.log(`${popsData.labels[idx]}: ${val} (tipo: ${typeof val})`);
-        });
-        
-        // Debug detallado de cada punto
-        console.log('=== PUNTOS DEL GRÁFICO ===');
-        for (let i = 0; i < popsData.labels.length; i++) {
-            console.log(`${i}: ${popsData.labels[i]} = ${popsData.datasets[0].data[i]}%`);
-        }
+
         
 
         
@@ -606,28 +517,7 @@
         // Inicializar el gráfico
         inicializarGrafico();
         
-        // Comparar datos de la tabla con el gráfico
-        console.log('=== COMPARACIÓN DATOS TABLA vs GRÁFICO ===');
-        
-        // Obtener datos de la tabla
-        const tablaPOPS = document.querySelector('.chart-container table tbody');
-        if (tablaPOPS) {
-            const tablaRows = tablaPOPS.querySelectorAll('tr');
-            tablaRows.forEach((row, index) => {
-                if (row.cells.length < 5) return;
-                const mesTabla = row.cells[1].textContent.trim();
-                const popsTabla = parseFloat(row.cells[2].textContent.replace('%', ''));
-                const popsGrafico = popsChartData.data[index];
-                
-                console.log(`${mesTabla}: Tabla=${popsTabla}%, Gráfico=${popsGrafico}%`);
-                
-                if (popsTabla !== popsGrafico) {
-                    console.warn(`⚠️ DISCREPANCIA en ${mesTabla}: Tabla=${popsTabla}%, Gráfico=${popsGrafico}%`);
-                } else {
-                    console.log(`✅ ${mesTabla}: ${popsTabla}% (coincide)`);
-                }
-            });
-        }
+
     });
 
     // Verificar que Chart.js se cargó correctamente
