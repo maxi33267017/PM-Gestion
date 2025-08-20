@@ -302,6 +302,15 @@ class Campana(models.Model):
         # Crear ContactoCliente para cada equipo de cada cliente objetivo
         contactos_creados = 0
         
+        # Definir el filtro de equipos
+        equipos_query = {'activo': True}
+        
+        if self.tipo_equipo:
+            equipos_query['modelo__tipo_equipo'] = self.tipo_equipo
+            
+        if self.modelo_equipo:
+            equipos_query['modelo'] = self.modelo_equipo
+        
         for cliente in clientes_objetivo:
             print(f"Procesando cliente: {cliente.razon_social}")
             
