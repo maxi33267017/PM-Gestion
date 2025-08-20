@@ -183,6 +183,60 @@
                         <div id="dataDebug"></div>
                     </div>
                 </div>
+                
+                <!-- Debug Visual de Datos -->
+                <div class="alert alert-info mt-3">
+                    <h6><i class="bi bi-bug me-2"></i>Debug: Datos que se envían al gráfico</h6>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <strong>Labels:</strong>
+                            <div class="small text-muted">
+                                [{% for item in pops_mensual %}'{{ item.mes }}'{% if not forloop.last %}, {% endif %}{% endfor %}]
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Data:</strong>
+                            <div class="small text-muted">
+                                [{% for item in pops_mensual %}{{ item.pops }}{% if not forloop.last %}, {% endif %}{% endfor %}]
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Tabla de Datos del Gráfico -->
+                <div class="mt-4">
+                    <h6 class="mb-3">
+                        <i class="bi bi-table me-2"></i>Datos del Gráfico POPS Mensual
+                    </h6>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-striped table-bordered">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>#</th>
+                                    <th>Mes</th>
+                                    <th>POPS (%)</th>
+                                    <th>Equipos Vendidos</th>
+                                    <th>Equipos con Servicios</th>
+                                    <th>Equipos sin Servicios</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in pops_mensual %}
+                                <tr>
+                                    <td>{{ forloop.counter }}</td>
+                                    <td><strong>{{ item.mes }}</strong></td>
+                                    <td>
+                                        <span class="badge bg-primary fs-6">{{ item.pops }}%</span>
+                                    </td>
+                                    <td>{{ item.equipos_vendidos }}</td>
+                                    <td>{{ item.equipos_con_servicios }}</td>
+                                    <td>{{ item.equipos_sin_servicios }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -430,6 +484,17 @@
     {% for item in pops_mensual %}
     console.log('{{ item.mes }}: {{ item.pops }}%');
     {% endfor %}
+    
+    // Debug específico para Junio 2025
+    console.log('=== DEBUG JUNIO 2025 ===');
+    const junioIndex = popsChartData.labels.findIndex(label => label.includes('Junio 2025'));
+    if (junioIndex !== -1) {
+        console.log(`Junio 2025 encontrado en índice ${junioIndex}`);
+        console.log(`Valor en el gráfico: ${popsChartData.data[junioIndex]}%`);
+        console.log(`Label: ${popsChartData.labels[junioIndex]}`);
+    } else {
+        console.log('Junio 2025 NO encontrado en los labels');
+    }
     
     // Función para inicializar el gráfico
     function inicializarGrafico() {
