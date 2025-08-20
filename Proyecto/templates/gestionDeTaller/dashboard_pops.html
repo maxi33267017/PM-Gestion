@@ -473,7 +473,7 @@
     // Variables globales para los datos del gráfico
     let popsChartData = {
         labels: [{% for item in pops_mensual %}'{{ item.mes }}'{% if not forloop.last %}, {% endif %}{% endfor %}],
-        data: [{% for item in pops_mensual %}{{ item.pops }}{% if not forloop.last %}, {% endif %}{% endfor %}]
+        data: [{% for item in pops_mensual %}{{ item.pops }}{% if not forloop.last %}, {% endif %}{% endfor %}].map(val => parseFloat(val.toString().replace(',', '.')))
     };
     
     // Debug inmediato de los datos del gráfico
