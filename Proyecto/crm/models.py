@@ -342,6 +342,7 @@ class EmbudoVentas(models.Model):
             ('POPS', 'POPS'),
             ('REFERENCIA', 'Referencia'),
             ('MARKETING', 'Marketing'),
+            ('CAMPAÑA_MARKETING', 'Campaña Marketing'),
             ('SERVICIO_EXISTENTE', 'Servicio Existente'),
             ('OTRO', 'Otro'),
         ],
