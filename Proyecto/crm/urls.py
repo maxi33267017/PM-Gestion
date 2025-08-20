@@ -21,6 +21,8 @@ urlpatterns = [
     path('crm/campanias/crear/', views.crear_campania, name='crear_campania'),
     path('crm/campanias/obtener-modelos/', views.obtener_modelos_por_tipo, name='obtener_modelos_por_tipo'),
     path('crm/embudos/crear-pops/', views.crear_embudo_pops, name='crear_embudo_pops'),
+    path('crm/embudos/crear-leads/', views.crear_embudo_leads, name='crear_embudo_leads'),
+    path('crm/embudos/crear-alertas/', views.crear_embudo_alertas, name='crear_embudo_alertas'),
     path('crm/campanias/editar/<int:campania_id>/', views.editar_campania, name='editar_campania'),
     path('crm/campanias/<int:campania_id>/contactos/', views.gestionar_contactos, name='gestionar_contactos'),
     path('crm/campanias/<int:campania_id>/dashboard/', views.dashboard_campania, name='dashboard_campania'),
@@ -34,7 +36,7 @@ urlpatterns = [
     path('revisar-sugerencia/<int:sugerencia_id>/', views.revisar_sugerencia, name='revisar_sugerencia'),
     # URLs para Embudo de Ventas
     path('embudo-ventas/', views.embudo_ventas, name='embudo_ventas'),
-    path('embudo-ventas/crear/', views.crear_embudo, name='crear_embudo'),
+    # path('embudo-ventas/crear/', views.crear_embudo, name='crear_embudo'),  # Eliminada - embudos automáticos
     path('embudo-ventas/<int:embudo_id>/', views.detalle_embudo, name='detalle_embudo'),
     # Nuevas URLs para embudo de ventas con gráficos
     path('embudo-ventas-dashboard/', views.embudo_ventas_dashboard, name='embudo_ventas_dashboard'),

@@ -16,9 +16,8 @@
             <p class="text-muted">Gestión de oportunidades y seguimiento de ventas</p>
         </div>
         <div>
-            <a href="{% url 'crm:crear_embudo' %}" class="btn btn-primary">
-                <i class="fas fa-plus me-2"></i>Nueva Oportunidad
-            </a>
+            <!-- Botón eliminado - Los embudos se crean automáticamente -->
+            <span class="text-muted">Los embudos se crean automáticamente</span>
         </div>
     </div>
 
@@ -185,9 +184,7 @@
                 <i class="fas fa-funnel-dollar fa-3x text-muted mb-3"></i>
                 <h5 class="text-muted">No hay oportunidades registradas</h5>
                 <p class="text-muted">Comienza creando tu primera oportunidad de venta</p>
-                <a href="{% url 'crm:crear_embudo' %}" class="btn btn-primary">
-                    <i class="fas fa-plus me-2"></i>Crear Oportunidad
-                </a>
+                <span class="text-muted">Los embudos se crean automáticamente por tipo y fecha</span>
             </div>
             {% endif %}
         </div>

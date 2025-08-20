@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% csrf_token %}
 {% block title %} | Embudo de Ventas{% endblock %}
 
 {% block content %}
@@ -14,9 +15,8 @@
                     <p class="lead text-muted">Gestión centralizada de todas las oportunidades de venta</p>
                 </div>
                 <div>
-                    <a href="{% url 'crm:crear_embudo' %}" class="btn btn-success">
-                        <i class="bi bi-plus-circle me-2"></i>Nuevo Embudo
-                    </a>
+                    <!-- Botón eliminado - Los embudos se crean automáticamente -->
+                    <span class="text-muted">Los embudos se crean automáticamente por tipo y fecha</span>
                     <a href="{% url 'crm:crm' %}" class="btn btn-outline-secondary">
                         <i class="bi bi-arrow-left me-2"></i>Volver al CRM
                     </a>
@@ -240,9 +240,7 @@
                                     <td colspan="9" class="text-center py-5">
                                         <i class="bi bi-inbox display-4 text-muted"></i>
                                         <p class="text-muted mt-3">No hay embudos disponibles</p>
-                                        <a href="{% url 'crm:crear_embudo' %}" class="btn btn-primary">
-                                            <i class="bi bi-plus-circle me-2"></i>Crear Primer Embudo
-                                        </a>
+                                        <span class="text-muted">Los embudos se crean automáticamente por tipo y fecha</span>
                                     </td>
                                 </tr>
                                 {% endfor %}
@@ -272,13 +270,13 @@
                             </button>
                         </div>
                         <div class="col-md-2">
-                            <button type="button" class="btn btn-outline-success w-100" onclick="filtrarPorTipo('LEAD_JD')">
+                            <button type="button" class="btn btn-outline-success w-100" onclick="mostrarModalCrearEmbudo('LEAD_JD')">
                                 <i class="bi bi-truck me-2"></i>
                                 Leads JD
                             </button>
                         </div>
                         <div class="col-md-2">
-                            <button type="button" class="btn btn-outline-warning w-100" onclick="filtrarPorTipo('ALERTA_EQUIPO')">
+                            <button type="button" class="btn btn-outline-warning w-100" onclick="mostrarModalCrearEmbudo('ALERTA_EQUIPO')">
                                 <i class="bi bi-exclamation-triangle me-2"></i>
                                 Alertas
                             </button>
@@ -303,6 +301,42 @@
                         </div>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para crear embudos -->
+<div class="modal fade" id="modalCrearEmbudo" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalCrearEmbudoTitle">
+                    <i class="bi bi-funnel me-2"></i>Crear Embudo
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="formCrearEmbudo">
+                    <div class="mb-3">
+                        <label for="fecha_inicio" class="form-label">Fecha de Inicio</label>
+                        <input type="date" class="form-control" id="fecha_inicio" name="fecha_inicio" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="fecha_fin" class="form-label">Fecha de Fin</label>
+                        <input type="date" class="form-control" id="fecha_fin" name="fecha_fin" required>
+                    </div>
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle me-2"></i>
+                        <span id="modalInfo">Selecciona el período para crear el embudo con las oportunidades correspondientes.</span>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" onclick="crearEmbudo()">
+                    <i class="bi bi-plus-circle me-2"></i>Crear Embudo
+                </button>
             </div>
         </div>
     </div>
@@ -396,6 +430,116 @@ function filtrarEmbudos() {
 function filtrarPorTipo(tipo) {
     document.getElementById('filtroTipo').value = tipo;
     filtrarEmbudos();
+}
+
+// Variables globales para el modal
+let tipoEmbudoActual = '';
+
+// Función para mostrar modal de crear embudo
+function mostrarModalCrearEmbudo(tipo) {
+    tipoEmbudoActual = tipo;
+    const modal = new bootstrap.Modal(document.getElementById('modalCrearEmbudo'));
+    
+    // Configurar título e información según el tipo
+    let titulo = '';
+    let info = '';
+    
+    switch(tipo) {
+        case 'LEAD_JD':
+            titulo = 'Crear Embudo de Leads';
+            info = 'Selecciona el período para crear un embudo con todos los leads activos de John Deere.';
+            break;
+        case 'ALERTA_EQUIPO':
+            titulo = 'Crear Embudo de Alertas';
+            info = 'Selecciona el período para crear un embudo con todas las alertas de equipos activas.';
+            break;
+    }
+    
+    document.getElementById('modalCrearEmbudoTitle').innerHTML = `<i class="bi bi-funnel me-2"></i>${titulo}`;
+    document.getElementById('modalInfo').textContent = info;
+    
+    // Establecer fechas por defecto (último mes)
+    const hoy = new Date();
+    const haceUnMes = new Date(hoy.getFullYear(), hoy.getMonth() - 1, hoy.getDate());
+    
+    document.getElementById('fecha_inicio').value = haceUnMes.toISOString().split('T')[0];
+    document.getElementById('fecha_fin').value = hoy.toISOString().split('T')[0];
+    
+    modal.show();
+}
+
+// Función para crear embudo
+function crearEmbudo() {
+    const fechaInicio = document.getElementById('fecha_inicio').value;
+    const fechaFin = document.getElementById('fecha_fin').value;
+    
+    if (!fechaInicio || !fechaFin) {
+        alert('Por favor selecciona ambas fechas');
+        return;
+    }
+    
+    if (fechaInicio > fechaFin) {
+        alert('La fecha de inicio no puede ser posterior a la fecha de fin');
+        return;
+    }
+    
+    // Determinar URL según el tipo
+    let url = '';
+    switch(tipoEmbudoActual) {
+        case 'LEAD_JD':
+            url = '{% url "crm:crear_embudo_leads" %}';
+            break;
+        case 'ALERTA_EQUIPO':
+            url = '{% url "crm:crear_embudo_alertas" %}';
+            break;
+        default:
+            alert('Tipo de embudo no válido');
+            return;
+    }
+    
+    // Crear FormData
+    const formData = new FormData();
+    formData.append('fecha_inicio', fechaInicio);
+    formData.append('fecha_fin', fechaFin);
+    
+    // Mostrar loading
+    const btnCrear = document.querySelector('#modalCrearEmbudo .btn-primary');
+    const textoOriginal = btnCrear.innerHTML;
+    btnCrear.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Creando...';
+    btnCrear.disabled = true;
+    
+    // Enviar request
+    fetch(url, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Cerrar modal
+            bootstrap.Modal.getInstance(document.getElementById('modalCrearEmbudo')).hide();
+            
+            // Mostrar mensaje de éxito
+            alert(`Embudo creado exitosamente con ${data.oportunidades_creadas} oportunidades`);
+            
+            // Redirigir al detalle del embudo
+            window.location.href = data.redirect_url;
+        } else {
+            alert('Error al crear el embudo: ' + data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error al crear el embudo');
+    })
+    .finally(() => {
+        // Restaurar botón
+        btnCrear.innerHTML = textoOriginal;
+        btnCrear.disabled = false;
+    });
 }
 
 function limpiarFiltros() {

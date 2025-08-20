@@ -3,7 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.db.models import Sum, F, Q, Count, Max, DecimalField, Value
 from django.db.models.functions import Coalesce
 from django.utils import timezone
-from datetime import timedelta
+from datetime import timedelta, datetime
 from decimal import Decimal
 from clientes.models import Cliente
 from gestionDeTaller.models import Servicio
@@ -1214,50 +1214,7 @@ def embudo_ventas(request):
     return redirect('crm:embudo_ventas_dashboard')
 
 @login_required
-def crear_embudo(request):
-    """Vista para crear un nuevo embudo de ventas"""
-    
-    if request.method == 'POST':
-        # Procesar formulario de creación
-        cliente_id = request.POST.get('cliente')
-        campana_id = request.POST.get('campana')
-        etapa = request.POST.get('etapa')
-        origen = request.POST.get('origen')
-        valor_estimado = request.POST.get('valor_estimado')
-        descripcion = request.POST.get('descripcion_negocio')
-        
-        try:
-            cliente = Cliente.objects.get(id=cliente_id)
-            campana = None
-            if campana_id:
-                campana = Campana.objects.get(id=campana_id)
-            
-            embudo = EmbudoVentas.objects.create(
-                cliente=cliente,
-                campana=campana,
-                etapa=etapa,
-                origen=origen,
-                valor_estimado=valor_estimado if valor_estimado else None,
-                descripcion_negocio=descripcion,
-                creado_por=request.user
-            )
-            
-            messages.success(request, f'Embudo de ventas creado para {cliente.razon_social}')
-            return redirect('crm:embudo_ventas_dashboard')
-            
-        except Exception as e:
-            messages.error(request, f'Error al crear el embudo: {str(e)}')
-    
-    # Obtener datos para el formulario
-    clientes = Cliente.objects.filter(activo=True).order_by('razon_social')
-    campanas = Campana.objects.filter(activa=True).order_by('-fecha_inicio')
-    
-    context = {
-        'clientes': clientes,
-        'campanas': campanas,
-    }
-    
-    return render(request, 'crm/crear_embudo.html', context)
+# Función crear_embudo eliminada - Los embudos se crean automáticamente por tipo y fecha
 
 @login_required
 def detalle_embudo(request, embudo_id):
@@ -2483,3 +2440,139 @@ def embudo_datos_grafico_ajax(request, embudo_id):
         
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)})
+
+@login_required
+def crear_embudo_leads(request):
+    """Vista AJAX para crear embudo de leads con fecha"""
+    if request.method == 'POST':
+        try:
+            # Obtener parámetros
+            fecha_inicio = request.POST.get('fecha_inicio')
+            fecha_fin = request.POST.get('fecha_fin')
+            
+            if not fecha_inicio or not fecha_fin:
+                return JsonResponse({'success': False, 'error': 'Fechas de inicio y fin son requeridas'})
+            
+            # Convertir fechas
+            fecha_inicio = datetime.strptime(fecha_inicio, '%Y-%m-%d').date()
+            fecha_fin = datetime.strptime(fecha_fin, '%Y-%m-%d').date()
+            
+            # Obtener leads del período
+            from centroSoluciones.models import Lead
+            leads = Lead.objects.filter(
+                fecha_creacion__date__range=[fecha_inicio, fecha_fin],
+                estado='ACTIVO'  # Solo leads activos
+            ).select_related('cliente', 'equipo')
+            
+            if not leads.exists():
+                return JsonResponse({'success': False, 'error': 'No hay leads activos en el período seleccionado'})
+            
+            # Crear nombre del embudo con fecha
+            fecha_actual = timezone.now().date()
+            nombre_embudo = f"Leads {fecha_actual.strftime('%d/%m/%Y')}"
+            
+            # Crear el embudo principal GENÉRICO
+            embudo_principal = EmbudoVentas.objects.create(
+                campana=None,
+                cliente=None,  # Embudo genérico sin cliente específico
+                etapa='CONTACTO_INICIAL',
+                origen='LEAD_JD',
+                descripcion_negocio=f"Embudo Leads {fecha_actual.strftime('%d/%m/%Y')} con {leads.count()} leads del período {fecha_inicio.strftime('%d/%m/%Y')} - {fecha_fin.strftime('%d/%m/%Y')}",
+                observaciones=f"Embudo creado el {fecha_actual.strftime('%d/%m/%Y')} con {leads.count()} oportunidades - Cada oportunidad tiene su propio cliente",
+                creado_por=request.user
+            )
+            
+            # Crear oportunidades individuales para cada lead
+            oportunidades_creadas = 0
+            for lead in leads:
+                # Crear una oportunidad por cada lead
+                oportunidad = ContactoCliente.objects.create(
+                    embudo_ventas=embudo_principal,
+                    cliente=lead.cliente,
+                    responsable=request.user,
+                    tipo_contacto='EMAIL',  # Tipo por defecto
+                    descripcion=f"Lead: {lead.clasificacion} - {lead.descripcion} - Equipo: {lead.equipo.numero_serie if lead.equipo else 'N/A'}",
+                    resultado='PENDIENTE',  # Resultado por defecto
+                    observaciones=f"Oportunidad Lead creada automáticamente - Valor estimado: ${lead.valor_estimado or 0}"
+                )
+                oportunidades_creadas += 1
+            
+            return JsonResponse({
+                'success': True,
+                'embudo_id': embudo_principal.id,
+                'oportunidades_creadas': oportunidades_creadas,
+                'redirect_url': reverse('crm:embudo_ventas_detalle', kwargs={'embudo_id': embudo_principal.id})
+            })
+            
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+    
+    return JsonResponse({'success': False, 'error': 'Método no permitido'})
+
+@login_required
+def crear_embudo_alertas(request):
+    """Vista AJAX para crear embudo de alertas con fecha"""
+    if request.method == 'POST':
+        try:
+            # Obtener parámetros
+            fecha_inicio = request.POST.get('fecha_inicio')
+            fecha_fin = request.POST.get('fecha_fin')
+            
+            if not fecha_inicio or not fecha_fin:
+                return JsonResponse({'success': False, 'error': 'Fechas de inicio y fin son requeridas'})
+            
+            # Convertir fechas
+            fecha_inicio = datetime.strptime(fecha_inicio, '%Y-%m-%d').date()
+            fecha_fin = datetime.strptime(fecha_fin, '%Y-%m-%d').date()
+            
+            # Obtener alertas del período
+            from centroSoluciones.models import AlertaCronometro
+            alertas = AlertaCronometro.objects.filter(
+                fecha_creacion__date__range=[fecha_inicio, fecha_fin],
+                estado__in=['ENVIADA', 'ASIGNADA']  # Solo alertas activas
+            ).select_related('cliente', 'equipo', 'tecnico_asignado')
+            
+            if not alertas.exists():
+                return JsonResponse({'success': False, 'error': 'No hay alertas activas en el período seleccionado'})
+            
+            # Crear nombre del embudo con fecha
+            fecha_actual = timezone.now().date()
+            nombre_embudo = f"Alertas {fecha_actual.strftime('%d/%m/%Y')}"
+            
+            # Crear el embudo principal GENÉRICO
+            embudo_principal = EmbudoVentas.objects.create(
+                campana=None,
+                cliente=None,  # Embudo genérico sin cliente específico
+                etapa='CONTACTO_INICIAL',
+                origen='ALERTA_EQUIPO',
+                descripcion_negocio=f"Embudo Alertas {fecha_actual.strftime('%d/%m/%Y')} con {alertas.count()} alertas del período {fecha_inicio.strftime('%d/%m/%Y')} - {fecha_fin.strftime('%d/%m/%Y')}",
+                observaciones=f"Embudo creado el {fecha_actual.strftime('%d/%m/%Y')} con {alertas.count()} oportunidades - Cada oportunidad tiene su propio cliente",
+                creado_por=request.user
+            )
+            
+            # Crear oportunidades individuales para cada alerta
+            oportunidades_creadas = 0
+            for alerta in alertas:
+                # Crear una oportunidad por cada alerta
+                oportunidad = ContactoCliente.objects.create(
+                    embudo_ventas=embudo_principal,
+                    cliente=alerta.cliente,
+                    responsable=request.user,
+                    tipo_contacto='TELEFONO',  # Tipo por defecto para alertas
+                    descripcion=f"Alerta: {alerta.codigo} - {alerta.descripcion} - Equipo: {alerta.equipo.numero_serie if alerta.equipo else 'N/A'}",
+                    resultado='PENDIENTE',  # Resultado por defecto
+                    observaciones=f"Oportunidad Alerta creada automáticamente - Técnico: {alerta.tecnico_asignado.get_nombre_completo() if alerta.tecnico_asignado else 'Sin asignar'}"
+                )
+                oportunidades_creadas += 1
+            
+            return JsonResponse({
+                'success': True,
+                'embudo_id': embudo_principal.id,
+                'oportunidades_creadas': oportunidades_creadas,
+                'redirect_url': reverse('crm:embudo_ventas_detalle', kwargs={'embudo_id': embudo_principal.id})
+            })
+            
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+    
+    return JsonResponse({'success': False, 'error': 'Método no permitido'})
