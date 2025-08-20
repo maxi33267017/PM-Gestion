@@ -265,6 +265,8 @@ class Campana(models.Model):
     
     def crear_embudos_ventas_automaticos(self):
         """Crea automáticamente embudos de ventas para todos los clientes objetivo"""
+        from clientes.models import Equipo
+        
         print(f"=== DEBUG CREAR EMBUDOS AUTOMÁTICOS ===")
         print(f"Campaña: {self.nombre}")
         print(f"Tipo de equipo: {self.tipo_equipo}")
