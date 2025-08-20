@@ -2457,15 +2457,21 @@ def crear_embudo_leads(request):
             fecha_inicio = datetime.strptime(fecha_inicio, '%Y-%m-%d').date()
             fecha_fin = datetime.strptime(fecha_fin, '%Y-%m-%d').date()
             
-            # Obtener leads del período
+            # Obtener IDs de leads seleccionados
+            lead_ids = request.POST.getlist('lead_ids[]')
+            
+            if not lead_ids:
+                return JsonResponse({'success': False, 'error': 'Debes seleccionar al menos un lead'})
+            
+            # Obtener leads específicos
             from centroSoluciones.models import Lead
             leads = Lead.objects.filter(
-                fecha_creacion__date__range=[fecha_inicio, fecha_fin],
-                estado='ACTIVO'  # Solo leads activos
+                id__in=lead_ids,
+                estado='ACTIVO'
             ).select_related('cliente', 'equipo')
             
             if not leads.exists():
-                return JsonResponse({'success': False, 'error': 'No hay leads activos en el período seleccionado'})
+                return JsonResponse({'success': False, 'error': 'No se encontraron los leads seleccionados'})
             
             # Crear nombre del embudo con fecha
             fecha_actual = timezone.now().date()
@@ -2525,15 +2531,21 @@ def crear_embudo_alertas(request):
             fecha_inicio = datetime.strptime(fecha_inicio, '%Y-%m-%d').date()
             fecha_fin = datetime.strptime(fecha_fin, '%Y-%m-%d').date()
             
-            # Obtener alertas del período
+            # Obtener IDs de alertas seleccionadas
+            alerta_ids = request.POST.getlist('alerta_ids[]')
+            
+            if not alerta_ids:
+                return JsonResponse({'success': False, 'error': 'Debes seleccionar al menos una alerta'})
+            
+            # Obtener alertas específicas
             from centroSoluciones.models import AlertaCronometro
             alertas = AlertaCronometro.objects.filter(
-                fecha_creacion__date__range=[fecha_inicio, fecha_fin],
-                estado__in=['ENVIADA', 'ASIGNADA']  # Solo alertas activas
+                id__in=alerta_ids,
+                estado__in=['ENVIADA', 'ASIGNADA']
             ).select_related('cliente', 'equipo', 'tecnico_asignado')
             
             if not alertas.exists():
-                return JsonResponse({'success': False, 'error': 'No hay alertas activas en el período seleccionado'})
+                return JsonResponse({'success': False, 'error': 'No se encontraron las alertas seleccionadas'})
             
             # Crear nombre del embudo con fecha
             fecha_actual = timezone.now().date()
@@ -2570,6 +2582,125 @@ def crear_embudo_alertas(request):
                 'embudo_id': embudo_principal.id,
                 'oportunidades_creadas': oportunidades_creadas,
                 'redirect_url': reverse('crm:embudo_ventas_detalle', kwargs={'embudo_id': embudo_principal.id})
+            })
+            
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+    
+    return JsonResponse({'success': False, 'error': 'Método no permitido'})
+
+@login_required
+def obtener_leads_ajax(request):
+    """Vista AJAX para obtener leads por fechas"""
+    if request.method == 'GET':
+        try:
+            fecha_inicio = request.GET.get('fecha_inicio')
+            fecha_fin = request.GET.get('fecha_fin')
+            
+            if not fecha_inicio or not fecha_fin:
+                return JsonResponse({'success': False, 'error': 'Fechas requeridas'})
+            
+            # Convertir fechas
+            fecha_inicio = datetime.strptime(fecha_inicio, '%Y-%m-%d').date()
+            fecha_fin = datetime.strptime(fecha_fin, '%Y-%m-%d').date()
+            
+            # Obtener leads del período
+            from centroSoluciones.models import Lead
+            leads = Lead.objects.filter(
+                fecha_creacion__date__range=[fecha_inicio, fecha_fin],
+                estado='ACTIVO'
+            ).select_related('cliente', 'equipo')
+            
+            # Verificar si ya existen en embudos
+            from crm.models import EmbudoVentas, ContactoCliente
+            
+            # Obtener leads que ya están en embudos
+            leads_en_embudos = ContactoCliente.objects.filter(
+                embudo_ventas__origen='LEAD_JD'
+            ).values_list('cliente_id', flat=True).distinct()
+            
+            leads_data = []
+            for lead in leads:
+                # Verificar si el cliente ya está en un embudo de leads
+                ya_en_embudo = lead.cliente.id in leads_en_embudos
+                
+                leads_data.append({
+                    'id': lead.id,
+                    'cliente': lead.cliente.razon_social,
+                    'cliente_id': lead.cliente.id,
+                    'equipo': lead.equipo.numero_serie if lead.equipo else 'N/A',
+                    'clasificacion': lead.clasificacion,
+                    'descripcion': lead.descripcion,
+                    'valor_estimado': float(lead.valor_estimado or 0),
+                    'fecha_creacion': lead.fecha_creacion.strftime('%d/%m/%Y'),
+                    'ya_en_embudo': ya_en_embudo
+                })
+            
+            return JsonResponse({
+                'success': True,
+                'leads': leads_data,
+                'total': len(leads_data),
+                'disponibles': len([l for l in leads_data if not l['ya_en_embudo']])
+            })
+            
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+    
+    return JsonResponse({'success': False, 'error': 'Método no permitido'})
+
+@login_required
+def obtener_alertas_ajax(request):
+    """Vista AJAX para obtener alertas por fechas"""
+    if request.method == 'GET':
+        try:
+            fecha_inicio = request.GET.get('fecha_inicio')
+            fecha_fin = request.GET.get('fecha_fin')
+            
+            if not fecha_inicio or not fecha_fin:
+                return JsonResponse({'success': False, 'error': 'Fechas requeridas'})
+            
+            # Convertir fechas
+            fecha_inicio = datetime.strptime(fecha_inicio, '%Y-%m-%d').date()
+            fecha_fin = datetime.strptime(fecha_fin, '%Y-%m-%d').date()
+            
+            # Obtener alertas del período
+            from centroSoluciones.models import AlertaCronometro
+            alertas = AlertaCronometro.objects.filter(
+                fecha_creacion__date__range=[fecha_inicio, fecha_fin],
+                estado__in=['ENVIADA', 'ASIGNADA']
+            ).select_related('cliente', 'equipo', 'tecnico_asignado')
+            
+            # Verificar si ya existen en embudos
+            from crm.models import EmbudoVentas, ContactoCliente
+            
+            # Obtener alertas que ya están en embudos
+            alertas_en_embudos = ContactoCliente.objects.filter(
+                embudo_ventas__origen='ALERTA_EQUIPO'
+            ).values_list('cliente_id', flat=True).distinct()
+            
+            alertas_data = []
+            for alerta in alertas:
+                # Verificar si el cliente ya está en un embudo de alertas
+                ya_en_embudo = alerta.cliente.id in alertas_en_embudos
+                
+                alertas_data.append({
+                    'id': alerta.id,
+                    'cliente': alerta.cliente.razon_social,
+                    'cliente_id': alerta.cliente.id,
+                    'equipo': alerta.equipo.numero_serie if alerta.equipo else 'N/A',
+                    'codigo': alerta.codigo,
+                    'descripcion': alerta.descripcion,
+                    'estado': alerta.estado,
+                    'tecnico': alerta.tecnico_asignado.get_nombre_completo() if alerta.tecnico_asignado else 'Sin asignar',
+                    'fecha_creacion': alerta.fecha_creacion.strftime('%d/%m/%Y'),
+                    'ya_en_embudo': ya_en_embudo
+                })
+            
+            return JsonResponse({
+                'success': True,
+                'alertas': alertas_data,
+                'total': len(alertas_data),
+                'disponibles': len([a for a in alertas_data if not a['ya_en_embudo']])
             })
             
         except Exception as e:

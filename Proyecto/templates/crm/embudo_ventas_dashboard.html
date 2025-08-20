@@ -318,17 +318,56 @@
             </div>
             <div class="modal-body">
                 <form id="formCrearEmbudo">
-                    <div class="mb-3">
-                        <label for="fecha_inicio" class="form-label">Fecha de Inicio</label>
-                        <input type="date" class="form-control" id="fecha_inicio" name="fecha_inicio" required>
+                    <!-- Filtros de fecha -->
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="fecha_inicio" class="form-label">Fecha de Inicio</label>
+                            <input type="date" class="form-control" id="fecha_inicio" name="fecha_inicio" onchange="filtrarElementos()">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="fecha_fin" class="form-label">Fecha de Fin</label>
+                            <input type="date" class="form-control" id="fecha_fin" name="fecha_fin" onchange="filtrarElementos()">
+                        </div>
                     </div>
-                    <div class="mb-3">
-                        <label for="fecha_fin" class="form-label">Fecha de Fin</label>
-                        <input type="date" class="form-control" id="fecha_fin" name="fecha_fin" required>
+                    
+                    <!-- Controles de selección -->
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <button type="button" class="btn btn-sm btn-outline-primary" onclick="seleccionarTodos()">
+                                        <i class="bi bi-check-all me-1"></i>Seleccionar Todos
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="deseleccionarTodos()">
+                                        <i class="bi bi-x-circle me-1"></i>Deseleccionar Todos
+                                    </button>
+                                </div>
+                                <div>
+                                    <span class="badge bg-primary" id="contadorSeleccionados">0 seleccionados</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="alert alert-info">
-                        <i class="bi bi-info-circle me-2"></i>
-                        <span id="modalInfo">Selecciona el período para crear el embudo con las oportunidades correspondientes.</span>
+                    
+                    <!-- Lista de elementos -->
+                    <div class="mb-3">
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle me-2"></i>
+                            <span id="modalInfo">Selecciona el período y los elementos para crear el embudo.</span>
+                        </div>
+                        
+                        <!-- Loading -->
+                        <div id="loadingElementos" class="text-center d-none">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Cargando...</span>
+                            </div>
+                            <p class="mt-2">Cargando elementos...</p>
+                        </div>
+                        
+                        <!-- Lista de elementos -->
+                        <div id="listaElementos" class="border rounded p-3" style="max-height: 300px; overflow-y: auto;">
+                            <p class="text-muted text-center">Selecciona las fechas para cargar los elementos disponibles</p>
+                        </div>
                     </div>
                 </form>
             </div>
@@ -468,13 +507,12 @@ function mostrarModalCrearEmbudo(tipo) {
     modal.show();
 }
 
-// Función para crear embudo
-function crearEmbudo() {
+// Función para filtrar elementos por fechas
+function filtrarElementos() {
     const fechaInicio = document.getElementById('fecha_inicio').value;
     const fechaFin = document.getElementById('fecha_fin').value;
     
     if (!fechaInicio || !fechaFin) {
-        alert('Por favor selecciona ambas fechas');
         return;
     }
     
@@ -483,14 +521,146 @@ function crearEmbudo() {
         return;
     }
     
+    // Mostrar loading
+    document.getElementById('loadingElementos').classList.remove('d-none');
+    document.getElementById('listaElementos').innerHTML = '';
+    
     // Determinar URL según el tipo
     let url = '';
     switch(tipoEmbudoActual) {
         case 'LEAD_JD':
+            url = '{% url "crm:obtener_leads_ajax" %}';
+            break;
+        case 'ALERTA_EQUIPO':
+            url = '{% url "crm:obtener_alertas_ajax" %}';
+            break;
+        default:
+            alert('Tipo de embudo no válido');
+            return;
+    }
+    
+    // Enviar request
+    fetch(`${url}?fecha_inicio=${fechaInicio}&fecha_fin=${fechaFin}`)
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            mostrarElementos(data);
+        } else {
+            document.getElementById('listaElementos').innerHTML = 
+                `<p class="text-danger text-center">Error: ${data.error}</p>`;
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        document.getElementById('listaElementos').innerHTML = 
+            `<p class="text-danger text-center">Error al cargar los elementos</p>`;
+    })
+    .finally(() => {
+        document.getElementById('loadingElementos').classList.add('d-none');
+    });
+}
+
+// Función para mostrar elementos en la lista
+function mostrarElementos(data) {
+    const listaElementos = document.getElementById('listaElementos');
+    const elementos = tipoEmbudoActual === 'LEAD_JD' ? data.leads : data.alertas;
+    
+    if (elementos.length === 0) {
+        listaElementos.innerHTML = '<p class="text-muted text-center">No hay elementos disponibles en el período seleccionado</p>';
+        return;
+    }
+    
+    let html = '';
+    elementos.forEach(elemento => {
+        const yaEnEmbudo = elemento.ya_en_embudo;
+        const disabled = yaEnEmbudo ? 'disabled' : '';
+        const checked = yaEnEmbudo ? '' : 'checked';
+        const clase = yaEnEmbudo ? 'text-muted' : '';
+        
+        if (tipoEmbudoActual === 'LEAD_JD') {
+            html += `
+                <div class="form-check mb-2 ${clase}">
+                    <input class="form-check-input elemento-checkbox" type="checkbox" 
+                           value="${elemento.id}" id="lead_${elemento.id}" 
+                           ${checked} ${disabled} onchange="actualizarContador()">
+                    <label class="form-check-label" for="lead_${elemento.id}">
+                        <strong>${elemento.cliente}</strong> - ${elemento.clasificacion}
+                        <br><small class="text-muted">
+                            Equipo: ${elemento.equipo} | Valor: $${elemento.valor_estimado.toLocaleString()} | 
+                            Fecha: ${elemento.fecha_creacion}
+                            ${yaEnEmbudo ? ' | <span class="text-warning">Ya en embudo</span>' : ''}
+                        </small>
+                    </label>
+                </div>
+            `;
+        } else {
+            html += `
+                <div class="form-check mb-2 ${clase}">
+                    <input class="form-check-input elemento-checkbox" type="checkbox" 
+                           value="${elemento.id}" id="alerta_${elemento.id}" 
+                           ${checked} ${disabled} onchange="actualizarContador()">
+                    <label class="form-check-label" for="alerta_${elemento.id}">
+                        <strong>${elemento.cliente}</strong> - ${elemento.codigo}
+                        <br><small class="text-muted">
+                            Equipo: ${elemento.equipo} | Estado: ${elemento.estado} | 
+                            Técnico: ${elemento.tecnico} | Fecha: ${elemento.fecha_creacion}
+                            ${yaEnEmbudo ? ' | <span class="text-warning">Ya en embudo</span>' : ''}
+                        </small>
+                    </label>
+                </div>
+            `;
+        }
+    });
+    
+    listaElementos.innerHTML = html;
+    actualizarContador();
+}
+
+// Función para seleccionar todos los elementos disponibles
+function seleccionarTodos() {
+    const checkboxes = document.querySelectorAll('.elemento-checkbox:not(:disabled)');
+    checkboxes.forEach(checkbox => {
+        checkbox.checked = true;
+    });
+    actualizarContador();
+}
+
+// Función para deseleccionar todos
+function deseleccionarTodos() {
+    const checkboxes = document.querySelectorAll('.elemento-checkbox');
+    checkboxes.forEach(checkbox => {
+        checkbox.checked = false;
+    });
+    actualizarContador();
+}
+
+// Función para actualizar contador de seleccionados
+function actualizarContador() {
+    const checkboxes = document.querySelectorAll('.elemento-checkbox:checked');
+    document.getElementById('contadorSeleccionados').textContent = `${checkboxes.length} seleccionados`;
+}
+
+// Función para crear embudo
+function crearEmbudo() {
+    const checkboxes = document.querySelectorAll('.elemento-checkbox:checked');
+    
+    if (checkboxes.length === 0) {
+        alert('Debes seleccionar al menos un elemento');
+        return;
+    }
+    
+    // Determinar URL según el tipo
+    let url = '';
+    let ids = [];
+    
+    switch(tipoEmbudoActual) {
+        case 'LEAD_JD':
             url = '{% url "crm:crear_embudo_leads" %}';
+            ids = Array.from(checkboxes).map(cb => cb.value);
             break;
         case 'ALERTA_EQUIPO':
             url = '{% url "crm:crear_embudo_alertas" %}';
+            ids = Array.from(checkboxes).map(cb => cb.value);
             break;
         default:
             alert('Tipo de embudo no válido');
@@ -499,8 +669,13 @@ function crearEmbudo() {
     
     // Crear FormData
     const formData = new FormData();
-    formData.append('fecha_inicio', fechaInicio);
-    formData.append('fecha_fin', fechaFin);
+    ids.forEach(id => {
+        if (tipoEmbudoActual === 'LEAD_JD') {
+            formData.append('lead_ids[]', id);
+        } else {
+            formData.append('alerta_ids[]', id);
+        }
+    });
     
     // Mostrar loading
     const btnCrear = document.querySelector('#modalCrearEmbudo .btn-primary');
