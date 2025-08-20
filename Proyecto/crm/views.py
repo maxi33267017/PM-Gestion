@@ -586,17 +586,21 @@ def crear_campania(request):
                     from clientes.models import ModeloEquipo
                     modelo_equipo = ModeloEquipo.objects.get(id=modelo_equipo_id)
                 
+                # Obtener la sucursal del usuario (o una por defecto)
+                sucursal = request.user.sucursal if hasattr(request.user, 'sucursal') and request.user.sucursal else Sucursal.objects.first()
+                
                 # Crear la campaña
                 campania = Campania.objects.create(
                     nombre=nombre,
                     descripcion=descripcion,
                     fecha_inicio=fecha_inicio,
                     fecha_fin=fecha_fin,
-                    valor_paquete=valor_paquete,
-                    objetivo_paquetes=objetivo_paquetes,
-                    estado=estado,
+                    activa=(estado != 'FINALIZADA'),
+                    sucursal=sucursal,
                     tipo_equipo=tipo_equipo,
                     modelo_equipo=modelo_equipo,
+                    presupuesto=float(valor_paquete) * int(objetivo_paquetes) if valor_paquete and objetivo_paquetes else None,
+                    objetivo_contactos=int(objetivo_paquetes) if objetivo_paquetes else None,
                     creado_por=request.user
                 )
                 
