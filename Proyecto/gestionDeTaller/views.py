@@ -5521,8 +5521,14 @@ def dashboard_pops(request):
     
     # Debug: mostrar datos generados
     print("=== DEBUG POPS MENSUAL ===")
-    for item in pops_mensual:
-        print(f"{item['mes']}: {item['pops']}% (Vendidos: {item['equipos_vendidos']}, Con servicios: {item['equipos_con_servicios']})")
+    print(f"Total de registros: {len(pops_mensual)}")
+    for i, item in enumerate(pops_mensual):
+        print(f"[{i}] {item['mes']}: {item['pops']}% (Vendidos: {item['equipos_vendidos']}, Con servicios: {item['equipos_con_servicios']})")
+    
+    # Debug: mostrar datos que se envían al template
+    print("=== DATOS PARA EL TEMPLATE ===")
+    print("Labels:", [item['mes'] for item in pops_mensual])
+    print("Data:", [item['pops'] for item in pops_mensual])
     
     # === ANÁLISIS POR TIPO DE EQUIPO ===
     from clientes.models import TipoEquipo

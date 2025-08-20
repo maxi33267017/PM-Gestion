@@ -414,14 +414,20 @@
     // Función para obtener datos de la tabla
 
     
+    // Variables globales para los datos del gráfico
+    let popsChartData = {
+        labels: [{% for item in pops_mensual %}'{{ item.mes }}'{% if not forloop.last %}, {% endif %}{% endfor %}],
+        data: [{% for item in pops_mensual %}{{ item.pops }}{% if not forloop.last %}, {% endif %}{% endfor %}]
+    };
+    
     // Función para inicializar el gráfico
     function inicializarGrafico() {
-        // Obtener datos directamente del contexto Django
+        // Usar los datos globales
         const popsData = {
-            labels: [{% for item in pops_mensual %}'{{ item.mes }}'{% if not forloop.last %}, {% endif %}{% endfor %}],
+            labels: popsChartData.labels,
             datasets: [{
                 label: 'POPS (%)',
-                data: [{% for item in pops_mensual %}{{ item.pops }}{% if not forloop.last %}, {% endif %}{% endfor %}],
+                data: popsChartData.data,
                 backgroundColor: 'rgba(40, 167, 69, 0.2)',
                 borderColor: 'rgba(40, 167, 69, 1)',
                 borderWidth: 2,
@@ -430,7 +436,7 @@
         };
         
         // Debug: mostrar datos
-        console.log('=== DATOS POPS ===');
+        console.log('=== DATOS POPS DEL GRÁFICO ===');
         console.log('Labels:', popsData.labels);
         console.log('Data:', popsData.datasets[0].data);
         
@@ -503,14 +509,6 @@
         // Inicializar el gráfico
         inicializarGrafico();
         
-        // Debug: mostrar datos del gráfico en consola
-        console.log('=== DATOS DEL GRÁFICO ===');
-        const labels = [{% for item in pops_mensual %}'{{ item.mes }}'{% if not forloop.last %}, {% endif %}{% endfor %}];
-        const data = [{% for item in pops_mensual %}{{ item.pops }}{% if not forloop.last %}, {% endif %}{% endfor %}];
-        
-        console.log('Labels:', labels);
-        console.log('Data:', data);
-        
         // Comparar datos de la tabla con el gráfico
         console.log('=== COMPARACIÓN DATOS TABLA vs GRÁFICO ===');
         
@@ -522,7 +520,7 @@
                 if (row.cells.length < 5) return;
                 const mesTabla = row.cells[0].textContent.trim();
                 const popsTabla = parseFloat(row.cells[4].textContent.replace('%', ''));
-                const popsGrafico = data[index];
+                const popsGrafico = popsChartData.data[index];
                 
                 console.log(`${mesTabla}: Tabla=${popsTabla}%, Gráfico=${popsGrafico}%`);
                 
