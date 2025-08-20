@@ -211,6 +211,24 @@ class Campana(models.Model):
         ventas = self.get_ventas_count()
         return (ventas / total_contactos * 100) if total_contactos > 0 else 0
     
+    def actualizar_valor_cierre(self):
+        """Actualiza el valor de cierre basado en las ventas exitosas"""
+        from django.db.models import Sum
+        
+        # Obtener el valor total de las ventas exitosas
+        valor_cierre_total = self.embudos_ventas.filter(
+            etapa='CIERRE'
+        ).aggregate(
+            total=Sum('valor_cierre')
+        )['total'] or 0
+        
+        # Actualizar el valor de cierre del embudo principal
+        for embudo in self.embudos_ventas.filter(cliente__isnull=True):
+            embudo.valor_cierre = valor_cierre_total
+            embudo.save()
+        
+        return valor_cierre_total
+    
     def get_clientes_objetivo(self):
         """Obtiene los clientes objetivo basados en el tipo y modelo de equipo"""
         from clientes.models import Cliente, Equipo
@@ -265,34 +283,51 @@ class Campana(models.Model):
             print(f"⚠️ Embudo genérico ya existe: {embudo_existente}")
             embudo = embudo_existente
         else:
+            # Calcular valor estimado total
+            valor_estimado_total = self.valor_paquete * self.objetivo_paquetes if self.valor_paquete and self.objetivo_paquetes else 0
+            
             embudo = EmbudoVentas.objects.create(
                 campana=self,
                 cliente=None,  # Embudo genérico
                 etapa='CONTACTO_INICIAL',
-                origen='CAMPAÑA_MARKETING'
+                origen='CAMPAÑA_MARKETING',
+                valor_estimado=valor_estimado_total,
+                descripcion_negocio=self.descripcion
             )
             print(f"✅ Embudo genérico creado: {embudo}")
+            print(f"💰 Valor estimado total: ${valor_estimado_total}")
         
-        # Crear ContactoCliente para cada cliente objetivo
+        # Crear ContactoCliente para cada equipo de cada cliente objetivo
         contactos_creados = 0
         
         for cliente in clientes_objetivo:
             print(f"Procesando cliente: {cliente.razon_social}")
-            # Verificar si ya existe un contacto para este cliente en este embudo
-            if not ContactoCliente.objects.filter(embudo_ventas=embudo, cliente=cliente).exists():
-                ContactoCliente.objects.create(
-                    embudo_ventas=embudo,
-                    cliente=cliente,
-                    tipo_contacto='PRESENTACION',
-                    descripcion=f"Oportunidad de campaña: {self.nombre}",
-                    resultado='EXITOSO',
-                    observaciones=f"Campaña automática creada para cliente con equipos del tipo seleccionado",
-                    responsable=self.creado_por
-                )
-                contactos_creados += 1
-                print(f"✅ Contacto creado para {cliente.razon_social}")
-            else:
-                print(f"⚠️ Contacto ya existe para {cliente.razon_social}")
+            
+            # Obtener todos los equipos del cliente que cumplen los criterios
+            equipos_cliente = Equipo.objects.filter(
+                cliente=cliente,
+                activo=True,
+                **equipos_query
+            )
+            
+            print(f"  Equipos encontrados para {cliente.razon_social}: {equipos_cliente.count()}")
+            
+            for equipo in equipos_cliente:
+                # Verificar si ya existe un contacto para este equipo en este embudo
+                if not ContactoCliente.objects.filter(embudo_ventas=embudo, cliente=cliente, observaciones__contains=f"Equipo: {equipo.numero_serie}").exists():
+                    ContactoCliente.objects.create(
+                        embudo_ventas=embudo,
+                        cliente=cliente,
+                        tipo_contacto='PRESENTACION',
+                        descripcion=f"Oportunidad de campaña: {self.nombre}",
+                        resultado='PENDIENTE',  # Cambiado de EXITOSO a PENDIENTE
+                        observaciones=f"Campaña automática creada para cliente con equipos del tipo seleccionado. Equipo: {equipo.numero_serie} - {equipo.modelo}",
+                        responsable=self.creado_por
+                    )
+                    contactos_creados += 1
+                    print(f"  ✅ Contacto creado para {cliente.razon_social} - Equipo: {equipo.numero_serie}")
+                else:
+                    print(f"  ⚠️ Contacto ya existe para {cliente.razon_social} - Equipo: {equipo.numero_serie}")
         
         print(f"Total contactos creados: {contactos_creados}")
         return contactos_creados
