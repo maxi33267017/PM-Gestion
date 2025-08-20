@@ -12,6 +12,8 @@ from django.contrib import messages
 from django.http import JsonResponse, HttpResponse
 from recursosHumanos.models import Sucursal
 import csv
+from django.contrib.auth.decorators import user_passes_test
+from django.urls import reverse
 
 # ===== FUNCIONES HELPER PARA ANÁLISIS DE CLIENTES =====
 
@@ -2193,3 +2195,65 @@ def checklist_por_prioridad(request, prioridad):
     }
     
     return render(request, 'crm/checklist_por_prioridad.html', context)
+
+@login_required
+@user_passes_test(es_gerente, login_url='/login/')
+def crear_embudo_pops(request):
+    """
+    Crear embudo de ventas con equipos sin servicios (POPS)
+    """
+    if request.method == 'POST':
+        try:
+            import json
+            data = json.loads(request.body)
+            
+            equipos_ids = data.get('equipos_ids', [])
+            nombre = data.get('nombre', 'Embudo POPS')
+            descripcion = data.get('descripcion', '')
+            
+            if not equipos_ids:
+                return JsonResponse({'success': False, 'error': 'No se proporcionaron equipos'})
+            
+            # Crear el embudo de ventas
+            embudo = EmbudoVentas.objects.create(
+                nombre=nombre,
+                descripcion=descripcion,
+                origen='POPS',
+                estado='ACTIVO',
+                fecha_creacion=timezone.now()
+            )
+            
+            # Obtener los equipos y crear contactos
+            from clientes.models import Equipo
+            equipos = Equipo.objects.filter(id__in=equipos_ids)
+            
+            contactos_creados = 0
+            for equipo in equipos:
+                if equipo.cliente:
+                    # Verificar si ya existe un contacto para este cliente en este embudo
+                    contacto_existente = ContactoCliente.objects.filter(
+                        embudo_ventas=embudo,
+                        cliente=equipo.cliente
+                    ).first()
+                    
+                    if not contacto_existente:
+                        ContactoCliente.objects.create(
+                            embudo_ventas=embudo,
+                            cliente=equipo.cliente,
+                            estado='NUEVO',
+                            notas=f'Equipo sin servicios: {equipo.numero_serie} - {equipo.modelo.nombre}',
+                            fecha_creacion=timezone.now()
+                        )
+                        contactos_creados += 1
+            
+            return JsonResponse({
+                'success': True,
+                'embudo_id': embudo.id,
+                'contactos_creados': contactos_creados,
+                'redirect_url': reverse('crm:embudo_ventas_detalle', kwargs={'embudo_id': embudo.id})
+            })
+            
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+    
+    return JsonResponse({'success': False, 'error': 'Método no permitido'})

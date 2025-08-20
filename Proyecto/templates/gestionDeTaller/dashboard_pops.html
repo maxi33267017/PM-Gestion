@@ -86,6 +86,7 @@
 {% endblock %}
 
 {% block content %}
+{% csrf_token %}
 <div class="container-fluid">
     <!-- Header -->
     <div class="pops-header">
@@ -106,9 +107,9 @@
     <!-- Filtros -->
     <div class="filter-section">
         <div class="row">
-            <div class="col-md-6">
+            <div class="col-md-4">
                 <label for="mes" class="form-label">Mes:</label>
-                <select id="mes" name="mes" class="form-select" onchange="aplicarFiltros()">
+                <select id="mes" name="mes" class="form-select">
                     <option value="">Todos los meses</option>
                     {% for mes in meses %}
                         <option value="{{ mes.valor }}" {% if mes.valor == mes_filtro %}selected{% endif %}>
@@ -117,9 +118,9 @@
                     {% endfor %}
                 </select>
             </div>
-            <div class="col-md-6">
+            <div class="col-md-4">
                 <label for="año" class="form-label">Año:</label>
-                <select id="año" name="año" class="form-select" onchange="aplicarFiltros()">
+                <select id="año" name="año" class="form-select">
                     <option value="">Todos los años</option>
                     {% for año in años %}
                         <option value="{{ año }}" {% if año|stringformat:"s" == año_filtro %}selected{% endif %}>
@@ -127,6 +128,11 @@
                         </option>
                     {% endfor %}
                 </select>
+            </div>
+            <div class="col-md-4 d-flex align-items-end">
+                <button type="button" class="btn btn-primary w-100" onclick="aplicarFiltros()">
+                    <i class="bi bi-search me-2"></i>Aplicar Filtros
+                </button>
             </div>
         </div>
     </div>
@@ -215,17 +221,56 @@
         </div>
     </div>
 
-    <!-- Oportunidades -->
+    <!-- Oportunidades y Embudos -->
     <div class="row mt-4">
         <div class="col-12">
             <div class="chart-container">
-                <h5 class="mb-3">
-                    <i class="bi bi-exclamation-triangle me-2"></i>Oportunidades - Equipos Sin Servicios
-                </h5>
-                <div class="row">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="mb-0">
+                        <i class="bi bi-exclamation-triangle me-2"></i>Oportunidades - Equipos Sin Servicios
+                    </h5>
+                    {% if equipos_sin_servicios_list %}
+                    <div class="btn-group" role="group">
+                        <button type="button" class="btn btn-success btn-sm" onclick="crearEmbudo('todos')">
+                            <i class="bi bi-funnel me-1"></i>Crear Embudo (Todos)
+                        </button>
+                        <button type="button" class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#modalEmbudoTipo">
+                            <i class="bi bi-funnel me-1"></i>Por Tipo
+                        </button>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Filtros de oportunidades -->
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <select id="filtroTipoOportunidad" class="form-select form-select-sm" onchange="filtrarOportunidades()">
+                            <option value="">Todos los tipos</option>
+                            {% for tipo in pops_por_tipo %}
+                                <option value="{{ tipo.tipo }}">{{ tipo.tipo }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <input type="text" id="buscarOportunidad" class="form-control form-control-sm" placeholder="Buscar por PIN o cliente..." onkeyup="filtrarOportunidades()">
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="seleccionarTodos" onchange="seleccionarTodosOportunidades()">
+                            <label class="form-check-label" for="seleccionarTodos">
+                                Seleccionar todos
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row" id="oportunidadesContainer">
                     {% for equipo in equipos_sin_servicios_list %}
-                    <div class="col-md-6 col-lg-4">
+                    <div class="col-md-6 col-lg-4 oportunidad-item" data-tipo="{{ equipo.modelo.tipo_equipo.nombre }}" data-pin="{{ equipo.numero_serie }}" data-cliente="{{ equipo.cliente.razon_social }}">
                         <div class="opportunity-item">
+                            <div class="form-check">
+                                <input class="form-check-input oportunidad-checkbox" type="checkbox" value="{{ equipo.id }}" id="oportunidad_{{ equipo.id }}">
+                            </div>
                             <div class="fw-bold">{{ equipo.numero_serie }}</div>
                             <div class="text-muted">{{ equipo.modelo.tipo_equipo.nombre }} - {{ equipo.modelo.nombre }}</div>
                             <div class="small">{{ equipo.cliente.razon_social }}</div>
@@ -241,6 +286,16 @@
                     </div>
                     {% endfor %}
                 </div>
+                
+                {% if equipos_sin_servicios_list %}
+                <div class="row mt-3">
+                    <div class="col-12">
+                        <button type="button" class="btn btn-primary" onclick="crearEmbudoSeleccionados()" id="btnCrearEmbudoSeleccionados" disabled>
+                            <i class="bi bi-funnel me-2"></i>Crear Embudo con Seleccionados (<span id="contadorSeleccionados">0</span>)
+                        </button>
+                    </div>
+                </div>
+                {% endif %}
             </div>
         </div>
     </div>

@@ -20,6 +20,7 @@ urlpatterns = [
     path('crm/campanias/', views.campanias_marketing, name='campanias_marketing'),
     path('crm/campanias/crear/', views.crear_campania, name='crear_campania'),
     path('crm/campanias/obtener-modelos/', views.obtener_modelos_por_tipo, name='obtener_modelos_por_tipo'),
+    path('crm/embudos/crear-pops/', views.crear_embudo_pops, name='crear_embudo_pops'),
     path('crm/campanias/editar/<int:campania_id>/', views.editar_campania, name='editar_campania'),
     path('crm/campanias/<int:campania_id>/contactos/', views.gestionar_contactos, name='gestionar_contactos'),
     path('crm/campanias/<int:campania_id>/dashboard/', views.dashboard_campania, name='dashboard_campania'),
