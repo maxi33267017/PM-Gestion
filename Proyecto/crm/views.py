@@ -1464,6 +1464,7 @@ def crear_contacto(request):
         resultado = request.POST.get('resultado')
         observaciones = request.POST.get('observaciones', '')
         proximo_seguimiento = request.POST.get('proximo_seguimiento')
+        imagen_seguimiento = request.FILES.get('imagen_seguimiento')
         
         try:
             embudo = EmbudoVentas.objects.get(id=embudo_id)
@@ -1476,6 +1477,7 @@ def crear_contacto(request):
                 resultado=resultado,
                 observaciones=observaciones,
                 proximo_seguimiento=proximo_seguimiento if proximo_seguimiento else None,
+                imagen_seguimiento=imagen_seguimiento,
                 responsable=request.user,
                 embudo_ventas=embudo
             )

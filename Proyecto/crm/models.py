@@ -510,6 +510,14 @@ class ContactoCliente(models.Model):
     observaciones = models.TextField(blank=True, verbose_name="Observaciones")
     proximo_seguimiento = models.DateTimeField(null=True, blank=True, verbose_name="Próximo Seguimiento")
     
+    # Campo para imagen del seguimiento
+    imagen_seguimiento = models.ImageField(
+        upload_to='seguimientos/', 
+        null=True, 
+        blank=True, 
+        verbose_name="Imagen del Seguimiento"
+    )
+    
     # Responsable del contacto
     responsable = models.ForeignKey(
         Usuario, 

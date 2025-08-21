@@ -642,14 +642,22 @@
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <form method="post" action="{% url 'crm:crear_contacto' %}">
+            <form method="post" action="{% url 'crm:crear_contacto' %}" enctype="multipart/form-data">
                 {% csrf_token %}
                 <input type="hidden" id="seguimientoContactoId" name="contacto_base_id">
                 <input type="hidden" name="embudo_id" value="{{ embudo.id }}">
                 <div class="modal-body">
                     <div class="alert alert-info">
-                        <strong>Cliente:</strong> <span id="seguimientoCliente"></span><br>
-                        <strong>Equipo:</strong> <span id="seguimientoEquipo"></span>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <strong>Cliente:</strong> <span id="seguimientoCliente"></span><br>
+                                <small class="text-muted" id="seguimientoClienteCuit"></small>
+                            </div>
+                            <div class="col-md-6">
+                                <strong>Equipo:</strong> <span id="seguimientoEquipo"></span><br>
+                                <small class="text-muted" id="seguimientoEquipoModelo"></small>
+                            </div>
+                        </div>
                     </div>
                     <div class="row">
                         <div class="col-md-6">
@@ -694,6 +702,11 @@
                     <div class="mb-3">
                         <label class="form-label">Próximo Seguimiento</label>
                         <input type="datetime-local" name="proximo_seguimiento" class="form-control">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Imagen del Seguimiento (Opcional)</label>
+                        <input type="file" name="imagen_seguimiento" class="form-control" accept="image/*">
+                        <div class="form-text">Puede subir una imagen relacionada con el seguimiento (foto del equipo, documento, etc.)</div>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -1325,7 +1338,23 @@ function nuevoSeguimiento(contactoId) {
             if (data.success) {
                 document.getElementById('seguimientoContactoId').value = contactoId;
                 document.getElementById('seguimientoCliente').textContent = data.contacto.cliente;
-                document.getElementById('seguimientoEquipo').textContent = data.contacto.descripcion;
+                document.getElementById('seguimientoClienteCuit').textContent = data.contacto.cliente_cuit || '';
+                
+                // Extraer información del equipo desde las observaciones
+                const observaciones = data.contacto.observaciones || '';
+                if (observaciones.includes('Equipo:')) {
+                    const equipoMatch = observaciones.match(/Equipo: ([^-]+) - (.+)/);
+                    if (equipoMatch) {
+                        document.getElementById('seguimientoEquipo').textContent = equipoMatch[1].trim();
+                        document.getElementById('seguimientoEquipoModelo').textContent = equipoMatch[2].trim();
+                    } else {
+                        document.getElementById('seguimientoEquipo').textContent = 'Información no disponible';
+                        document.getElementById('seguimientoEquipoModelo').textContent = '';
+                    }
+                } else {
+                    document.getElementById('seguimientoEquipo').textContent = 'Información no disponible';
+                    document.getElementById('seguimientoEquipoModelo').textContent = '';
+                }
                 
                 modal.show();
             } else {
