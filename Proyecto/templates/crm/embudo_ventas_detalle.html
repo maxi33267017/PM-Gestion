@@ -1048,6 +1048,7 @@
             <form method="post" action="{% url 'crm:crear_contacto' %}">
                 {% csrf_token %}
                 <input type="hidden" name="embudo_id" value="{{ embudo.id }}">
+                <input type="hidden" name="contacto_original_id" id="contactoOriginalId">
                 <div class="modal-body">
                     <div class="row">
                         <div class="col-md-6">
@@ -1398,56 +1399,13 @@ function editarContacto(contactoId) {
 
 function nuevoContacto(contactoId) {
     // Abrir modal para nuevo contacto
-    const modal = new bootstrap.Modal(document.getElementById('nuevoSeguimientoModal'));
+    const modal = new bootstrap.Modal(document.getElementById('nuevoContactoModal'));
     
-    // Cargar información del contacto para el seguimiento
-    fetch(`/crm/contacto/${contactoId}/detalle/`)
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                document.getElementById('seguimientoContactoId').value = contactoId;
-                document.getElementById('seguimientoCliente').textContent = data.contacto.cliente;
-                document.getElementById('seguimientoClienteCuit').textContent = data.contacto.cliente_cuit || '';
-                
-                // Extraer información del equipo desde la descripción o observaciones
-                const descripcion = data.contacto.descripcion || '';
-                const observaciones = data.contacto.observaciones || '';
-                
-                // Buscar información del equipo en la descripción (formato POPS)
-                if (descripcion.includes('Equipo sin servicios:')) {
-                    const equipoMatch = descripcion.match(/Equipo sin servicios: ([^-]+) - ([^-]+) - Vendido:/);
-                    if (equipoMatch) {
-                        document.getElementById('seguimientoEquipo').textContent = equipoMatch[1].trim();
-                        document.getElementById('seguimientoEquipoModelo').textContent = equipoMatch[2].trim();
-                    } else {
-                        document.getElementById('seguimientoEquipo').textContent = 'Información no disponible';
-                        document.getElementById('seguimientoEquipoModelo').textContent = '';
-                    }
-                }
-                // Buscar información del equipo en las observaciones (formato campañas)
-                else if (observaciones.includes('Equipo:')) {
-                    const equipoMatch = observaciones.match(/Equipo: ([^-]+) - (.+)/);
-                    if (equipoMatch) {
-                        document.getElementById('seguimientoEquipo').textContent = equipoMatch[1].trim();
-                        document.getElementById('seguimientoEquipoModelo').textContent = equipoMatch[2].trim();
-                    } else {
-                        document.getElementById('seguimientoEquipo').textContent = 'Información no disponible';
-                        document.getElementById('seguimientoEquipoModelo').textContent = '';
-                    }
-                } else {
-                    document.getElementById('seguimientoEquipo').textContent = 'Información no disponible';
-                    document.getElementById('seguimientoEquipoModelo').textContent = '';
-                }
-                
-                modal.show();
-            } else {
-                alert('Error al cargar la información del contacto');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Error al cargar la información del contacto');
-        });
+    // Establecer el ID del contacto original
+    document.getElementById('contactoOriginalId').value = contactoId;
+    
+    // Mostrar el modal directamente
+    modal.show();
 }
 
 // Función para ver historial completo de una oportunidad

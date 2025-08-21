@@ -1504,9 +1504,21 @@ def crear_contacto(request):
         try:
             embudo = EmbudoVentas.objects.get(id=embudo_id)
             
+            # Obtener el cliente desde el contacto original (oportunidad)
+            contacto_original_id = request.POST.get('contacto_original_id')
+            cliente = None
+            
+            if contacto_original_id:
+                # Si tenemos un contacto original, usar su cliente
+                contacto_original = ContactoCliente.objects.get(id=contacto_original_id)
+                cliente = contacto_original.cliente
+            else:
+                # Fallback al cliente del embudo (para embudos específicos)
+                cliente = embudo.cliente
+            
             # Crear el contacto
             contacto = ContactoCliente.objects.create(
-                cliente=embudo.cliente,
+                cliente=cliente,
                 tipo_contacto=tipo_contacto,
                 descripcion=descripcion,
                 resultado=resultado,
