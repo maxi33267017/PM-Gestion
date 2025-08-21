@@ -291,7 +291,7 @@ class Campana(models.Model):
             embudo = EmbudoVentas.objects.create(
                 campana=self,
                 cliente=None,  # Embudo genérico
-                etapa='CONTACTO_INICIAL',
+                etapa='PENDIENTE',  # Cambiado a PENDIENTE
                 origen='CAMPAÑA_MARKETING',
                 valor_estimado=valor_estimado_total,
                 descripcion_negocio=self.descripcion
@@ -299,48 +299,12 @@ class Campana(models.Model):
             print(f"✅ Embudo genérico creado: {embudo}")
             print(f"💰 Valor estimado total: ${valor_estimado_total}")
         
-        # Crear ContactoCliente para cada equipo de cada cliente objetivo
-        contactos_creados = 0
+        # NO crear contactos automáticos - solo crear oportunidades iniciales
+        # Los contactos se registrarán manualmente cuando se realice el primer contacto
+        print(f"✅ Embudo creado con {clientes_objetivo.count()} oportunidades pendientes")
+        print(f"📝 Los contactos se registrarán manualmente cuando se realice el primer contacto")
         
-        # Definir el filtro de equipos
-        equipos_query = {'activo': True}
-        
-        if self.tipo_equipo:
-            equipos_query['modelo__tipo_equipo'] = self.tipo_equipo
-            
-        if self.modelo_equipo:
-            equipos_query['modelo'] = self.modelo_equipo
-        
-        for cliente in clientes_objetivo:
-            print(f"Procesando cliente: {cliente.razon_social}")
-            
-            # Obtener todos los equipos del cliente que cumplen los criterios
-            equipos_cliente = Equipo.objects.filter(
-                cliente=cliente,
-                **equipos_query
-            )
-            
-            print(f"  Equipos encontrados para {cliente.razon_social}: {equipos_cliente.count()}")
-            
-            for equipo in equipos_cliente:
-                # Verificar si ya existe un contacto para este equipo en este embudo
-                if not ContactoCliente.objects.filter(embudo_ventas=embudo, cliente=cliente, observaciones__contains=f"Equipo: {equipo.numero_serie}").exists():
-                    ContactoCliente.objects.create(
-                        embudo_ventas=embudo,
-                        cliente=cliente,
-                        tipo_contacto='PRESENTACION',
-                        descripcion=f"Oportunidad de campaña: {self.nombre}",
-                        resultado='PENDIENTE',  # Cambiado de EXITOSO a PENDIENTE
-                        observaciones=f"Campaña automática creada para cliente con equipos del tipo seleccionado. Equipo: {equipo.numero_serie} - {equipo.modelo}",
-                        responsable=self.creado_por
-                    )
-                    contactos_creados += 1
-                    print(f"  ✅ Contacto creado para {cliente.razon_social} - Equipo: {equipo.numero_serie}")
-                else:
-                    print(f"  ⚠️ Contacto ya existe para {cliente.razon_social} - Equipo: {equipo.numero_serie}")
-        
-        print(f"Total contactos creados: {contactos_creados}")
-        return contactos_creados
+        return 0  # No se crean contactos automáticos
 
 
 class Contacto(models.Model):
@@ -365,12 +329,12 @@ class EmbudoVentas(models.Model):
     """Modelo para el embudo de ventas con etapas"""
     
     ETAPA_CHOICES = [
-        ('CONTACTO_INICIAL', 'Contacto Inicial'),
-        ('CALIFICACION', 'Calificación'),
-        ('PROPUESTA', 'Propuesta'),
-        ('NEGOCIACION', 'Negociación'),
-        ('CIERRE', 'Cierre'),
-        ('PERDIDO', 'Perdido'),
+        ('PENDIENTE', 'Pendiente'),
+        ('CONTACTADO', 'Contactado'),
+        ('CON_RESPUESTA', 'Con Respuesta'),
+        ('PRESUPUESTADO', 'Presupuestado'),
+        ('VENTA_PERDIDA', 'Venta Perdida'),
+        ('VENTA_EXITOSA', 'Venta Exitosa'),
     ]
     
     campana = models.ForeignKey(
@@ -494,12 +458,12 @@ class ContactoCliente(models.Model):
     ]
     
     RESULTADO_CHOICES = [
-        ('EXITOSO', 'Exitoso'),
-        ('NO_CONTESTA', 'No Contesta'),
-        ('REPROGRAMADO', 'Reprogramado'),
-        ('CANCELADO', 'Cancelado'),
-        ('VENTA', 'Venta Realizada'),
-        ('OBJECCION', 'Objeción'),
+        ('PENDIENTE', 'Pendiente'),
+        ('CONTACTADO', 'Contactado'),
+        ('CON_RESPUESTA', 'Con Respuesta'),
+        ('PRESUPUESTADO', 'Presupuestado'),
+        ('VENTA_PERDIDA', 'Venta Perdida'),
+        ('VENTA_EXITOSA', 'Venta Exitosa'),
     ]
     
     cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE, verbose_name="Cliente")

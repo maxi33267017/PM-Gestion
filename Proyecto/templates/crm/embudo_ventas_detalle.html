@@ -403,14 +403,10 @@
                                                         title="Ver historial completo">
                                                     <i class="bi bi-clock-history"></i>
                                                 </button>
-                                                <button type="button" class="btn btn-sm btn-outline-success" 
-                                                        onclick="editarContacto({{ contacto.id }})" 
-                                                        title="Editar">
-                                                    <i class="bi bi-pencil"></i>
-                                                </button>
+
                                                 <button type="button" class="btn btn-sm btn-outline-info" 
-                                                        onclick="nuevoSeguimiento({{ contacto.id }})" 
-                                                        title="Nuevo seguimiento">
+                                                        onclick="nuevoContacto({{ contacto.id }})" 
+                                                        title="Nuevo contacto">
                                                     <i class="bi bi-plus-circle"></i>
                                                 </button>
                                             </div>
@@ -638,7 +634,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">
-                    <i class="bi bi-plus-circle me-2"></i>Nuevo Seguimiento
+                    <i class="bi bi-plus-circle me-2"></i>Nuevo Contacto
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
@@ -1327,8 +1323,8 @@ function editarContacto(contactoId) {
         });
 }
 
-function nuevoSeguimiento(contactoId) {
-    // Abrir modal para nuevo seguimiento
+function nuevoContacto(contactoId) {
+    // Abrir modal para nuevo contacto
     const modal = new bootstrap.Modal(document.getElementById('nuevoSeguimientoModal'));
     
     // Cargar información del contacto para el seguimiento
