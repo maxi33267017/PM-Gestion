@@ -1290,7 +1290,7 @@ def embudo_ventas_dashboard(request):
     ).order_by('-total')
     
     # Datos para el gráfico de embudo
-    etapas_orden = ['CONTACTO_INICIAL', 'CALIFICACION', 'PROPUESTA', 'NEGOCIACION', 'CIERRE', 'PERDIDO']
+    etapas_orden = ['PENDIENTE', 'CONTACTADO', 'CON_RESPUESTA', 'PRESUPUESTADO', 'VENTA_EXITOSA', 'VENTA_PERDIDA']
     embudo_data = []
     
     for etapa in etapas_orden:
@@ -2545,7 +2545,7 @@ def crear_embudo_leads(request):
             embudo_principal = EmbudoVentas.objects.create(
                 campana=None,
                 cliente=None,  # Embudo genérico sin cliente específico
-                etapa='CONTACTO_INICIAL',
+                etapa='PENDIENTE',
                 origen='LEAD_JD',
                 descripcion_negocio=f"Embudo Leads {fecha_actual.strftime('%d/%m/%Y')} con {leads.count()} leads del período {fecha_inicio.strftime('%d/%m/%Y')} - {fecha_fin.strftime('%d/%m/%Y')}",
                 observaciones=f"Embudo creado el {fecha_actual.strftime('%d/%m/%Y')} con {leads.count()} oportunidades - Cada oportunidad tiene su propio cliente",
