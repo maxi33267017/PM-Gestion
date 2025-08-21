@@ -1296,15 +1296,19 @@ def embudo_ventas_dashboard(request):
     for etapa in etapas_orden:
         etapa_stats = next((s for s in etapas_stats if s['etapa'] == etapa), None)
         if etapa_stats:
+            # Manejar estados viejos que ya no existen
+            etapa_display = dict(EmbudoVentas.ETAPA_CHOICES).get(etapa, etapa)
             embudo_data.append({
-                'etapa': dict(EmbudoVentas.ETAPA_CHOICES)[etapa],
+                'etapa': etapa_display,
                 'total': etapa_stats['total'],
                 'valor_total': float(etapa_stats['valor_total'] or 0),
                 'color': get_etapa_color(etapa)
             })
         else:
+            # Manejar estados viejos que ya no existen
+            etapa_display = dict(EmbudoVentas.ETAPA_CHOICES).get(etapa, etapa)
             embudo_data.append({
-                'etapa': dict(EmbudoVentas.ETAPA_CHOICES)[etapa],
+                'etapa': etapa_display,
                 'total': 0,
                 'valor_total': 0,
                 'color': get_etapa_color(etapa)
@@ -1498,6 +1502,14 @@ def crear_contacto(request):
 def get_etapa_color(etapa):
     """Retorna el color CSS para cada etapa del embudo"""
     colors = {
+        # Estados nuevos
+        'PENDIENTE': '#6c757d',         # Gris
+        'CONTACTADO': '#007bff',        # Azul
+        'CON_RESPUESTA': '#17a2b8',     # Cyan
+        'PRESUPUESTADO': '#ffc107',     # Amarillo
+        'VENTA_EXITOSA': '#28a745',     # Verde
+        'VENTA_PERDIDA': '#dc3545',     # Rojo
+        # Estados viejos (para compatibilidad)
         'CONTACTO_INICIAL': '#007bff',  # Azul
         'CALIFICACION': '#17a2b8',      # Cyan
         'PROPUESTA': '#ffc107',         # Amarillo
@@ -1509,7 +1521,8 @@ def get_etapa_color(etapa):
 
 def generar_datos_embudo(embudos):
     """Genera los datos para el gráfico del embudo"""
-    etapas_orden = ['CONTACTO_INICIAL', 'CALIFICACION', 'PROPUESTA', 'NEGOCIACION', 'CIERRE', 'PERDIDO']
+    # Usar los nuevos estados del embudo
+    etapas_orden = ['PENDIENTE', 'CONTACTADO', 'CON_RESPUESTA', 'PRESUPUESTADO', 'VENTA_EXITOSA', 'VENTA_PERDIDA']
     
     # Obtener estadísticas por etapa
     etapas_stats = embudos.values('etapa').annotate(
@@ -1527,8 +1540,11 @@ def generar_datos_embudo(embudos):
             'valor_total': 0
         })
         
+        # Manejar estados viejos que ya no existen
+        etapa_display = dict(EmbudoVentas.ETAPA_CHOICES).get(etapa, etapa)
+        
         embudo_data.append({
-            'etapa': dict(EmbudoVentas.ETAPA_CHOICES)[etapa],
+            'etapa': etapa_display,
             'etapa_key': etapa,
             'total': etapa_stats['total'],
             'valor_total': float(etapa_stats['valor_total'] or 0),
@@ -1550,8 +1566,9 @@ def calcular_tasa_conversion(embudos):
     if total_embudos == 0:
         return 0
     
-    embudos_cierre = embudos.filter(etapa='CIERRE').count()
-    return round((embudos_cierre / total_embudos) * 100, 1)
+    # Usar el nuevo estado VENTA_EXITOSA
+    embudos_exitosos = embudos.filter(etapa='VENTA_EXITOSA').count()
+    return round((embudos_exitosos / total_embudos) * 100, 1)
 
 @login_required
 def reporte_facturacion(request):
