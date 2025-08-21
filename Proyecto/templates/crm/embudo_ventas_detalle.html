@@ -305,12 +305,11 @@
                                 <select id="filtroResultado" class="form-select">
                                     <option value="">Todos los resultados</option>
                                     <option value="PENDIENTE">Pendiente</option>
-                                    <option value="EXITOSO">Exitoso</option>
-                                    <option value="VENTA">Venta</option>
-                                    <option value="OBJECCION">Objeción</option>
-                                    <option value="NO_CONTESTA">No Contesta</option>
-                                    <option value="REPROGRAMADO">Reprogramado</option>
-                                    <option value="CANCELADO">Cancelado</option>
+                                    <option value="CONTACTADO">Contactado</option>
+                                    <option value="CON_RESPUESTA">Con Respuesta</option>
+                                    <option value="PRESUPUESTADO">Presupuestado</option>
+                                    <option value="VENTA_PERDIDA">Venta Perdida</option>
+                                    <option value="VENTA_EXITOSA">Venta Exitosa</option>
                                 </select>
                             </div>
                             <div class="col-md-3">
@@ -377,7 +376,7 @@
                                             <span class="badge bg-info">{{ contacto.get_tipo_contacto_display }}</span>
                                         </td>
                                         <td>
-                                            <span class="badge {% if contacto.resultado == 'EXITOSO' %}bg-success{% elif contacto.resultado == 'VENTA' %}bg-success{% elif contacto.resultado == 'OBJECCION' %}bg-warning{% elif contacto.resultado == 'PENDIENTE' %}bg-secondary{% else %}bg-light text-dark{% endif %}">
+                                            <span class="badge {% if contacto.resultado == 'VENTA_EXITOSA' %}bg-success{% elif contacto.resultado == 'PRESUPUESTADO' %}bg-warning{% elif contacto.resultado == 'PENDIENTE' %}bg-secondary{% elif contacto.resultado == 'VENTA_PERDIDA' %}bg-danger{% elif contacto.resultado == 'CONTACTADO' %}bg-primary{% elif contacto.resultado == 'CON_RESPUESTA' %}bg-info{% else %}bg-light text-dark{% endif %}">
                                                 {{ contacto.get_resultado_display }}
                                             </span>
                                         </td>
@@ -736,77 +735,92 @@
                 
                 <!-- Gráfico del embudo -->
                 <div class="embudo-container mb-4">
-                    <div class="embudo-etapa" id="etapa-contacto-inicial">
+                    <div class="embudo-etapa" id="etapa-pendiente">
                         <div class="embudo-header">
-                            <h6>Contacto Inicial</h6>
+                            <h6>Pendiente</h6>
                             <div class="embudo-stats">
-                                <span class="badge bg-primary" id="count-contacto-inicial">0</span>
-                                <span class="text-muted" id="percent-contacto-inicial">0%</span>
+                                <span class="badge bg-secondary" id="count-pendiente">0</span>
+                                <span class="text-muted" id="percent-pendiente">0%</span>
                             </div>
                         </div>
                         <div class="embudo-progress">
                             <div class="progress">
-                                <div class="progress-bar bg-primary" id="progress-contacto-inicial" style="width: 0%"></div>
+                                <div class="progress-bar bg-secondary" id="progress-pendiente" style="width: 0%"></div>
                             </div>
                         </div>
                     </div>
                     
-                    <div class="embudo-etapa" id="etapa-calificacion">
+                    <div class="embudo-etapa" id="etapa-contactado">
                         <div class="embudo-header">
-                            <h6>Calificación</h6>
+                            <h6>Contactado</h6>
                             <div class="embudo-stats">
-                                <span class="badge bg-info" id="count-calificacion">0</span>
-                                <span class="text-muted" id="percent-calificacion">0%</span>
+                                <span class="badge bg-primary" id="count-contactado">0</span>
+                                <span class="text-muted" id="percent-contactado">0%</span>
                             </div>
                         </div>
                         <div class="embudo-progress">
                             <div class="progress">
-                                <div class="progress-bar bg-info" id="progress-calificacion" style="width: 0%"></div>
+                                <div class="progress-bar bg-primary" id="progress-contactado" style="width: 0%"></div>
                             </div>
                         </div>
                     </div>
                     
-                    <div class="embudo-etapa" id="etapa-propuesta">
+                    <div class="embudo-etapa" id="etapa-con-respuesta">
                         <div class="embudo-header">
-                            <h6>Propuesta</h6>
+                            <h6>Con Respuesta</h6>
                             <div class="embudo-stats">
-                                <span class="badge bg-warning" id="count-propuesta">0</span>
-                                <span class="text-muted" id="percent-propuesta">0%</span>
+                                <span class="badge bg-info" id="count-con-respuesta">0</span>
+                                <span class="text-muted" id="percent-con-respuesta">0%</span>
                             </div>
                         </div>
                         <div class="embudo-progress">
                             <div class="progress">
-                                <div class="progress-bar bg-warning" id="progress-propuesta" style="width: 0%"></div>
+                                <div class="progress-bar bg-info" id="progress-con-respuesta" style="width: 0%"></div>
                             </div>
                         </div>
                     </div>
                     
-                    <div class="embudo-etapa" id="etapa-negociacion">
+                    <div class="embudo-etapa" id="etapa-presupuestado">
                         <div class="embudo-header">
-                            <h6>Negociación</h6>
+                            <h6>Presupuestado</h6>
                             <div class="embudo-stats">
-                                <span class="badge bg-orange" id="count-negociacion">0</span>
-                                <span class="text-muted" id="percent-negociacion">0%</span>
+                                <span class="badge bg-warning" id="count-presupuestado">0</span>
+                                <span class="text-muted" id="percent-presupuestado">0%</span>
                             </div>
                         </div>
                         <div class="embudo-progress">
                             <div class="progress">
-                                <div class="progress-bar bg-orange" id="progress-negociacion" style="width: 0%"></div>
+                                <div class="progress-bar bg-warning" id="progress-presupuestado" style="width: 0%"></div>
                             </div>
                         </div>
                     </div>
                     
-                    <div class="embudo-etapa" id="etapa-cierre">
+                    <div class="embudo-etapa" id="etapa-venta-exitosa">
                         <div class="embudo-header">
-                            <h6>Cierre</h6>
+                            <h6>Venta Exitosa</h6>
                             <div class="embudo-stats">
-                                <span class="badge bg-success" id="count-cierre">0</span>
-                                <span class="text-muted" id="percent-cierre">0%</span>
+                                <span class="badge bg-success" id="count-venta-exitosa">0</span>
+                                <span class="text-muted" id="percent-venta-exitosa">0%</span>
                             </div>
                         </div>
                         <div class="embudo-progress">
                             <div class="progress">
-                                <div class="progress-bar bg-success" id="progress-cierre" style="width: 0%"></div>
+                                <div class="progress-bar bg-success" id="progress-venta-exitosa" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="embudo-etapa" id="etapa-venta-perdida">
+                        <div class="embudo-header">
+                            <h6>Venta Perdida</h6>
+                            <div class="embudo-stats">
+                                <span class="badge bg-danger" id="count-venta-perdida">0</span>
+                                <span class="text-muted" id="percent-venta-perdida">0%</span>
+                            </div>
+                        </div>
+                        <div class="embudo-progress">
+                            <div class="progress">
+                                <div class="progress-bar bg-danger" id="progress-venta-perdida" style="width: 0%"></div>
                             </div>
                         </div>
                     </div>
@@ -1173,29 +1187,34 @@
 }
 
 /* Colores específicos para cada etapa */
-#etapa-contacto-inicial {
+#etapa-pendiente {
+    border-color: #6c757d;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+}
+
+#etapa-contactado {
     border-color: #007bff;
     background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
 }
 
-#etapa-calificacion {
+#etapa-con-respuesta {
     border-color: #17a2b8;
     background: linear-gradient(135deg, #e0f7fa 0%, #b2ebf2 100%);
 }
 
-#etapa-propuesta {
+#etapa-presupuestado {
     border-color: #ffc107;
     background: linear-gradient(135deg, #fff8e1 0%, #ffecb3 100%);
 }
 
-#etapa-negociacion {
-    border-color: #fd7e14;
-    background: linear-gradient(135deg, #fff3e0 0%, #ffcc80 100%);
-}
-
-#etapa-cierre {
+#etapa-venta-exitosa {
     border-color: #28a745;
     background: linear-gradient(135deg, #e8f5e8 0%, #c8e6c9 100%);
+}
+
+#etapa-venta-perdida {
+    border-color: #dc3545;
+    background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%);
 }
 
 /* Responsive */
@@ -1418,7 +1437,7 @@ function mostrarHistorial(contactos) {
 function actualizarEstadisticasHistorial(contactos) {
     document.getElementById('totalContactos').textContent = contactos.length;
     
-    const exitosos = contactos.filter(c => c.resultado === 'EXITOSO' || c.resultado === 'VENTA').length;
+    const exitosos = contactos.filter(c => c.resultado === 'VENTA_EXITOSA').length;
     document.getElementById('contactosExitosos').textContent = exitosos;
     
     const pendientes = contactos.filter(c => c.resultado === 'PENDIENTE').length;
@@ -1464,17 +1483,17 @@ function limpiarFiltrosHistorial() {
 // Función para obtener la clase CSS del badge según el resultado
 function getBadgeClass(resultado) {
     switch (resultado) {
-        case 'EXITOSO':
-        case 'VENTA':
+        case 'VENTA_EXITOSA':
             return 'bg-success';
-        case 'OBJECCION':
+        case 'PRESUPUESTADO':
             return 'bg-warning';
         case 'PENDIENTE':
             return 'bg-secondary';
-        case 'NO_CONTESTA':
-        case 'CANCELADO':
+        case 'VENTA_PERDIDA':
             return 'bg-danger';
-        case 'REPROGRAMADO':
+        case 'CONTACTADO':
+            return 'bg-primary';
+        case 'CON_RESPUESTA':
             return 'bg-info';
         default:
             return 'bg-light text-dark';
@@ -1507,13 +1526,14 @@ function verGraficoEmbudo() {
 function actualizarGraficoEmbudo(datos) {
     const totalOportunidades = datos.total_contactos;
     
-    // Actualizar cada etapa
+    // Actualizar cada etapa con los nuevos estados
     const etapas = [
-        { id: 'contacto-inicial', count: datos.contacto_inicial, percent: (datos.contacto_inicial / totalOportunidades * 100) },
-        { id: 'calificacion', count: datos.calificacion, percent: (datos.calificacion / totalOportunidades * 100) },
-        { id: 'propuesta', count: datos.propuesta, percent: (datos.propuesta / totalOportunidades * 100) },
-        { id: 'negociacion', count: datos.negociacion, percent: (datos.negociacion / totalOportunidades * 100) },
-        { id: 'cierre', count: datos.cierre, percent: (datos.cierre / totalOportunidades * 100) }
+        { id: 'pendiente', count: datos.pendiente, percent: (datos.pendiente / totalOportunidades * 100) },
+        { id: 'contactado', count: datos.contactado, percent: (datos.contactado / totalOportunidades * 100) },
+        { id: 'con-respuesta', count: datos.con_respuesta, percent: (datos.con_respuesta / totalOportunidades * 100) },
+        { id: 'presupuestado', count: datos.presupuestado, percent: (datos.presupuestado / totalOportunidades * 100) },
+        { id: 'venta-exitosa', count: datos.venta_exitosa, percent: (datos.venta_exitosa / totalOportunidades * 100) },
+        { id: 'venta-perdida', count: datos.venta_perdida, percent: (datos.venta_perdida / totalOportunidades * 100) }
     ];
     
     etapas.forEach(etapa => {

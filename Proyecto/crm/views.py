@@ -2435,40 +2435,42 @@ def embudo_datos_grafico_ajax(request, embudo_id):
             # Si no hay contactos, retornar datos vacíos
             datos = {
                 'total_contactos': 0,
-                'contacto_inicial': 0,
-                'calificacion': 0,
-                'propuesta': 0,
-                'negociacion': 0,
-                'cierre': 0,
+                'pendiente': 0,
+                'contactado': 0,
+                'con_respuesta': 0,
+                'presupuestado': 0,
+                'venta_exitosa': 0,
+                'venta_perdida': 0,
                 'tasa_conversion': 0,
                 'valor_estimado': 0,
                 'valor_cierre': 0,
                 'promedio_oportunidad': 0
             }
         else:
-            # Contar contactos por resultado (simulando etapas del embudo)
-            # Para POPS, usamos los resultados de los contactos como etapas
-            contacto_inicial = contactos.filter(resultado='PENDIENTE').count()
-            calificacion = contactos.filter(resultado='EXITOSO').count()
-            propuesta = contactos.filter(resultado='REPROGRAMADO').count()
-            negociacion = contactos.filter(resultado='OBJECCION').count()
-            cierre = contactos.filter(resultado='VENTA').count()
+            # Contar contactos por resultado usando los nuevos estados
+            pendiente = contactos.filter(resultado='PENDIENTE').count()
+            contactado = contactos.filter(resultado='CONTACTADO').count()
+            con_respuesta = contactos.filter(resultado='CON_RESPUESTA').count()
+            presupuestado = contactos.filter(resultado='PRESUPUESTADO').count()
+            venta_exitosa = contactos.filter(resultado='VENTA_EXITOSA').count()
+            venta_perdida = contactos.filter(resultado='VENTA_PERDIDA').count()
             
-            # Calcular tasa de conversión (cierre / total)
-            tasa_conversion = (cierre / total_contactos * 100) if total_contactos > 0 else 0
+            # Calcular tasa de conversión (ventas exitosas / total)
+            tasa_conversion = (venta_exitosa / total_contactos * 100) if total_contactos > 0 else 0
             
             # Calcular valores (simulados para POPS)
             valor_estimado = total_contactos * 1000  # $1000 por oportunidad estimado
-            valor_cierre = cierre * 800  # $800 por venta concretada
-            promedio_oportunidad = valor_cierre / cierre if cierre > 0 else 0
+            valor_cierre = venta_exitosa * 800  # $800 por venta concretada
+            promedio_oportunidad = valor_cierre / venta_exitosa if venta_exitosa > 0 else 0
             
             datos = {
                 'total_contactos': total_contactos,
-                'contacto_inicial': contacto_inicial,
-                'calificacion': calificacion,
-                'propuesta': propuesta,
-                'negociacion': negociacion,
-                'cierre': cierre,
+                'pendiente': pendiente,
+                'contactado': contactado,
+                'con_respuesta': con_respuesta,
+                'presupuestado': presupuestado,
+                'venta_exitosa': venta_exitosa,
+                'venta_perdida': venta_perdida,
                 'tasa_conversion': tasa_conversion,
                 'valor_estimado': valor_estimado,
                 'valor_cierre': valor_cierre,
