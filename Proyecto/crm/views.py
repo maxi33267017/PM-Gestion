@@ -2777,3 +2777,45 @@ def obtener_alertas_ajax(request):
             return JsonResponse({'success': False, 'error': str(e)})
     
     return JsonResponse({'success': False, 'error': 'Método no permitido'})
+
+@login_required
+def cambiar_estado_oportunidad(request):
+    """Vista para cambiar el estado de una oportunidad"""
+    if request.method == 'POST':
+        try:
+            contacto_id = request.POST.get('contacto_id')
+            nuevo_estado = request.POST.get('nuevo_estado')
+            observaciones = request.POST.get('observaciones_cambio', '')
+            
+            if not contacto_id or not nuevo_estado:
+                messages.error(request, 'Datos incompletos para cambiar el estado')
+                return redirect('crm:embudo_ventas_dashboard')
+            
+            # Obtener el contacto
+            contacto = get_object_or_404(ContactoCliente, id=contacto_id)
+            
+            # Guardar el estado anterior
+            estado_anterior = contacto.resultado
+            
+            # Actualizar el estado
+            contacto.resultado = nuevo_estado
+            
+            # Agregar observaciones del cambio si se proporcionaron
+            if observaciones:
+                observaciones_actuales = contacto.observaciones or ''
+                observaciones_cambio = f"\n--- CAMBIO DE ESTADO ---\nFecha: {timezone.now().strftime('%d/%m/%Y %H:%M')}\nDe: {estado_anterior} → A: {nuevo_estado}\nMotivo: {observaciones}\n"
+                contacto.observaciones = observaciones_actuales + observaciones_cambio
+            
+            contacto.save()
+            
+            messages.success(request, f'Estado cambiado exitosamente de {estado_anterior} a {nuevo_estado}')
+            
+        except Exception as e:
+            messages.error(request, f'Error al cambiar el estado: {str(e)}')
+    
+    # Redirigir de vuelta al embudo
+    embudo_id = request.POST.get('embudo_id') or request.GET.get('embudo_id')
+    if embudo_id:
+        return redirect('crm:embudo_ventas_detalle', embudo_id=embudo_id)
+    else:
+        return redirect('crm:embudo_ventas_dashboard')

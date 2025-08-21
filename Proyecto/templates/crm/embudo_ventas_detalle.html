@@ -408,6 +408,12 @@
                                                         title="Nuevo contacto">
                                                     <i class="bi bi-plus-circle"></i>
                                                 </button>
+                                                
+                                                <button type="button" class="btn btn-sm btn-outline-warning" 
+                                                        onclick="cambiarEstadoOportunidad({{ contacto.id }}, '{{ contacto.get_resultado_display|escapejs }}')" 
+                                                        title="Cambiar estado">
+                                                    <i class="bi bi-arrow-repeat"></i>
+                                                </button>
                                             </div>
                                         </td>
                                     </tr>
@@ -708,6 +714,55 @@
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
                     <button type="submit" class="btn btn-success">
                         <i class="bi bi-plus-circle me-2"></i>Crear Seguimiento
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para Cambiar Estado de Oportunidad -->
+<div class="modal fade" id="cambiarEstadoModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bi bi-arrow-repeat me-2"></i>Cambiar Estado de Oportunidad
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" action="{% url 'crm:cambiar_estado_oportunidad' %}">
+                {% csrf_token %}
+                <input type="hidden" name="contacto_id" id="estadoContactoId">
+                <input type="hidden" name="embudo_id" value="{{ embudo.id }}">
+                <div class="modal-body">
+                    <div class="alert alert-info">
+                        <strong>Cliente:</strong> <span id="estadoCliente"></span><br>
+                        <strong>Estado Actual:</strong> <span id="estadoActual"></span>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Nuevo Estado</label>
+                        <select name="nuevo_estado" class="form-select" required>
+                            <option value="PENDIENTE">Pendiente</option>
+                            <option value="CONTACTADO">Contactado</option>
+                            <option value="CON_RESPUESTA">Con Respuesta</option>
+                            <option value="PRESUPUESTADO">Presupuestado</option>
+                            <option value="VENTA_PERDIDA">Venta Perdida</option>
+                            <option value="VENTA_EXITOSA">Venta Exitosa</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Observaciones del Cambio</label>
+                        <textarea name="observaciones_cambio" class="form-control" rows="3" 
+                                  placeholder="Explique el motivo del cambio de estado..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-warning">
+                        <i class="bi bi-arrow-repeat me-2"></i>Cambiar Estado
                     </button>
                 </div>
             </form>
@@ -1568,6 +1623,48 @@ function actualizarGraficoEmbudo(datos) {
     document.getElementById('valor-estimado').textContent = `$${datos.valor_estimado.toLocaleString()}`;
     document.getElementById('valor-cierre').textContent = `$${datos.valor_cierre.toLocaleString()}`;
     document.getElementById('promedio-oportunidad').textContent = `$${datos.promedio_oportunidad.toLocaleString()}`;
+}
+
+// Función para cambiar estado de oportunidad
+function cambiarEstadoOportunidad(contactoId, estadoActual) {
+    // Abrir modal para cambiar estado
+    const modal = new bootstrap.Modal(document.getElementById('cambiarEstadoModal'));
+    
+    // Cargar información del contacto
+    fetch(`/crm/contacto/${contactoId}/detalle/`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                document.getElementById('estadoContactoId').value = contactoId;
+                document.getElementById('estadoCliente').textContent = data.contacto.cliente;
+                document.getElementById('estadoActual').textContent = estadoActual;
+                
+                // Seleccionar el estado actual en el dropdown
+                const selectEstado = document.querySelector('select[name="nuevo_estado"]');
+                if (selectEstado) {
+                    // Mapear estados viejos a nuevos si es necesario
+                    const estadoMapping = {
+                        'Pendiente': 'PENDIENTE',
+                        'Contactado': 'CONTACTADO',
+                        'Con Respuesta': 'CON_RESPUESTA',
+                        'Presupuestado': 'PRESUPUESTADO',
+                        'Venta Perdida': 'VENTA_PERDIDA',
+                        'Venta Exitosa': 'VENTA_EXITOSA'
+                    };
+                    
+                    const nuevoEstado = estadoMapping[estadoActual] || estadoActual;
+                    selectEstado.value = nuevoEstado;
+                }
+                
+                modal.show();
+            } else {
+                alert('Error al cargar la información del contacto');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error al cargar la información del contacto');
+        });
 }
 
 // Variable global para el ID del embudo

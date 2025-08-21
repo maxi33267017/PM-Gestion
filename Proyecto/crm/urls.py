@@ -51,6 +51,7 @@ urlpatterns = [
     path('editar-contacto/', views.editar_contacto, name='editar_contacto'),
     path('cliente/<int:cliente_id>/historial/', views.cliente_historial_ajax, name='cliente_historial_ajax'),
     path('embudo/<int:embudo_id>/datos-grafico/', views.embudo_datos_grafico_ajax, name='embudo_datos_grafico_ajax'),
+    path('cambiar-estado-oportunidad/', views.cambiar_estado_oportunidad, name='cambiar_estado_oportunidad'),
     # URLs para Embudo de Checklist Adicionales
     path('embudo-checklist/', views.embudo_checklist_dashboard, name='embudo_checklist_dashboard'),
     path('embudo-checklist/crear/', views.crear_checklist_adicional, name='crear_checklist_adicional'),
