@@ -1011,15 +1011,14 @@
                         </div>
                         <div class="col-md-6">
                             <div class="mb-3">
-                                <label class="form-label">Resultado</label>
+                                <label class="form-label">Estado</label>
                                 <select name="resultado" class="form-select" required>
                                     <option value="PENDIENTE">Pendiente</option>
-                                    <option value="EXITOSO">Exitoso</option>
-                                    <option value="NO_CONTESTA">No Contesta</option>
-                                    <option value="REPROGRAMADO">Reprogramado</option>
-                                    <option value="CANCELADO">Cancelado</option>
-                                    <option value="VENTA">Venta Realizada</option>
-                                    <option value="OBJECCION">Objeción</option>
+                                    <option value="CONTACTADO">Contactado</option>
+                                    <option value="CON_RESPUESTA">Con Respuesta</option>
+                                    <option value="PRESUPUESTADO">Presupuestado</option>
+                                    <option value="VENTA_PERDIDA">Venta Perdida</option>
+                                    <option value="VENTA_EXITOSA">Venta Exitosa</option>
                                 </select>
                             </div>
                         </div>
@@ -1355,9 +1354,23 @@ function nuevoContacto(contactoId) {
                 document.getElementById('seguimientoCliente').textContent = data.contacto.cliente;
                 document.getElementById('seguimientoClienteCuit').textContent = data.contacto.cliente_cuit || '';
                 
-                // Extraer información del equipo desde las observaciones
+                // Extraer información del equipo desde la descripción o observaciones
+                const descripcion = data.contacto.descripcion || '';
                 const observaciones = data.contacto.observaciones || '';
-                if (observaciones.includes('Equipo:')) {
+                
+                // Buscar información del equipo en la descripción (formato POPS)
+                if (descripcion.includes('Equipo sin servicios:')) {
+                    const equipoMatch = descripcion.match(/Equipo sin servicios: ([^-]+) - ([^-]+) - Vendido:/);
+                    if (equipoMatch) {
+                        document.getElementById('seguimientoEquipo').textContent = equipoMatch[1].trim();
+                        document.getElementById('seguimientoEquipoModelo').textContent = equipoMatch[2].trim();
+                    } else {
+                        document.getElementById('seguimientoEquipo').textContent = 'Información no disponible';
+                        document.getElementById('seguimientoEquipoModelo').textContent = '';
+                    }
+                }
+                // Buscar información del equipo en las observaciones (formato campañas)
+                else if (observaciones.includes('Equipo:')) {
                     const equipoMatch = observaciones.match(/Equipo: ([^-]+) - (.+)/);
                     if (equipoMatch) {
                         document.getElementById('seguimientoEquipo').textContent = equipoMatch[1].trim();
