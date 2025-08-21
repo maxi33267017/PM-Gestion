@@ -575,8 +575,14 @@ def crear_campania(request):
         valor_paquete = request.POST.get('valor_paquete')
         objetivo_paquetes = request.POST.get('objetivo_paquetes')
         estado = request.POST.get('estado', 'PLANIFICADA')
+        
+        # Campos de segmentación
+        tipo_segmentacion = request.POST.get('tipo_segmentacion', 'EQUIPOS')
         tipo_equipo_id = request.POST.get('tipo_equipo')
         modelo_equipo_id = request.POST.get('modelo_equipo')
+        provincia_id = request.POST.get('provincia')
+        clientes_especificos = request.POST.getlist('clientes_especificos')
+        
         crear_embudos = request.POST.get('crear_embudos') == 'on'
         
         print(f"Campos procesados:")
@@ -597,19 +603,30 @@ def crear_campania(request):
         if nombre and fecha_inicio and fecha_fin and valor_paquete and objetivo_paquetes:
             print("✅ Todos los campos requeridos están presentes")
             try:
-                # Obtener las instancias de tipo y modelo de equipo
+                # Obtener las instancias según el tipo de segmentación
                 tipo_equipo = None
                 modelo_equipo = None
+                provincia = None
                 
-                if tipo_equipo_id and tipo_equipo_id != '':
-                    from clientes.models import TipoEquipo
-                    tipo_equipo = TipoEquipo.objects.get(id=tipo_equipo_id)
-                    print(f"✅ Tipo equipo encontrado: {tipo_equipo}")
+                if tipo_segmentacion == 'EQUIPOS':
+                    if tipo_equipo_id and tipo_equipo_id != '':
+                        from clientes.models import TipoEquipo
+                        tipo_equipo = TipoEquipo.objects.get(id=tipo_equipo_id)
+                        print(f"✅ Tipo equipo encontrado: {tipo_equipo}")
+                    
+                    if modelo_equipo_id and modelo_equipo_id != '':
+                        from clientes.models import ModeloEquipo
+                        modelo_equipo = ModeloEquipo.objects.get(id=modelo_equipo_id)
+                        print(f"✅ Modelo equipo encontrado: {modelo_equipo}")
                 
-                if modelo_equipo_id and modelo_equipo_id != '':
-                    from clientes.models import ModeloEquipo
-                    modelo_equipo = ModeloEquipo.objects.get(id=modelo_equipo_id)
-                    print(f"✅ Modelo equipo encontrado: {modelo_equipo}")
+                elif tipo_segmentacion == 'PROVINCIA':
+                    if provincia_id and provincia_id != '':
+                        from recursosHumanos.models import Provincia
+                        provincia = Provincia.objects.get(id=provincia_id)
+                        print(f"✅ Provincia encontrada: {provincia}")
+                
+                print(f"✅ Tipo de segmentación: {tipo_segmentacion}")
+                print(f"✅ Clientes específicos seleccionados: {len(clientes_especificos)}")
                 
                 # Obtener la sucursal del usuario (o una por defecto)
                 sucursal = request.user.sucursal if hasattr(request.user, 'sucursal') and request.user.sucursal else Sucursal.objects.first()
@@ -624,8 +641,10 @@ def crear_campania(request):
                     fecha_fin=fecha_fin,
                     activa=(estado != 'FINALIZADA'),
                     sucursal=sucursal,
+                    tipo_segmentacion=tipo_segmentacion,
                     tipo_equipo=tipo_equipo,
                     modelo_equipo=modelo_equipo,
+                    provincia=provincia,
                     valor_paquete=float(valor_paquete) if valor_paquete else None,
                     objetivo_paquetes=int(objetivo_paquetes) if objetivo_paquetes else None,
                     estado=estado,
@@ -633,6 +652,13 @@ def crear_campania(request):
                     objetivo_contactos=int(objetivo_paquetes) if objetivo_paquetes else None,
                     creado_por=request.user
                 )
+                
+                # Agregar clientes específicos si se seleccionaron
+                if tipo_segmentacion == 'ESPECIFICOS' and clientes_especificos:
+                    from clientes.models import Cliente
+                    clientes = Cliente.objects.filter(id__in=clientes_especificos)
+                    campania.clientes_especificos.set(clientes)
+                    print(f"✅ {clientes.count()} clientes específicos agregados a la campaña")
                 print(f"✅ Campaña creada exitosamente: {campania.id}")
                 
                 # Crear embudos de ventas automáticamente si se solicita
@@ -654,14 +680,19 @@ def crear_campania(request):
             print("❌ Faltan campos requeridos")
             messages.error(request, 'Por favor complete todos los campos requeridos.')
     
-    # Obtener tipos de equipos y modelos para el formulario
-    from clientes.models import TipoEquipo, ModeloEquipo
+    # Obtener datos para el formulario
+    from clientes.models import TipoEquipo, ModeloEquipo, Cliente
+    from recursosHumanos.models import Provincia
     tipos_equipo = TipoEquipo.objects.filter(activo=True).order_by('nombre')
     modelos_equipo = ModeloEquipo.objects.filter(activo=True).order_by('tipo_equipo__nombre', 'marca', 'nombre')
+    provincias = Provincia.objects.all().order_by('nombre')
+    clientes = Cliente.objects.filter(activo=True).order_by('razon_social')
     
     context = {
         'tipos_equipo': tipos_equipo,
         'modelos_equipo': modelos_equipo,
+        'provincias': provincias,
+        'clientes': clientes,
     }
     return render(request, 'crm/crear_campania.html', context)
 

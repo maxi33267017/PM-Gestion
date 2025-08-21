@@ -162,6 +162,37 @@ class Campana(models.Model):
         help_text="Dejar vacío para incluir todos los modelos del tipo seleccionado"
     )
     
+    # Campos para segmentación por clientes
+    SEGMENTACION_CHOICES = [
+        ('TODOS', 'Todos los Clientes'),
+        ('PROVINCIA', 'Por Provincia'),
+        ('ESPECIFICOS', 'Clientes Específicos'),
+        ('EQUIPOS', 'Por Equipos (Actual)'),
+    ]
+    
+    tipo_segmentacion = models.CharField(
+        max_length=20,
+        choices=SEGMENTACION_CHOICES,
+        default='EQUIPOS',
+        verbose_name="Tipo de Segmentación"
+    )
+    
+    provincia = models.ForeignKey(
+        'recursosHumanos.Provincia',
+        on_delete=models.CASCADE,
+        verbose_name="Provincia",
+        null=True,
+        blank=True,
+        help_text="Seleccionar solo si la segmentación es por provincia"
+    )
+    
+    clientes_especificos = models.ManyToManyField(
+        'clientes.Cliente',
+        verbose_name="Clientes Específicos",
+        blank=True,
+        help_text="Seleccionar solo si la segmentación es por clientes específicos"
+    )
+    
     # Métricas y objetivos
     presupuesto = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True, verbose_name="Presupuesto")
     objetivo_contactos = models.IntegerField(null=True, blank=True, verbose_name="Objetivo de Contactos")
@@ -230,38 +261,71 @@ class Campana(models.Model):
         return valor_cierre_total
     
     def get_clientes_objetivo(self):
-        """Obtiene los clientes objetivo basados en el tipo y modelo de equipo"""
+        """Obtiene los clientes objetivo basados en el tipo de segmentación"""
         from clientes.models import Cliente, Equipo
         
         print(f"=== DEBUG GET_CLIENTES_OBJETIVO ===")
-        print(f"Tipo de equipo: {self.tipo_equipo}")
-        print(f"Modelo de equipo: {self.modelo_equipo}")
+        print(f"Tipo de segmentación: {self.tipo_segmentacion}")
         
-        # Filtrar equipos según la segmentación de la campaña
-        equipos_query = {'activo': True}
-        
-        if self.tipo_equipo:
-            equipos_query['modelo__tipo_equipo'] = self.tipo_equipo
-            print(f"Filtrando por tipo: {self.tipo_equipo.nombre}")
+        if self.tipo_segmentacion == 'TODOS':
+            # Todos los clientes activos
+            clientes = Cliente.objects.filter(activo=True)
+            print(f"Todos los clientes activos: {clientes.count()}")
+            return clientes
             
-        if self.modelo_equipo:
-            equipos_query['modelo'] = self.modelo_equipo
-            print(f"Filtrando por modelo: {self.modelo_equipo.nombre}")
+        elif self.tipo_segmentacion == 'PROVINCIA':
+            # Clientes por provincia
+            if not self.provincia:
+                print("⚠️ No se seleccionó provincia")
+                return Cliente.objects.none()
+            
+            clientes = Cliente.objects.filter(
+                provincia=self.provincia,
+                activo=True
+            )
+            print(f"Clientes en provincia {self.provincia.nombre}: {clientes.count()}")
+            return clientes
+            
+        elif self.tipo_segmentacion == 'ESPECIFICOS':
+            # Clientes específicos seleccionados
+            clientes = self.clientes_especificos.filter(activo=True)
+            print(f"Clientes específicos seleccionados: {clientes.count()}")
+            return clientes
+            
+        elif self.tipo_segmentacion == 'EQUIPOS':
+            # Segmentación por equipos (método original)
+            print(f"Tipo de equipo: {self.tipo_equipo}")
+            print(f"Modelo de equipo: {self.modelo_equipo}")
+            
+            # Filtrar equipos según la segmentación de la campaña
+            equipos_query = {'activo': True}
+            
+            if self.tipo_equipo:
+                equipos_query['modelo__tipo_equipo'] = self.tipo_equipo
+                print(f"Filtrando por tipo: {self.tipo_equipo.nombre}")
+                
+            if self.modelo_equipo:
+                equipos_query['modelo'] = self.modelo_equipo
+                print(f"Filtrando por modelo: {self.modelo_equipo.nombre}")
+            
+            print(f"Query de equipos: {equipos_query}")
+            
+            # Obtener equipos que cumplen los criterios
+            equipos_objetivo = Equipo.objects.filter(**equipos_query)
+            print(f"Equipos encontrados: {equipos_objetivo.count()}")
+            
+            # Obtener clientes únicos que tienen estos equipos
+            clientes_ids = equipos_objetivo.values_list('cliente_id', flat=True).distinct()
+            print(f"IDs de clientes únicos: {list(clientes_ids)}")
+            
+            clientes = Cliente.objects.filter(id__in=clientes_ids, activo=True)
+            print(f"Clientes activos encontrados: {clientes.count()}")
+            
+            return clientes
         
-        print(f"Query de equipos: {equipos_query}")
-        
-        # Obtener equipos que cumplen los criterios
-        equipos_objetivo = Equipo.objects.filter(**equipos_query)
-        print(f"Equipos encontrados: {equipos_objetivo.count()}")
-        
-        # Obtener clientes únicos que tienen estos equipos
-        clientes_ids = equipos_objetivo.values_list('cliente_id', flat=True).distinct()
-        print(f"IDs de clientes únicos: {list(clientes_ids)}")
-        
-        clientes = Cliente.objects.filter(id__in=clientes_ids, activo=True)
-        print(f"Clientes activos encontrados: {clientes.count()}")
-        
-        return clientes
+        else:
+            print(f"⚠️ Tipo de segmentación no válido: {self.tipo_segmentacion}")
+            return Cliente.objects.none()
     
     def crear_embudos_ventas_automaticos(self):
         """Crea automáticamente embudos de ventas para todos los clientes objetivo"""

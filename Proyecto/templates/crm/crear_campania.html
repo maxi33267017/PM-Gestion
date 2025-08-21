@@ -61,31 +61,70 @@
                             </div>
                         </div>
                         
-                        <!-- Segmentación por Equipos -->
+                        <!-- Segmentación de Clientes -->
                         <div class="card border-primary mb-3">
                             <div class="card-header bg-primary text-white">
                                 <h6 class="mb-0">
-                                    <i class="bi bi-gear me-2"></i>Segmentación por Equipos
+                                    <i class="bi bi-people me-2"></i>Segmentación de Clientes
                                 </h6>
                             </div>
                             <div class="card-body">
-                                <div class="row">
-                                    <div class="col-md-6 mb-3">
-                                        <label for="tipo_equipo" class="form-label">Tipo de Equipo</label>
-                                        <select class="form-select" id="tipo_equipo" name="tipo_equipo">
-                                            <option value="">Todos los tipos de equipos</option>
-                                            {% for tipo in tipos_equipo %}
-                                            <option value="{{ tipo.id }}">{{ tipo.nombre }}</option>
+                                <div class="mb-3">
+                                    <label for="tipo_segmentacion" class="form-label">Tipo de Segmentación *</label>
+                                    <select class="form-select" id="tipo_segmentacion" name="tipo_segmentacion" required>
+                                        <option value="EQUIPOS">Por Equipos (Actual)</option>
+                                        <option value="TODOS">Todos los Clientes</option>
+                                        <option value="PROVINCIA">Por Provincia</option>
+                                        <option value="ESPECIFICOS">Clientes Específicos</option>
+                                    </select>
+                                </div>
+                                
+                                <!-- Segmentación por Equipos -->
+                                <div id="segmentacion-equipos" class="segmentacion-section">
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label for="tipo_equipo" class="form-label">Tipo de Equipo</label>
+                                            <select class="form-select" id="tipo_equipo" name="tipo_equipo">
+                                                <option value="">Todos los tipos de equipos</option>
+                                                {% for tipo in tipos_equipo %}
+                                                <option value="{{ tipo.id }}">{{ tipo.nombre }}</option>
+                                                {% endfor %}
+                                            </select>
+                                            <small class="form-text text-muted">Dejar vacío para incluir todos los tipos</small>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label for="modelo_equipo" class="form-label">Modelo de Equipo</label>
+                                            <select class="form-select" id="modelo_equipo" name="modelo_equipo" disabled>
+                                                <option value="">Selecciona primero un tipo de equipo</option>
+                                            </select>
+                                            <small class="form-text text-muted">Dejar vacío para incluir todos los modelos del tipo seleccionado</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Segmentación por Provincia -->
+                                <div id="segmentacion-provincia" class="segmentacion-section" style="display: none;">
+                                    <div class="mb-3">
+                                        <label for="provincia" class="form-label">Provincia</label>
+                                        <select class="form-select" id="provincia" name="provincia">
+                                            <option value="">Selecciona una provincia</option>
+                                            {% for provincia in provincias %}
+                                            <option value="{{ provincia.id }}">{{ provincia.nombre }}</option>
                                             {% endfor %}
                                         </select>
-                                        <small class="form-text text-muted">Dejar vacío para incluir todos los tipos</small>
                                     </div>
-                                    <div class="col-md-6 mb-3">
-                                        <label for="modelo_equipo" class="form-label">Modelo de Equipo</label>
-                                        <select class="form-select" id="modelo_equipo" name="modelo_equipo" disabled>
-                                            <option value="">Selecciona primero un tipo de equipo</option>
+                                </div>
+                                
+                                <!-- Segmentación por Clientes Específicos -->
+                                <div id="segmentacion-especificos" class="segmentacion-section" style="display: none;">
+                                    <div class="mb-3">
+                                        <label for="clientes_especificos" class="form-label">Seleccionar Clientes</label>
+                                        <select class="form-select" id="clientes_especificos" name="clientes_especificos" multiple size="8">
+                                            {% for cliente in clientes %}
+                                            <option value="{{ cliente.id }}">{{ cliente.razon_social }} - {{ cliente.provincia.nombre }}</option>
+                                            {% endfor %}
                                         </select>
-                                        <small class="form-text text-muted">Dejar vacío para incluir todos los modelos del tipo seleccionado</small>
+                                        <small class="form-text text-muted">Mantén presionado Ctrl (Cmd en Mac) para seleccionar múltiples clientes</small>
                                     </div>
                                 </div>
                                 
@@ -269,5 +308,104 @@ function mostrarInfoSegmentacion() {
 
 // Event listener para el cambio de modelo
 document.getElementById('modelo_equipo').addEventListener('change', mostrarInfoSegmentacion);
+
+// ===== NUEVA FUNCIONALIDAD DE SEGMENTACIÓN =====
+
+// Función para manejar el cambio de tipo de segmentación
+function cambiarTipoSegmentacion() {
+    const tipoSegmentacion = document.getElementById('tipo_segmentacion').value;
+    
+    // Ocultar todas las secciones
+    document.querySelectorAll('.segmentacion-section').forEach(section => {
+        section.style.display = 'none';
+    });
+    
+    // Mostrar la sección correspondiente
+    switch(tipoSegmentacion) {
+        case 'EQUIPOS':
+            document.getElementById('segmentacion-equipos').style.display = 'block';
+            break;
+        case 'PROVINCIA':
+            document.getElementById('segmentacion-provincia').style.display = 'block';
+            break;
+        case 'ESPECIFICOS':
+            document.getElementById('segmentacion-especificos').style.display = 'block';
+            break;
+        case 'TODOS':
+            // No mostrar ninguna sección adicional
+            break;
+    }
+    
+    // Actualizar información de segmentación
+    actualizarInfoSegmentacion();
+}
+
+// Función para actualizar información de segmentación
+function actualizarInfoSegmentacion() {
+    const tipoSegmentacion = document.getElementById('tipo_segmentacion').value;
+    const infoDiv = document.getElementById('info-segmentacion');
+    const detailsDiv = document.getElementById('segmentacion-details');
+    
+    let info = '';
+    
+    switch(tipoSegmentacion) {
+        case 'TODOS':
+            info = '<strong>Segmentación:</strong> Todos los clientes activos del sistema';
+            break;
+        case 'PROVINCIA':
+            const provincia = document.getElementById('provincia');
+            if (provincia && provincia.value) {
+                const provinciaText = provincia.options[provincia.selectedIndex].text;
+                info = `<strong>Segmentación:</strong> Clientes de la provincia ${provinciaText}`;
+            } else {
+                info = '<strong>Segmentación:</strong> Por provincia (selecciona una provincia)';
+            }
+            break;
+        case 'ESPECIFICOS':
+            const clientesSelect = document.getElementById('clientes_especificos');
+            if (clientesSelect) {
+                const clientesSeleccionados = Array.from(clientesSelect.selectedOptions).length;
+                info = `<strong>Segmentación:</strong> ${clientesSeleccionados} cliente(s) específico(s) seleccionado(s)`;
+            } else {
+                info = '<strong>Segmentación:</strong> Por clientes específicos';
+            }
+            break;
+        case 'EQUIPOS':
+            const tipoEquipo = document.getElementById('tipo_equipo');
+            const modeloEquipo = document.getElementById('modelo_equipo');
+            let equiposInfo = 'Por equipos';
+            if (tipoEquipo && tipoEquipo.value) {
+                equiposInfo += ` - Tipo: ${tipoEquipo.options[tipoEquipo.selectedIndex].text}`;
+            }
+            if (modeloEquipo && modeloEquipo.value && !modeloEquipo.disabled) {
+                equiposInfo += ` - Modelo: ${modeloEquipo.options[modeloEquipo.selectedIndex].text}`;
+            }
+            info = `<strong>Segmentación:</strong> ${equiposInfo}`;
+            break;
+    }
+    
+    if (detailsDiv) {
+        detailsDiv.innerHTML = info;
+        infoDiv.style.display = 'block';
+    }
+}
+
+// Event listeners para nueva segmentación
+if (document.getElementById('tipo_segmentacion')) {
+    document.getElementById('tipo_segmentacion').addEventListener('change', cambiarTipoSegmentacion);
+}
+if (document.getElementById('provincia')) {
+    document.getElementById('provincia').addEventListener('change', actualizarInfoSegmentacion);
+}
+if (document.getElementById('clientes_especificos')) {
+    document.getElementById('clientes_especificos').addEventListener('change', actualizarInfoSegmentacion);
+}
+
+// Inicializar segmentación al cargar la página
+document.addEventListener('DOMContentLoaded', function() {
+    if (document.getElementById('tipo_segmentacion')) {
+        cambiarTipoSegmentacion();
+    }
+});
 </script>
 {% endblock %}
