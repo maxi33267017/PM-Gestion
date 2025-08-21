@@ -2288,12 +2288,23 @@ def crear_embudo_pops(request):
                 creado_por=request.user
             )
             
-            # NO crear contactos automáticos - solo crear oportunidades pendientes
-            # Los contactos se registrarán manualmente cuando se realice el primer contacto
-            print(f"✅ Embudo POPS creado con {equipos.count()} oportunidades pendientes")
-            print(f"📝 Los contactos se registrarán manualmente cuando se realice el primer contacto")
+            # Crear oportunidades pendientes (sin contactos automáticos)
+            oportunidades_creadas = 0
+            for equipo in equipos:
+                # Crear una oportunidad pendiente por cada equipo (sin contacto automático)
+                oportunidad = ContactoCliente.objects.create(
+                    embudo_ventas=embudo_principal,
+                    cliente=equipo.cliente,
+                    responsable=request.user,
+                    tipo_contacto='EMAIL',  # Tipo por defecto
+                    descripcion=f"Equipo sin servicios: {equipo.numero_serie} - {equipo.modelo.nombre} - Vendido: {equipo.fecha_venta.strftime('%d/%m/%Y') if equipo.fecha_venta else 'N/A'}",
+                    resultado='PENDIENTE',  # Estado inicial pendiente
+                    observaciones=f"Oportunidad POPS creada automáticamente para equipo {equipo.numero_serie} - Sin contacto previo"
+                )
+                oportunidades_creadas += 1
             
-            oportunidades_creadas = 0  # No se crean contactos automáticos
+            print(f"✅ Embudo POPS creado con {oportunidades_creadas} oportunidades pendientes")
+            print(f"📝 Los contactos se registrarán manualmente cuando se realice el primer contacto")
             
             return JsonResponse({
                 'success': True,
@@ -2524,12 +2535,23 @@ def crear_embudo_leads(request):
                 creado_por=request.user
             )
             
-            # NO crear contactos automáticos - solo crear oportunidades pendientes
-            # Los contactos se registrarán manualmente cuando se realice el primer contacto
-            print(f"✅ Embudo Leads creado con {leads.count()} oportunidades pendientes")
-            print(f"📝 Los contactos se registrarán manualmente cuando se realice el primer contacto")
+            # Crear oportunidades pendientes (sin contactos automáticos)
+            oportunidades_creadas = 0
+            for lead in leads:
+                # Crear una oportunidad pendiente por cada lead (sin contacto automático)
+                oportunidad = ContactoCliente.objects.create(
+                    embudo_ventas=embudo_principal,
+                    cliente=lead.cliente,
+                    responsable=request.user,
+                    tipo_contacto='EMAIL',  # Tipo por defecto
+                    descripcion=f"Lead: {lead.clasificacion} - {lead.descripcion} - Equipo: {lead.equipo.numero_serie if lead.equipo else 'N/A'}",
+                    resultado='PENDIENTE',  # Estado inicial pendiente
+                    observaciones=f"Oportunidad Lead creada automáticamente - Valor estimado: ${lead.valor_estimado or 0} - Sin contacto previo"
+                )
+                oportunidades_creadas += 1
             
-            oportunidades_creadas = 0  # No se crean contactos automáticos
+            print(f"✅ Embudo Leads creado con {oportunidades_creadas} oportunidades pendientes")
+            print(f"📝 Los contactos se registrarán manualmente cuando se realice el primer contacto")
             
             return JsonResponse({
                 'success': True,
@@ -2590,12 +2612,23 @@ def crear_embudo_alertas(request):
                 creado_por=request.user
             )
             
-            # NO crear contactos automáticos - solo crear oportunidades pendientes
-            # Los contactos se registrarán manualmente cuando se realice el primer contacto
-            print(f"✅ Embudo Alertas creado con {alertas.count()} oportunidades pendientes")
-            print(f"📝 Los contactos se registrarán manualmente cuando se realice el primer contacto")
+            # Crear oportunidades pendientes (sin contactos automáticos)
+            oportunidades_creadas = 0
+            for alerta in alertas:
+                # Crear una oportunidad pendiente por cada alerta (sin contacto automático)
+                oportunidad = ContactoCliente.objects.create(
+                    embudo_ventas=embudo_principal,
+                    cliente=alerta.cliente,
+                    responsable=request.user,
+                    tipo_contacto='TELEFONO',  # Tipo por defecto para alertas
+                    descripcion=f"Alerta: {alerta.codigo} - {alerta.descripcion} - Equipo: {alerta.equipo.numero_serie if alerta.equipo else 'N/A'}",
+                    resultado='PENDIENTE',  # Estado inicial pendiente
+                    observaciones=f"Oportunidad Alerta creada automáticamente - Técnico: {alerta.tecnico_asignado.get_nombre_completo() if alerta.tecnico_asignado else 'Sin asignar'} - Sin contacto previo"
+                )
+                oportunidades_creadas += 1
             
-            oportunidades_creadas = 0  # No se crean contactos automáticos
+            print(f"✅ Embudo Alertas creado con {oportunidades_creadas} oportunidades pendientes")
+            print(f"📝 Los contactos se registrarán manualmente cuando se realice el primer contacto")
             
             return JsonResponse({
                 'success': True,

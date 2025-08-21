@@ -299,12 +299,43 @@ class Campana(models.Model):
             print(f"✅ Embudo genérico creado: {embudo}")
             print(f"💰 Valor estimado total: ${valor_estimado_total}")
         
-        # NO crear contactos automáticos - solo crear oportunidades iniciales
-        # Los contactos se registrarán manualmente cuando se realice el primer contacto
-        print(f"✅ Embudo creado con {clientes_objetivo.count()} oportunidades pendientes")
+        # Crear oportunidades pendientes para cada cliente objetivo
+        oportunidades_creadas = 0
+        
+        # Definir el filtro de equipos
+        equipos_query = {'activo': True}
+        
+        if self.tipo_equipo:
+            equipos_query['modelo__tipo_equipo'] = self.tipo_equipo
+            
+        if self.modelo_equipo:
+            equipos_query['modelo'] = self.modelo_equipo
+        
+        for cliente in clientes_objetivo:
+            # Obtener equipos del cliente que cumplen los criterios
+            equipos_cliente = Equipo.objects.filter(
+                cliente=cliente,
+                **equipos_query
+            )
+            
+            for equipo in equipos_cliente:
+                # Crear oportunidad pendiente para cada equipo
+                from crm.models import ContactoCliente
+                ContactoCliente.objects.create(
+                    embudo_ventas=embudo,
+                    cliente=cliente,
+                    responsable=self.creado_por,
+                    tipo_contacto='PRESENTACION',
+                    descripcion=f"Oportunidad de campaña: {self.nombre}",
+                    resultado='PENDIENTE',  # Estado inicial pendiente
+                    observaciones=f"Campaña automática creada para cliente con equipos del tipo seleccionado. Equipo: {equipo.numero_serie} - {equipo.modelo} - Sin contacto previo"
+                )
+                oportunidades_creadas += 1
+        
+        print(f"✅ Embudo creado con {oportunidades_creadas} oportunidades pendientes")
         print(f"📝 Los contactos se registrarán manualmente cuando se realice el primer contacto")
         
-        return 0  # No se crean contactos automáticos
+        return oportunidades_creadas
 
 
 class Contacto(models.Model):
