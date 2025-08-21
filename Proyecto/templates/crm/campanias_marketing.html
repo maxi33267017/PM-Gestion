@@ -8,7 +8,7 @@
             <h2>
                 <i class="bi bi-megaphone me-2"></i>Campañas de Marketing
             </h2>
-            <p class="text-muted">Gestiona campañas dirigidas a segmentos específicos de clientes</p>
+            <p class="text-muted">Vista informativa de campañas creadas en el sistema</p>
         </div>
         <div>
             <a href="{% url 'crm:crm' %}" class="btn btn-outline-secondary me-2">
@@ -52,7 +52,7 @@
 
     <!-- Estadísticas -->
     <div class="row mb-4">
-        <div class="col-md-3">
+        <div class="col-md-6">
             <div class="card bg-primary text-white">
                 <div class="card-body">
                     <h6 class="card-title">Total Campañas</h6>
@@ -61,30 +61,12 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
+        <div class="col-md-6">
             <div class="card bg-success text-white">
                 <div class="card-body">
                     <h6 class="card-title">Campañas Activas</h6>
                     <h3 class="mb-0">{{ campanias_activas_count }}</h3>
                     <small>En curso</small>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card bg-info text-white">
-                <div class="card-body">
-                    <h6 class="card-title">Total Contactos</h6>
-                    <h3 class="mb-0">{{ campanias|length }}</h3>
-                    <small>Realizados</small>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card bg-warning text-dark">
-                <div class="card-body">
-                    <h6 class="card-title">Ventas Exitosas</h6>
-                    <h3 class="mb-0">{{ campanias|length }}</h3>
-                    <small>Conversiones</small>
                 </div>
             </div>
         </div>
@@ -106,10 +88,6 @@
                             <th>Período</th>
                             <th>Objetivo</th>
                             <th>Estado</th>
-                            <th>Contactos</th>
-                            <th>Ventas Exitosas</th>
-                            <th>Cumplimiento</th>
-                            <th>Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -132,37 +110,10 @@
                                     {{ campania.get_estado_display }}
                                 </span>
                             </td>
-                            <td>
-                                <span class="badge bg-primary">{{ campania.contactos_count }}</span>
-                            </td>
-                            <td>
-                                <span class="badge bg-success">{{ campania.ventas_exitosas }}</span>
-                            </td>
-                            <td>
-                                <div class="progress" style="height: 20px;">
-                                    <div class="progress-bar {% if campania.get_cumplimiento >= 100 %}bg-success{% elif campania.get_cumplimiento >= 50 %}bg-warning{% else %}bg-danger{% endif %}" 
-                                         role="progressbar" style="width: {{ campania.get_cumplimiento }}%">
-                                        {{ campania.get_cumplimiento|floatformat:1 }}%
-                                    </div>
-                                </div>
-                            </td>
-                            <td>
-                                <div class="btn-group btn-group-sm">
-                                    <a href="{% url 'crm:dashboard_campania' campania.id %}" class="btn btn-outline-info" title="Dashboard">
-                                        <i class="fas fa-chart-bar"></i>
-                                    </a>
-                                    <a href="{% url 'crm:gestionar_contactos' campania.id %}" class="btn btn-outline-primary" title="Gestionar Contactos">
-                                        <i class="fas fa-users"></i>
-                                    </a>
-                                    <a href="{% url 'crm:editar_campania' campania.id %}" class="btn btn-outline-warning" title="Editar">
-                                        <i class="fas fa-edit"></i>
-                                    </a>
-                                </div>
-                            </td>
                         </tr>
                         {% empty %}
                         <tr>
-                            <td colspan="8" class="text-center text-muted">
+                            <td colspan="4" class="text-center text-muted">
                                 <i class="bi bi-inbox me-2"></i>No hay campañas de marketing creadas
                             </td>
                         </tr>
@@ -174,10 +125,5 @@
     </div>
 </div>
 
-<script>
-// Función para mostrar información adicional (placeholder)
-function mostrarInfo(campaniaId) {
-    alert('Función de información en desarrollo para campaña ID: ' + campaniaId);
-}
-</script>
+
 {% endblock %} 
