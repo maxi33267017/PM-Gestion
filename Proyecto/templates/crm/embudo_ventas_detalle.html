@@ -1398,14 +1398,38 @@ function editarContacto(contactoId) {
 }
 
 function nuevoContacto(contactoId) {
-    // Abrir modal para nuevo contacto
-    const modal = new bootstrap.Modal(document.getElementById('nuevoContactoModal'));
+    console.log('nuevoContacto llamado con ID:', contactoId);
     
-    // Establecer el ID del contacto original
-    document.getElementById('contactoOriginalId').value = contactoId;
+    // Verificar que el modal existe
+    const modalElement = document.getElementById('nuevoContactoModal');
+    if (!modalElement) {
+        console.error('Modal nuevoContactoModal no encontrado');
+        alert('Error: Modal no encontrado');
+        return;
+    }
     
-    // Mostrar el modal directamente
-    modal.show();
+    // Verificar que el campo existe
+    const contactoOriginalIdField = document.getElementById('contactoOriginalId');
+    if (!contactoOriginalIdField) {
+        console.error('Campo contactoOriginalId no encontrado');
+        alert('Error: Campo de contacto original no encontrado');
+        return;
+    }
+    
+    try {
+        // Establecer el ID del contacto original
+        contactoOriginalIdField.value = contactoId;
+        console.log('ID del contacto original establecido:', contactoId);
+        
+        // Abrir modal para nuevo contacto
+        const modal = new bootstrap.Modal(modalElement);
+        modal.show();
+        console.log('Modal abierto correctamente');
+        
+    } catch (error) {
+        console.error('Error en nuevoContacto:', error);
+        alert('Error al abrir el modal de nuevo contacto: ' + error.message);
+    }
 }
 
 // Función para ver historial completo de una oportunidad
