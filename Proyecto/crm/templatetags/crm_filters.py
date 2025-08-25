@@ -56,4 +56,15 @@ def count_pendientes(queryset):
     try:
         return queryset.filter(estado_contacto='PENDIENTE').count()
     except:
-        return 0 
+        return 0
+
+@register.filter
+def objetivo_total_embudo(embudo):
+    """Calcula el objetivo total del embudo (objetivo_paquetes × valor_promedio_paquete)"""
+    try:
+        if embudo.objetivo_paquetes and embudo.valor_promedio_paquete:
+            return float(embudo.objetivo_paquetes) * float(embudo.valor_promedio_paquete)
+        else:
+            return None
+    except (ValueError, TypeError):
+        return None 
