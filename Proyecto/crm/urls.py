@@ -52,6 +52,13 @@ urlpatterns = [
     path('cliente/<int:cliente_id>/historial/', views.cliente_historial_ajax, name='cliente_historial_ajax'),
     path('embudo/<int:embudo_id>/datos-grafico/', views.embudo_datos_grafico_ajax, name='embudo_datos_grafico_ajax'),
     path('cambiar-estado-oportunidad/', views.cambiar_estado_oportunidad, name='cambiar_estado_oportunidad'),
+    # URLs para oportunidades (nuevo modelo)
+    path('oportunidad/<int:oportunidad_id>/detalle/', views.oportunidad_detalle_ajax, name='oportunidad_detalle_ajax'),
+    path('oportunidad/<int:oportunidad_id>/historial/', views.oportunidad_historial_ajax, name='oportunidad_historial_ajax'),
+    path('oportunidad/<int:oportunidad_id>/cambiar-estado/', views.cambiar_estado_oportunidad_ajax, name='cambiar_estado_oportunidad_ajax'),
+    path('oportunidad/<int:oportunidad_id>/nuevo-contacto/', views.nuevo_contacto_oportunidad_ajax, name='nuevo_contacto_oportunidad_ajax'),
+    path('oportunidad/<int:oportunidad_id>/cambiar-responsable/', views.cambiar_responsable_oportunidad_ajax, name='cambiar_responsable_oportunidad_ajax'),
+    path('usuarios-disponibles/', views.obtener_usuarios_disponibles_ajax, name='obtener_usuarios_disponibles_ajax'),
     # URLs para Embudo de Checklist Adicionales
     path('embudo-checklist/', views.embudo_checklist_dashboard, name='embudo_checklist_dashboard'),
     path('embudo-checklist/crear/', views.crear_checklist_adicional, name='crear_checklist_adicional'),

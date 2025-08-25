@@ -5,7 +5,7 @@ from django.utils import timezone
 from .models import (
     Contacto, AnalisisCliente, PaqueteServicio, ClientePaquete,
     Campana, EmbudoVentas, ContactoCliente, SugerenciaMejora, PotencialCompraModelo,
-    HistorialFacturacion
+    HistorialFacturacion, Oportunidad, HistorialOportunidad, TareaOportunidad
 )
 
 
@@ -388,4 +388,217 @@ class HistorialFacturacionAdmin(admin.ModelAdmin):
             return format_html(
                 '<span class="badge bg-warning">Externo</span>'
             )
-    equipo_existe_badge.short_description = 'Estado Equipo' 
+    equipo_existe_badge.short_description = 'Estado Equipo'
+
+
+@admin.register(Oportunidad)
+class OportunidadAdmin(admin.ModelAdmin):
+    list_display = [
+        'cliente', 'estado_contacto_badge', 'tipo_contacto_badge', 'responsable', 
+        'fecha_proximo_contacto', 'notificacion_enviada_badge'
+    ]
+    list_filter = [
+        'estado_contacto', 'tipo_contacto', 'fecha_creacion', 'embudo_ventas'
+    ]
+    search_fields = [
+        'cliente__razon_social', 'cliente__cuit', 'descripcion_contacto', 'observaciones_adicionales'
+    ]
+    date_hierarchy = 'fecha_creacion'
+    
+    readonly_fields = [
+        'fecha_creacion', 'fecha_modificacion', 'notificacion_enviada'
+    ]
+    
+    fieldsets = (
+        ('Información Básica', {
+            'fields': ('cliente', 'equipo', 'embudo_ventas')
+        }),
+        ('Estado y Contacto', {
+            'fields': ('estado_contacto', 'tipo_contacto', 'descripcion_contacto')
+        }),
+        ('Seguimiento', {
+            'fields': ('fecha_proximo_contacto', 'observaciones_adicionales')
+        }),
+        ('Responsable', {
+            'fields': ('responsable', 'notificacion_enviada')
+        }),
+        ('Auditoría', {
+            'fields': ('creado_por', 'fecha_creacion', 'fecha_modificacion'),
+            'classes': ('collapse',)
+        }),
+    )
+    
+    def estado_contacto_badge(self, obj):
+        colors = {
+            'PENDIENTE': 'secondary',
+            'CLIENTE_RESPONDIO_NO_ACEPTO': 'warning',
+            'CLIENTE_NO_RESPONDIO_REPROGRAMADO': 'info',
+            'CLIENTE_RESPONDIO_REPROGRAMADO': 'primary',
+            'CLIENTE_ACEPTO_PRESUPUESTO': 'success',
+            'CLIENTE_ACEPTO_VENTA': 'success',
+            'OTRO': 'light',
+        }
+        color = colors.get(obj.estado_contacto, 'secondary')
+        return format_html(
+            '<span class="badge bg-{}">{}</span>',
+            color, obj.get_estado_contacto_display()
+        )
+    estado_contacto_badge.short_description = 'Estado'
+    
+    def tipo_contacto_badge(self, obj):
+        colors = {
+            'TELEFONO': 'primary',
+            'EMAIL': 'info',
+            'WHATSAPP': 'success',
+            'VISITA': 'warning',
+            'VIDEO_LLAMADA': 'danger',
+            'REUNION': 'secondary',
+            'PRESENTACION': 'dark',
+        }
+        color = colors.get(obj.tipo_contacto, 'secondary')
+        return format_html(
+            '<span class="badge bg-{}">{}</span>',
+            color, obj.get_tipo_contacto_display()
+        )
+    tipo_contacto_badge.short_description = 'Tipo'
+    
+    def notificacion_enviada_badge(self, obj):
+        if obj.notificacion_enviada:
+            return format_html(
+                '<span class="badge bg-success">Enviada</span>'
+            )
+        else:
+            return format_html(
+                '<span class="badge bg-warning">Pendiente</span>'
+            )
+    notificacion_enviada_badge.short_description = 'Notificación'
+
+
+@admin.register(HistorialOportunidad)
+class HistorialOportunidadAdmin(admin.ModelAdmin):
+    list_display = [
+        'oportunidad', 'estado_anterior_badge', 'estado_nuevo_badge', 
+        'responsable_cambio', 'fecha_cambio'
+    ]
+    list_filter = [
+        'estado_anterior', 'estado_nuevo', 'fecha_cambio'
+    ]
+    search_fields = [
+        'oportunidad__cliente__razon_social', 'descripcion_cambio', 'observaciones'
+    ]
+    date_hierarchy = 'fecha_cambio'
+    
+    readonly_fields = ['fecha_cambio']
+    
+    def estado_anterior_badge(self, obj):
+        colors = {
+            'PENDIENTE': 'secondary',
+            'CLIENTE_RESPONDIO_NO_ACEPTO': 'warning',
+            'CLIENTE_NO_RESPONDIO_REPROGRAMADO': 'info',
+            'CLIENTE_RESPONDIO_REPROGRAMADO': 'primary',
+            'CLIENTE_ACEPTO_PRESUPUESTO': 'success',
+            'CLIENTE_ACEPTO_VENTA': 'success',
+            'OTRO': 'light',
+        }
+        color = colors.get(obj.estado_anterior, 'secondary')
+        return format_html(
+            '<span class="badge bg-{}">{}</span>',
+            color, obj.get_estado_anterior_display()
+        )
+    estado_anterior_badge.short_description = 'Estado Anterior'
+    
+    def estado_nuevo_badge(self, obj):
+        colors = {
+            'PENDIENTE': 'secondary',
+            'CLIENTE_RESPONDIO_NO_ACEPTO': 'warning',
+            'CLIENTE_NO_RESPONDIO_REPROGRAMADO': 'info',
+            'CLIENTE_RESPONDIO_REPROGRAMADO': 'primary',
+            'CLIENTE_ACEPTO_PRESUPUESTO': 'success',
+            'CLIENTE_ACEPTO_VENTA': 'success',
+            'OTRO': 'light',
+        }
+        color = colors.get(obj.estado_nuevo, 'secondary')
+        return format_html(
+            '<span class="badge bg-{}">{}</span>',
+            color, obj.get_estado_nuevo_display()
+        )
+    estado_nuevo_badge.short_description = 'Estado Nuevo'
+
+
+@admin.register(TareaOportunidad)
+class TareaOportunidadAdmin(admin.ModelAdmin):
+    list_display = [
+        'oportunidad', 'tipo_tarea_badge', 'estado_badge', 'fecha_programada', 
+        'fecha_ejecucion', 'intentos'
+    ]
+    list_filter = [
+        'tipo_tarea', 'estado', 'fecha_programada', 'fecha_ejecucion'
+    ]
+    search_fields = [
+        'oportunidad__cliente__razon_social', 'descripcion', 'resultado'
+    ]
+    date_hierarchy = 'fecha_programada'
+    
+    readonly_fields = [
+        'fecha_creacion', 'fecha_modificacion', 'fecha_ejecucion', 'intentos'
+    ]
+    
+    actions = ['ejecutar_tareas_seleccionadas']
+    
+    fieldsets = (
+        ('Información Básica', {
+            'fields': ('oportunidad', 'tipo_tarea', 'descripcion')
+        }),
+        ('Programación', {
+            'fields': ('fecha_programada', 'estado', 'max_intentos')
+        }),
+        ('Ejecución', {
+            'fields': ('fecha_ejecucion', 'intentos', 'resultado'),
+            'classes': ('collapse',)
+        }),
+        ('Auditoría', {
+            'fields': ('creado_por', 'fecha_creacion', 'fecha_modificacion'),
+            'classes': ('collapse',)
+        }),
+    )
+    
+    def tipo_tarea_badge(self, obj):
+        colors = {
+            'EMAIL_PROXIMO_CONTACTO': 'primary',
+            'EMAIL_RECORDATORIO': 'info',
+            'EMAIL_SEGUIMIENTO': 'warning',
+        }
+        color = colors.get(obj.tipo_tarea, 'secondary')
+        return format_html(
+            '<span class="badge bg-{}">{}</span>',
+            color, obj.get_tipo_tarea_display()
+        )
+    tipo_tarea_badge.short_description = 'Tipo de Tarea'
+    
+    def estado_badge(self, obj):
+        colors = {
+            'PENDIENTE': 'warning',
+            'PROCESANDO': 'info',
+            'COMPLETADA': 'success',
+            'FALLIDA': 'danger',
+            'CANCELADA': 'secondary',
+        }
+        color = colors.get(obj.estado, 'secondary')
+        return format_html(
+            '<span class="badge bg-{}">{}</span>',
+            color, obj.get_estado_display()
+        )
+    estado_badge.short_description = 'Estado'
+    
+    def ejecutar_tareas_seleccionadas(self, request, queryset):
+        """Acción para ejecutar las tareas seleccionadas manualmente"""
+        ejecutadas = 0
+        for tarea in queryset.filter(estado='PENDIENTE'):
+            if tarea.ejecutar_tarea():
+                ejecutadas += 1
+        
+        self.message_user(
+            request, 
+            f'Se ejecutaron {ejecutadas} tareas de {queryset.count()} seleccionadas'
+        )
+    ejecutar_tareas_seleccionadas.short_description = 'Ejecutar tareas seleccionadas' 

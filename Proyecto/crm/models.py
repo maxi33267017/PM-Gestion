@@ -495,6 +495,10 @@ class EmbudoVentas(models.Model):
     descripcion_negocio = models.TextField(blank=True, verbose_name="Descripción del Negocio")
     observaciones = models.TextField(blank=True, verbose_name="Observaciones")
     
+    # Objetivos del embudo
+    objetivo_paquetes = models.PositiveIntegerField(null=True, blank=True, verbose_name="Objetivo de Paquetes")
+    valor_promedio_paquete = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True, verbose_name="Valor Promedio del Paquete")
+    
     # Campos de auditoría
     fecha_creacion = models.DateTimeField(auto_now_add=True, verbose_name="Fecha de Creación")
     fecha_modificacion = models.DateTimeField(auto_now=True, verbose_name="Última Modificación")
@@ -618,6 +622,144 @@ class ContactoCliente(models.Model):
             self.embudo_ventas.save()
         
         super().save(*args, **kwargs)
+
+
+class Oportunidad(models.Model):
+    """Modelo para oportunidades individuales con historial completo"""
+    
+    ESTADO_CONTACTO_CHOICES = [
+        ('PENDIENTE', 'Pendiente'),
+        ('CONTACTADO', 'Contactado'),
+        ('CON_RESPUESTA', 'Con Respuesta'),
+        ('PRESUPUESTADO', 'Presupuestado'),
+        ('VENTA_EXITOSA', 'Venta Exitosa'),
+        ('VENTA_PERDIDA', 'Venta Perdida'),
+    ]
+    
+    TIPO_CONTACTO_CHOICES = [
+        ('TELEFONO', 'Teléfono'),
+        ('EMAIL', 'Email'),
+        ('WHATSAPP', 'WhatsApp'),
+        ('VISITA', 'Visita'),
+        ('VIDEO_LLAMADA', 'Video Llamada'),
+        ('REUNION', 'Reunión'),
+        ('PRESENTACION', 'Presentación'),
+    ]
+    
+    # Información básica
+    cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE, verbose_name="Cliente")
+    equipo = models.ForeignKey('clientes.Equipo', on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Equipo")
+    embudo_ventas = models.ForeignKey(EmbudoVentas, on_delete=models.CASCADE, related_name='oportunidades', verbose_name="Embudo de Ventas")
+    
+    # Estado y tipo de contacto
+    estado_contacto = models.CharField(max_length=50, choices=ESTADO_CONTACTO_CHOICES, default='PENDIENTE', verbose_name="Estado del Contacto")
+    tipo_contacto = models.CharField(max_length=20, choices=TIPO_CONTACTO_CHOICES, verbose_name="Tipo de Contacto")
+    
+    # Descripción y seguimiento
+    descripcion_contacto = models.TextField(verbose_name="Descripción del Contacto")
+    fecha_proximo_contacto = models.DateTimeField(null=True, blank=True, verbose_name="Fecha de Próximo Contacto")
+    observaciones_adicionales = models.TextField(blank=True, verbose_name="Observaciones Adicionales")
+    
+    # Responsable y notificaciones
+    responsable = models.ForeignKey(Usuario, on_delete=models.SET_NULL, null=True, verbose_name="Responsable")
+    notificacion_enviada = models.BooleanField(default=False, verbose_name="Notificación Enviada")
+    
+    # Campos de auditoría
+    fecha_creacion = models.DateTimeField(auto_now_add=True, verbose_name="Fecha de Creación")
+    fecha_modificacion = models.DateTimeField(auto_now=True, verbose_name="Última Modificación")
+    creado_por = models.ForeignKey(Usuario, on_delete=models.SET_NULL, null=True, related_name='oportunidades_creadas', verbose_name="Creado por")
+    
+    class Meta:
+        verbose_name = "Oportunidad"
+        verbose_name_plural = "Oportunidades"
+        ordering = ['-fecha_creacion']
+        indexes = [
+            models.Index(fields=['cliente', 'estado_contacto']),
+            models.Index(fields=['responsable', 'fecha_proximo_contacto']),
+            models.Index(fields=['embudo_ventas', 'estado_contacto']),
+        ]
+    
+    def __str__(self):
+        return f"{self.cliente.razon_social} - {self.get_estado_contacto_display()} - {self.fecha_creacion.strftime('%d/%m/%Y')}"
+    
+    def save(self, *args, **kwargs):
+        # Verificar si es una actualización y si cambió el responsable
+        if self.pk:  # Si ya existe (es una actualización)
+            try:
+                # Obtener el objeto original de la base de datos
+                original = Oportunidad.objects.get(pk=self.pk)
+                # Si cambió el responsable, enviar notificación
+                if original.responsable != self.responsable and self.responsable:
+                    self.enviar_notificacion_responsable()
+                    self.notificacion_enviada = True
+            except Oportunidad.DoesNotExist:
+                pass  # Es un objeto nuevo
+        
+        super().save(*args, **kwargs)
+    
+    def enviar_notificacion_responsable(self):
+        """Envía notificación por email al responsable asignado"""
+        try:
+            from django.core.mail import send_mail
+            from django.conf import settings
+            
+            subject = f'Nueva oportunidad asignada - {self.cliente.razon_social}'
+            message = f"""
+            Hola {self.responsable.get_full_name()},
+            
+            Se te ha asignado una nueva oportunidad:
+            
+            Cliente: {self.cliente.razon_social}
+            Estado: {self.get_estado_contacto_display()}
+            Tipo de Contacto: {self.get_tipo_contacto_display()}
+            Descripción: {self.descripcion_contacto[:100]}...
+            
+            Fecha de próximo contacto: {self.fecha_proximo_contacto.strftime('%d/%m/%Y %H:%M') if self.fecha_proximo_contacto else 'No programado'}
+            
+            Accede al sistema para más detalles.
+            
+            Saludos,
+            Sistema CRM - Patagonia Maquinarias
+            """
+            
+            send_mail(
+                subject,
+                message,
+                settings.DEFAULT_FROM_EMAIL,
+                [self.responsable.email],
+                fail_silently=False,
+            )
+        except Exception as e:
+            # Log del error pero no fallar el guardado
+            print(f"Error enviando notificación: {e}")
+
+
+class HistorialOportunidad(models.Model):
+    """Modelo para el historial completo de cada oportunidad"""
+    
+    oportunidad = models.ForeignKey(Oportunidad, on_delete=models.CASCADE, related_name='historial', verbose_name="Oportunidad")
+    
+    # Estado anterior y nuevo
+    estado_anterior = models.CharField(max_length=50, choices=Oportunidad.ESTADO_CONTACTO_CHOICES, verbose_name="Estado Anterior")
+    estado_nuevo = models.CharField(max_length=50, choices=Oportunidad.ESTADO_CONTACTO_CHOICES, verbose_name="Estado Nuevo")
+    
+    # Información del cambio
+    descripcion_cambio = models.TextField(verbose_name="Descripción del Cambio")
+    observaciones = models.TextField(blank=True, verbose_name="Observaciones")
+    
+    # Responsable del cambio
+    responsable_cambio = models.ForeignKey(Usuario, on_delete=models.SET_NULL, null=True, verbose_name="Responsable del Cambio")
+    
+    # Fecha del cambio
+    fecha_cambio = models.DateTimeField(auto_now_add=True, verbose_name="Fecha del Cambio")
+    
+    class Meta:
+        verbose_name = "Historial de Oportunidad"
+        verbose_name_plural = "Historial de Oportunidades"
+        ordering = ['-fecha_cambio']
+    
+    def __str__(self):
+        return f"{self.oportunidad.cliente.razon_social} - {self.estado_anterior} → {self.estado_nuevo} - {self.fecha_cambio.strftime('%d/%m/%Y %H:%M')}"
 
 
 class SugerenciaMejora(models.Model):
@@ -945,3 +1087,111 @@ class HistorialFacturacion(models.Model):
     def equipo_existe_en_bd(self):
         """Verifica si el equipo existe en la base de datos"""
         return self.equipo is not None
+
+class TareaOportunidad(models.Model):
+    """Modelo para tareas programadas relacionadas con oportunidades"""
+    TIPO_TAREA_CHOICES = [
+        ('EMAIL_PROXIMO_CONTACTO', 'Email de Próximo Contacto'),
+        ('EMAIL_RECORDATORIO', 'Email de Recordatorio'),
+        ('EMAIL_SEGUIMIENTO', 'Email de Seguimiento'),
+    ]
+    
+    ESTADO_CHOICES = [
+        ('PENDIENTE', 'Pendiente'),
+        ('PROCESANDO', 'Procesando'),
+        ('COMPLETADA', 'Completada'),
+        ('FALLIDA', 'Fallida'),
+        ('CANCELADA', 'Cancelada'),
+    ]
+    
+    oportunidad = models.ForeignKey(Oportunidad, on_delete=models.CASCADE, related_name='tareas', verbose_name="Oportunidad")
+    tipo_tarea = models.CharField(max_length=30, choices=TIPO_TAREA_CHOICES, verbose_name="Tipo de Tarea")
+    fecha_programada = models.DateTimeField(verbose_name="Fecha Programada")
+    fecha_ejecucion = models.DateTimeField(null=True, blank=True, verbose_name="Fecha de Ejecución")
+    estado = models.CharField(max_length=20, choices=ESTADO_CHOICES, default='PENDIENTE', verbose_name="Estado")
+    descripcion = models.TextField(verbose_name="Descripción")
+    resultado = models.TextField(blank=True, verbose_name="Resultado")
+    intentos = models.PositiveIntegerField(default=0, verbose_name="Intentos")
+    max_intentos = models.PositiveIntegerField(default=3, verbose_name="Máximo de Intentos")
+    
+    # Campos de auditoría
+    fecha_creacion = models.DateTimeField(auto_now_add=True, verbose_name="Fecha de Creación")
+    fecha_modificacion = models.DateTimeField(auto_now=True, verbose_name="Última Modificación")
+    creado_por = models.ForeignKey(Usuario, on_delete=models.SET_NULL, null=True, verbose_name="Creado por")
+    
+    class Meta:
+        verbose_name = "Tarea de Oportunidad"
+        verbose_name_plural = "Tareas de Oportunidad"
+        ordering = ['fecha_programada']
+        indexes = [
+            models.Index(fields=['estado', 'fecha_programada']),
+            models.Index(fields=['tipo_tarea', 'estado']),
+        ]
+    
+    def __str__(self):
+        return f"{self.oportunidad.cliente.razon_social} - {self.get_tipo_tarea_display()} - {self.fecha_programada.strftime('%d/%m/%Y %H:%M')}"
+    
+    def ejecutar_tarea(self):
+        """Ejecuta la tarea programada"""
+        try:
+            self.estado = 'PROCESANDO'
+            self.intentos += 1
+            self.save()
+            
+            if self.tipo_tarea == 'EMAIL_PROXIMO_CONTACTO':
+                resultado = self.enviar_email_proximo_contacto()
+            else:
+                resultado = "Tipo de tarea no implementado"
+            
+            self.estado = 'COMPLETADA'
+            self.resultado = resultado
+            self.fecha_ejecucion = timezone.now()
+            self.save()
+            
+            return True
+            
+        except Exception as e:
+            self.estado = 'FALLIDA' if self.intentos >= self.max_intentos else 'PENDIENTE'
+            self.resultado = f"Error: {str(e)}"
+            self.save()
+            return False
+    
+    def enviar_email_proximo_contacto(self):
+        """Envía email de recordatorio de próximo contacto"""
+        try:
+            from django.core.mail import send_mail
+            from django.conf import settings
+            
+            if not self.oportunidad.responsable:
+                return "No hay responsable asignado"
+            
+            subject = f'Recordatorio: Próximo contacto - {self.oportunidad.cliente.razon_social}'
+            message = f"""
+            Hola {self.oportunidad.responsable.get_full_name()},
+            
+            Tienes un contacto programado para hoy:
+            
+            Cliente: {self.oportunidad.cliente.razon_social}
+            Estado: {self.oportunidad.get_estado_contacto_display()}
+            Tipo de Contacto: {self.oportunidad.get_tipo_contacto_display()}
+            Descripción: {self.oportunidad.descripcion_contacto[:100]}...
+            Fecha de próximo contacto: {self.oportunidad.fecha_proximo_contacto.strftime('%d/%m/%Y %H:%M')}
+            
+            Accede al sistema para actualizar el estado del contacto.
+            
+            Saludos,
+            Sistema CRM - Patagonia Maquinarias
+            """
+            
+            send_mail(
+                subject,
+                message,
+                settings.DEFAULT_FROM_EMAIL,
+                [self.oportunidad.responsable.email],
+                fail_silently=False,
+            )
+            
+            return "Email enviado correctamente"
+            
+        except Exception as e:
+            return f"Error enviando email: {str(e)}"

@@ -7,7 +7,7 @@ from datetime import timedelta, datetime
 from decimal import Decimal
 from clientes.models import Cliente
 from gestionDeTaller.models import Servicio
-from .models import AnalisisCliente, PaqueteServicio, ClientePaquete, Contacto, SugerenciaMejora, EmbudoVentas, Campana, ContactoCliente
+from .models import AnalisisCliente, PaqueteServicio, ClientePaquete, Contacto, SugerenciaMejora, EmbudoVentas, Campana, ContactoCliente, PotencialCompraModelo, HistorialFacturacion, Oportunidad, HistorialOportunidad
 from django.contrib import messages
 from django.http import JsonResponse, HttpResponse
 from recursosHumanos.models import Sucursal
@@ -1285,9 +1285,6 @@ def embudo_ventas(request):
     return redirect('crm:embudo_ventas_dashboard')
 
 @login_required
-# Función crear_embudo eliminada - Los embudos se crean automáticamente por tipo y fecha
-
-@login_required
 def detalle_embudo(request, embudo_id):
     """Vista de detalle de un embudo de ventas - Redirige a la vista unificada"""
     return redirect('crm:embudo_ventas_detalle', embudo_id=embudo_id)
@@ -1457,33 +1454,39 @@ def embudo_ventas_detalle(request, embudo_id):
                 messages.success(request, f'Etapa actualizada a {embudo.get_etapa_display()}')
                 return redirect('crm:embudo_ventas_detalle', embudo_id=embudo.id)
         
-        elif action == 'actualizar_valores':
+        elif action == 'configurar_objetivos':
             try:
-                # Actualizar valor estimado
-                nuevo_valor_estimado = request.POST.get('valor_estimado')
-                if nuevo_valor_estimado:
-                    embudo.valor_estimado = Decimal(nuevo_valor_estimado)
+                # Actualizar objetivo de paquetes
+                nuevo_objetivo_paquetes = request.POST.get('objetivo_paquetes')
+                if nuevo_objetivo_paquetes:
+                    embudo.objetivo_paquetes = int(nuevo_objetivo_paquetes)
+                elif nuevo_objetivo_paquetes == '':  # Campo vacío
+                    embudo.objetivo_paquetes = None
                 
-                # Actualizar valor de cierre
-                nuevo_valor_cierre = request.POST.get('valor_cierre')
-                if nuevo_valor_cierre:
-                    embudo.valor_cierre = Decimal(nuevo_valor_cierre)
-                elif nuevo_valor_cierre == '':  # Campo vacío
-                    embudo.valor_cierre = None
+                # Actualizar valor promedio del paquete
+                nuevo_valor_promedio = request.POST.get('valor_promedio_paquete')
+                if nuevo_valor_promedio:
+                    embudo.valor_promedio_paquete = Decimal(nuevo_valor_promedio)
+                elif nuevo_valor_promedio == '':  # Campo vacío
+                    embudo.valor_promedio_paquete = None
                 
                 embudo.save()
-                messages.success(request, 'Valores actualizados correctamente')
+                messages.success(request, 'Objetivos configurados correctamente')
                 return redirect('crm:embudo_ventas_detalle', embudo_id=embudo.id)
                 
             except (ValueError, TypeError) as e:
-                messages.error(request, f'Error al actualizar valores: {str(e)}')
+                messages.error(request, f'Error al configurar objetivos: {str(e)}')
                 return redirect('crm:embudo_ventas_detalle', embudo_id=embudo.id)
     
-    # Obtener contactos relacionados
+    # Obtener oportunidades relacionadas (nuevo modelo)
+    oportunidades = Oportunidad.objects.filter(embudo_ventas=embudo).order_by('-fecha_creacion')
+    
+    # Obtener contactos relacionados (modelo antiguo - para compatibilidad)
     contactos = ContactoCliente.objects.filter(embudo_ventas=embudo).order_by('-fecha_contacto')
     
     context = {
         'embudo': embudo,
+        'oportunidades': oportunidades,
         'contactos': contactos,
     }
     
@@ -2348,20 +2351,25 @@ def crear_embudo_pops(request):
                 creado_por=request.user
             )
             
-            # Crear oportunidades pendientes (sin contactos automáticos)
+            # Crear oportunidades pendientes usando el nuevo modelo Oportunidad
             oportunidades_creadas = 0
             for equipo in equipos:
-                # Crear una oportunidad pendiente por cada equipo (sin contacto automático)
-                oportunidad = ContactoCliente.objects.create(
-                    embudo_ventas=embudo_principal,
+                # Crear una oportunidad pendiente por cada equipo usando el nuevo modelo
+                descripcion = f"Equipo sin servicios: {equipo.numero_serie} - {equipo.modelo.nombre} - Vendido: {equipo.fecha_venta.strftime('%d/%m/%Y') if equipo.fecha_venta else 'N/A'}"
+                observaciones = f"Oportunidad POPS creada automáticamente para equipo {equipo.numero_serie} - Sin contacto previo"
+                
+                oportunidad = crear_oportunidad_desde_embudo(
+                    embudo=embudo_principal,
                     cliente=equipo.cliente,
+                    equipo=equipo,
+                    descripcion=descripcion,
+                    observaciones=observaciones,
                     responsable=request.user,
-                    tipo_contacto='EMAIL',  # Tipo por defecto
-                    descripcion=f"Equipo sin servicios: {equipo.numero_serie} - {equipo.modelo.nombre} - Vendido: {equipo.fecha_venta.strftime('%d/%m/%Y') if equipo.fecha_venta else 'N/A'}",
-                    resultado='PENDIENTE',  # Estado inicial pendiente
-                    observaciones=f"Oportunidad POPS creada automáticamente para equipo {equipo.numero_serie} - Sin contacto previo"
+                    tipo_contacto='EMAIL'
                 )
-                oportunidades_creadas += 1
+                
+                if oportunidad:
+                    oportunidades_creadas += 1
             
             print(f"✅ Embudo POPS creado con {oportunidades_creadas} oportunidades pendientes")
             print(f"📝 Los contactos se registrarán manualmente cuando se realice el primer contacto")
@@ -2490,12 +2498,12 @@ def embudo_datos_grafico_ajax(request, embudo_id):
     try:
         embudo = get_object_or_404(EmbudoVentas, id=embudo_id)
         
-        # Obtener todos los contactos del embudo
-        contactos = ContactoCliente.objects.filter(embudo_ventas=embudo)
-        total_contactos = contactos.count()
+        # Obtener todas las oportunidades del embudo (nuevo modelo)
+        oportunidades = Oportunidad.objects.filter(embudo_ventas=embudo)
+        total_oportunidades = oportunidades.count()
         
-        if total_contactos == 0:
-            # Si no hay contactos, retornar datos vacíos
+        if total_oportunidades == 0:
+            # Si no hay oportunidades, retornar datos vacíos
             datos = {
                 'total_contactos': 0,
                 'pendiente': 0,
@@ -2510,24 +2518,30 @@ def embudo_datos_grafico_ajax(request, embudo_id):
                 'promedio_oportunidad': 0
             }
         else:
-            # Contar contactos por resultado usando los nuevos estados
-            pendiente = contactos.filter(resultado='PENDIENTE').count()
-            contactado = contactos.filter(resultado='CONTACTADO').count()
-            con_respuesta = contactos.filter(resultado='CON_RESPUESTA').count()
-            presupuestado = contactos.filter(resultado='PRESUPUESTADO').count()
-            venta_exitosa = contactos.filter(resultado='VENTA_EXITOSA').count()
-            venta_perdida = contactos.filter(resultado='VENTA_PERDIDA').count()
+            # Contar oportunidades por estado usando los nuevos estados
+            pendiente = oportunidades.filter(estado_contacto='PENDIENTE').count()
+            contactado = oportunidades.filter(estado_contacto='CONTACTADO').count()
+            con_respuesta = oportunidades.filter(estado_contacto='CON_RESPUESTA').count()
+            presupuestado = oportunidades.filter(estado_contacto='PRESUPUESTADO').count()
+            venta_exitosa = oportunidades.filter(estado_contacto='VENTA_EXITOSA').count()
+            venta_perdida = oportunidades.filter(estado_contacto='VENTA_PERDIDA').count()
             
             # Calcular tasa de conversión (ventas exitosas / total)
-            tasa_conversion = (venta_exitosa / total_contactos * 100) if total_contactos > 0 else 0
+            tasa_conversion = (venta_exitosa / total_oportunidades * 100) if total_oportunidades > 0 else 0
             
-            # Calcular valores (simulados para POPS)
-            valor_estimado = total_contactos * 1000  # $1000 por oportunidad estimado
-            valor_cierre = venta_exitosa * 800  # $800 por venta concretada
+            # Calcular valores basados en objetivos del embudo
+            if embudo.objetivo_paquetes and embudo.valor_promedio_paquete:
+                valor_estimado = total_oportunidades * float(embudo.valor_promedio_paquete)
+                valor_cierre = venta_exitosa * float(embudo.valor_promedio_paquete)
+            else:
+                # Valores por defecto si no hay objetivos configurados
+                valor_estimado = total_oportunidades * 1000  # $1000 por oportunidad estimado
+                valor_cierre = venta_exitosa * 800  # $800 por venta concretada
+            
             promedio_oportunidad = valor_cierre / venta_exitosa if venta_exitosa > 0 else 0
             
             datos = {
-                'total_contactos': total_contactos,
+                'total_contactos': total_oportunidades,
                 'pendiente': pendiente,
                 'contactado': contactado,
                 'con_respuesta': con_respuesta,
@@ -2862,3 +2876,364 @@ def cambiar_estado_oportunidad(request):
         return redirect('crm:embudo_ventas_detalle', embudo_id=embudo_id)
     else:
         return redirect('crm:embudo_ventas_dashboard')
+
+def crear_oportunidad_desde_embudo(embudo, cliente, equipo=None, descripcion="", observaciones="", responsable=None, tipo_contacto='EMAIL'):
+    """
+    Función helper para crear una oportunidad en el nuevo modelo Oportunidad
+    desde cualquier origen (POPS, Leads, Alertas, Campañas)
+    """
+    try:
+        # Si no se especifica responsable, usar el creador del embudo
+        if not responsable:
+            responsable = embudo.creado_por
+        
+        # Crear la oportunidad sin enviar notificación automática
+        oportunidad = Oportunidad(
+            cliente=cliente,
+            equipo=equipo,
+            embudo_ventas=embudo,
+            estado_contacto='PENDIENTE',
+            tipo_contacto=tipo_contacto,
+            descripcion_contacto=descripcion,
+            observaciones_adicionales=observaciones,
+            responsable=responsable,
+            creado_por=embudo.creado_por,
+            notificacion_enviada=False  # No enviar notificación automáticamente
+        )
+        
+        # Guardar sin enviar notificación
+        oportunidad.save()
+        
+        # Crear el primer registro en el historial
+        HistorialOportunidad.objects.create(
+            oportunidad=oportunidad,
+            estado_anterior='PENDIENTE',  # Estado inicial
+            estado_nuevo='PENDIENTE',     # Mismo estado inicial
+            descripcion_cambio="Oportunidad creada automáticamente",
+            observaciones=f"Oportunidad creada desde {embudo.get_origen_display()}",
+            responsable_cambio=embudo.creado_por
+        )
+        
+        return oportunidad
+        
+    except Exception as e:
+        print(f"Error creando oportunidad: {e}")
+        return None
+
+def enviar_notificacion_cambio_responsable(oportunidad, nuevo_responsable):
+    """
+    Función para enviar notificación por email cuando se cambia el responsable de una oportunidad
+    """
+    try:
+        from django.core.mail import send_mail
+        from django.conf import settings
+        
+        subject = f'Nueva oportunidad asignada - {oportunidad.cliente.razon_social}'
+        message = f"""
+        Hola {nuevo_responsable.get_full_name()},
+        
+        Se te ha asignado una nueva oportunidad:
+        
+        Cliente: {oportunidad.cliente.razon_social}
+        Estado: {oportunidad.get_estado_contacto_display()}
+        Tipo de Contacto: {oportunidad.get_tipo_contacto_display()}
+        Descripción: {oportunidad.descripcion_contacto[:100]}...
+        
+        Fecha de próximo contacto: {oportunidad.fecha_proximo_contacto.strftime('%d/%m/%Y %H:%M') if oportunidad.fecha_proximo_contacto else 'No programado'}
+        
+        Accede al sistema para más detalles.
+        
+        Saludos,
+        Sistema CRM - Patagonia Maquinarias
+        """
+        
+        send_mail(
+            subject,
+            message,
+            settings.DEFAULT_FROM_EMAIL,
+            [nuevo_responsable.email],
+            fail_silently=False,
+        )
+        
+        # Marcar como notificación enviada
+        oportunidad.notificacion_enviada = True
+        oportunidad.save(update_fields=['notificacion_enviada'])
+        
+        return True
+        
+    except Exception as e:
+        print(f"Error enviando notificación: {e}")
+        return False
+
+@login_required
+def oportunidad_detalle_ajax(request, oportunidad_id):
+    """Vista AJAX para obtener detalles de una oportunidad"""
+    try:
+        oportunidad = get_object_or_404(Oportunidad, id=oportunidad_id)
+        
+        data = {
+            'success': True,
+            'oportunidad': {
+                'cliente': oportunidad.cliente.razon_social,
+                'equipo': f"{oportunidad.equipo.numero_serie} - {oportunidad.equipo.modelo.nombre}" if oportunidad.equipo else None,
+                'estado': oportunidad.get_estado_contacto_display(),
+                'estado_codigo': oportunidad.estado_contacto,
+                'tipo': oportunidad.get_tipo_contacto_display(),
+                'tipo_codigo': oportunidad.tipo_contacto,
+                'responsable': oportunidad.responsable.get_nombre_completo() if oportunidad.responsable else None,
+                'descripcion': oportunidad.descripcion_contacto,
+                'observaciones': oportunidad.observaciones_adicionales,
+                'proximo_contacto': oportunidad.fecha_proximo_contacto.strftime('%d/%m/%Y %H:%M') if oportunidad.fecha_proximo_contacto else None,
+                'fecha_creacion': oportunidad.fecha_creacion.strftime('%d/%m/%Y %H:%M'),
+            }
+        }
+        
+        return JsonResponse(data)
+        
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)})
+
+@login_required
+def oportunidad_historial_ajax(request, oportunidad_id):
+    """Vista AJAX para obtener historial de una oportunidad"""
+    try:
+        oportunidad = get_object_or_404(Oportunidad, id=oportunidad_id)
+        historial = oportunidad.historial.all().order_by('-fecha_cambio')
+        
+        historial_data = []
+        for item in historial:
+            historial_data.append({
+                'fecha': item.fecha_cambio.strftime('%d/%m/%Y %H:%M'),
+                'estado_anterior': item.get_estado_anterior_display(),
+                'estado_nuevo': item.get_estado_nuevo_display(),
+                'descripcion': item.descripcion_cambio,
+                'responsable': item.responsable_cambio.get_nombre_completo() if item.responsable_cambio else 'Sistema',
+                'observaciones': item.observaciones,
+            })
+        
+        data = {
+            'success': True,
+            'historial': historial_data
+        }
+        
+        return JsonResponse(data)
+        
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)})
+
+@login_required
+def cambiar_estado_oportunidad_ajax(request, oportunidad_id):
+    """Vista AJAX para cambiar el estado de una oportunidad"""
+    if request.method == 'POST':
+        try:
+            oportunidad = get_object_or_404(Oportunidad, id=oportunidad_id)
+            nuevo_estado = request.POST.get('nuevo_estado')
+            descripcion_cambio = request.POST.get('descripcion_cambio', '')
+            observaciones = request.POST.get('observaciones', '')
+            
+            if not nuevo_estado:
+                return JsonResponse({'success': False, 'error': 'Estado requerido'})
+            
+            # Guardar estado anterior
+            estado_anterior = oportunidad.estado_contacto
+            
+            # Actualizar estado
+            oportunidad.estado_contacto = nuevo_estado
+            oportunidad.save()
+            
+            # Crear registro en historial
+            HistorialOportunidad.objects.create(
+                oportunidad=oportunidad,
+                estado_anterior=estado_anterior,
+                estado_nuevo=nuevo_estado,
+                descripcion_cambio=descripcion_cambio or f"Estado cambiado de {oportunidad.get_estado_contacto_display()} a {oportunidad.get_estado_contacto_display()}",
+                observaciones=observaciones,
+                responsable_cambio=request.user
+            )
+            
+            return JsonResponse({
+                'success': True,
+                'message': 'Estado actualizado correctamente',
+                'nuevo_estado': oportunidad.get_estado_contacto_display()
+            })
+            
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+    
+    return JsonResponse({'success': False, 'error': 'Método no permitido'})
+
+@login_required
+def nuevo_contacto_oportunidad_ajax(request, oportunidad_id):
+    """Vista AJAX para crear un nuevo contacto para una oportunidad"""
+    if request.method == 'POST':
+        try:
+            oportunidad = get_object_or_404(Oportunidad, id=oportunidad_id)
+            
+            # Obtener datos del formulario
+            tipo_contacto = request.POST.get('tipo_contacto')
+            descripcion = request.POST.get('descripcion')
+            nuevo_estado = request.POST.get('nuevo_estado')
+            observaciones = request.POST.get('observaciones', '')
+            fecha_proximo_contacto = request.POST.get('fecha_proximo_contacto')
+            
+            if not tipo_contacto or not descripcion:
+                return JsonResponse({'success': False, 'error': 'Tipo de contacto y descripción son requeridos'})
+            
+            # Actualizar oportunidad
+            if nuevo_estado:
+                estado_anterior = oportunidad.estado_contacto
+                oportunidad.estado_contacto = nuevo_estado
+            
+            if fecha_proximo_contacto:
+                oportunidad.fecha_proximo_contacto = timezone.datetime.fromisoformat(fecha_proximo_contacto.replace('Z', '+00:00'))
+            
+            oportunidad.save()
+            
+            # Crear registro en historial
+            HistorialOportunidad.objects.create(
+                oportunidad=oportunidad,
+                estado_anterior=estado_anterior if nuevo_estado else oportunidad.estado_contacto,
+                estado_nuevo=oportunidad.estado_contacto,
+                descripcion_cambio=f"Nuevo contacto: {descripcion}",
+                observaciones=observaciones,
+                responsable_cambio=request.user
+            )
+            
+            # Programar tarea de email si se especificó fecha de próximo contacto
+            if fecha_proximo_contacto:
+                programar_tarea_email_proximo_contacto(oportunidad, oportunidad.fecha_proximo_contacto, request.user)
+            
+            return JsonResponse({
+                'success': True,
+                'message': 'Contacto registrado correctamente'
+            })
+            
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+    
+    return JsonResponse({'success': False, 'error': 'Método no permitido'})
+
+@login_required
+def obtener_usuarios_disponibles_ajax(request):
+    """Vista AJAX para obtener usuarios disponibles"""
+    try:
+        from recursosHumanos.models import Usuario
+        
+        # Obtener todos los usuarios activos
+        usuarios_disponibles = Usuario.objects.filter(
+            is_active=True
+        ).order_by('first_name', 'last_name')
+        
+        usuarios_data = []
+        for usuario in usuarios_disponibles:
+            usuarios_data.append({
+                'id': usuario.id,
+                'nombre': usuario.get_nombre_completo(),
+                'email': usuario.email,
+                'cargo': getattr(usuario, 'cargo', 'Sin cargo')
+            })
+        
+        return JsonResponse({
+            'success': True,
+            'usuarios': usuarios_data
+        })
+        
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)})
+
+@login_required
+def cambiar_responsable_oportunidad_ajax(request, oportunidad_id):
+    """Vista AJAX para cambiar el responsable de una oportunidad"""
+    if request.method == 'POST':
+        try:
+            from recursosHumanos.models import Usuario
+            
+            oportunidad = get_object_or_404(Oportunidad, id=oportunidad_id)
+            nuevo_responsable_id = request.POST.get('nuevo_responsable')
+            observaciones = request.POST.get('observaciones', '')
+            
+            if not nuevo_responsable_id:
+                return JsonResponse({'success': False, 'error': 'Responsable requerido'})
+            
+            # Obtener el nuevo responsable
+            nuevo_responsable = get_object_or_404(Usuario, id=nuevo_responsable_id)
+            
+            # Guardar responsable anterior
+            responsable_anterior = oportunidad.responsable
+            
+            # Actualizar responsable
+            oportunidad.responsable = nuevo_responsable
+            oportunidad.notificacion_enviada = False  # Resetear para enviar nueva notificación
+            oportunidad.save()
+            
+            # Enviar notificación por email
+            enviar_notificacion_cambio_responsable(oportunidad, nuevo_responsable)
+            
+            # Crear registro en historial
+            HistorialOportunidad.objects.create(
+                oportunidad=oportunidad,
+                estado_anterior=oportunidad.estado_contacto,
+                estado_nuevo=oportunidad.estado_contacto,  # Mismo estado
+                descripcion_cambio=f"Responsable cambiado de {responsable_anterior.get_nombre_completo() if responsable_anterior else 'Sin asignar'} a {nuevo_responsable.get_nombre_completo()}",
+                observaciones=observaciones,
+                responsable_cambio=request.user
+            )
+            
+            return JsonResponse({
+                'success': True,
+                'message': 'Responsable actualizado correctamente',
+                'nuevo_responsable': nuevo_responsable.get_nombre_completo()
+            })
+            
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+    
+    return JsonResponse({'success': False, 'error': 'Método no permitido'})
+
+def programar_tarea_email_proximo_contacto(oportunidad, fecha_proximo_contacto, creado_por):
+    """
+    Programa una tarea para enviar email de recordatorio en la fecha de próximo contacto
+    """
+    try:
+        from crm.models import TareaOportunidad
+        
+        # Crear la tarea programada
+        tarea = TareaOportunidad.objects.create(
+            oportunidad=oportunidad,
+            tipo_tarea='EMAIL_PROXIMO_CONTACTO',
+            fecha_programada=fecha_proximo_contacto,
+            descripcion=f"Recordatorio de próximo contacto para {oportunidad.cliente.razon_social}",
+            creado_por=creado_por
+        )
+        
+        print(f"✅ Tarea programada: Email de recordatorio para {fecha_proximo_contacto}")
+        return tarea
+        
+    except Exception as e:
+        print(f"❌ Error programando tarea: {e}")
+        return None
+
+def ejecutar_tareas_pendientes():
+    """
+    Ejecuta todas las tareas pendientes que están programadas para ahora o antes
+    """
+    try:
+        from crm.models import TareaOportunidad
+        
+        # Obtener tareas pendientes que deben ejecutarse
+        tareas_pendientes = TareaOportunidad.objects.filter(
+            estado='PENDIENTE',
+            fecha_programada__lte=timezone.now()
+        )
+        
+        print(f"🔍 Encontradas {tareas_pendientes.count()} tareas pendientes")
+        
+        for tarea in tareas_pendientes:
+            print(f"⚡ Ejecutando tarea: {tarea}")
+            tarea.ejecutar_tarea()
+        
+        return tareas_pendientes.count()
+        
+    except Exception as e:
+        print(f"❌ Error ejecutando tareas: {e}")
+        return 0

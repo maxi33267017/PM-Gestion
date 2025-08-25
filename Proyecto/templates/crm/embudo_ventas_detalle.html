@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load crm_filters %}
 {% block title %} | Detalle Embudo - {% if embudo.cliente %}{{ embudo.cliente.razon_social }}{% else %}Embudo Genérico{% endif %}{% endblock %}
 
 {% block content %}
@@ -29,7 +30,7 @@
 
     <!-- Información Principal del Embudo -->
     <div class="row g-4 mb-4">
-        <div class="col-md-8">
+        <div class="col-md-12">
             <div class="card shadow-sm">
                 <div class="card-header">
                     <h5 class="mb-0">
@@ -38,7 +39,7 @@
                 </div>
                 <div class="card-body">
                     <div class="row">
-                        <div class="col-md-6">
+                        <div class="col-md-4">
                             <h6>Cliente</h6>
                             <p class="mb-3">
                                 {% if embudo.cliente %}
@@ -60,41 +61,56 @@
                                 <span class="badge bg-secondary">{{ embudo.get_origen_display }}</span>
                             </p>
                         </div>
-                        <div class="col-md-6">
-                            <h6>Valor Estimado</h6>
+                        <div class="col-md-4">
+                            <h6>Objetivo de Paquetes</h6>
                             <p class="mb-3">
-                                {% if embudo.valor_estimado %}
-                                    <span class="text-success fs-4">${{ embudo.valor_estimado|floatformat:0 }}</span>
+                                {% if embudo.objetivo_paquetes %}
+                                    <span class="text-success fs-4">{{ embudo.objetivo_paquetes }}</span>
                                 {% else %}
                                     <span class="text-muted">No especificado</span>
                                 {% endif %}
                             </p>
                             
-                            <h6>Valor de Cierre</h6>
+                            <h6>Valor Promedio del Paquete</h6>
                             <p class="mb-3">
-                                {% if embudo.valor_cierre %}
-                                    <span class="text-primary fs-4">${{ embudo.valor_cierre|floatformat:0 }}</span>
-                                    {% if embudo.venta_concretada %}
-                                        <span class="badge bg-success ms-2">Venta Concretada</span>
-                                    {% endif %}
+                                {% if embudo.valor_promedio_paquete %}
+                                    <span class="text-primary fs-4">${{ embudo.valor_promedio_paquete|floatformat:0 }}</span>
                                 {% else %}
-                                    <span class="text-muted">No concretada</span>
+                                    <span class="text-muted">No especificado</span>
                                 {% endif %}
                             </p>
                             
-                            {% if embudo.venta_concretada %}
-                            <h6>Diferencia Estimado vs Cierre</h6>
+                            <h6>Objetivo Total</h6>
                             <p class="mb-3">
-                                <span class="fs-5 {% if embudo.diferencia_estimado_cierre >= 0 %}text-success{% else %}text-danger{% endif %}">
-                                    ${{ embudo.diferencia_estimado_cierre|floatformat:0 }}
-                                </span>
-                                <small class="text-muted">
-                                    {% if embudo.diferencia_estimado_cierre >= 0 %}
-                                        (Sobre estimado)
-                                    {% else %}
-                                        (Sub estimado)
-                                    {% endif %}
-                                </small>
+                                {% if embudo.objetivo_paquetes and embudo.valor_promedio_paquete %}
+                                    <span class="fs-5 text-success">
+                                        ${{ embudo.objetivo_paquetes|multiply:embudo.valor_promedio_paquete|floatformat:0 }}
+                                    </span>
+                                {% else %}
+                                    <span class="text-muted">No calculable</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                        <div class="col-md-4">
+                            <h6>Fecha de Ingreso</h6>
+                            <p class="mb-3">
+                                <small class="text-muted">{{ embudo.fecha_ingreso|date:"d/m/Y H:i" }}</small>
+                            </p>
+                            
+                            <h6>Última Actividad</h6>
+                            <p class="mb-3">
+                                <small class="text-muted">{{ embudo.fecha_ultima_actividad|date:"d/m/Y H:i" }}</small>
+                            </p>
+                            
+                            <h6>Creado por</h6>
+                            <p class="mb-3">
+                                <small class="text-muted">{{ embudo.creado_por.get_nombre_completo }}</small>
+                            </p>
+                            
+                            {% if embudo.campana %}
+                            <h6>Campaña</h6>
+                            <p class="mb-3">
+                                <small class="text-muted">{{ embudo.campana.nombre }}</small>
                             </p>
                             {% endif %}
                         </div>
@@ -120,41 +136,21 @@
                 </div>
             </div>
         </div>
-        
-        <div class="col-md-4">
+    </div>
+
+    <!-- Modal para Configurar Objetivos -->
+    <div class="row mb-4">
+        <div class="col-12">
             <div class="card shadow-sm">
                 <div class="card-header">
                     <h5 class="mb-0">
-                        <i class="bi bi-clock me-2"></i>Información Temporal
+                        <i class="bi bi-target me-2"></i>Configurar Objetivos del Embudo
                     </h5>
                 </div>
                 <div class="card-body">
-                    <div class="mb-3">
-                        <h6>Fecha de Ingreso</h6>
-                        <p class="text-muted">{{ embudo.fecha_ingreso|date:"d/m/Y H:i" }}</p>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <h6>Última Actividad</h6>
-                        <p class="text-muted">{{ embudo.fecha_ultima_actividad|date:"d/m/Y H:i" }}</p>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <h6>Tiempo en Embudo</h6>
-                        <p class="text-muted">{{ embudo.tiempo_en_embudo.days }} días</p>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <h6>Creado por</h6>
-                        <p class="text-muted">{{ embudo.creado_por.get_nombre_completo }}</p>
-                    </div>
-                    
-                    {% if embudo.campana %}
-                    <div class="mb-3">
-                        <h6>Campaña</h6>
-                        <p class="text-muted">{{ embudo.campana.nombre }}</p>
-                    </div>
-                    {% endif %}
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#configurarObjetivosModal">
+                        <i class="bi bi-gear me-2"></i>Configurar Objetivos
+                    </button>
                 </div>
             </div>
         </div>
@@ -197,89 +193,8 @@
         </div>
     </div>
 
-    <!-- Editar Valores del Embudo -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="card shadow-sm">
-                <div class="card-header">
-                    <h5 class="mb-0">
-                        <i class="bi bi-currency-dollar me-2"></i>Editar Valores del Embudo
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <form method="post">
-                        {% csrf_token %}
-                        <input type="hidden" name="action" value="actualizar_valores">
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="valor_estimado" class="form-label">Valor Estimado (USD)</label>
-                                    <div class="input-group">
-                                        <span class="input-group-text">$</span>
-                                        <input type="number" 
-                                               class="form-control" 
-                                               id="valor_estimado" 
-                                               name="valor_estimado" 
-                                               value="{{ embudo.valor_estimado|default:'' }}"
-                                               step="0.01" 
-                                               min="0"
-                                               placeholder="Ingrese el valor estimado">
-                                    </div>
-                                    <div class="form-text">Valor total estimado de la venta</div>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="valor_cierre" class="form-label">Valor de Cierre (USD)</label>
-                                    <div class="input-group">
-                                        <span class="input-group-text">$</span>
-                                        <input type="number" 
-                                               class="form-control" 
-                                               id="valor_cierre" 
-                                               name="valor_cierre" 
-                                               value="{{ embudo.valor_cierre|default:'' }}"
-                                               step="0.01" 
-                                               min="0"
-                                               placeholder="Valor final de la venta">
-                                    </div>
-                                    <div class="form-text">Valor efectivamente vendido (si se concretó)</div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-12">
-                                <div class="alert alert-info">
-                                    <i class="bi bi-info-circle me-2"></i>
-                                    {% if embudo.venta_concretada %}
-                                        <strong>Diferencia Estimado vs Cierre:</strong> 
-                                        {% if embudo.diferencia_estimado_cierre >= 0 %}
-                                            <span class="text-success">+${{ embudo.diferencia_estimado_cierre|floatformat:0 }}</span>
-                                            <small class="text-muted">(Sobre estimado)</small>
-                                        {% else %}
-                                            <span class="text-danger">${{ embudo.diferencia_estimado_cierre|floatformat:0 }}</span>
-                                            <small class="text-muted">(Sub estimado)</small>
-                                        {% endif %}
-                                    {% else %}
-                                        <strong>Ingrese el valor de cierre para ver la diferencia</strong>
-                                    {% endif %}
-                                </div>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-12">
-                                <button type="submit" class="btn btn-success">
-                                    <i class="bi bi-save me-2"></i>Guardar Cambios
-                                </button>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Oportunidades Individuales (Especialmente para POPS) -->
-    {% if embudo.origen == 'POPS' or contactos %}
+    <!-- Oportunidades Individuales (Nuevo modelo) -->
+    {% if oportunidades %}
     <div class="row mb-4">
         <div class="col-12">
             <div class="card shadow-sm">
@@ -288,14 +203,14 @@
                         <i class="bi bi-people me-2"></i>Oportunidades Individuales
                     </h5>
                     <div>
-                        <span class="badge bg-primary">{{ contactos.count }} oportunidades</span>
+                        <span class="badge bg-primary">{{ oportunidades.count }} oportunidades</span>
                         <button class="btn btn-info btn-sm ms-2" onclick="verGraficoEmbudo()" title="Ver gráfico del embudo">
                             <i class="bi bi-graph-up me-1"></i>Ver Gráfico
                         </button>
                     </div>
                 </div>
                 <div class="card-body">
-                    {% if contactos %}
+                    {% if oportunidades %}
                         <!-- Filtros para oportunidades -->
                         <div class="row mb-3">
                             <div class="col-md-4">
@@ -338,54 +253,48 @@
                                     <tr>
                                         <th>Cliente</th>
                                         <th>Equipo</th>
-                                        <th>Último Contacto</th>
+                                        <th>Fecha Creación</th>
                                         <th>Tipo</th>
-                                        <th>Resultado</th>
+                                        <th>Estado</th>
                                         <th>Responsable</th>
-                                        <th>Próximo Seguimiento</th>
+                                        <th>Próximo Contacto</th>
                                         <th>Acciones</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {% for contacto in contactos %}
+                                    {% for oportunidad in oportunidades %}
                                     <tr class="oportunidad-row" 
-                                        data-cliente="{{ contacto.cliente.razon_social|lower }}"
-                                        data-resultado="{{ contacto.resultado }}"
-                                        data-tipo="{{ contacto.tipo_contacto }}">
+                                        data-cliente="{{ oportunidad.cliente.razon_social|lower }}"
+                                        data-estado="{{ oportunidad.estado_contacto }}"
+                                        data-tipo="{{ oportunidad.tipo_contacto }}">
                                         <td>
-                                            <strong>{{ contacto.cliente.razon_social }}</strong>
-                                            <br><small class="text-muted">{{ contacto.cliente.cuit }}</small>
+                                            <strong>{{ oportunidad.cliente.razon_social }}</strong>
+                                            <br><small class="text-muted">{{ oportunidad.cliente.cuit }}</small>
                                         </td>
                                         <td>
-                                            {% if "Equipo:" in contacto.observaciones %}
-                                                {% with equipo_pin=contacto.observaciones|slice:"Equipo:"|slice:" -" %}
-                                                    <small class="text-muted">{{ equipo_pin|truncatechars:20 }}</small>
-                                                {% endwith %}
-                                            {% elif "Equipo sin servicios:" in contacto.descripcion %}
-                                                {% with equipo_info=contacto.descripcion|slice:"25:"|slice:":-1" %}
-                                                    <small class="text-muted">{{ equipo_info|truncatechars:30 }}</small>
-                                                {% endwith %}
+                                            {% if oportunidad.equipo %}
+                                                <small class="text-muted">{{ oportunidad.equipo.numero_serie }} - {{ oportunidad.equipo.modelo.nombre }}</small>
                                             {% else %}
-                                                <small class="text-muted">{{ contacto.descripcion|truncatechars:30 }}</small>
+                                                <small class="text-muted">{{ oportunidad.descripcion_contacto|truncatechars:30 }}</small>
                                             {% endif %}
                                         </td>
                                         <td>
-                                            <small>{{ contacto.fecha_contacto|date:"d/m/Y H:i" }}</small>
+                                            <small>{{ oportunidad.fecha_creacion|date:"d/m/Y H:i" }}</small>
                                         </td>
                                         <td>
-                                            <span class="badge bg-info">{{ contacto.get_tipo_contacto_display }}</span>
+                                            <span class="badge bg-info">{{ oportunidad.get_tipo_contacto_display }}</span>
                                         </td>
                                         <td>
-                                            <span class="badge {% if contacto.resultado == 'VENTA_EXITOSA' %}bg-success{% elif contacto.resultado == 'PRESUPUESTADO' %}bg-warning{% elif contacto.resultado == 'PENDIENTE' %}bg-secondary{% elif contacto.resultado == 'VENTA_PERDIDA' %}bg-danger{% elif contacto.resultado == 'CONTACTADO' %}bg-primary{% elif contacto.resultado == 'CON_RESPUESTA' %}bg-info{% else %}bg-light text-dark{% endif %}">
-                                                {{ contacto.get_resultado_display }}
+                                            <span class="badge {% if oportunidad.estado_contacto == 'CLIENTE_ACEPTO_VENTA' %}bg-success{% elif oportunidad.estado_contacto == 'CLIENTE_ACEPTO_PRESUPUESTO' %}bg-warning{% elif oportunidad.estado_contacto == 'PENDIENTE' %}bg-secondary{% elif oportunidad.estado_contacto == 'CLIENTE_RESPONDIO_NO_ACEPTO' %}bg-danger{% elif oportunidad.estado_contacto == 'CLIENTE_NO_RESPONDIO_REPROGRAMADO' %}bg-primary{% elif oportunidad.estado_contacto == 'CLIENTE_RESPONDIO_REPROGRAMADO' %}bg-info{% else %}bg-light text-dark{% endif %}">
+                                                {{ oportunidad.get_estado_contacto_display }}
                                             </span>
                                         </td>
                                         <td>
-                                            <small>{{ contacto.responsable.get_nombre_completo }}</small>
+                                            <small>{{ oportunidad.responsable.get_nombre_completo|default:"Sin asignar" }}</small>
                                         </td>
                                         <td>
-                                            {% if contacto.proximo_seguimiento %}
-                                                <small class="text-primary">{{ contacto.proximo_seguimiento|date:"d/m/Y" }}</small>
+                                            {% if oportunidad.fecha_proximo_contacto %}
+                                                <small class="text-primary">{{ oportunidad.fecha_proximo_contacto|date:"d/m/Y" }}</small>
                                             {% else %}
                                                 <small class="text-muted">No programado</small>
                                             {% endif %}
@@ -393,26 +302,26 @@
                                         <td>
                                             <div class="btn-group" role="group">
                                                 <button type="button" class="btn btn-sm btn-outline-primary" 
-                                                        onclick="verDetalleContacto({{ contacto.id }})" 
+                                                        onclick="verDetalleOportunidad({{ oportunidad.id }})" 
                                                         title="Ver detalle">
                                                     <i class="bi bi-eye"></i>
                                                 </button>
                                                 <button type="button" class="btn btn-sm btn-outline-secondary" 
-                                                        onclick="verHistorialOportunidad({{ contacto.cliente.id }}, '{{ contacto.cliente.razon_social|escapejs }}')" 
+                                                        onclick="verHistorialOportunidadEspecifica({{ oportunidad.id }})" 
                                                         title="Ver historial completo">
                                                     <i class="bi bi-clock-history"></i>
                                                 </button>
 
                                                 <button type="button" class="btn btn-sm btn-outline-info" 
-                                                        onclick="nuevoContacto({{ contacto.id }})" 
+                                                        onclick="nuevoContactoOportunidad({{ oportunidad.id }})" 
                                                         title="Nuevo contacto">
                                                     <i class="bi bi-plus-circle"></i>
                                                 </button>
                                                 
-                                                <button type="button" class="btn btn-sm btn-outline-warning" 
-                                                        onclick="cambiarEstadoOportunidad({{ contacto.id }}, '{{ contacto.get_resultado_display|escapejs }}')" 
-                                                        title="Cambiar estado">
-                                                    <i class="bi bi-arrow-repeat"></i>
+                                                <button type="button" class="btn btn-sm btn-outline-success" 
+                                                        onclick="cambiarResponsableOportunidad({{ oportunidad.id }}, '{{ oportunidad.responsable.get_nombre_completo|default:"Sin asignar"|escapejs }}')" 
+                                                        title="Cambiar responsable">
+                                                    <i class="bi bi-person-plus"></i>
                                                 </button>
                                             </div>
                                         </td>
@@ -428,7 +337,7 @@
                                 <div class="card bg-primary text-white">
                                     <div class="card-body text-center">
                                         <h6>Total Oportunidades</h6>
-                                        <h4>{{ contactos.count }}</h4>
+                                        <h4>{{ oportunidades.count }}</h4>
                                     </div>
                                 </div>
                             </div>
@@ -436,7 +345,7 @@
                                 <div class="card bg-success text-white">
                                     <div class="card-body text-center">
                                         <h6>Exitosas</h6>
-                                        <h4>{{ contactos|dictsort:"resultado"|length }}</h4>
+                                        <h4>{{ oportunidades|dictsort:"estado_contacto"|length }}</h4>
                                     </div>
                                 </div>
                             </div>
@@ -444,7 +353,7 @@
                                 <div class="card bg-warning text-white">
                                     <div class="card-body text-center">
                                         <h6>Pendientes</h6>
-                                        <h4>{{ contactos|dictsort:"resultado"|length }}</h4>
+                                        <h4>{{ oportunidades|dictsort:"estado_contacto"|length }}</h4>
                                     </div>
                                 </div>
                             </div>
@@ -452,7 +361,7 @@
                                 <div class="card bg-info text-white">
                                     <div class="card-body text-center">
                                         <h6>Último Mes</h6>
-                                        <h4>{{ contactos|dictsort:"fecha_contacto"|length }}</h4>
+                                        <h4>{{ oportunidades|dictsort:"fecha_creacion"|length }}</h4>
                                     </div>
                                 </div>
                             </div>
@@ -517,6 +426,64 @@
 
 <!-- Espacio adicional al final -->
 <div style="height: 50px;"></div>
+
+<!-- Modal para Configurar Objetivos -->
+<div class="modal fade" id="configurarObjetivosModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bi bi-target me-2"></i>Configurar Objetivos del Embudo
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="configurar_objetivos">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="objetivo_paquetes" class="form-label">Objetivo de Paquetes</label>
+                        <input type="number" 
+                               class="form-control" 
+                               id="objetivo_paquetes" 
+                               name="objetivo_paquetes" 
+                               value="{{ embudo.objetivo_paquetes|default:'' }}"
+                               min="1"
+                               placeholder="Cantidad de paquetes objetivo">
+                        <div class="form-text">Cantidad de paquetes que se espera vender</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="valor_promedio_paquete" class="form-label">Valor Promedio del Paquete (USD)</label>
+                        <div class="input-group">
+                            <span class="input-group-text">$</span>
+                            <input type="number" 
+                                   class="form-control" 
+                                   id="valor_promedio_paquete" 
+                                   name="valor_promedio_paquete" 
+                                   value="{{ embudo.valor_promedio_paquete|default:'' }}"
+                                   step="0.01" 
+                                   min="0"
+                                   placeholder="Valor promedio por paquete">
+                        </div>
+                        <div class="form-text">Valor promedio esperado por cada paquete</div>
+                    </div>
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle me-2"></i>
+                        <strong>Objetivo Total:</strong> 
+                        <span id="objetivoTotal">$0</span>
+                        <small class="text-muted">(Se calcula automáticamente)</small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-save me-2"></i>Guardar Objetivos
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 
 <!-- Modal para Detalle de Contacto -->
 <div class="modal fade" id="detalleContactoModal" tabindex="-1">
@@ -924,116 +891,7 @@
     </div>
 </div>
 
-<!-- Modal para Historial de Oportunidad -->
-<div class="modal fade" id="historialOportunidadModal" tabindex="-1">
-    <div class="modal-dialog modal-xl">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">
-                    <i class="bi bi-clock-history me-2"></i>Historial Completo de Oportunidad
-                </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <div class="alert alert-info mb-3">
-                    <strong>Cliente:</strong> <span id="historialCliente"></span>
-                </div>
-                
-                <!-- Filtros del historial -->
-                <div class="row mb-3">
-                    <div class="col-md-4">
-                        <select id="filtroHistorialTipo" class="form-select" onchange="filtrarHistorial()">
-                            <option value="">Todos los tipos</option>
-                            <option value="EMAIL">Email</option>
-                            <option value="TELEFONO">Teléfono</option>
-                            <option value="WHATSAPP">WhatsApp</option>
-                            <option value="VISITA">Visita</option>
-                            <option value="VIDEO_LLAMADA">Video Llamada</option>
-                            <option value="REUNION">Reunión</option>
-                            <option value="PRESENTACION">Presentación</option>
-                        </select>
-                    </div>
-                    <div class="col-md-4">
-                        <select id="filtroHistorialResultado" class="form-select" onchange="filtrarHistorial()">
-                            <option value="">Todos los resultados</option>
-                            <option value="PENDIENTE">Pendiente</option>
-                            <option value="EXITOSO">Exitoso</option>
-                            <option value="VENTA">Venta</option>
-                            <option value="OBJECCION">Objeción</option>
-                            <option value="NO_CONTESTA">No Contesta</option>
-                            <option value="REPROGRAMADO">Reprogramado</option>
-                            <option value="CANCELADO">Cancelado</option>
-                        </select>
-                    </div>
-                    <div class="col-md-4">
-                        <button type="button" class="btn btn-outline-secondary w-100" onclick="limpiarFiltrosHistorial()">
-                            <i class="bi bi-arrow-clockwise"></i> Limpiar Filtros
-                        </button>
-                    </div>
-                </div>
-                
-                <!-- Tabla del historial -->
-                <div class="table-responsive">
-                    <table class="table table-hover" id="tablaHistorial">
-                        <thead class="table-dark">
-                            <tr>
-                                <th>Fecha</th>
-                                <th>Tipo</th>
-                                <th>Resultado</th>
-                                <th>Responsable</th>
-                                <th>Descripción</th>
-                                <th>Observaciones</th>
-                                <th>Próximo Seguimiento</th>
-                            </tr>
-                        </thead>
-                        <tbody id="historialBody">
-                            <!-- Los datos se cargarán dinámicamente -->
-                        </tbody>
-                    </table>
-                </div>
-                
-                <!-- Estadísticas del historial -->
-                <div class="row mt-3">
-                    <div class="col-md-3">
-                        <div class="card bg-primary text-white">
-                            <div class="card-body text-center">
-                                <h6>Total Contactos</h6>
-                                <h4 id="totalContactos">0</h4>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="card bg-success text-white">
-                            <div class="card-body text-center">
-                                <h6>Exitosos</h6>
-                                <h4 id="contactosExitosos">0</h4>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="card bg-warning text-white">
-                            <div class="card-body text-center">
-                                <h6>Pendientes</h6>
-                                <h4 id="contactosPendientes">0</h4>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="card bg-info text-white">
-                            <div class="card-body text-center">
-                                <h6>Último Contacto</h6>
-                                <h6 id="ultimoContacto">-</h6>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-            </div>
-        </div>
-    </div>
-</div>
+
 
 <!-- Modal para Nuevo Contacto -->
 <div class="modal fade" id="nuevoContactoModal" tabindex="-1">
@@ -1124,6 +982,219 @@
         </div>
     </div>
 </div>
+
+<!-- Modal para Detalle de Oportunidad -->
+<div class="modal fade" id="detalleOportunidadModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bi bi-eye me-2"></i>Detalle de Oportunidad
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Información del Cliente</h6>
+                        <p><strong>Cliente:</strong> <span id="detalleOportCliente"></span></p>
+                        <p><strong>Equipo:</strong> <span id="detalleOportEquipo"></span></p>
+                        <p><strong>Responsable:</strong> <span id="detalleOportResponsable"></span></p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Estado y Contacto</h6>
+                        <p><strong>Estado:</strong> <span id="detalleOportEstado"></span></p>
+                        <p><strong>Tipo de Contacto:</strong> <span id="detalleOportTipo"></span></p>
+                        <p><strong>Fecha de Creación:</strong> <span id="detalleOportFechaCreacion"></span></p>
+                        <p><strong>Próximo Contacto:</strong> <span id="detalleOportProximoContacto"></span></p>
+                    </div>
+                </div>
+                <hr>
+                <div class="row">
+                    <div class="col-12">
+                        <h6>Descripción</h6>
+                        <p id="detalleOportDescripcion"></p>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-12">
+                        <h6>Observaciones</h6>
+                        <p id="detalleOportObservaciones"></p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para Historial de Oportunidad -->
+<div class="modal fade" id="historialOportunidadModal" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bi bi-clock-history me-2"></i>Historial de Oportunidad
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Estado Anterior</th>
+                                <th>Estado Nuevo</th>
+                                <th>Descripción</th>
+                                <th>Responsable</th>
+                                <th>Observaciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="historialOportunidadBody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para Nuevo Contacto de Oportunidad -->
+<div class="modal fade" id="nuevoContactoOportunidadModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bi bi-plus-circle me-2"></i>Nuevo Contacto
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{% url 'crm:nuevo_contacto_oportunidad_ajax' 0 %}" id="formNuevoContactoOportunidad">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <input type="hidden" id="nuevoContactoOportunidadId" name="oportunidad_id">
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Cliente</label>
+                            <p class="form-control-plaintext" id="nuevoContactoCliente"></p>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Equipo</label>
+                            <p class="form-control-plaintext" id="nuevoContactoEquipo"></p>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="tipoContactoOportunidad" class="form-label">Tipo de Contacto *</label>
+                            <select class="form-select" id="tipoContactoOportunidad" name="tipo_contacto" required>
+                                <option value="">Seleccionar...</option>
+                                <option value="TELEFONO">Teléfono</option>
+                                <option value="EMAIL">Email</option>
+                                <option value="WHATSAPP">WhatsApp</option>
+                                <option value="VISITA">Visita</option>
+                                <option value="VIDEO_LLAMADA">Video Llamada</option>
+                                <option value="REUNION">Reunión</option>
+                                <option value="PRESENTACION">Presentación</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="nuevoEstadoOportunidad" class="form-label">Nuevo Estado</label>
+                            <select class="form-select" id="nuevoEstadoOportunidad" name="nuevo_estado">
+                                <option value="">Mantener estado actual</option>
+                                <option value="PENDIENTE">Pendiente</option>
+                                <option value="CONTACTADO">Contactado</option>
+                                <option value="CON_RESPUESTA">Con Respuesta</option>
+                                <option value="PRESUPUESTADO">Presupuestado</option>
+                                <option value="VENTA_EXITOSA">Venta Exitosa</option>
+                                <option value="VENTA_PERDIDA">Venta Perdida</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="descripcionContactoOportunidad" class="form-label">Descripción del Contacto *</label>
+                        <textarea class="form-control" id="descripcionContactoOportunidad" name="descripcion" rows="3" required></textarea>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="fechaProximoContactoOportunidad" class="form-label">Fecha de Próximo Contacto</label>
+                            <input type="datetime-local" class="form-control" id="fechaProximoContactoOportunidad" name="fecha_proximo_contacto">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="observacionesContactoOportunidad" class="form-label">Observaciones</label>
+                            <textarea class="form-control" id="observacionesContactoOportunidad" name="observaciones" rows="2"></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-save me-2"></i>Guardar Contacto
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para Cambiar Responsable de Oportunidad -->
+<div class="modal fade" id="cambiarResponsableOportunidadModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bi bi-person-plus me-2"></i>Cambiar Responsable de Oportunidad
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{% url 'crm:cambiar_responsable_oportunidad_ajax' 0 %}" id="formCambiarResponsableOportunidad">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <input type="hidden" id="cambiarResponsableOportunidadId" name="oportunidad_id">
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Cliente</label>
+                        <p class="form-control-plaintext" id="cambiarResponsableCliente"></p>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Responsable Actual</label>
+                        <p class="form-control-plaintext" id="cambiarResponsableActual"></p>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="nuevoResponsableOportunidadSelect" class="form-label">Nuevo Responsable *</label>
+                        <select class="form-select" id="nuevoResponsableOportunidadSelect" name="nuevo_responsable" required>
+                            <option value="">Seleccionar...</option>
+                            <!-- Se cargará dinámicamente via AJAX -->
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="observacionesCambioResponsable" class="form-label">Observaciones</label>
+                        <textarea class="form-control" id="observacionesCambioResponsable" name="observaciones" rows="2" placeholder="Motivo del cambio de responsable..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check me-2"></i>Asignar Responsable
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 {% endblock %}
 
 {% block extra_css %}
@@ -1408,103 +1479,7 @@ function nuevoContacto(contactoId) {
     modal.show();
 }
 
-// Función para ver historial completo de una oportunidad
-function verHistorialOportunidad(clienteId, clienteNombre) {
-    // Abrir modal del historial
-    const modal = new bootstrap.Modal(document.getElementById('historialOportunidadModal'));
-    
-    // Mostrar nombre del cliente
-    document.getElementById('historialCliente').textContent = clienteNombre;
-    
-    // Cargar historial completo del cliente
-    fetch(`/crm/cliente/${clienteId}/historial/`)
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                mostrarHistorial(data.contactos);
-                actualizarEstadisticasHistorial(data.contactos);
-                modal.show();
-            } else {
-                alert('Error al cargar el historial');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Error al cargar el historial');
-        });
-}
 
-// Función para mostrar el historial en la tabla
-function mostrarHistorial(contactos) {
-    const tbody = document.getElementById('historialBody');
-    tbody.innerHTML = '';
-    
-    contactos.forEach(contacto => {
-        const row = document.createElement('tr');
-        row.className = 'historial-row';
-        row.dataset.tipo = contacto.tipo_contacto;
-        row.dataset.resultado = contacto.resultado;
-        
-        row.innerHTML = `
-            <td><small>${contacto.fecha_contacto}</small></td>
-            <td><span class="badge bg-info">${contacto.tipo_contacto_display}</span></td>
-            <td><span class="badge ${getBadgeClass(contacto.resultado)}">${contacto.resultado_display}</span></td>
-            <td><small>${contacto.responsable}</small></td>
-            <td><small>${contacto.descripcion}</small></td>
-            <td><small>${contacto.observaciones || '-'}</small></td>
-            <td><small>${contacto.proximo_seguimiento || 'No programado'}</small></td>
-        `;
-        
-        tbody.appendChild(row);
-    });
-}
-
-// Función para actualizar estadísticas del historial
-function actualizarEstadisticasHistorial(contactos) {
-    document.getElementById('totalContactos').textContent = contactos.length;
-    
-    const exitosos = contactos.filter(c => c.resultado === 'VENTA_EXITOSA').length;
-    document.getElementById('contactosExitosos').textContent = exitosos;
-    
-    const pendientes = contactos.filter(c => c.resultado === 'PENDIENTE').length;
-    document.getElementById('contactosPendientes').textContent = pendientes;
-    
-    if (contactos.length > 0) {
-        const ultimo = contactos[0]; // Ya están ordenados por fecha descendente
-        document.getElementById('ultimoContacto').textContent = ultimo.fecha_contacto;
-    } else {
-        document.getElementById('ultimoContacto').textContent = '-';
-    }
-}
-
-// Función para filtrar el historial
-function filtrarHistorial() {
-    const tipo = document.getElementById('filtroHistorialTipo').value;
-    const resultado = document.getElementById('filtroHistorialResultado').value;
-    
-    const filas = document.querySelectorAll('.historial-row');
-    
-    filas.forEach(fila => {
-        const tipoFila = fila.dataset.tipo;
-        const resultadoFila = fila.dataset.resultado;
-        
-        const coincideTipo = !tipo || tipoFila === tipo;
-        const coincideResultado = !resultado || resultadoFila === resultado;
-        
-        if (coincideTipo && coincideResultado) {
-            fila.style.display = '';
-        } else {
-            fila.style.display = 'none';
-        }
-    });
-}
-
-// Función para limpiar filtros del historial
-function limpiarFiltrosHistorial() {
-    document.getElementById('filtroHistorialTipo').value = '';
-    document.getElementById('filtroHistorialResultado').value = '';
-    filtrarHistorial();
-}
 
 // Función para obtener la clase CSS del badge según el resultado
 function getBadgeClass(resultado) {
@@ -1583,8 +1558,148 @@ function actualizarGraficoEmbudo(datos) {
     document.getElementById('promedio-oportunidad').textContent = `$${datos.promedio_oportunidad.toLocaleString()}`;
 }
 
-// Función para cambiar estado de oportunidad
-function cambiarEstadoOportunidad(contactoId, estadoActual) {
+// Funciones para gestionar oportunidades (nuevo modelo)
+function verDetalleOportunidad(oportunidadId) {
+    // Abrir modal con detalles de la oportunidad
+    const modal = new bootstrap.Modal(document.getElementById('detalleOportunidadModal'));
+    
+    // Cargar datos de la oportunidad via AJAX
+    fetch(`/crm/oportunidad/${oportunidadId}/detalle/`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                document.getElementById('detalleOportCliente').textContent = data.oportunidad.cliente;
+                document.getElementById('detalleOportEquipo').textContent = data.oportunidad.equipo || 'No especificado';
+                document.getElementById('detalleOportEstado').textContent = data.oportunidad.estado;
+                document.getElementById('detalleOportTipo').textContent = data.oportunidad.tipo;
+                document.getElementById('detalleOportResponsable').textContent = data.oportunidad.responsable || 'Sin asignar';
+                document.getElementById('detalleOportDescripcion').textContent = data.oportunidad.descripcion;
+                document.getElementById('detalleOportObservaciones').textContent = data.oportunidad.observaciones || 'Sin observaciones';
+                document.getElementById('detalleOportProximoContacto').textContent = data.oportunidad.proximo_contacto || 'No programado';
+                document.getElementById('detalleOportFechaCreacion').textContent = data.oportunidad.fecha_creacion;
+                
+                modal.show();
+            } else {
+                alert('Error al cargar los detalles de la oportunidad');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error al cargar los detalles de la oportunidad');
+        });
+}
+
+function verHistorialOportunidadEspecifica(oportunidadId) {
+    // Abrir modal con historial de la oportunidad
+    const modal = new bootstrap.Modal(document.getElementById('historialOportunidadModal'));
+    
+    // Cargar historial de la oportunidad via AJAX
+    fetch(`/crm/oportunidad/${oportunidadId}/historial/`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const tbody = document.getElementById('historialOportunidadBody');
+                tbody.innerHTML = '';
+                
+                if (data.historial && data.historial.length > 0) {
+                    data.historial.forEach(item => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${item.fecha}</td>
+                            <td>${item.estado_anterior}</td>
+                            <td>${item.estado_nuevo}</td>
+                            <td>${item.descripcion}</td>
+                            <td>${item.responsable}</td>
+                            <td>${item.observaciones || ''}</td>
+                        `;
+                        tbody.appendChild(row);
+                    });
+                } else {
+                    const row = document.createElement('tr');
+                    row.innerHTML = '<td colspan="6" class="text-center text-muted">No hay historial registrado</td>';
+                    tbody.appendChild(row);
+                }
+                
+                modal.show();
+            } else {
+                alert('Error al cargar el historial de la oportunidad');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error al cargar el historial de la oportunidad');
+        });
+}
+
+function nuevoContactoOportunidad(oportunidadId) {
+    // Abrir modal para nuevo contacto
+    const modal = new bootstrap.Modal(document.getElementById('nuevoContactoOportunidadModal'));
+    
+    // Cargar información de la oportunidad
+    fetch(`/crm/oportunidad/${oportunidadId}/detalle/`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                document.getElementById('nuevoContactoOportunidadId').value = oportunidadId;
+                document.getElementById('nuevoContactoCliente').textContent = data.oportunidad.cliente;
+                document.getElementById('nuevoContactoEquipo').textContent = data.oportunidad.equipo || 'No especificado';
+                
+                modal.show();
+            } else {
+                alert('Error al cargar la información de la oportunidad');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error al cargar la información de la oportunidad');
+        });
+}
+
+function cambiarResponsableOportunidad(oportunidadId, responsableActual) {
+    // Abrir modal para cambiar responsable
+    const modal = new bootstrap.Modal(document.getElementById('cambiarResponsableOportunidadModal'));
+    
+    // Cargar información de la oportunidad
+    fetch(`/crm/oportunidad/${oportunidadId}/detalle/`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                document.getElementById('cambiarResponsableOportunidadId').value = oportunidadId;
+                document.getElementById('cambiarResponsableCliente').textContent = data.oportunidad.cliente;
+                document.getElementById('cambiarResponsableActual').textContent = responsableActual;
+                
+                // Cargar usuarios disponibles
+                return fetch('/crm/usuarios-disponibles/');
+            } else {
+                throw new Error('Error al cargar la información de la oportunidad');
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const selectResponsable = document.getElementById('nuevoResponsableOportunidadSelect');
+                selectResponsable.innerHTML = '<option value="">Seleccionar...</option>';
+                
+                data.usuarios.forEach(usuario => {
+                    const option = document.createElement('option');
+                    option.value = usuario.id;
+                    option.textContent = `${usuario.nombre} (${usuario.cargo})`;
+                    selectResponsable.appendChild(option);
+                });
+                
+                modal.show();
+            } else {
+                throw new Error('Error al cargar usuarios disponibles');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error al cargar la información: ' + error.message);
+        });
+}
+
+// Función para cambiar estado de contacto (modelo antiguo - mantener compatibilidad)
+function cambiarEstadoContacto(contactoId, estadoActual) {
     // Abrir modal para cambiar estado
     const modal = new bootstrap.Modal(document.getElementById('cambiarEstadoModal'));
     
@@ -1627,5 +1742,95 @@ function cambiarEstadoOportunidad(contactoId, estadoActual) {
 
 // Variable global para el ID del embudo
 const embudoId = {{ embudo.id }};
+
+// Función para calcular el objetivo total automáticamente
+function calcularObjetivoTotal() {
+    const objetivoPaquetes = document.getElementById('objetivo_paquetes').value;
+    const valorPromedio = document.getElementById('valor_promedio_paquete').value;
+    
+    if (objetivoPaquetes && valorPromedio) {
+        const total = objetivoPaquetes * valorPromedio;
+        document.getElementById('objetivoTotal').textContent = `$${total.toLocaleString()}`;
+    } else {
+        document.getElementById('objetivoTotal').textContent = '$0';
+    }
+}
+
+// Event listeners para el modal de objetivos
+document.addEventListener('DOMContentLoaded', function() {
+    const objetivoPaquetesInput = document.getElementById('objetivo_paquetes');
+    const valorPromedioInput = document.getElementById('valor_promedio_paquete');
+    
+    if (objetivoPaquetesInput && valorPromedioInput) {
+        objetivoPaquetesInput.addEventListener('input', calcularObjetivoTotal);
+        valorPromedioInput.addEventListener('input', calcularObjetivoTotal);
+        
+        // Calcular inicialmente
+        calcularObjetivoTotal();
+    }
+    
+    // Event listeners para formularios de modales de oportunidades
+    const formNuevoContactoOportunidad = document.getElementById('formNuevoContactoOportunidad');
+    if (formNuevoContactoOportunidad) {
+        formNuevoContactoOportunidad.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const oportunidadId = document.getElementById('nuevoContactoOportunidadId').value;
+            const formData = new FormData(this);
+            
+            fetch(`/crm/oportunidad/${oportunidadId}/nuevo-contacto/`, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Contacto registrado correctamente');
+                    location.reload();
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error al registrar el contacto');
+            });
+        });
+    }
+    
+    const formCambiarResponsableOportunidad = document.getElementById('formCambiarResponsableOportunidad');
+    if (formCambiarResponsableOportunidad) {
+        formCambiarResponsableOportunidad.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const oportunidadId = document.getElementById('cambiarResponsableOportunidadId').value;
+            const formData = new FormData(this);
+            
+            fetch(`/crm/oportunidad/${oportunidadId}/cambiar-responsable/`, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Responsable actualizado correctamente. Se ha enviado una notificación por email.');
+                    location.reload();
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error al actualizar el responsable');
+            });
+        });
+    }
+});
 </script>
 {% endblock %} 

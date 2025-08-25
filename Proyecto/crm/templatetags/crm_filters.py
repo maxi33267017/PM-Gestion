@@ -3,31 +3,22 @@ from django import template
 register = template.Library()
 
 @register.filter
-def get_item(dictionary, key):
-    """Obtener un elemento de un diccionario por clave"""
-    return dictionary.get(key, {})
+def multiply(value, arg):
+    """Multiplica dos valores"""
+    try:
+        return float(value) * float(arg)
+    except (ValueError, TypeError):
+        return 0
 
 @register.filter
 def etapa_color(etapa):
-    """Retornar el color CSS para cada etapa del embudo"""
-    colores = {
-        'CONTACTO_INICIAL': 'info',
-        'CALIFICACION': 'warning',
-        'PROPUESTA': 'primary',
-        'NEGOCIACION': 'secondary',
-        'CIERRE': 'success',
-        'PERDIDO': 'danger',
+    """Retorna el color CSS para cada etapa"""
+    colors = {
+        'PENDIENTE': 'secondary',
+        'CONTACTADO': 'primary',
+        'CON_RESPUESTA': 'info',
+        'PRESUPUESTADO': 'warning',
+        'VENTA_PERDIDA': 'danger',
+        'VENTA_EXITOSA': 'success',
     }
-    return colores.get(etapa, 'secondary')
-
-@register.filter
-def resultado_color(resultado):
-    """Retornar el color CSS para cada resultado de contacto"""
-    colores = {
-        'EXITOSO': 'success',
-        'PENDIENTE': 'warning',
-        'NO_CONTESTA': 'danger',
-        'REPROGRAMADO': 'info',
-        'CANCELADO': 'secondary',
-    }
-    return colores.get(resultado, 'secondary') 
+    return colors.get(etapa, 'light') 
