@@ -333,6 +333,7 @@ class Campana(models.Model):
         
         print(f"=== DEBUG CREAR EMBUDOS AUTOMÁTICOS ===")
         print(f"Campaña: {self.nombre}")
+        print(f"Tipo de segmentación: {self.tipo_segmentacion}")
         print(f"Tipo de equipo: {self.tipo_equipo}")
         print(f"Modelo de equipo: {self.modelo_equipo}")
         
@@ -355,7 +356,7 @@ class Campana(models.Model):
             embudo = EmbudoVentas.objects.create(
                 campana=self,
                 cliente=None,  # Embudo genérico
-                etapa='PENDIENTE',  # Cambiado a PENDIENTE
+                etapa='PENDIENTE',
                 origen='CAMPAÑA_MARKETING',
                 valor_estimado=valor_estimado_total,
                 descripcion_negocio=self.descripcion
@@ -363,38 +364,67 @@ class Campana(models.Model):
             print(f"✅ Embudo genérico creado: {embudo}")
             print(f"💰 Valor estimado total: ${valor_estimado_total}")
         
-        # Crear oportunidades pendientes para cada cliente objetivo
+        # Crear oportunidades según el tipo de segmentación
         oportunidades_creadas = 0
         
-        # Definir el filtro de equipos
-        equipos_query = {'activo': True}
-        
-        if self.tipo_equipo:
-            equipos_query['modelo__tipo_equipo'] = self.tipo_equipo
+        if self.tipo_segmentacion == 'EQUIPOS':
+            # Crear 1 oportunidad por equipo que cumpla los criterios
+            equipos_query = {'activo': True}
             
-        if self.modelo_equipo:
-            equipos_query['modelo'] = self.modelo_equipo
-        
-        for cliente in clientes_objetivo:
-            # Obtener equipos del cliente que cumplen los criterios
-            equipos_cliente = Equipo.objects.filter(
-                cliente=cliente,
-                **equipos_query
-            )
+            if self.tipo_equipo:
+                equipos_query['modelo__tipo_equipo'] = self.tipo_equipo
+                
+            if self.modelo_equipo:
+                equipos_query['modelo'] = self.modelo_equipo
             
-            for equipo in equipos_cliente:
-                # Crear oportunidad pendiente para cada equipo
-                from crm.models import ContactoCliente
-                ContactoCliente.objects.create(
-                    embudo_ventas=embudo,
+            for cliente in clientes_objetivo:
+                equipos_cliente = Equipo.objects.filter(
                     cliente=cliente,
-                    responsable=self.creado_por,
-                    tipo_contacto='PRESENTACION',
-                    descripcion=f"Oportunidad de campaña: {self.nombre}",
-                    resultado='PENDIENTE',  # Estado inicial pendiente
-                    observaciones=f"Campaña automática creada para cliente con equipos del tipo seleccionado. Equipo: {equipo.numero_serie} - {equipo.modelo} - Sin contacto previo"
+                    **equipos_query
                 )
-                oportunidades_creadas += 1
+                
+                for equipo in equipos_cliente:
+                    # Crear oportunidad para cada equipo
+                    from crm.views import crear_oportunidad_desde_embudo
+                    oportunidad = crear_oportunidad_desde_embudo(
+                        embudo=embudo,
+                        cliente=cliente,
+                        equipo=equipo,
+                        descripcion=f"Oportunidad de campaña: {self.nombre}",
+                        observaciones=f"Campaña automática creada para equipo {equipo.numero_serie} - {equipo.modelo}",
+                        responsable=self.creado_por,
+                        tipo_contacto='PRESENTACION'
+                    )
+                    if oportunidad:
+                        oportunidades_creadas += 1
+        
+        else:
+            # Para otros tipos de segmentación: 1 oportunidad por cliente
+            for cliente in clientes_objetivo:
+                # Obtener el equipo principal del cliente (opcional)
+                equipo_principal = None
+                if self.tipo_equipo or self.modelo_equipo:
+                    equipos_query = {'cliente': cliente, 'activo': True}
+                    if self.tipo_equipo:
+                        equipos_query['modelo__tipo_equipo'] = self.tipo_equipo
+                    if self.modelo_equipo:
+                        equipos_query['modelo'] = self.modelo_equipo
+                    
+                    equipo_principal = Equipo.objects.filter(**equipos_query).first()
+                
+                # Crear oportunidad para el cliente
+                from crm.views import crear_oportunidad_desde_embudo
+                oportunidad = crear_oportunidad_desde_embudo(
+                    embudo=embudo,
+                    cliente=cliente,
+                    equipo=equipo_principal,
+                    descripcion=f"Oportunidad de campaña: {self.nombre}",
+                    observaciones=f"Campaña automática creada para cliente {cliente.razon_social}",
+                    responsable=self.creado_por,
+                    tipo_contacto='PRESENTACION'
+                )
+                if oportunidad:
+                    oportunidades_creadas += 1
         
         print(f"✅ Embudo creado con {oportunidades_creadas} oportunidades pendientes")
         print(f"📝 Los contactos se registrarán manualmente cuando se realice el primer contacto")
