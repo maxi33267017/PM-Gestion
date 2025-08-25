@@ -345,7 +345,7 @@
                                 <div class="card bg-success text-white">
                                     <div class="card-body text-center">
                                         <h6>Exitosas</h6>
-                                        <h4>{{ oportunidades|dictsort:"estado_contacto"|length }}</h4>
+                                        <h4>{{ oportunidades|count_exitosas }}</h4>
                                     </div>
                                 </div>
                             </div>
@@ -353,7 +353,7 @@
                                 <div class="card bg-warning text-white">
                                     <div class="card-body text-center">
                                         <h6>Pendientes</h6>
-                                        <h4>{{ oportunidades|dictsort:"estado_contacto"|length }}</h4>
+                                        <h4>{{ oportunidades|count_pendientes }}</h4>
                                     </div>
                                 </div>
                             </div>
@@ -361,7 +361,7 @@
                                 <div class="card bg-info text-white">
                                     <div class="card-body text-center">
                                         <h6>Último Mes</h6>
-                                        <h4>{{ oportunidades|dictsort:"fecha_creacion"|length }}</h4>
+                                        <h4>{{ oportunidades|count_ultimo_mes }}</h4>
                                     </div>
                                 </div>
                             </div>
