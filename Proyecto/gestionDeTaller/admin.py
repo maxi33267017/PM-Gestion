@@ -1,7 +1,7 @@
 from django.contrib import admin
 from .models import (
     PreOrden, Servicio, PedidoRepuestosTerceros, GastoAsistencia,
-    VentaRepuesto, VentaRepuestosSimplificada, GastoAsistenciaSimplificado, Revision5S, PlanAccion5S, ItemPlanAccion5S, EvidenciaPlanAccion5S, CostoPersonalTaller,
+    VentaRepuesto, VentaRepuestosSimplificada, GastoAsistenciaSimplificado, GastoInsumosTerceros, Revision5S, PlanAccion5S, ItemPlanAccion5S, EvidenciaPlanAccion5S, CostoPersonalTaller,
     AnalisisTaller, Evidencia, ChecklistSalidaCampo, EncuestaServicio,
     RespuestaEncuesta, InsatisfaccionCliente, LogCambioServicio, ObservacionServicio,
     EvidenciaRevision5S, Repuesto, HerramientaEspecial, ReservaHerramienta, LogHerramienta,
@@ -1340,6 +1340,35 @@ class VentaRepuestosSimplificadaAdmin(admin.ModelAdmin):
 # Admin para GastoAsistenciaSimplificado
 @admin.register(GastoAsistenciaSimplificado)
 class GastoAsistenciaSimplificadoAdmin(admin.ModelAdmin):
+    list_display = [
+        'servicio', 
+        'descripcion', 
+        'monto_usd',
+        'fecha_gasto'
+    ]
+    list_filter = [
+        'servicio__estado',
+        'fecha_gasto'
+    ]
+    search_fields = [
+        'descripcion',
+        'servicio__id'
+    ]
+    list_per_page = 25
+    
+    fieldsets = (
+        ('Información del Servicio', {
+            'fields': ('servicio',)
+        }),
+        ('Detalles del Gasto', {
+            'fields': ('descripcion', 'monto_usd', 'fecha_gasto')
+        }),
+    )
+
+
+# Admin para GastoInsumosTerceros
+@admin.register(GastoInsumosTerceros)
+class GastoInsumosTercerosAdmin(admin.ModelAdmin):
     list_display = [
         'servicio', 
         'descripcion', 
