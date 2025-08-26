@@ -101,16 +101,14 @@ def lista_servicios(request):
         messages.error(request, "Debe iniciar sesión para acceder a esta página.")
         return redirect('login')
     
-    # Filtrar los servicios según el rol y sucursal del usuario
-    if usuario.rol in ['ADMINISTRATIVO', 'TECNICO']:
-        try:
-            # Convertir usuario.sucursal en una instancia de Sucursal
-            sucursal = Sucursal.objects.get(nombre=usuario.sucursal.nombre)
-            servicios = Servicio.objects.filter(preorden__sucursal=sucursal)
-        except Sucursal.DoesNotExist:
-            servicios = Servicio.objects.none()  # Si no hay sucursal, no hay servicios
+    # Filtrar los servicios según el rol y sucursales del usuario
+    if usuario.rol == 'GERENTE':
+        # Gerentes ven servicios de su sucursal principal + sucursales adicionales
+        sucursales_disponibles = usuario.get_sucursales_disponibles()
+        servicios = Servicio.objects.filter(preorden__sucursal__in=sucursales_disponibles)
     else:
-        servicios = Servicio.objects.all()  # Superusuarios u otros roles ven todo
+        # Administrativos y técnicos solo ven servicios de su sucursal
+        servicios = Servicio.objects.filter(preorden__sucursal=usuario.sucursal)
 
     # Ordenar servicios por prioridad de estado (en proceso, en espera, programados primero)
     # Usar Case/When para ordenamiento personalizado
@@ -295,17 +293,32 @@ def lista_servicios(request):
     return render(request, 'gestionDeTaller/servicios/lista_servicios.html', context)
 
 
+def filtrar_preordenes_por_usuario(usuario):
+    """
+    Filtra las preórdenes según el rol y sucursales del usuario:
+    - Usuarios administrativos: solo ven preórdenes de su sucursal
+    - Gerentes: ven preórdenes de su sucursal + sucursales adicionales
+    - Técnicos: solo ven preórdenes de su sucursal
+    """
+    if usuario.rol == 'GERENTE':
+        # Gerentes ven preórdenes de su sucursal principal + sucursales adicionales
+        sucursales_disponibles = usuario.get_sucursales_disponibles()
+        return PreOrden.objects.filter(sucursal__in=sucursales_disponibles)
+    else:
+        # Administrativos y técnicos solo ven preórdenes de su sucursal
+        return PreOrden.objects.filter(sucursal=usuario.sucursal)
+
 @login_required
 def calendario_preordenes(request):
-    # Todos los usuarios ven todas las preórdenes
-    preordenes = PreOrden.objects.all()
+    # Filtrar preórdenes según el rol y sucursales del usuario
+    preordenes = filtrar_preordenes_por_usuario(request.user)
     
     return render(request, 'gestionDeTaller/preorden/calendario_preordenes.html', {'preordenes': preordenes})
 
 @login_required
 def preordenes_json(request):
-    # Todos los usuarios ven todas las preórdenes
-    preordenes = PreOrden.objects.all()
+    # Filtrar preórdenes según el rol y sucursales del usuario
+    preordenes = filtrar_preordenes_por_usuario(request.user)
 
     eventos = []
     for preorden in preordenes:
@@ -907,8 +920,8 @@ def ver_informe(request, servicio_id):
 
 @login_required
 def lista_preordenes(request):
-    # Todos los usuarios ven todas las preórdenes
-    preordenes = PreOrden.objects.all()
+    # Filtrar preórdenes según el rol y sucursales del usuario
+    preordenes = filtrar_preordenes_por_usuario(request.user)
     return render(request, 'gestionDeTaller/lista_preordenes.html', {'preordenes': preordenes})
 
 @login_required
