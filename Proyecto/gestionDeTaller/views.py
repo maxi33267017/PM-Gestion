@@ -4413,9 +4413,20 @@ def dashboard_administrador(request):
     from recursosHumanos.models import Usuario, RegistroHorasTecnico, PermisoAusencia
     
     # === MÉTRICAS DE PRE-ÓRDENES ===
-    preordenes_mes = PreOrden.objects.filter(
-        fecha_creacion__date__range=[inicio_mes, fin_mes]
-    )
+    # Filtrar preórdenes según el rol y sucursales del usuario
+    if request.user.rol == 'GERENTE':
+        # Gerentes ven preórdenes de su sucursal principal + sucursales adicionales
+        sucursales_disponibles = request.user.get_sucursales_disponibles()
+        preordenes_mes = PreOrden.objects.filter(
+            fecha_creacion__date__range=[inicio_mes, fin_mes],
+            sucursal__in=sucursales_disponibles
+        )
+    else:
+        # Administrativos y técnicos solo ven preórdenes de su sucursal
+        preordenes_mes = PreOrden.objects.filter(
+            fecha_creacion__date__range=[inicio_mes, fin_mes],
+            sucursal=request.user.sucursal
+        )
     
     total_preordenes_mes = preordenes_mes.count()
     preordenes_spot = preordenes_mes.filter(clasificacion='SPOT').count()
@@ -4423,9 +4434,19 @@ def dashboard_administrador(request):
     preordenes_campania = preordenes_mes.filter(clasificacion='CAMPAÑA').count()
     
     # === MÉTRICAS DE SERVICIOS ===
-    servicios_mes = Servicio.objects.filter(
-        fecha_servicio__range=[inicio_mes, fin_mes]
-    )
+    # Filtrar servicios según el rol y sucursales del usuario
+    if request.user.rol == 'GERENTE':
+        # Gerentes ven servicios de su sucursal principal + sucursales adicionales
+        servicios_mes = Servicio.objects.filter(
+            fecha_servicio__range=[inicio_mes, fin_mes],
+            preorden__sucursal__in=sucursales_disponibles
+        )
+    else:
+        # Administrativos y técnicos solo ven servicios de su sucursal
+        servicios_mes = Servicio.objects.filter(
+            fecha_servicio__range=[inicio_mes, fin_mes],
+            preorden__sucursal=request.user.sucursal
+        )
     
     total_servicios_mes = servicios_mes.count()
     servicios_en_proceso = servicios_mes.filter(estado='EN_PROCESO').count()
@@ -4461,19 +4482,50 @@ def dashboard_administrador(request):
     ).count()
     
     # === MÉTRICAS DE TÉCNICOS ===
-    tecnicos_activos = Usuario.objects.filter(rol='TECNICO').count()
-    tecnicos_con_registros_mes = RegistroHorasTecnico.objects.filter(
-        fecha__range=[inicio_mes, fin_mes]
-    ).values('tecnico').distinct().count()
+    # Filtrar técnicos según el rol y sucursales del usuario
+    if request.user.rol == 'GERENTE':
+        # Gerentes ven técnicos de su sucursal principal + sucursales adicionales
+        tecnicos_activos = Usuario.objects.filter(
+            rol='TECNICO',
+            sucursal__in=sucursales_disponibles
+        ).count()
+        tecnicos_con_registros_mes = RegistroHorasTecnico.objects.filter(
+            fecha__range=[inicio_mes, fin_mes],
+            tecnico__sucursal__in=sucursales_disponibles
+        ).values('tecnico').distinct().count()
+    else:
+        # Administrativos y técnicos solo ven técnicos de su sucursal
+        tecnicos_activos = Usuario.objects.filter(
+            rol='TECNICO',
+            sucursal=request.user.sucursal
+        ).count()
+        tecnicos_con_registros_mes = RegistroHorasTecnico.objects.filter(
+            fecha__range=[inicio_mes, fin_mes],
+            tecnico__sucursal=request.user.sucursal
+        ).values('tecnico').distinct().count()
     
     # === MÉTRICAS DE PERMISOS ===
-    permisos_pendientes = PermisoAusencia.objects.filter(
-        estado='PENDIENTE'
-    ).count()
-    
-    permisos_mes = PermisoAusencia.objects.filter(
-        fecha_inicio__range=[inicio_mes, fin_mes]
-    ).count()
+    # Filtrar permisos según el rol y sucursales del usuario
+    if request.user.rol == 'GERENTE':
+        # Gerentes ven permisos de su sucursal principal + sucursales adicionales
+        permisos_pendientes = PermisoAusencia.objects.filter(
+            estado='PENDIENTE',
+            usuario__sucursal__in=sucursales_disponibles
+        ).count()
+        permisos_mes = PermisoAusencia.objects.filter(
+            fecha_inicio__range=[inicio_mes, fin_mes],
+            usuario__sucursal__in=sucursales_disponibles
+        ).count()
+    else:
+        # Administrativos y técnicos solo ven permisos de su sucursal
+        permisos_pendientes = PermisoAusencia.objects.filter(
+            estado='PENDIENTE',
+            usuario__sucursal=request.user.sucursal
+        ).count()
+        permisos_mes = PermisoAusencia.objects.filter(
+            fecha_inicio__range=[inicio_mes, fin_mes],
+            usuario__sucursal=request.user.sucursal
+        ).count()
     
     # === DATOS RECIENTES ===
     preordenes_recientes = preordenes_mes.order_by('-fecha_creacion')[:5]
@@ -4483,12 +4535,9 @@ def dashboard_administrador(request):
     ).distinct()[:5]
     
     # === ESTADÍSTICAS POR SUCURSAL ===
-    if request.user.sucursal:
-        servicios_sucursal = servicios_mes.filter(preorden__sucursal=request.user.sucursal).count()
-        preordenes_sucursal = preordenes_mes.filter(sucursal=request.user.sucursal).count()
-    else:
-        servicios_sucursal = total_servicios_mes
-        preordenes_sucursal = total_preordenes_mes
+    # Ya no necesitamos estas estadísticas separadas porque todo está filtrado por sucursal
+    servicios_sucursal = total_servicios_mes
+    preordenes_sucursal = total_preordenes_mes
     
     context = {
         'inicio_mes': inicio_mes,
