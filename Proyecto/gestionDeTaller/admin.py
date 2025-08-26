@@ -1,7 +1,7 @@
 from django.contrib import admin
 from .models import (
     PreOrden, Servicio, PedidoRepuestosTerceros, GastoAsistencia,
-    VentaRepuesto, Revision5S, PlanAccion5S, ItemPlanAccion5S, EvidenciaPlanAccion5S, CostoPersonalTaller,
+    VentaRepuesto, VentaRepuestosSimplificada, GastoAsistenciaSimplificado, Revision5S, PlanAccion5S, ItemPlanAccion5S, EvidenciaPlanAccion5S, CostoPersonalTaller,
     AnalisisTaller, Evidencia, ChecklistSalidaCampo, EncuestaServicio,
     RespuestaEncuesta, InsatisfaccionCliente, LogCambioServicio, ObservacionServicio,
     EvidenciaRevision5S, Repuesto, HerramientaEspecial, ReservaHerramienta, LogHerramienta,
@@ -1306,4 +1306,69 @@ class LogChecklistInspeccionAdmin(admin.ModelAdmin):
     
     def has_delete_permission(self, request, obj=None):
         return request.user.is_superuser  # Solo superusuarios pueden eliminar logs
+
+
+# Admin para VentaRepuestosSimplificada
+@admin.register(VentaRepuestosSimplificada)
+class VentaRepuestosSimplificadaAdmin(admin.ModelAdmin):
+    list_display = [
+        'servicio', 
+        'codigo', 
+        'descripcion', 
+        'cantidad', 
+        'precio_unitario',
+        'total_display'
+    ]
+    list_filter = [
+        'servicio__estado',
+        'servicio__fecha_servicio'
+    ]
+    search_fields = [
+        'codigo',
+        'descripcion',
+        'servicio__id'
+    ]
+    list_per_page = 25
+    
+    fieldsets = (
+        ('Información del Servicio', {
+            'fields': ('servicio',)
+        }),
+        ('Detalles del Repuesto', {
+            'fields': ('codigo', 'descripcion', 'cantidad', 'precio_unitario')
+        }),
+    )
+    
+    def total_display(self, obj):
+        return f"${obj.total:.2f}"
+    total_display.short_description = 'Total'
+
+
+# Admin para GastoAsistenciaSimplificado
+@admin.register(GastoAsistenciaSimplificado)
+class GastoAsistenciaSimplificadoAdmin(admin.ModelAdmin):
+    list_display = [
+        'servicio', 
+        'descripcion', 
+        'monto', 
+        'fecha_gasto'
+    ]
+    list_filter = [
+        'servicio__estado',
+        'fecha_gasto'
+    ]
+    search_fields = [
+        'descripcion',
+        'servicio__id'
+    ]
+    list_per_page = 25
+    
+    fieldsets = (
+        ('Información del Servicio', {
+            'fields': ('servicio',)
+        }),
+        ('Detalles del Gasto', {
+            'fields': ('descripcion', 'monto', 'fecha_gasto')
+        }),
+    )
 
