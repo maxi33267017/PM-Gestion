@@ -2330,21 +2330,52 @@ def calendario_semanal_tecnicos(request):
     lunes = fecha_actual - timedelta(days=fecha_actual.weekday())
     sabado = lunes + timedelta(days=5)  # Sábado
     
-    # Obtener todos los técnicos
-    tecnicos = Usuario.objects.filter(rol='TECNICO', is_active=True).order_by('apellido', 'nombre')
+    # Obtener técnicos según el rol y sucursales del usuario
+    if request.user.rol == 'GERENTE':
+        # Gerentes ven técnicos de su sucursal principal + sucursales adicionales
+        sucursales_disponibles = request.user.get_sucursales_disponibles()
+        tecnicos = Usuario.objects.filter(
+            rol='TECNICO', 
+            is_active=True,
+            sucursal__in=sucursales_disponibles
+        ).order_by('apellido', 'nombre')
+    else:
+        # Administrativos y técnicos solo ven técnicos de su sucursal
+        tecnicos = Usuario.objects.filter(
+            rol='TECNICO', 
+            is_active=True,
+            sucursal=request.user.sucursal
+        ).order_by('apellido', 'nombre')
     
-    # Obtener las preórdenes para la semana
-    preordenes = PreOrden.objects.filter(
-        fecha_estimada__range=[lunes, sabado],
-        activo=True
-    ).prefetch_related('tecnicos', 'cliente', 'equipo')
+    # Obtener las preórdenes para la semana según el rol y sucursales del usuario
+    if request.user.rol == 'GERENTE':
+        # Gerentes ven preórdenes de su sucursal principal + sucursales adicionales
+        preordenes = PreOrden.objects.filter(
+            fecha_estimada__range=[lunes, sabado],
+            activo=True,
+            sucursal__in=sucursales_disponibles
+        ).prefetch_related('tecnicos', 'cliente', 'equipo')
+    else:
+        # Administrativos y técnicos solo ven preórdenes de su sucursal
+        preordenes = PreOrden.objects.filter(
+            fecha_estimada__range=[lunes, sabado],
+            activo=True,
+            sucursal=request.user.sucursal
+        ).prefetch_related('tecnicos', 'cliente', 'equipo')
     
-    # Obtener los servicios en proceso (no completados) que deben mostrarse todos los días
-    # Los servicios en proceso se muestran desde su fecha de creación hasta que se completen
-    # Mostrar servicios EN_PROCESO y PROGRAMADO (excluir ESPERA_REPUESTOS y A_FACTURAR)
-    servicios = Servicio.objects.filter(
-        estado__in=['PROGRAMADO', 'EN_PROCESO']
-    ).prefetch_related('preorden__tecnicos', 'preorden__cliente', 'preorden__equipo')
+    # Obtener los servicios en proceso según el rol y sucursales del usuario
+    if request.user.rol == 'GERENTE':
+        # Gerentes ven servicios de su sucursal principal + sucursales adicionales
+        servicios = Servicio.objects.filter(
+            estado__in=['PROGRAMADO', 'EN_PROCESO'],
+            preorden__sucursal__in=sucursales_disponibles
+        ).prefetch_related('preorden__tecnicos', 'preorden__cliente', 'preorden__equipo')
+    else:
+        # Administrativos y técnicos solo ven servicios de su sucursal
+        servicios = Servicio.objects.filter(
+            estado__in=['PROGRAMADO', 'EN_PROCESO'],
+            preorden__sucursal=request.user.sucursal
+        ).prefetch_related('preorden__tecnicos', 'preorden__cliente', 'preorden__equipo')
     
     # Crear diccionario de elementos por técnico y fecha
     calendario_tecnicos = {}
