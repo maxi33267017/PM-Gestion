@@ -297,22 +297,15 @@ def lista_servicios(request):
 
 @login_required
 def calendario_preordenes(request):
-    usuario = request.user
-    
-    if usuario.rol in ['ADMINISTRATIVO', 'TECNICO'] and usuario.sucursal:
-        preordenes = PreOrden.objects.filter(sucursal=usuario.sucursal)
-    else:
-        preordenes = PreOrden.objects.all()
+    # Todos los usuarios ven todas las preórdenes
+    preordenes = PreOrden.objects.all()
     
     return render(request, 'gestionDeTaller/preorden/calendario_preordenes.html', {'preordenes': preordenes})
 
 @login_required
 def preordenes_json(request):
-    # Filtrar preórdenes por sucursal si el usuario no es gerente
-    if not request.user.is_staff:
-        preordenes = PreOrden.objects.filter(sucursal=request.user.sucursal)
-    else:
-        preordenes = PreOrden.objects.all()
+    # Todos los usuarios ven todas las preórdenes
+    preordenes = PreOrden.objects.all()
 
     eventos = []
     for preorden in preordenes:
@@ -914,12 +907,8 @@ def ver_informe(request, servicio_id):
 
 @login_required
 def lista_preordenes(request):
-    usuario = request.user
-    
-    if usuario.rol in ['ADMINISTRATIVO', 'TECNICO'] and usuario.sucursal:
-        preordenes = PreOrden.objects.filter(sucursal=usuario.sucursal)
-    else:
-        preordenes = PreOrden.objects.all()
+    # Todos los usuarios ven todas las preórdenes
+    preordenes = PreOrden.objects.all()
     return render(request, 'gestionDeTaller/lista_preordenes.html', {'preordenes': preordenes})
 
 @login_required

@@ -16,15 +16,8 @@ def clientes(request):
         form = ClienteForm()
     
 
-    # Filtrar los clientes según la sucursal del usuario logueado
-    usuario = request.user
-    if usuario.rol in ['ADMINISTRATIVO', 'TECNICO'] and usuario.sucursal:
-        lista_clientes = Cliente.objects.filter(sucursal=usuario.sucursal, activo=True)
-    elif usuario.rol == 'GERENTE':
-        # Los gerentes ven todos los clientes (incluyendo inactivos)
-        lista_clientes = Cliente.objects.all()
-    else:
-        lista_clientes = Cliente.objects.all()
+    # Todos los usuarios ven todos los clientes activos
+    lista_clientes = Cliente.objects.filter(activo=True)
 
     sucursales = Sucursal.objects.all()
     provincias = Provincia.objects.all()
@@ -43,11 +36,8 @@ def clientes(request):
 @login_required
 def parque(request):
 
-    usuario = request.user
-    if usuario.rol in ['ADMINISTRATIVO', 'TECNICO'] and usuario.sucursal:
-        equipos =Equipo.objects.select_related('cliente').filter(cliente__sucursal=usuario.sucursal)
-    else:
-        equipos = Equipo.objects.select_related('cliente').all()
+    # Todos los usuarios ven todos los equipos
+    equipos = Equipo.objects.select_related('cliente').all()
 
     return render(request, 'clientes/parque_equipos/parque.html', {'equipos': equipos})
 
