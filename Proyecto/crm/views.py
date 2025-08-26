@@ -1351,9 +1351,14 @@ def embudo_ventas_dashboard(request):
     # Embudos recientes (últimos 10)
     embudos_recientes = embudos.order_by('-fecha_ultima_actividad')[:10]
     
-    # Asignar colores a los embudos recientes
+    # Asignar colores y calcular objetivo total a los embudos recientes
     for embudo in embudos_recientes:
         embudo.color = get_etapa_color(embudo.etapa)
+        # Calcular objetivo total del embudo
+        if embudo.objetivo_paquetes and embudo.valor_promedio_paquete:
+            embudo.objetivo_total = float(embudo.objetivo_paquetes) * float(embudo.valor_promedio_paquete)
+        else:
+            embudo.objetivo_total = None
     
     context = {
         'embudo_data': embudo_data,

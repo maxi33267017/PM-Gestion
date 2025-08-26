@@ -190,8 +190,8 @@
                                         </span>
                                     </td>
                                     <td>
-                                        {% if embudo|objetivo_total_embudo %}
-                                            <span class="text-success fw-bold">${{ embudo|objetivo_total_embudo|floatformat:0 }}</span>
+                                        {% if embudo.objetivo_total %}
+                                            <span class="text-success fw-bold">${{ embudo.objetivo_total|floatformat:0 }}</span>
                                         {% else %}
                                             <span class="text-muted">No especificado</span>
                                         {% endif %}
