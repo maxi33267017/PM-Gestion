@@ -1313,18 +1313,15 @@ class LogChecklistInspeccionAdmin(admin.ModelAdmin):
 class VentaRepuestosSimplificadaAdmin(admin.ModelAdmin):
     list_display = [
         'servicio', 
-        'codigo', 
         'descripcion', 
-        'cantidad', 
-        'precio_unitario',
-        'total_display'
+        'monto_total_usd',
+        'fecha_venta'
     ]
     list_filter = [
         'servicio__estado',
-        'servicio__fecha_servicio'
+        'fecha_venta'
     ]
     search_fields = [
-        'codigo',
         'descripcion',
         'servicio__id'
     ]
@@ -1334,14 +1331,10 @@ class VentaRepuestosSimplificadaAdmin(admin.ModelAdmin):
         ('Información del Servicio', {
             'fields': ('servicio',)
         }),
-        ('Detalles del Repuesto', {
-            'fields': ('codigo', 'descripcion', 'cantidad', 'precio_unitario')
+        ('Detalles de la Venta', {
+            'fields': ('descripcion', 'monto_total_usd', 'fecha_venta')
         }),
     )
-    
-    def total_display(self, obj):
-        return f"${obj.total:.2f}"
-    total_display.short_description = 'Total'
 
 
 # Admin para GastoAsistenciaSimplificado
@@ -1350,7 +1343,7 @@ class GastoAsistenciaSimplificadoAdmin(admin.ModelAdmin):
     list_display = [
         'servicio', 
         'descripcion', 
-        'monto', 
+        'monto_usd',
         'fecha_gasto'
     ]
     list_filter = [
@@ -1368,7 +1361,7 @@ class GastoAsistenciaSimplificadoAdmin(admin.ModelAdmin):
             'fields': ('servicio',)
         }),
         ('Detalles del Gasto', {
-            'fields': ('descripcion', 'monto', 'fecha_gasto')
+            'fields': ('descripcion', 'monto_usd', 'fecha_gasto')
         }),
     )
 
