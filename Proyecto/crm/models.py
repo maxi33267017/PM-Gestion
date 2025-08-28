@@ -166,6 +166,7 @@ class Campana(models.Model):
     SEGMENTACION_CHOICES = [
         ('TODOS', 'Todos los Clientes'),
         ('PROVINCIA', 'Por Provincia'),
+        ('CIUDAD', 'Por Ciudad'),
         ('ESPECIFICOS', 'Clientes Específicos'),
         ('EQUIPOS', 'Por Equipos (Actual)'),
     ]
@@ -184,6 +185,15 @@ class Campana(models.Model):
         null=True,
         blank=True,
         help_text="Seleccionar solo si la segmentación es por provincia"
+    )
+    
+    ciudad = models.ForeignKey(
+        'recursosHumanos.Ciudad',
+        on_delete=models.CASCADE,
+        verbose_name="Ciudad",
+        null=True,
+        blank=True,
+        help_text="Seleccionar solo si la segmentación es por ciudad"
     )
     
     clientes_especificos = models.ManyToManyField(
@@ -284,6 +294,19 @@ class Campana(models.Model):
                 activo=True
             )
             print(f"Clientes en provincia {self.provincia.nombre}: {clientes.count()}")
+            return clientes
+            
+        elif self.tipo_segmentacion == 'CIUDAD':
+            # Clientes por ciudad
+            if not self.ciudad:
+                print("⚠️ No se seleccionó ciudad")
+                return Cliente.objects.none()
+            
+            clientes = Cliente.objects.filter(
+                ciudad=self.ciudad,
+                activo=True
+            )
+            print(f"Clientes en ciudad {self.ciudad.nombre}: {clientes.count()}")
             return clientes
             
         elif self.tipo_segmentacion == 'ESPECIFICOS':

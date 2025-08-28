@@ -581,6 +581,7 @@ def crear_campania(request):
         tipo_equipo_id = request.POST.get('tipo_equipo')
         modelo_equipo_id = request.POST.get('modelo_equipo')
         provincia_id = request.POST.get('provincia')
+        ciudad_id = request.POST.get('ciudad')
         clientes_especificos = request.POST.getlist('clientes_especificos')
         
         crear_embudos = request.POST.get('crear_embudos') == 'on'
@@ -607,6 +608,7 @@ def crear_campania(request):
                 tipo_equipo = None
                 modelo_equipo = None
                 provincia = None
+                ciudad = None
                 
                 if tipo_segmentacion == 'EQUIPOS':
                     if tipo_equipo_id and tipo_equipo_id != '':
@@ -624,6 +626,12 @@ def crear_campania(request):
                         from recursosHumanos.models import Provincia
                         provincia = Provincia.objects.get(id=provincia_id)
                         print(f"✅ Provincia encontrada: {provincia}")
+                
+                elif tipo_segmentacion == 'CIUDAD':
+                    if ciudad_id and ciudad_id != '':
+                        from recursosHumanos.models import Ciudad
+                        ciudad = Ciudad.objects.get(id=ciudad_id)
+                        print(f"✅ Ciudad encontrada: {ciudad}")
                 
                 print(f"✅ Tipo de segmentación: {tipo_segmentacion}")
                 print(f"✅ Clientes específicos seleccionados: {len(clientes_especificos)}")
@@ -645,6 +653,7 @@ def crear_campania(request):
                     tipo_equipo=tipo_equipo,
                     modelo_equipo=modelo_equipo,
                     provincia=provincia,
+                    ciudad=ciudad,
                     valor_paquete=float(valor_paquete) if valor_paquete else None,
                     objetivo_paquetes=int(objetivo_paquetes) if objetivo_paquetes else None,
                     estado=estado,
@@ -682,16 +691,18 @@ def crear_campania(request):
     
     # Obtener datos para el formulario
     from clientes.models import TipoEquipo, ModeloEquipo, Cliente
-    from recursosHumanos.models import Provincia
+    from recursosHumanos.models import Provincia, Ciudad
     tipos_equipo = TipoEquipo.objects.filter(activo=True).order_by('nombre')
     modelos_equipo = ModeloEquipo.objects.filter(activo=True).order_by('tipo_equipo__nombre', 'marca', 'nombre')
     provincias = Provincia.objects.all().order_by('nombre')
+    ciudades = Ciudad.objects.all().order_by('nombre')
     clientes = Cliente.objects.filter(activo=True).order_by('razon_social')
     
     context = {
         'tipos_equipo': tipos_equipo,
         'modelos_equipo': modelos_equipo,
         'provincias': provincias,
+        'ciudades': ciudades,
         'clientes': clientes,
     }
     return render(request, 'crm/crear_campania.html', context)

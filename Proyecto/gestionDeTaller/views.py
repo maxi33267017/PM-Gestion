@@ -101,14 +101,16 @@ def lista_servicios(request):
         messages.error(request, "Debe iniciar sesión para acceder a esta página.")
         return redirect('login')
     
-    # Filtrar los servicios según el rol y sucursales del usuario
-    if usuario.rol == 'GERENTE':
-        # Gerentes ven servicios de su sucursal principal + sucursales adicionales
-        sucursales_disponibles = usuario.get_sucursales_disponibles()
-        servicios = Servicio.objects.filter(preorden__sucursal__in=sucursales_disponibles)
+    # Filtrar los servicios según el rol y sucursal del usuario
+    if usuario.rol in ['ADMINISTRATIVO', 'TECNICO']:
+        try:
+            # Convertir usuario.sucursal en una instancia de Sucursal
+            sucursal = Sucursal.objects.get(nombre=usuario.sucursal.nombre)
+            servicios = Servicio.objects.filter(preorden__sucursal=sucursal)
+        except Sucursal.DoesNotExist:
+            servicios = Servicio.objects.none()  # Si no hay sucursal, no hay servicios
     else:
-        # Administrativos y técnicos solo ven servicios de su sucursal
-        servicios = Servicio.objects.filter(preorden__sucursal=usuario.sucursal)
+        servicios = Servicio.objects.all()  # Superusuarios u otros roles ven todo
 
     # Ordenar servicios por prioridad de estado (en proceso, en espera, programados primero)
     # Usar Case/When para ordenamiento personalizado
@@ -293,32 +295,24 @@ def lista_servicios(request):
     return render(request, 'gestionDeTaller/servicios/lista_servicios.html', context)
 
 
-def filtrar_preordenes_por_usuario(usuario):
-    """
-    Filtra las preórdenes según el rol y sucursales del usuario:
-    - Usuarios administrativos: solo ven preórdenes de su sucursal
-    - Gerentes: ven preórdenes de su sucursal + sucursales adicionales
-    - Técnicos: solo ven preórdenes de su sucursal
-    """
-    if usuario.rol == 'GERENTE':
-        # Gerentes ven preórdenes de su sucursal principal + sucursales adicionales
-        sucursales_disponibles = usuario.get_sucursales_disponibles()
-        return PreOrden.objects.filter(sucursal__in=sucursales_disponibles)
-    else:
-        # Administrativos y técnicos solo ven preórdenes de su sucursal
-        return PreOrden.objects.filter(sucursal=usuario.sucursal)
-
 @login_required
 def calendario_preordenes(request):
-    # Filtrar preórdenes según el rol y sucursales del usuario
-    preordenes = filtrar_preordenes_por_usuario(request.user)
+    usuario = request.user
+    
+    if usuario.rol in ['ADMINISTRATIVO', 'TECNICO'] and usuario.sucursal:
+        preordenes = PreOrden.objects.filter(sucursal=usuario.sucursal)
+    else:
+        preordenes = PreOrden.objects.all()
     
     return render(request, 'gestionDeTaller/preorden/calendario_preordenes.html', {'preordenes': preordenes})
 
 @login_required
 def preordenes_json(request):
-    # Filtrar preórdenes según el rol y sucursales del usuario
-    preordenes = filtrar_preordenes_por_usuario(request.user)
+    # Filtrar preórdenes por sucursal si el usuario no es gerente
+    if not request.user.is_staff:
+        preordenes = PreOrden.objects.filter(sucursal=request.user.sucursal)
+    else:
+        preordenes = PreOrden.objects.all()
 
     eventos = []
     for preorden in preordenes:
@@ -920,8 +914,12 @@ def ver_informe(request, servicio_id):
 
 @login_required
 def lista_preordenes(request):
-    # Filtrar preórdenes según el rol y sucursales del usuario
-    preordenes = filtrar_preordenes_por_usuario(request.user)
+    usuario = request.user
+    
+    if usuario.rol in ['ADMINISTRATIVO', 'TECNICO'] and usuario.sucursal:
+        preordenes = PreOrden.objects.filter(sucursal=usuario.sucursal)
+    else:
+        preordenes = PreOrden.objects.all()
     return render(request, 'gestionDeTaller/lista_preordenes.html', {'preordenes': preordenes})
 
 @login_required
@@ -2330,52 +2328,21 @@ def calendario_semanal_tecnicos(request):
     lunes = fecha_actual - timedelta(days=fecha_actual.weekday())
     sabado = lunes + timedelta(days=5)  # Sábado
     
-    # Obtener técnicos según el rol y sucursales del usuario
-    if request.user.rol == 'GERENTE':
-        # Gerentes ven técnicos de su sucursal principal + sucursales adicionales
-        sucursales_disponibles = request.user.get_sucursales_disponibles()
-        tecnicos = Usuario.objects.filter(
-            rol='TECNICO', 
-            is_active=True,
-            sucursal__in=sucursales_disponibles
-        ).order_by('apellido', 'nombre')
-    else:
-        # Administrativos y técnicos solo ven técnicos de su sucursal
-        tecnicos = Usuario.objects.filter(
-            rol='TECNICO', 
-            is_active=True,
-            sucursal=request.user.sucursal
-        ).order_by('apellido', 'nombre')
+    # Obtener todos los técnicos
+    tecnicos = Usuario.objects.filter(rol='TECNICO', is_active=True).order_by('apellido', 'nombre')
     
-    # Obtener las preórdenes para la semana según el rol y sucursales del usuario
-    if request.user.rol == 'GERENTE':
-        # Gerentes ven preórdenes de su sucursal principal + sucursales adicionales
-        preordenes = PreOrden.objects.filter(
-            fecha_estimada__range=[lunes, sabado],
-            activo=True,
-            sucursal__in=sucursales_disponibles
-        ).prefetch_related('tecnicos', 'cliente', 'equipo')
-    else:
-        # Administrativos y técnicos solo ven preórdenes de su sucursal
-        preordenes = PreOrden.objects.filter(
-            fecha_estimada__range=[lunes, sabado],
-            activo=True,
-            sucursal=request.user.sucursal
-        ).prefetch_related('tecnicos', 'cliente', 'equipo')
+    # Obtener las preórdenes para la semana
+    preordenes = PreOrden.objects.filter(
+        fecha_estimada__range=[lunes, sabado],
+        activo=True
+    ).prefetch_related('tecnicos', 'cliente', 'equipo')
     
-    # Obtener los servicios en proceso según el rol y sucursales del usuario
-    if request.user.rol == 'GERENTE':
-        # Gerentes ven servicios de su sucursal principal + sucursales adicionales
-        servicios = Servicio.objects.filter(
-            estado__in=['PROGRAMADO', 'EN_PROCESO'],
-            preorden__sucursal__in=sucursales_disponibles
-        ).prefetch_related('preorden__tecnicos', 'preorden__cliente', 'preorden__equipo')
-    else:
-        # Administrativos y técnicos solo ven servicios de su sucursal
-        servicios = Servicio.objects.filter(
-            estado__in=['PROGRAMADO', 'EN_PROCESO'],
-            preorden__sucursal=request.user.sucursal
-        ).prefetch_related('preorden__tecnicos', 'preorden__cliente', 'preorden__equipo')
+    # Obtener los servicios en proceso (no completados) que deben mostrarse todos los días
+    # Los servicios en proceso se muestran desde su fecha de creación hasta que se completen
+    # Mostrar servicios EN_PROCESO y PROGRAMADO (excluir ESPERA_REPUESTOS y A_FACTURAR)
+    servicios = Servicio.objects.filter(
+        estado__in=['PROGRAMADO', 'EN_PROCESO']
+    ).prefetch_related('preorden__tecnicos', 'preorden__cliente', 'preorden__equipo')
     
     # Crear diccionario de elementos por técnico y fecha
     calendario_tecnicos = {}
@@ -4444,20 +4411,9 @@ def dashboard_administrador(request):
     from recursosHumanos.models import Usuario, RegistroHorasTecnico, PermisoAusencia
     
     # === MÉTRICAS DE PRE-ÓRDENES ===
-    # Filtrar preórdenes según el rol y sucursales del usuario
-    if request.user.rol == 'GERENTE':
-        # Gerentes ven preórdenes de su sucursal principal + sucursales adicionales
-        sucursales_disponibles = request.user.get_sucursales_disponibles()
-        preordenes_mes = PreOrden.objects.filter(
-            fecha_creacion__date__range=[inicio_mes, fin_mes],
-            sucursal__in=sucursales_disponibles
-        )
-    else:
-        # Administrativos y técnicos solo ven preórdenes de su sucursal
-        preordenes_mes = PreOrden.objects.filter(
-            fecha_creacion__date__range=[inicio_mes, fin_mes],
-            sucursal=request.user.sucursal
-        )
+    preordenes_mes = PreOrden.objects.filter(
+        fecha_creacion__date__range=[inicio_mes, fin_mes]
+    )
     
     total_preordenes_mes = preordenes_mes.count()
     preordenes_spot = preordenes_mes.filter(clasificacion='SPOT').count()
@@ -4465,19 +4421,9 @@ def dashboard_administrador(request):
     preordenes_campania = preordenes_mes.filter(clasificacion='CAMPAÑA').count()
     
     # === MÉTRICAS DE SERVICIOS ===
-    # Filtrar servicios según el rol y sucursales del usuario
-    if request.user.rol == 'GERENTE':
-        # Gerentes ven servicios de su sucursal principal + sucursales adicionales
-        servicios_mes = Servicio.objects.filter(
-            fecha_servicio__range=[inicio_mes, fin_mes],
-            preorden__sucursal__in=sucursales_disponibles
-        )
-    else:
-        # Administrativos y técnicos solo ven servicios de su sucursal
-        servicios_mes = Servicio.objects.filter(
-            fecha_servicio__range=[inicio_mes, fin_mes],
-            preorden__sucursal=request.user.sucursal
-        )
+    servicios_mes = Servicio.objects.filter(
+        fecha_servicio__range=[inicio_mes, fin_mes]
+    )
     
     total_servicios_mes = servicios_mes.count()
     servicios_en_proceso = servicios_mes.filter(estado='EN_PROCESO').count()
@@ -4513,50 +4459,19 @@ def dashboard_administrador(request):
     ).count()
     
     # === MÉTRICAS DE TÉCNICOS ===
-    # Filtrar técnicos según el rol y sucursales del usuario
-    if request.user.rol == 'GERENTE':
-        # Gerentes ven técnicos de su sucursal principal + sucursales adicionales
-        tecnicos_activos = Usuario.objects.filter(
-            rol='TECNICO',
-            sucursal__in=sucursales_disponibles
-        ).count()
-        tecnicos_con_registros_mes = RegistroHorasTecnico.objects.filter(
-            fecha__range=[inicio_mes, fin_mes],
-            tecnico__sucursal__in=sucursales_disponibles
-        ).values('tecnico').distinct().count()
-    else:
-        # Administrativos y técnicos solo ven técnicos de su sucursal
-        tecnicos_activos = Usuario.objects.filter(
-            rol='TECNICO',
-            sucursal=request.user.sucursal
-        ).count()
-        tecnicos_con_registros_mes = RegistroHorasTecnico.objects.filter(
-            fecha__range=[inicio_mes, fin_mes],
-            tecnico__sucursal=request.user.sucursal
-        ).values('tecnico').distinct().count()
+    tecnicos_activos = Usuario.objects.filter(rol='TECNICO').count()
+    tecnicos_con_registros_mes = RegistroHorasTecnico.objects.filter(
+        fecha__range=[inicio_mes, fin_mes]
+    ).values('tecnico').distinct().count()
     
     # === MÉTRICAS DE PERMISOS ===
-    # Filtrar permisos según el rol y sucursales del usuario
-    if request.user.rol == 'GERENTE':
-        # Gerentes ven permisos de su sucursal principal + sucursales adicionales
-        permisos_pendientes = PermisoAusencia.objects.filter(
-            estado='PENDIENTE',
-            usuario__sucursal__in=sucursales_disponibles
-        ).count()
-        permisos_mes = PermisoAusencia.objects.filter(
-            fecha_inicio__range=[inicio_mes, fin_mes],
-            usuario__sucursal__in=sucursales_disponibles
-        ).count()
-    else:
-        # Administrativos y técnicos solo ven permisos de su sucursal
-        permisos_pendientes = PermisoAusencia.objects.filter(
-            estado='PENDIENTE',
-            usuario__sucursal=request.user.sucursal
-        ).count()
-        permisos_mes = PermisoAusencia.objects.filter(
-            fecha_inicio__range=[inicio_mes, fin_mes],
-            usuario__sucursal=request.user.sucursal
-        ).count()
+    permisos_pendientes = PermisoAusencia.objects.filter(
+        estado='PENDIENTE'
+    ).count()
+    
+    permisos_mes = PermisoAusencia.objects.filter(
+        fecha_inicio__range=[inicio_mes, fin_mes]
+    ).count()
     
     # === DATOS RECIENTES ===
     preordenes_recientes = preordenes_mes.order_by('-fecha_creacion')[:5]
@@ -4566,9 +4481,12 @@ def dashboard_administrador(request):
     ).distinct()[:5]
     
     # === ESTADÍSTICAS POR SUCURSAL ===
-    # Ya no necesitamos estas estadísticas separadas porque todo está filtrado por sucursal
-    servicios_sucursal = total_servicios_mes
-    preordenes_sucursal = total_preordenes_mes
+    if request.user.sucursal:
+        servicios_sucursal = servicios_mes.filter(preorden__sucursal=request.user.sucursal).count()
+        preordenes_sucursal = preordenes_mes.filter(sucursal=request.user.sucursal).count()
+    else:
+        servicios_sucursal = total_servicios_mes
+        preordenes_sucursal = total_preordenes_mes
     
     context = {
         'inicio_mes': inicio_mes,

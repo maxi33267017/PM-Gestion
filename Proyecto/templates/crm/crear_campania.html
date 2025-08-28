@@ -75,6 +75,7 @@
                                         <option value="EQUIPOS">Por Equipos (Actual)</option>
                                         <option value="TODOS">Todos los Clientes</option>
                                         <option value="PROVINCIA">Por Provincia</option>
+                                        <option value="CIUDAD">Por Ciudad</option>
                                         <option value="ESPECIFICOS">Clientes Específicos</option>
                                     </select>
                                 </div>
@@ -110,6 +111,19 @@
                                             <option value="">Selecciona una provincia</option>
                                             {% for provincia in provincias %}
                                             <option value="{{ provincia.id }}">{{ provincia.nombre }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                                
+                                <!-- Segmentación por Ciudad -->
+                                <div id="segmentacion-ciudad" class="segmentacion-section" style="display: none;">
+                                    <div class="mb-3">
+                                        <label for="ciudad" class="form-label">Ciudad</label>
+                                        <select class="form-select" id="ciudad" name="ciudad">
+                                            <option value="">Selecciona una ciudad</option>
+                                            {% for ciudad in ciudades %}
+                                            <option value="{{ ciudad.id }}">{{ ciudad.nombre }} - {{ ciudad.provincia.nombre }}</option>
                                             {% endfor %}
                                         </select>
                                     </div>
@@ -328,6 +342,9 @@ function cambiarTipoSegmentacion() {
         case 'PROVINCIA':
             document.getElementById('segmentacion-provincia').style.display = 'block';
             break;
+        case 'CIUDAD':
+            document.getElementById('segmentacion-ciudad').style.display = 'block';
+            break;
         case 'ESPECIFICOS':
             document.getElementById('segmentacion-especificos').style.display = 'block';
             break;
@@ -359,6 +376,15 @@ function actualizarInfoSegmentacion() {
                 info = `<strong>Segmentación:</strong> Clientes de la provincia ${provinciaText}`;
             } else {
                 info = '<strong>Segmentación:</strong> Por provincia (selecciona una provincia)';
+            }
+            break;
+        case 'CIUDAD':
+            const ciudad = document.getElementById('ciudad');
+            if (ciudad && ciudad.value) {
+                const ciudadText = ciudad.options[ciudad.selectedIndex].text;
+                info = `<strong>Segmentación:</strong> Clientes de la ciudad ${ciudadText}`;
+            } else {
+                info = '<strong>Segmentación:</strong> Por ciudad (selecciona una ciudad)';
             }
             break;
         case 'ESPECIFICOS':
@@ -396,6 +422,9 @@ if (document.getElementById('tipo_segmentacion')) {
 }
 if (document.getElementById('provincia')) {
     document.getElementById('provincia').addEventListener('change', actualizarInfoSegmentacion);
+}
+if (document.getElementById('ciudad')) {
+    document.getElementById('ciudad').addEventListener('change', actualizarInfoSegmentacion);
 }
 if (document.getElementById('clientes_especificos')) {
     document.getElementById('clientes_especificos').addEventListener('change', actualizarInfoSegmentacion);
