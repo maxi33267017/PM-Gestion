@@ -167,6 +167,7 @@ class Campana(models.Model):
         ('TODOS', 'Todos los Clientes'),
         ('PROVINCIA', 'Por Provincia'),
         ('CIUDAD', 'Por Ciudad'),
+        ('ABC', 'Por Curva ABC'),
         ('ESPECIFICOS', 'Clientes Específicos'),
         ('EQUIPOS', 'Por Equipos (Actual)'),
     ]
@@ -194,6 +195,21 @@ class Campana(models.Model):
         null=True,
         blank=True,
         help_text="Seleccionar solo si la segmentación es por ciudad"
+    )
+    
+    categoria_abc = models.CharField(
+        max_length=10,
+        choices=[
+            ('A', 'Categoría A (Alto Valor)'),
+            ('B', 'Categoría B (Valor Medio)'),
+            ('C', 'Categoría C (Bajo Valor)'),
+            ('NUEVO', 'Clientes Nuevos'),
+            ('TODAS', 'Todas las Categorías'),
+        ],
+        verbose_name="Categoría ABC",
+        null=True,
+        blank=True,
+        help_text="Seleccionar solo si la segmentación es por curva ABC"
     )
     
     clientes_especificos = models.ManyToManyField(
@@ -308,6 +324,35 @@ class Campana(models.Model):
             )
             print(f"Clientes en ciudad {self.ciudad.nombre}: {clientes.count()}")
             return clientes
+            
+        elif self.tipo_segmentacion == 'ABC':
+            # Clientes por categoría ABC
+            if not self.categoria_abc:
+                print("⚠️ No se seleccionó categoría ABC")
+                return Cliente.objects.none()
+            
+            if self.categoria_abc == 'TODAS':
+                # Incluir todas las categorías ABC
+                clientes = Cliente.objects.filter(activo=True)
+                print(f"Clientes de todas las categorías ABC: {clientes.count()}")
+                return clientes
+            else:
+                # Filtrar por categoría específica
+                if self.categoria_abc == 'NUEVO':
+                    # Clientes sin análisis ABC (nuevos)
+                    clientes = Cliente.objects.filter(
+                        activo=True,
+                        analisiscliente__isnull=True
+                    )
+                else:
+                    # Clientes con categoría ABC específica
+                    clientes = Cliente.objects.filter(
+                        activo=True,
+                        analisiscliente__categoria=self.categoria_abc
+                    )
+                
+                print(f"Clientes categoría {self.categoria_abc}: {clientes.count()}")
+                return clientes
             
         elif self.tipo_segmentacion == 'ESPECIFICOS':
             # Clientes específicos seleccionados

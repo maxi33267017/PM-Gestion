@@ -76,6 +76,7 @@
                                         <option value="TODOS">Todos los Clientes</option>
                                         <option value="PROVINCIA">Por Provincia</option>
                                         <option value="CIUDAD">Por Ciudad</option>
+                                        <option value="ABC">Por Curva ABC</option>
                                         <option value="ESPECIFICOS">Clientes Específicos</option>
                                     </select>
                                 </div>
@@ -126,6 +127,27 @@
                                             <option value="{{ ciudad.id }}">{{ ciudad.nombre }} - {{ ciudad.provincia.nombre }}</option>
                                             {% endfor %}
                                         </select>
+                                    </div>
+                                </div>
+                                
+                                <!-- Segmentación por Curva ABC -->
+                                <div id="segmentacion-abc" class="segmentacion-section" style="display: none;">
+                                    <div class="mb-3">
+                                        <label for="categoria_abc" class="form-label">Categoría ABC</label>
+                                        <select class="form-select" id="categoria_abc" name="categoria_abc">
+                                            <option value="">Selecciona una categoría</option>
+                                            <option value="TODAS">Todas las Categorías</option>
+                                            <option value="A">Categoría A (Alto Valor)</option>
+                                            <option value="B">Categoría B (Valor Medio)</option>
+                                            <option value="C">Categoría C (Bajo Valor)</option>
+                                            <option value="NUEVO">Clientes Nuevos</option>
+                                        </select>
+                                        <small class="form-text text-muted">
+                                            <strong>Categoría A:</strong> Clientes de alto valor (80% de facturación)<br>
+                                            <strong>Categoría B:</strong> Clientes de valor medio (15% de facturación)<br>
+                                            <strong>Categoría C:</strong> Clientes de bajo valor (5% de facturación)<br>
+                                            <strong>Nuevos:</strong> Clientes sin historial de servicios
+                                        </small>
                                     </div>
                                 </div>
                                 
@@ -345,6 +367,9 @@ function cambiarTipoSegmentacion() {
         case 'CIUDAD':
             document.getElementById('segmentacion-ciudad').style.display = 'block';
             break;
+        case 'ABC':
+            document.getElementById('segmentacion-abc').style.display = 'block';
+            break;
         case 'ESPECIFICOS':
             document.getElementById('segmentacion-especificos').style.display = 'block';
             break;
@@ -387,6 +412,15 @@ function actualizarInfoSegmentacion() {
                 info = '<strong>Segmentación:</strong> Por ciudad (selecciona una ciudad)';
             }
             break;
+        case 'ABC':
+            const categoriaABC = document.getElementById('categoria_abc');
+            if (categoriaABC && categoriaABC.value) {
+                const categoriaText = categoriaABC.options[categoriaABC.selectedIndex].text;
+                info = `<strong>Segmentación:</strong> Clientes ${categoriaText}`;
+            } else {
+                info = '<strong>Segmentación:</strong> Por curva ABC (selecciona una categoría)';
+            }
+            break;
         case 'ESPECIFICOS':
             const clientesSelect = document.getElementById('clientes_especificos');
             if (clientesSelect) {
@@ -425,6 +459,9 @@ if (document.getElementById('provincia')) {
 }
 if (document.getElementById('ciudad')) {
     document.getElementById('ciudad').addEventListener('change', actualizarInfoSegmentacion);
+}
+if (document.getElementById('categoria_abc')) {
+    document.getElementById('categoria_abc').addEventListener('change', actualizarInfoSegmentacion);
 }
 if (document.getElementById('clientes_especificos')) {
     document.getElementById('clientes_especificos').addEventListener('change', actualizarInfoSegmentacion);

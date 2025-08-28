@@ -582,6 +582,7 @@ def crear_campania(request):
         modelo_equipo_id = request.POST.get('modelo_equipo')
         provincia_id = request.POST.get('provincia')
         ciudad_id = request.POST.get('ciudad')
+        categoria_abc = request.POST.get('categoria_abc')
         clientes_especificos = request.POST.getlist('clientes_especificos')
         
         crear_embudos = request.POST.get('crear_embudos') == 'on'
@@ -609,6 +610,7 @@ def crear_campania(request):
                 modelo_equipo = None
                 provincia = None
                 ciudad = None
+                categoria_abc_value = None
                 
                 if tipo_segmentacion == 'EQUIPOS':
                     if tipo_equipo_id and tipo_equipo_id != '':
@@ -633,6 +635,11 @@ def crear_campania(request):
                         ciudad = Ciudad.objects.get(id=ciudad_id)
                         print(f"✅ Ciudad encontrada: {ciudad}")
                 
+                elif tipo_segmentacion == 'ABC':
+                    if categoria_abc and categoria_abc != '':
+                        categoria_abc_value = categoria_abc
+                        print(f"✅ Categoría ABC seleccionada: {categoria_abc_value}")
+                
                 print(f"✅ Tipo de segmentación: {tipo_segmentacion}")
                 print(f"✅ Clientes específicos seleccionados: {len(clientes_especificos)}")
                 
@@ -654,6 +661,7 @@ def crear_campania(request):
                     modelo_equipo=modelo_equipo,
                     provincia=provincia,
                     ciudad=ciudad,
+                    categoria_abc=categoria_abc_value,
                     valor_paquete=float(valor_paquete) if valor_paquete else None,
                     objetivo_paquetes=int(objetivo_paquetes) if objetivo_paquetes else None,
                     estado=estado,
